@@ -1,0 +1,59 @@
+<?php
+
+namespace App\Http\Controllers\Api\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\AdminActivityLog;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class AdminDashboardController extends Controller
+{
+    /**
+     * Dashboard statistics and relevant activity for the authenticated Admin.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $admin = $request->user();
+
+        // Count personal activity
+        $myActivityCount = AdminActivityLog::where('actor_type', 'admin')
+            ->where('actor_id', $admin->id)
+            ->count();
+
+        // Recent activity relevant to this admin
+        $recentActivity = AdminActivityLog::where('actor_type', 'admin')
+            ->where('actor_id', $admin->id)
+            ->latest()
+            ->take(8)
+            ->get([
+                'id',
+                'action',
+                'description',
+                'ip_address',
+                'created_at',
+            ]);
+
+        // Account status info
+        $accountDetails = [
+            'name' => $admin->name,
+            'email' => $admin->email,
+            'status' => $admin->is_active ? 'Active' : 'Inactive',
+            'member_since' => $admin->created_at->format('M d, Y'),
+            'last_login' => $admin->last_login_at ? Carbon::parse($admin->last_login_at)->diffForHumans() : 'First session',
+        ];
+
+        return response()->json([
+            'stats' => [
+                'activity_count' => $myActivityCount,
+                'account_status' => $admin->is_active ? 'Active' : 'Inactive',
+                'last_login' => $admin->last_login_at ? Carbon::parse($admin->last_login_at)->diffForHumans() : 'First session',
+                'joined_days_ago' => $admin->created_at->diffInDays(now()),
+            ],
+            'account' => $accountDetails,
+            'recent_activity' => $recentActivity,
+        ]);
+    }
+}
+

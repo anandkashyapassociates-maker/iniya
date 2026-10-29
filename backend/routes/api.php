@@ -1,0 +1,90 @@
+<?php
+
+use App\Http\Controllers\Api\Admin\AdminAuthController;
+use App\Http\Controllers\Api\Admin\AdminDashboardController;
+use App\Http\Controllers\Api\Admin\AdminProfileController;
+use App\Http\Controllers\Api\SuperAdmin\AdminManagementController;
+use App\Http\Controllers\Api\SuperAdmin\SuperAdminAuthController;
+use App\Http\Controllers\Api\SuperAdmin\SuperAdminDashboardController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Existing General API Routes (Preserved)
+|--------------------------------------------------------------------------
+*/
+Route::get('/user', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum');
+
+/*
+|--------------------------------------------------------------------------
+| Super Admin Public Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('superadmin')->group(function () {
+    Route::post('/login', [SuperAdminAuthController::class, 'login'])
+        ->middleware('throttle:15,1');
+
+    Route::post('/forgot-password', [SuperAdminAuthController::class, 'forgotPassword'])
+        ->middleware('throttle:15,1');
+
+    Route::post('/reset-password', [SuperAdminAuthController::class, 'resetPassword'])
+        ->middleware('throttle:15,1');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Super Admin Protected Routes (Guarded & Authorized)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('superadmin')
+    ->middleware(['auth:sanctum', 'auth.superadmin'])
+    ->group(function () {
+        Route::get('/me', [SuperAdminAuthController::class, 'me']);
+        Route::post('/logout', [SuperAdminAuthController::class, 'logout']);
+        Route::put('/profile', [SuperAdminAuthController::class, 'updateProfile']);
+        Route::post('/change-password', [SuperAdminAuthController::class, 'changePassword']);
+
+        Route::get('/dashboard', [SuperAdminDashboardController::class, 'index']);
+
+        // Admin Account Management
+        Route::get('/admins', [AdminManagementController::class, 'index']);
+        Route::post('/admins', [AdminManagementController::class, 'store']);
+        Route::get('/admins/{id}', [AdminManagementController::class, 'show']);
+        Route::put('/admins/{id}', [AdminManagementController::class, 'update']);
+        Route::patch('/admins/{id}/status', [AdminManagementController::class, 'updateStatus']);
+        Route::post('/admins/{id}/password-reset', [AdminManagementController::class, 'resetPassword']);
+    });
+
+/*
+|--------------------------------------------------------------------------
+| Admin Public Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('admin')->group(function () {
+    Route::post('/login', [AdminAuthController::class, 'login'])
+        ->middleware('throttle:15,1');
+
+    Route::post('/forgot-password', [AdminAuthController::class, 'forgotPassword'])
+        ->middleware('throttle:15,1');
+
+    Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
+        ->middleware('throttle:15,1');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Admin Protected Routes (Guarded & Authorized)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('admin')
+    ->middleware(['auth:sanctum', 'auth.admin'])
+    ->group(function () {
+        Route::get('/me', [AdminAuthController::class, 'me']);
+        Route::post('/logout', [AdminAuthController::class, 'logout']);
+        Route::get('/dashboard', [AdminDashboardController::class, 'index']);
+        Route::put('/profile', [AdminProfileController::class, 'update']);
+        Route::post('/change-password', [AdminProfileController::class, 'changePassword']);
+    });
