@@ -13,6 +13,8 @@ import {
   User,
   ChevronDown,
   ListFilter,
+  Truck,
+  TrendingUp,
 } from 'lucide-react';
 import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import ToastNotifications from '../../components/ToastNotifications';
@@ -34,20 +36,44 @@ export default function SuperAdminLayout() {
     location.pathname.startsWith('/superadmin/staff-management') ||
     location.pathname.startsWith('/superadmin/staff');
 
+  const isInVendorManagement =
+    location.pathname.startsWith('/superadmin/vendor-management') ||
+    location.pathname.startsWith('/superadmin/vendors');
+
+  const isInSalesManagement =
+    location.pathname.startsWith('/superadmin/sales-members') ||
+    location.pathname.startsWith('/superadmin/sales-team');
+
   // Initialize only the currently active section as open on page load / reload
   const [adminMenuOpen, setAdminMenuOpen] = useState(isInAdminManagement);
   const [staffMenuOpen, setStaffMenuOpen] = useState(isInStaffManagement);
+  const [vendorMenuOpen, setVendorMenuOpen] = useState(isInVendorManagement);
+  const [salesMenuOpen, setSalesMenuOpen] = useState(isInSalesManagement);
 
   // When route changes, automatically ensure only the active section is open
   useEffect(() => {
     if (isInAdminManagement) {
       setAdminMenuOpen(true);
       setStaffMenuOpen(false);
+      setVendorMenuOpen(false);
+      setSalesMenuOpen(false);
     } else if (isInStaffManagement) {
       setStaffMenuOpen(true);
       setAdminMenuOpen(false);
+      setVendorMenuOpen(false);
+      setSalesMenuOpen(false);
+    } else if (isInVendorManagement) {
+      setVendorMenuOpen(true);
+      setAdminMenuOpen(false);
+      setStaffMenuOpen(false);
+      setSalesMenuOpen(false);
+    } else if (isInSalesManagement) {
+      setSalesMenuOpen(true);
+      setAdminMenuOpen(false);
+      setStaffMenuOpen(false);
+      setVendorMenuOpen(false);
     }
-  }, [location.pathname, isInAdminManagement, isInStaffManagement]);
+  }, [location.pathname, isInAdminManagement, isInStaffManagement, isInVendorManagement, isInSalesManagement]);
 
   const handleLogout = async () => {
     try {
@@ -247,6 +273,139 @@ export default function SuperAdminLayout() {
                   >
                     <ListFilter className="w-3.5 h-3.5 shrink-0" />
                     <span>Staff Details</span>
+                  </NavLink>
+                </div>
+              )}
+            </div>
+
+            {/* ======================================================== */}
+            {/* VENDOR MANAGEMENT ACCORDION SECTION (Phase 4)             */}
+            {/* ======================================================== */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setVendorMenuOpen(!vendorMenuOpen)}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                  isInVendorManagement
+                    ? 'text-blue-400 bg-slate-900/90'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Truck className="w-4 h-4 text-sky-400 shrink-0" />
+                  <span>Vendor Management</span>
+                </div>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                    vendorMenuOpen ? 'rotate-0' : '-rotate-90'
+                  }`}
+                />
+              </button>
+
+              {/* Collapsible Submenu */}
+              {vendorMenuOpen && (
+                <div className="pl-6 pr-1 pt-1.5 pb-1 space-y-1">
+                  {/* 1. Vendor Creation */}
+                  <NavLink
+                    to="/superadmin/vendors/create"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive ||
+                        isSubItemActive('/superadmin/vendors/create') ||
+                        isSubItemActive('/superadmin/vendor-management/create')
+                          ? 'bg-blue-600/20 text-blue-300 font-bold border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <UserPlus className="w-3.5 h-3.5 shrink-0" />
+                    <span>Vendor Creation</span>
+                  </NavLink>
+
+                  {/* 2. Vendor Details */}
+                  <NavLink
+                    to="/superadmin/vendors"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive ||
+                        isSubItemActive('/superadmin/vendors') ||
+                        isSubItemActive('/superadmin/vendor-management') ||
+                        isSubItemActive('/superadmin/vendor-management/details')
+                          ? 'bg-blue-600/20 text-blue-300 font-bold border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <ListFilter className="w-3.5 h-3.5 shrink-0" />
+                    <span>Vendor Details</span>
+                  </NavLink>
+                </div>
+              )}
+            </div>
+
+            {/* ======================================================== */}
+            {/* SALES TEAM MANAGEMENT ACCORDION SECTION (Phase 5)         */}
+            {/* ======================================================== */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setSalesMenuOpen(!salesMenuOpen)}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                  isInSalesManagement
+                    ? 'text-blue-400 bg-slate-900/90'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <TrendingUp className="w-4 h-4 text-indigo-400 shrink-0" />
+                  <span>Sales Team Management</span>
+                </div>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                    salesMenuOpen ? 'rotate-0' : '-rotate-90'
+                  }`}
+                />
+              </button>
+
+              {/* Collapsible Submenu */}
+              {salesMenuOpen && (
+                <div className="pl-6 pr-1 pt-1.5 pb-1 space-y-1">
+                  {/* 1. Sales Member Creation */}
+                  <NavLink
+                    to="/superadmin/sales-members/create"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive ||
+                        isSubItemActive('/superadmin/sales-members/create') ||
+                        isSubItemActive('/superadmin/sales-team/create')
+                          ? 'bg-blue-600/20 text-blue-300 font-bold border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <UserPlus className="w-3.5 h-3.5 shrink-0" />
+                    <span>Sales Member Creation</span>
+                  </NavLink>
+
+                  {/* 2. Sales Member Details */}
+                  <NavLink
+                    to="/superadmin/sales-members"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive ||
+                        isSubItemActive('/superadmin/sales-members') ||
+                        isSubItemActive('/superadmin/sales-team')
+                          ? 'bg-blue-600/20 text-blue-300 font-bold border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <ListFilter className="w-3.5 h-3.5 shrink-0" />
+                    <span>Sales Member Details</span>
                   </NavLink>
                 </div>
               )}

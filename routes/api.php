@@ -8,6 +8,8 @@ use App\Http\Controllers\Api\SuperAdmin\AdminManagementController;
 use App\Http\Controllers\Api\SuperAdmin\StaffManagementController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminAuthController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminDashboardController;
+use App\Http\Controllers\Api\SuperAdmin\VendorManagementController;
+use App\Http\Controllers\Api\SuperAdmin\SalesMemberManagementController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -67,6 +69,25 @@ Route::prefix('superadmin')
         Route::get('/staff/{id}', [StaffManagementController::class, 'show']);
         Route::put('/staff/{id}', [StaffManagementController::class, 'update']);
         Route::patch('/staff/{id}/status', [StaffManagementController::class, 'updateStatus']);
+
+        // Vendor Management
+        Route::get('/vendors/preview-code', [VendorManagementController::class, 'previewCode']);
+        Route::get('/vendors/types', [VendorManagementController::class, 'types']);
+        Route::get('/vendors', [VendorManagementController::class, 'index']);
+        Route::post('/vendors', [VendorManagementController::class, 'store']);
+        Route::get('/vendors/{id}', [VendorManagementController::class, 'show']);
+        Route::put('/vendors/{id}', [VendorManagementController::class, 'update']);
+        Route::patch('/vendors/{id}/status', [VendorManagementController::class, 'updateStatus']);
+
+        // Sales Team Management
+        Route::get('/sales-members/preview-code', [SalesMemberManagementController::class, 'previewCode']);
+        Route::get('/sales-members/departments', [SalesMemberManagementController::class, 'departments']);
+        Route::get('/sales-members/territories', [SalesMemberManagementController::class, 'territories']);
+        Route::get('/sales-members', [SalesMemberManagementController::class, 'index']);
+        Route::post('/sales-members', [SalesMemberManagementController::class, 'store']);
+        Route::get('/sales-members/{id}', [SalesMemberManagementController::class, 'show']);
+        Route::put('/sales-members/{id}', [SalesMemberManagementController::class, 'update']);
+        Route::patch('/sales-members/{id}/status', [SalesMemberManagementController::class, 'updateStatus']);
     });
 
 /*
