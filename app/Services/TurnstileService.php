@@ -111,7 +111,7 @@ class TurnstileService
 
         return [
             'success' => false,
-            'message' => 'Security verification failed.',
+            'message' => 'Security verification failed. Please complete the CAPTCHA.',
             'errors' => ['invalid-token'],
         ];
     }
