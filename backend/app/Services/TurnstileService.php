@@ -108,6 +108,12 @@ class TurnstileService
                 'errors' => [],
             ];
         }
+
+        return [
+            'success' => false,
+            'message' => 'Security verification failed.',
+            'errors' => ['invalid-token'],
+        ];
     }
 
     /**
