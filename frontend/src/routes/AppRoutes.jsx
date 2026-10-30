@@ -12,6 +12,10 @@ import AdminCreationPage from '../superadmin/admin-management/AdminCreationPage'
 import AdminDetailsPage from '../superadmin/admin-management/AdminDetailsPage';
 import StaffCreationPage from '../superadmin/staff-management/StaffCreationPage';
 import StaffDetailsPage from '../superadmin/staff-management/StaffDetailsPage';
+import VendorCreationPage from '../superadmin/vendor-management/VendorCreationPage';
+import VendorDetailsPage from '../superadmin/vendor-management/VendorDetailsPage';
+import SalesMemberCreationPage from '../superadmin/sales-management/SalesMemberCreationPage';
+import SalesMemberDetailsPage from '../superadmin/sales-management/SalesMemberDetailsPage';
 import SuperAdminEditAdminPage from '../pages/superadmin/SuperAdminEditAdminPage';
 import SuperAdminProfilePage from '../pages/superadmin/SuperAdminProfilePage';
 
@@ -58,6 +62,19 @@ export default function AppRoutes() {
           {/* Phase 3: Staff Management Submodule Routes */}
           <Route path="/superadmin/staff-management/create" element={<StaffCreationPage />} />
           <Route path="/superadmin/staff-management/details" element={<StaffDetailsPage />} />
+
+          {/* Phase 4: Vendor Management Submodule Routes */}
+          <Route path="/superadmin/vendors" element={<VendorDetailsPage />} />
+          <Route path="/superadmin/vendors/create" element={<VendorCreationPage />} />
+          <Route path="/superadmin/vendor-management" element={<Navigate to="/superadmin/vendors" replace />} />
+          <Route path="/superadmin/vendor-management/details" element={<Navigate to="/superadmin/vendors" replace />} />
+          <Route path="/superadmin/vendor-management/create" element={<Navigate to="/superadmin/vendors/create" replace />} />
+
+          {/* Phase 5: Sales Team Management Submodule Routes */}
+          <Route path="/superadmin/sales-members" element={<SalesMemberDetailsPage />} />
+          <Route path="/superadmin/sales-members/create" element={<SalesMemberCreationPage />} />
+          <Route path="/superadmin/sales-team" element={<Navigate to="/superadmin/sales-members" replace />} />
+          <Route path="/superadmin/sales-team/create" element={<Navigate to="/superadmin/sales-members/create" replace />} />
           
           {/* Backward Compatibility Aliases */}
           <Route path="/superadmin/admins" element={<Navigate to="/superadmin/admin-management/details" replace />} />
