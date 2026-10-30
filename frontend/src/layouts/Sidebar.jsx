@@ -10,6 +10,7 @@ import {
   Layers,
   LogOut,
   X,
+  Calendar,
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -54,6 +55,11 @@ export default function Sidebar({
       to: '/admin/customers',
       label: 'Customers Directory',
       icon: Users,
+    },
+    {
+      to: '/admin/appointments',
+      label: 'Appointments',
+      icon: Calendar,
     },
     {
       to: '/admin/profile',
