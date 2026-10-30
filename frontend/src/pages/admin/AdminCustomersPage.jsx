@@ -27,6 +27,10 @@ import { useToast } from '../../context/ToastContext';
 function CustomerAvatar({ customer, size = 'sm' }) {
   const [imgError, setImgError] = useState(false);
 
+  useEffect(() => {
+    setImgError(false);
+  }, [customer?.image_url, customer?.id]);
+
   const sizeClass = size === 'lg' ? 'w-14 h-14 rounded-2xl text-xl' : 'w-10 h-10 rounded-xl text-sm';
 
   const genderBg =
