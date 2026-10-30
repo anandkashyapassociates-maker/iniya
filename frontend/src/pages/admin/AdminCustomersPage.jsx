@@ -316,7 +316,7 @@ export default function AdminCustomersPage() {
             <Stethoscope className="w-3.5 h-3.5 text-blue-600" />
             <span>Clinical &amp; Administrative Records</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-lg sm:text-xl font-bold font-display text-slate-900 tracking-tight">
             Customer &amp; Patient Directory
           </h1>
           <p className="text-xs text-slate-500 mt-1 max-w-xl">
@@ -340,10 +340,10 @@ export default function AdminCustomersPage() {
             <Users className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            <div className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest micro-label">
               Total Registered
             </div>
-            <div className="text-2xl font-black text-slate-900 mt-0.5">{stats.total}</div>
+            <div className="text-xl sm:text-2xl font-bold font-display tabular-numbers text-slate-900 mt-0.5 tracking-tight">{stats.total}</div>
             <div className="text-[10px] text-slate-500 mt-0.5 font-medium">All active database records</div>
           </div>
         </div>
@@ -353,10 +353,10 @@ export default function AdminCustomersPage() {
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            <div className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest micro-label">
               Active Accounts
             </div>
-            <div className="text-2xl font-black text-emerald-600 mt-0.5">{stats.active}</div>
+            <div className="text-xl sm:text-2xl font-bold font-display tabular-numbers text-emerald-600 mt-0.5 tracking-tight">{stats.active}</div>
             <div className="text-[10px] text-emerald-700 font-medium">Cleared for consultations</div>
           </div>
         </div>
@@ -366,10 +366,10 @@ export default function AdminCustomersPage() {
             <Clock className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            <div className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest micro-label">
               Inactive Records
             </div>
-            <div className="text-2xl font-black text-slate-700 mt-0.5">{stats.inactive}</div>
+            <div className="text-xl sm:text-2xl font-bold font-display tabular-numbers text-slate-700 mt-0.5 tracking-tight">{stats.inactive}</div>
             <div className="text-[10px] text-slate-500 font-medium">Archived or pending review</div>
           </div>
         </div>
@@ -442,7 +442,7 @@ export default function AdminCustomersPage() {
             <div className="flex items-center gap-3.5 mb-6">
               <CustomerAvatar customer={selectedCustomer} size="lg" />
               <div>
-                <h3 className="text-lg font-black text-slate-900">{selectedCustomer.name}</h3>
+                <h3 className="text-base sm:text-lg font-bold font-display text-slate-900 tracking-tight">{selectedCustomer.name}</h3>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60">
                     {formatRecordId(selectedCustomer.id)}

@@ -48,10 +48,10 @@ export default function AdminChangePasswordPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+        <h1 className="text-lg sm:text-xl font-bold font-display text-slate-900 tracking-tight">
           Change Account Password
         </h1>
-        <p className="text-xs text-slate-500 mt-0.5">
+        <p className="text-xs text-slate-500 mt-0.5 font-normal">
           Regularly update your password to protect your administrator privileges.
         </p>
       </div>
@@ -61,13 +61,13 @@ export default function AdminChangePasswordPage() {
           {/* Current Password */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider font-display">
                 Current Password
               </label>
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1"
+                className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 cursor-pointer font-medium"
               >
                 {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                 <span>{showPassword ? 'Hide' : 'Show'}</span>
@@ -93,7 +93,7 @@ export default function AdminChangePasswordPage() {
 
           {/* New Password */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 font-display">
               New Password
             </label>
             <div className="relative">
@@ -116,7 +116,7 @@ export default function AdminChangePasswordPage() {
 
           {/* Confirm Password */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 font-display">
               Confirm New Password
             </label>
             <div className="relative">
@@ -141,7 +141,7 @@ export default function AdminChangePasswordPage() {
             <button
               type="submit"
               disabled={isSaving}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-900/20 transition-all cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-900/20 transition-all cursor-pointer disabled:opacity-50 font-display"
             >
               {isSaving ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -156,4 +156,3 @@ export default function AdminChangePasswordPage() {
     </div>
   );
 }
-

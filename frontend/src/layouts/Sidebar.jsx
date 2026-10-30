@@ -98,10 +98,10 @@ export default function Sidebar({
               {isSuperAdmin ? <Shield className="w-4 h-4" /> : <Layers className="w-4 h-4" />}
             </div>
             <div>
-              <span className="text-sm font-black tracking-tight text-white uppercase block leading-none">
+              <span className="text-sm font-bold font-display tracking-tight text-white uppercase block leading-none">
                 INIYA<span className="text-blue-500">.</span>CORE
               </span>
-              <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase">
+              <span className="text-[10px] font-extrabold text-blue-400 tracking-widest uppercase micro-label">
                 {isSuperAdmin ? 'Super Admin' : 'Admin Panel'}
               </span>
             </div>
@@ -109,7 +109,7 @@ export default function Sidebar({
 
           <button
             onClick={onClose}
-            className="lg:hidden text-slate-400 hover:text-white p-1 rounded-lg"
+            className="lg:hidden text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -117,8 +117,8 @@ export default function Sidebar({
 
         {/* Navigation list */}
         <div className="flex-1 py-6 px-4 space-y-1.5 overflow-y-auto">
-          <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-            Navigation Menu
+          <div className="px-3 pb-2 text-[10px] font-extrabold uppercase tracking-widest text-slate-500 micro-label">
+            Admin Navigation
           </div>
 
           {navItems.map((item) => {
@@ -132,8 +132,8 @@ export default function Sidebar({
                   `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                     isActive
                       ? isSuperAdmin
-                        ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30'
-                        : 'bg-blue-600/20 text-blue-300 border border-blue-500/30'
+                        ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30 font-bold'
+                        : 'bg-blue-600/20 text-blue-300 border border-blue-500/30 font-bold'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
                   }`
                 }
@@ -148,14 +148,14 @@ export default function Sidebar({
         {/* User profile & Logout footer */}
         <div className="p-4 border-t border-slate-800 bg-slate-900/50">
           <div className="flex items-center gap-3 mb-3 px-1">
-            <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-200">
+            <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-200 font-display">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-slate-200 truncate">
+              <p className="text-xs font-bold text-slate-200 truncate font-display tracking-tight">
                 {user?.name || 'Administrator'}
               </p>
-              <p className="text-[11px] text-slate-400 truncate">
+              <p className="text-[11px] text-slate-400 truncate font-mono">
                 {user?.email || 'admin@example.com'}
               </p>
             </div>
@@ -163,7 +163,7 @@ export default function Sidebar({
 
           <button
             onClick={onLogout}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-slate-300 hover:text-rose-400 bg-slate-800 hover:bg-slate-800/80 rounded-xl transition-all"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-slate-300 hover:text-rose-400 bg-slate-800 hover:bg-slate-800/80 rounded-xl transition-all cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Sign Out</span>
@@ -173,4 +173,3 @@ export default function Sidebar({
     </>
   );
 }
-

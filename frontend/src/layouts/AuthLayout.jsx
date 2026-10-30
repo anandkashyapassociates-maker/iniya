@@ -39,13 +39,13 @@ export default function AuthLayout({
             }`}>
               {isSuperAdmin ? <Shield className="w-5 h-5" /> : <Layers className="w-5 h-5" />}
             </div>
-            <span className="text-xl font-black tracking-tight text-white uppercase font-sans">
+            <span className="text-xl font-bold tracking-tight text-white uppercase font-display">
               INIYA<span className="text-blue-500">.</span>CORE
             </span>
           </div>
 
           <div className="flex items-center justify-center gap-2 mb-2">
-            <span className={`text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${
+            <span className={`text-[10px] font-extrabold uppercase tracking-widest micro-label px-3 py-1 rounded-full border ${
               isSuperAdmin
                 ? 'bg-purple-950/60 text-purple-300 border-purple-800/60'
                 : 'bg-blue-950/60 text-blue-300 border-blue-800/60'
@@ -54,8 +54,8 @@ export default function AuthLayout({
             </span>
           </div>
 
-          <h1 className="text-2xl font-bold text-white tracking-tight">{title}</h1>
-          {subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}
+          <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight font-display">{title}</h1>
+          {subtitle && <p className="text-xs text-slate-400 mt-1 font-medium">{subtitle}</p>}
         </div>
 
         {/* Form Container Card */}
@@ -90,4 +90,3 @@ export default function AuthLayout({
     </div>
   );
 }
-

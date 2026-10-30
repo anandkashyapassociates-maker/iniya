@@ -153,7 +153,7 @@ export default function AdminCustomerCreatePage() {
             <span>Clinical Registration Portal</span>
           </span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+        <h1 className="text-lg sm:text-xl font-bold font-display text-slate-900 tracking-tight">
           Create New Customer / Patient
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -168,7 +168,7 @@ export default function AdminCustomerCreatePage() {
           <div className="space-y-5">
             <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
               <User className="w-4 h-4 text-blue-600" />
-              <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+              <h2 className="text-xs font-bold font-display text-slate-800 uppercase tracking-wider">
                 1. Personal Demographics &amp; Photo
               </h2>
             </div>
@@ -343,7 +343,7 @@ export default function AdminCustomerCreatePage() {
           <div className="space-y-4 pt-3">
             <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
               <Phone className="w-4 h-4 text-blue-600" />
-              <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+              <h2 className="text-xs font-bold font-display text-slate-800 uppercase tracking-wider">
                 2. Contact &amp; Communication Channels
               </h2>
             </div>
@@ -412,7 +412,7 @@ export default function AdminCustomerCreatePage() {
           <div className="space-y-4 pt-3">
             <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
               <MapPin className="w-4 h-4 text-blue-600" />
-              <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+              <h2 className="text-xs font-bold font-display text-slate-800 uppercase tracking-wider">
                 3. Address
               </h2>
             </div>
