@@ -8,6 +8,10 @@ import SuperAdminLoginPage from '../superadmin/pages/SuperAdminLoginPage';
 import SuperAdminForgotPasswordPage from '../superadmin/pages/SuperAdminForgotPasswordPage';
 import SuperAdminResetPasswordPage from '../superadmin/pages/SuperAdminResetPasswordPage';
 import SuperAdminDashboardPage from '../superadmin/pages/SuperAdminDashboardPage';
+import SuperAdminAdminsListPage from '../pages/superadmin/SuperAdminAdminsListPage';
+import SuperAdminCreateAdminPage from '../pages/superadmin/SuperAdminCreateAdminPage';
+import SuperAdminEditAdminPage from '../pages/superadmin/SuperAdminEditAdminPage';
+import SuperAdminProfilePage from '../pages/superadmin/SuperAdminProfilePage';
 
 // Admin Module (Panel 2 - Separate Team Developer)
 import AdminLayout from '../layouts/AdminLayout';
@@ -36,11 +40,15 @@ export default function AppRoutes() {
       <Route path="/superadmin/reset-password" element={<SuperAdminResetPasswordPage />} />
 
       {/* ======================================================== */}
-      {/* 2. Super Admin Protected Routes (Phase 1 Workspace)       */}
+      {/* 2. Super Admin Protected Routes                          */}
       {/* ======================================================== */}
       <Route element={<SuperAdminProtectedRoute />}>
         <Route element={<SuperAdminLayout />}>
           <Route path="/superadmin/dashboard" element={<SuperAdminDashboardPage />} />
+          <Route path="/superadmin/admins" element={<SuperAdminAdminsListPage />} />
+          <Route path="/superadmin/admins/create" element={<SuperAdminCreateAdminPage />} />
+          <Route path="/superadmin/admins/:id/edit" element={<SuperAdminEditAdminPage />} />
+          <Route path="/superadmin/profile" element={<SuperAdminProfilePage />} />
         </Route>
       </Route>
 
