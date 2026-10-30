@@ -8,6 +8,8 @@ import {
   Calendar,
   MapPin,
   Save,
+  ShieldCheck,
+  Stethoscope,
 } from 'lucide-react';
 import LoadingState from '../../components/LoadingState';
 import adminService from '../../services/adminService';
@@ -67,6 +69,13 @@ export default function AdminCustomerEditPage() {
     }
   };
 
+  const handleGenderSelect = (genderVal) => {
+    setFormData((prev) => ({ ...prev, gender: genderVal }));
+    if (errors.gender) {
+      setErrors((prev) => ({ ...prev, gender: null }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
@@ -83,7 +92,7 @@ export default function AdminCustomerEditPage() {
         is_active: formData.is_active,
       });
 
-      toast.success(`Customer '${formData.name}' updated successfully.`);
+      toast.success(`Customer profile '${formData.name}' updated successfully.`);
       navigate('/admin/customers');
     } catch (err) {
       if (err.response?.data?.errors) {
@@ -98,245 +107,312 @@ export default function AdminCustomerEditPage() {
 
   if (isFetching) {
     return (
-      <div className="py-12">
-        <LoadingState message="Loading customer details..." />
+      <div className="py-16">
+        <LoadingState message="Retrieving customer record..." />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      {/* Header & Back Link */}
+    <div className="max-w-3xl mx-auto space-y-6">
+      {/* Top Navigation & Header */}
       <div>
         <Link
           to="/admin/customers"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors mb-2"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-blue-600 transition-colors mb-3"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft className="w-4 h-4" />
           <span>Back to Customer Directory</span>
         </Link>
-        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-xs font-semibold">
+            <Stethoscope className="w-3.5 h-3.5 text-blue-600" />
+            <span>Profile Modification</span>
+          </span>
+          <span className="font-mono text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
+            REC-{String(id).padStart(4, '0')}
+          </span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
           Edit Customer Profile
         </h1>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Update personal information, contact credentials, or status for this customer.
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          Update verified demographic credentials, contact info, and clearance status.
         </p>
       </div>
 
-      {/* Form Card */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xs">
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Customer Name */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-              Full Name <span className="text-rose-500">*</span>
-            </label>
-            <div className="relative">
-              <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="e.g. Ramesh Kumar"
-                disabled={isSaving}
-                required
-                className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 transition-all ${
-                  errors.name
-                    ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
-                    : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 text-slate-900'
-                }`}
-              />
+      {/* Main Form Card */}
+      <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-sm">
+        <form onSubmit={handleSubmit} className="space-y-7">
+          {/* Section 1: Demographics */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+              <User className="w-4 h-4 text-blue-600" />
+              <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                1. Personal Demographics
+              </h2>
             </div>
-            {errors.name && (
-              <p className="text-[11px] text-rose-500 mt-1 font-medium">
-                {Array.isArray(errors.name) ? errors.name[0] : errors.name}
-              </p>
-            )}
-          </div>
 
-          {/* Grid: Mobile & Email */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Mobile Number */}
+            {/* Customer Name */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Mobile Number <span className="text-rose-500">*</span>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                Full Legal Name <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
-                <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
-                  type="tel"
-                  name="mobile"
-                  value={formData.mobile}
+                  type="text"
+                  name="name"
+                  value={formData.name}
                   onChange={handleChange}
-                  placeholder="e.g. 9876543210"
+                  placeholder="e.g. Ramesh Kumar"
                   disabled={isSaving}
                   required
-                  className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 transition-all ${
-                    errors.mobile
+                  className={`w-full pl-10 pr-4 py-3 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all ${
+                    errors.name
                       ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
-                      : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 text-slate-900'
+                      : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
                   }`}
                 />
               </div>
-              {errors.mobile && (
-                <p className="text-[11px] text-rose-500 mt-1 font-medium">
-                  {Array.isArray(errors.mobile) ? errors.mobile[0] : errors.mobile}
+              {errors.name && (
+                <p className="text-[11px] text-rose-500 mt-1.5 font-medium">
+                  {Array.isArray(errors.name) ? errors.name[0] : errors.name}
                 </p>
               )}
             </div>
 
-            {/* Email Address */}
+            {/* Grid: Gender & Age */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-1">
+              {/* Gender Interactive Selector */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Gender <span className="text-rose-500">*</span>
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { key: 'male', label: 'Male', emoji: '👨' },
+                    { key: 'female', label: 'Female', emoji: '👩' },
+                    { key: 'other', label: 'Other', emoji: '🧑' },
+                  ].map((g) => (
+                    <button
+                      key={g.key}
+                      type="button"
+                      onClick={() => handleGenderSelect(g.key)}
+                      disabled={isSaving}
+                      className={`py-2.5 px-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
+                        formData.gender === g.key
+                          ? g.key === 'female'
+                            ? 'bg-rose-600 text-white border-rose-600 shadow-xs'
+                            : g.key === 'other'
+                            ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
+                            : 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      <span>{g.emoji}</span>
+                      <span>{g.label}</span>
+                    </button>
+                  ))}
+                </div>
+                {errors.gender && (
+                  <p className="text-[11px] text-rose-500 mt-1.5 font-medium">
+                    {Array.isArray(errors.gender) ? errors.gender[0] : errors.gender}
+                  </p>
+                )}
+              </div>
+
+              {/* Age */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Age (Years) <span className="text-slate-400 font-normal lowercase">(optional)</span>
+                </label>
+                <div className="relative">
+                  <Calendar className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="number"
+                    name="age"
+                    min="1"
+                    max="130"
+                    value={formData.age}
+                    onChange={handleChange}
+                    placeholder="e.g. 28"
+                    disabled={isSaving}
+                    className={`w-full pl-10 pr-4 py-3 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all ${
+                      errors.age
+                        ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
+                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
+                    }`}
+                  />
+                </div>
+                {errors.age && (
+                  <p className="text-[11px] text-rose-500 mt-1.5 font-medium">
+                    {Array.isArray(errors.age) ? errors.age[0] : errors.age}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Contact Details */}
+          <div className="space-y-4 pt-3">
+            <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+              <Phone className="w-4 h-4 text-blue-600" />
+              <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                2. Contact &amp; Communication Channels
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {/* Mobile Number */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Mobile Number <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="tel"
+                    name="mobile"
+                    value={formData.mobile}
+                    onChange={handleChange}
+                    placeholder="e.g. 9876543210"
+                    disabled={isSaving}
+                    required
+                    className={`w-full pl-10 pr-4 py-3 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all ${
+                      errors.mobile
+                        ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
+                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
+                    }`}
+                  />
+                </div>
+                {errors.mobile && (
+                  <p className="text-[11px] text-rose-500 mt-1.5 font-medium">
+                    {Array.isArray(errors.mobile) ? errors.mobile[0] : errors.mobile}
+                  </p>
+                )}
+              </div>
+
+              {/* Email Address */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Email Address <span className="text-slate-400 font-normal lowercase">(optional)</span>
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="customer@domain.com"
+                    disabled={isSaving}
+                    className={`w-full pl-10 pr-4 py-3 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all ${
+                      errors.email
+                        ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
+                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
+                    }`}
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-[11px] text-rose-500 mt-1.5 font-medium">
+                    {Array.isArray(errors.email) ? errors.email[0] : errors.email}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Address Details */}
+          <div className="space-y-4 pt-3">
+            <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+              <MapPin className="w-4 h-4 text-blue-600" />
+              <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                3. Residential &amp; Clinic Location
+              </h2>
+            </div>
+
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Email Address <span className="text-slate-400 font-normal">(Optional)</span>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                Postal / Residential Address <span className="text-slate-400 font-normal lowercase">(optional)</span>
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
+                <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <textarea
+                  name="address"
+                  rows="3"
+                  value={formData.address}
                   onChange={handleChange}
-                  placeholder="customer@example.com"
+                  placeholder="Flat/House No., Street address, City, District, State, PIN code..."
                   disabled={isSaving}
-                  className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 transition-all ${
-                    errors.email
+                  className={`w-full pl-10 pr-4 py-3 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all leading-relaxed ${
+                    errors.address
                       ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
-                      : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 text-slate-900'
+                      : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
                   }`}
                 />
               </div>
-              {errors.email && (
-                <p className="text-[11px] text-rose-500 mt-1 font-medium">
-                  {Array.isArray(errors.email) ? errors.email[0] : errors.email}
+              {errors.address && (
+                <p className="text-[11px] text-rose-500 mt-1.5 font-medium">
+                  {Array.isArray(errors.address) ? errors.address[0] : errors.address}
                 </p>
               )}
             </div>
           </div>
 
-          {/* Grid: Gender & Age */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Gender */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Gender <span className="text-rose-500">*</span>
-              </label>
-              <select
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
-                disabled={isSaving}
-                className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900 font-medium"
-              >
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-              {errors.gender && (
-                <p className="text-[11px] text-rose-500 mt-1 font-medium">
-                  {Array.isArray(errors.gender) ? errors.gender[0] : errors.gender}
-                </p>
-              )}
-            </div>
-
-            {/* Age */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Age (Years) <span className="text-slate-400 font-normal">(Optional)</span>
-              </label>
-              <div className="relative">
-                <Calendar className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="number"
-                  name="age"
-                  min="1"
-                  max="130"
-                  value={formData.age}
-                  onChange={handleChange}
-                  placeholder="e.g. 28"
-                  disabled={isSaving}
-                  className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 transition-all ${
-                    errors.age
-                      ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
-                      : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 text-slate-900'
-                  }`}
-                />
+          {/* Section 4: Status Clearance */}
+          <div className="pt-3">
+            <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-900">
+                    Record Activation Status
+                  </div>
+                  <div className="text-[11px] text-slate-500">
+                    When active, this profile is eligible for appointments, services, and reports.
+                  </div>
+                </div>
               </div>
-              {errors.age && (
-                <p className="text-[11px] text-rose-500 mt-1 font-medium">
-                  {Array.isArray(errors.age) ? errors.age[0] : errors.age}
-                </p>
-              )}
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="is_active"
+                  name="is_active"
+                  checked={formData.is_active}
+                  onChange={handleChange}
+                  disabled={isSaving}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
             </div>
           </div>
 
-          {/* Address */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-              Address <span className="text-slate-400 font-normal">(Optional)</span>
-            </label>
-            <div className="relative">
-              <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-              <textarea
-                name="address"
-                rows="3"
-                value={formData.address}
-                onChange={handleChange}
-                placeholder="House/Plot no., Street, City, State, PIN code..."
-                disabled={isSaving}
-                className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 transition-all ${
-                  errors.address
-                    ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
-                    : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 text-slate-900'
-                }`}
-              />
-            </div>
-            {errors.address && (
-              <p className="text-[11px] text-rose-500 mt-1 font-medium">
-                {Array.isArray(errors.address) ? errors.address[0] : errors.address}
-              </p>
-            )}
-          </div>
-
-          {/* Active Status Checkbox */}
-          <div className="flex items-center gap-3 pt-2">
-            <input
-              type="checkbox"
-              id="is_active"
-              name="is_active"
-              checked={formData.is_active}
-              onChange={handleChange}
-              disabled={isSaving}
-              className="w-4 h-4 text-blue-600 rounded-md border-slate-300 focus:ring-blue-500"
-            />
-            <label htmlFor="is_active" className="text-xs font-semibold text-slate-700 cursor-pointer select-none">
-              Account Active Status
-            </label>
-          </div>
-
-          {/* Submit Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          {/* Form Actions */}
+          <div className="flex items-center justify-end gap-3 pt-5 border-t border-slate-100">
             <Link
               to="/admin/customers"
-              className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all"
+              className="px-5 py-3 rounded-2xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all"
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={isSaving}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-sm disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20 hover:shadow-lg disabled:opacity-50 cursor-pointer"
             >
               {isSaving ? (
                 <>
-                  <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Saving Changes...</span>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Saving Updates...</span>
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  <span>Update Customer</span>
+                  <span>Update Profile Changes</span>
                 </>
               )}
             </button>
@@ -346,4 +422,3 @@ export default function AdminCustomerEditPage() {
     </div>
   );
 }
-

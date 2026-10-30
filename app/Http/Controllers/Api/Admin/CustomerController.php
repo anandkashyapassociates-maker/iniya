@@ -42,7 +42,7 @@ class CustomerController extends Controller
         }
 
         $perPage = min((int) $request->input('per_page', 10), 100);
-        $customers = $query->latest()->paginate($perPage);
+        $customers = $query->orderBy('created_at', 'desc')->orderBy('id', 'desc')->paginate($perPage);
 
         return response()->json($customers);
     }
