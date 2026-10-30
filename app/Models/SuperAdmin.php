@@ -59,5 +59,13 @@ class SuperAdmin extends Authenticatable
     {
         return $this->hasMany(Admin::class, 'super_admin_id');
     }
+
+    /**
+     * Get staff created by this super admin.
+     */
+    public function staff(): HasMany
+    {
+        return $this->hasMany(Staff::class, 'created_by_superadmin_id');
+    }
 }
 

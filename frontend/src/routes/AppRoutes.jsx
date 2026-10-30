@@ -8,8 +8,10 @@ import SuperAdminLoginPage from '../superadmin/pages/SuperAdminLoginPage';
 import SuperAdminForgotPasswordPage from '../superadmin/pages/SuperAdminForgotPasswordPage';
 import SuperAdminResetPasswordPage from '../superadmin/pages/SuperAdminResetPasswordPage';
 import SuperAdminDashboardPage from '../superadmin/pages/SuperAdminDashboardPage';
-import SuperAdminAdminsListPage from '../pages/superadmin/SuperAdminAdminsListPage';
-import SuperAdminCreateAdminPage from '../pages/superadmin/SuperAdminCreateAdminPage';
+import AdminCreationPage from '../superadmin/admin-management/AdminCreationPage';
+import AdminDetailsPage from '../superadmin/admin-management/AdminDetailsPage';
+import StaffCreationPage from '../superadmin/staff-management/StaffCreationPage';
+import StaffDetailsPage from '../superadmin/staff-management/StaffDetailsPage';
 import SuperAdminEditAdminPage from '../pages/superadmin/SuperAdminEditAdminPage';
 import SuperAdminProfilePage from '../pages/superadmin/SuperAdminProfilePage';
 
@@ -45,9 +47,22 @@ export default function AppRoutes() {
       <Route element={<SuperAdminProtectedRoute />}>
         <Route element={<SuperAdminLayout />}>
           <Route path="/superadmin/dashboard" element={<SuperAdminDashboardPage />} />
-          <Route path="/superadmin/admins" element={<SuperAdminAdminsListPage />} />
-          <Route path="/superadmin/admins/create" element={<SuperAdminCreateAdminPage />} />
+          
+          {/* Phase 2: Admin Management Submodule Routes */}
+          <Route path="/superadmin/admin-management/create" element={<AdminCreationPage />} />
+          <Route path="/superadmin/admin-management/details" element={<AdminDetailsPage />} />
+          
+          {/* Phase 3: Staff Management Submodule Routes */}
+          <Route path="/superadmin/staff-management/create" element={<StaffCreationPage />} />
+          <Route path="/superadmin/staff-management/details" element={<StaffDetailsPage />} />
+          
+          {/* Backward Compatibility Aliases */}
+          <Route path="/superadmin/admins" element={<Navigate to="/superadmin/admin-management/details" replace />} />
+          <Route path="/superadmin/admins/create" element={<Navigate to="/superadmin/admin-management/create" replace />} />
           <Route path="/superadmin/admins/:id/edit" element={<SuperAdminEditAdminPage />} />
+          <Route path="/superadmin/staff" element={<Navigate to="/superadmin/staff-management/details" replace />} />
+          <Route path="/superadmin/staff/create" element={<Navigate to="/superadmin/staff-management/create" replace />} />
+          
           <Route path="/superadmin/profile" element={<SuperAdminProfilePage />} />
         </Route>
       </Route>

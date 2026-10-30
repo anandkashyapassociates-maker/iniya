@@ -30,3 +30,7 @@ Thumbs.db
 .vscode/
 .idea/
 .qodo/
+
+/backend/
+.env*
+!.env.example

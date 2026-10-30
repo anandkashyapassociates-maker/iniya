@@ -28,7 +28,17 @@ class EnsureAdmin
             ], 403);
         }
 
-        if (! $user->is_active) {
+        if ($user->status === 'blocked') {
+            if (method_exists($user, 'currentAccessToken') && $user->currentAccessToken()) {
+                $user->currentAccessToken()->delete();
+            }
+
+            return response()->json([
+                'message' => 'Your Admin account has been blocked by the Super Administrator. Access denied.',
+            ], 403);
+        }
+
+        if (! $user->is_active || $user->status === 'inactive') {
             if (method_exists($user, 'currentAccessToken') && $user->currentAccessToken()) {
                 $user->currentAccessToken()->delete();
             }
