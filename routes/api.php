@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminProfileController;
 use App\Http\Controllers\Api\Admin\CustomerController;
 use App\Http\Controllers\Api\SuperAdmin\AdminManagementController;
+use App\Http\Controllers\Api\SuperAdmin\StaffManagementController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminAuthController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminDashboardController;
 use Illuminate\Http\Request;
@@ -57,6 +58,15 @@ Route::prefix('superadmin')
         Route::put('/admins/{id}', [AdminManagementController::class, 'update']);
         Route::patch('/admins/{id}/status', [AdminManagementController::class, 'updateStatus']);
         Route::post('/admins/{id}/password-reset', [AdminManagementController::class, 'resetPassword']);
+
+        // Staff Management
+        Route::get('/staff/preview-code', [StaffManagementController::class, 'previewCode']);
+        Route::get('/staff/departments', [StaffManagementController::class, 'departments']);
+        Route::get('/staff', [StaffManagementController::class, 'index']);
+        Route::post('/staff', [StaffManagementController::class, 'store']);
+        Route::get('/staff/{id}', [StaffManagementController::class, 'show']);
+        Route::put('/staff/{id}', [StaffManagementController::class, 'update']);
+        Route::patch('/staff/{id}/status', [StaffManagementController::class, 'updateStatus']);
     });
 
 /*

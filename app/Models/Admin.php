@@ -15,6 +15,10 @@ class Admin extends Authenticatable
 
     protected $table = 'admins';
 
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_INACTIVE = 'inactive';
+    public const STATUS_BLOCKED = 'blocked';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -24,6 +28,8 @@ class Admin extends Authenticatable
         'super_admin_id',
         'name',
         'email',
+        'mobile',
+        'status',
         'password',
         'is_active',
         'email_verified_at',
@@ -52,6 +58,23 @@ class Admin extends Authenticatable
             'last_login_at' => 'datetime',
             'is_active' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Admin $admin) {
+            if ($admin->isDirty('status') && ! $admin->isDirty('is_active')) {
+                $admin->is_active = ($admin->status === self::STATUS_ACTIVE);
+            } elseif ($admin->isDirty('is_active') && ! $admin->isDirty('status')) {
+                if (! $admin->is_active && ($admin->status === null || $admin->status === self::STATUS_ACTIVE)) {
+                    $admin->status = self::STATUS_INACTIVE;
+                } elseif ($admin->is_active && $admin->status !== self::STATUS_ACTIVE) {
+                    $admin->status = self::STATUS_ACTIVE;
+                }
+            } elseif (! isset($admin->status)) {
+                $admin->status = $admin->is_active ? self::STATUS_ACTIVE : self::STATUS_INACTIVE;
+            }
+        });
     }
 
     /**
