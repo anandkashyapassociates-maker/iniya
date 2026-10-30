@@ -9,7 +9,6 @@ import {
   Shield,
   Stethoscope,
   HeartPulse,
-  PhoneCall,
   LogOut,
   X,
   Calendar,
@@ -127,10 +126,10 @@ export default function Sidebar({
                 <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full ring-2 ring-slate-900 animate-pulse" />
               </div>
               <div>
-                <span className="text-sm font-semibold tracking-tight text-white block leading-snug">
+                <span className="text-sm font-bold tracking-tight text-white block leading-snug font-display">
                   Iniya Clinic<span className="text-blue-400">.</span>OPD
                 </span>
-                <span className="text-[10px] font-medium text-emerald-400 flex items-center gap-1">
+                <span className="text-[10px] font-semibold text-emerald-400 flex items-center gap-1 micro-label">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping inline-block" />
                   {isSuperAdmin ? 'Hospital Governance' : 'Doctors On Duty'}
                 </span>
@@ -147,7 +146,7 @@ export default function Sidebar({
 
           {/* Navigation Items */}
           <div className="py-5 px-3 space-y-1.5">
-            <div className="px-3 pb-2 text-[10px] font-medium uppercase tracking-wider text-slate-500">
+            <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-500 micro-label">
               Clinical Desk Modules
             </div>
 
@@ -159,7 +158,7 @@ export default function Sidebar({
                   to={item.to}
                   onClick={onClose}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-medium transition-all ${
+                    `flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all ${
                       isActive
                         ? 'bg-gradient-to-r from-blue-600/20 via-indigo-600/15 to-transparent text-white border-l-4 border-blue-500 shadow-sm'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
@@ -182,7 +181,7 @@ export default function Sidebar({
         <div className="p-4 border-t border-slate-800/80 bg-slate-950/40 space-y-3">
           {/* Clinic Emergency Quick Card */}
           <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-950/70 to-indigo-950/70 border border-blue-900/40">
-            <div className="flex items-center gap-2 text-xs font-medium text-blue-300 mb-1">
+            <div className="flex items-center gap-2 text-xs font-semibold text-blue-300 mb-1 font-display">
               <HeartPulse className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
               <span>OPD Helpline 24/7</span>
             </div>
@@ -193,14 +192,14 @@ export default function Sidebar({
 
           {/* Logged in admin profile */}
           <div className="flex items-center gap-3 px-1 pt-1">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-xs font-medium shadow-xs shrink-0">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0 font-display">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-slate-200 truncate">
+              <p className="text-xs font-semibold text-slate-200 truncate font-display tracking-tight">
                 {user?.name || 'Administrator'}
               </p>
-              <p className="text-[10px] text-slate-400 truncate">
+              <p className="text-[10px] text-slate-400 truncate font-mono">
                 {user?.email || 'admin@example.com'}
               </p>
             </div>
@@ -208,7 +207,7 @@ export default function Sidebar({
 
           <button
             onClick={onLogout}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-slate-300 hover:text-rose-400 bg-slate-800/80 hover:bg-slate-800 rounded-xl transition-all cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-slate-300 hover:text-rose-400 bg-slate-800/80 hover:bg-slate-800 rounded-xl transition-all cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Sign Out Session</span>
@@ -218,4 +217,3 @@ export default function Sidebar({
     </>
   );
 }
-

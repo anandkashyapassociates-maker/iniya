@@ -165,7 +165,7 @@ export default function AdminCustomerCreatePage() {
               OPD Patient Desk
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-slate-800 tracking-tight mt-1.5">
+          <h1 className="text-lg sm:text-xl font-bold font-display text-slate-800 tracking-tight mt-1.5">
             New Patient / Customer Registration
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-normal mt-1 max-w-2xl">
@@ -176,7 +176,7 @@ export default function AdminCustomerCreatePage() {
         <div className="flex items-center gap-2">
           <Link
             to="/admin/customers"
-            className="w-full sm:w-auto text-center px-4 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all shadow-2xs"
+            className="w-full sm:w-auto text-center px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-all shadow-2xs font-display"
           >
             View Directory
           </Link>
