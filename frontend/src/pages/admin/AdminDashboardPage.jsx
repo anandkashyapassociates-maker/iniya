@@ -42,7 +42,7 @@ export default function AdminDashboardPage() {
               <Layers className="w-3.5 h-3.5" />
               <span>Operations Portal</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
               Welcome back, {user?.name || 'Administrator'}
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">

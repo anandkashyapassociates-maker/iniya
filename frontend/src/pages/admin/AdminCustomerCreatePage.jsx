@@ -150,13 +150,13 @@ export default function AdminCustomerCreatePage() {
         <div>
           <Link
             to="/admin/customers"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-blue-600 transition-colors mb-2"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-blue-600 transition-colors mb-2"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Patient & Customer Directory</span>
           </Link>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-xs font-semibold">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-xs font-medium">
               <Stethoscope className="w-3.5 h-3.5 text-blue-600" />
               <span>Clinic Registration Portal</span>
             </span>
@@ -165,10 +165,10 @@ export default function AdminCustomerCreatePage() {
               OPD Patient Desk
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1.5">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-slate-800 tracking-tight mt-1.5">
             New Patient / Customer Registration
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
+          <p className="text-xs sm:text-sm text-slate-500 font-normal mt-1 max-w-2xl">
             Enroll patient demographics, upload medical profile photo, and save official clinic contact records.
           </p>
         </div>
@@ -176,7 +176,7 @@ export default function AdminCustomerCreatePage() {
         <div className="flex items-center gap-2">
           <Link
             to="/admin/customers"
-            className="w-full sm:w-auto text-center px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all shadow-2xs"
+            className="w-full sm:w-auto text-center px-4 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all shadow-2xs"
           >
             View Directory
           </Link>
@@ -195,11 +195,11 @@ export default function AdminCustomerCreatePage() {
               {/* Photo Upload Box */}
               <div className="p-5 rounded-2xl bg-slate-50/90 border border-slate-200/80 shadow-2xs">
                 <div className="flex items-center justify-between mb-3">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
                     <Camera className="w-4 h-4 text-blue-600" />
                     <span>Patient Photo</span>
                   </label>
-                  <span className="text-[10px] text-slate-400 font-semibold px-2 py-0.5 rounded-full bg-slate-200/60">
+                  <span className="text-[10px] text-slate-400 font-medium px-2 py-0.5 rounded-full bg-slate-200/60">
                     Optional
                   </span>
                 </div>
@@ -226,7 +226,7 @@ export default function AdminCustomerCreatePage() {
                     ) : (
                       <div className="w-28 h-28 rounded-2xl bg-gradient-to-tr from-slate-100 to-blue-50/50 border border-slate-200 flex flex-col items-center justify-center text-slate-400">
                         <Camera className="w-8 h-8 mb-1 text-slate-400" />
-                        <span className="text-[10px] font-bold text-slate-500">No Photo</span>
+                        <span className="text-[10px] font-medium text-slate-500">No Photo</span>
                       </div>
                     )}
                   </div>
@@ -242,18 +242,18 @@ export default function AdminCustomerCreatePage() {
                     />
                     <label
                       htmlFor="customer_image_input"
-                      className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl border border-blue-200 bg-blue-50/80 hover:bg-blue-100/80 text-blue-700 text-xs font-bold shadow-2xs transition-all cursor-pointer"
+                      className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl border border-blue-200 bg-blue-50/80 hover:bg-blue-100/80 text-blue-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
                     >
                       <UploadCloud className="w-4 h-4 text-blue-600" />
                       <span>{imagePreview ? 'Change Photo' : 'Upload Patient Photo'}</span>
                     </label>
 
-                    <p className="text-[10px] text-slate-400">
+                    <p className="text-[10px] text-slate-400 font-normal">
                       JPG, PNG, WEBP (Max 5MB)
                     </p>
 
                     {errors.image && (
-                      <p className="text-[11px] text-rose-500 font-medium mt-1">
+                      <p className="text-[11px] text-rose-500 font-normal mt-1">
                         {Array.isArray(errors.image) ? errors.image[0] : errors.image}
                       </p>
                     )}
@@ -266,17 +266,17 @@ export default function AdminCustomerCreatePage() {
                 <div className="flex items-center justify-between pb-3 border-b border-slate-700/80">
                   <div className="flex items-center gap-2">
                     <HeartPulse className="w-4 h-4 text-rose-400 animate-pulse" />
-                    <span className="text-[11px] font-black tracking-wider uppercase text-slate-300">
+                    <span className="text-xs font-semibold text-slate-200 tracking-wide">
                       Clinic OPD Card Preview
                     </span>
                   </div>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                  <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30">
                     NEW RECORD
                   </span>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-slate-700/70 overflow-hidden flex items-center justify-center font-bold text-base text-white border border-slate-600 shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-slate-700/70 overflow-hidden flex items-center justify-center font-medium text-base text-white border border-slate-600 shrink-0">
                     {imagePreview ? (
                       <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
@@ -284,10 +284,10 @@ export default function AdminCustomerCreatePage() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <div className="font-bold text-sm text-white truncate">
+                    <div className="font-semibold text-sm text-white truncate">
                       {formData.name || 'Patient Full Name'}
                     </div>
-                    <div className="flex items-center gap-1.5 text-[11px] text-slate-400 capitalize mt-0.5">
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-300 font-normal capitalize mt-0.5">
                       <span>{formData.gender}</span>
                       <span>•</span>
                       <span>{formData.age ? `${formData.age} Yrs` : 'Age pending'}</span>
@@ -297,16 +297,16 @@ export default function AdminCustomerCreatePage() {
 
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-700/80 text-[11px]">
                   <div>
-                    <div className="text-slate-400 text-[10px] uppercase font-bold">Contact</div>
-                    <div className="text-slate-200 font-mono font-medium truncate mt-0.5">
+                    <div className="text-slate-400 text-[10px] font-medium">Contact</div>
+                    <div className="text-slate-200 font-mono font-normal truncate mt-0.5">
                       {formData.mobile || '—'}
                     </div>
                   </div>
                   <div>
-                    <div className="text-slate-400 text-[10px] uppercase font-bold">Clearance</div>
+                    <div className="text-slate-400 text-[10px] font-medium">Clearance</div>
                     <div className="mt-0.5">
                       <span
-                        className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded ${
+                        className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded ${
                           formData.is_active
                             ? 'bg-emerald-500/20 text-emerald-300'
                             : 'bg-slate-600/30 text-slate-300'
@@ -325,12 +325,12 @@ export default function AdminCustomerCreatePage() {
               </div>
 
               {/* Clinical Guidelines Notice */}
-              <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/60 text-slate-700 space-y-2">
-                <div className="flex items-center gap-2 text-blue-900 font-bold text-xs">
+              <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/60 text-slate-700 space-y-1.5">
+                <div className="flex items-center gap-2 text-blue-900 font-semibold text-xs">
                   <Info className="w-4 h-4 text-blue-600 shrink-0" />
                   <span>Clinic OPD Protocol</span>
                 </div>
-                <p className="text-[11px] text-slate-600 leading-relaxed">
+                <p className="text-[11px] text-slate-600 font-normal leading-relaxed">
                   Patient name, mobile number, age, and complete residential address are required for electronic health records, prescriptions, and legal audit verification.
                 </p>
               </div>
@@ -342,14 +342,14 @@ export default function AdminCustomerCreatePage() {
               <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-5">
                 <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
                   <User className="w-4 h-4 text-blue-600" />
-                  <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  <h2 className="text-xs font-semibold text-slate-800 tracking-wide">
                     1. Patient Personal Demographics
                   </h2>
                 </div>
 
                 {/* Patient Full Name */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
                     Patient Full Name <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
@@ -362,7 +362,7 @@ export default function AdminCustomerCreatePage() {
                       placeholder="e.g. Ramesh Kumar / Ananya Sharma"
                       disabled={isLoading}
                       required
-                      className={`w-full pl-10 pr-4 py-3 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all ${
+                      className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal ${
                         errors.name
                           ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
                           : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
@@ -370,7 +370,7 @@ export default function AdminCustomerCreatePage() {
                     />
                   </div>
                   {errors.name && (
-                    <p className="text-[11px] text-rose-500 mt-1.5 font-medium flex items-center gap-1">
+                    <p className="text-[11px] text-rose-500 mt-1.5 font-normal flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5" />
                       <span>{Array.isArray(errors.name) ? errors.name[0] : errors.name}</span>
                     </p>
@@ -381,7 +381,7 @@ export default function AdminCustomerCreatePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-1">
                   {/* Gender Selector */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-medium text-slate-700 mb-1.5">
                       Gender <span className="text-rose-500">*</span>
                     </label>
                     <div className="grid grid-cols-3 gap-2">
@@ -395,14 +395,14 @@ export default function AdminCustomerCreatePage() {
                           type="button"
                           onClick={() => handleGenderSelect(g.key)}
                           disabled={isLoading}
-                          className={`py-2.5 px-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
+                          className={`py-2 px-3 rounded-2xl text-xs font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
                             formData.gender === g.key
                               ? g.key === 'female'
                                 ? 'bg-rose-600 text-white border-rose-600 shadow-xs'
                                 : g.key === 'other'
                                 ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
                                 : 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                              : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                              : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
                           }`}
                         >
                           <span>{g.emoji}</span>
@@ -411,7 +411,7 @@ export default function AdminCustomerCreatePage() {
                       ))}
                     </div>
                     {errors.gender && (
-                      <p className="text-[11px] text-rose-500 mt-1.5 font-medium flex items-center gap-1">
+                      <p className="text-[11px] text-rose-500 mt-1.5 font-normal flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5" />
                         <span>{Array.isArray(errors.gender) ? errors.gender[0] : errors.gender}</span>
                       </p>
@@ -420,7 +420,7 @@ export default function AdminCustomerCreatePage() {
 
                   {/* Age */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-medium text-slate-700 mb-1.5">
                       Patient Age (Years) <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
@@ -435,7 +435,7 @@ export default function AdminCustomerCreatePage() {
                         placeholder="e.g. 32"
                         disabled={isLoading}
                         required
-                        className={`w-full pl-10 pr-4 py-3 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all ${
+                        className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal ${
                           errors.age
                             ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
                             : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
@@ -443,7 +443,7 @@ export default function AdminCustomerCreatePage() {
                       />
                     </div>
                     {errors.age && (
-                      <p className="text-[11px] text-rose-500 mt-1.5 font-medium flex items-center gap-1">
+                      <p className="text-[11px] text-rose-500 mt-1.5 font-normal flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5" />
                         <span>{Array.isArray(errors.age) ? errors.age[0] : errors.age}</span>
                       </p>
@@ -456,7 +456,7 @@ export default function AdminCustomerCreatePage() {
               <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-5">
                 <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
                   <Phone className="w-4 h-4 text-blue-600" />
-                  <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  <h2 className="text-xs font-semibold text-slate-800 tracking-wide">
                     2. Primary Contact &amp; Communication
                   </h2>
                 </div>
@@ -464,7 +464,7 @@ export default function AdminCustomerCreatePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {/* Mobile Number */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-medium text-slate-700 mb-1.5">
                       Mobile Number <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
@@ -477,7 +477,7 @@ export default function AdminCustomerCreatePage() {
                         placeholder="e.g. 9876543210"
                         disabled={isLoading}
                         required
-                        className={`w-full pl-10 pr-4 py-3 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all ${
+                        className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal ${
                           errors.mobile
                             ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
                             : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
@@ -485,7 +485,7 @@ export default function AdminCustomerCreatePage() {
                       />
                     </div>
                     {errors.mobile && (
-                      <p className="text-[11px] text-rose-500 mt-1.5 font-medium flex items-center gap-1">
+                      <p className="text-[11px] text-rose-500 mt-1.5 font-normal flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5" />
                         <span>{Array.isArray(errors.mobile) ? errors.mobile[0] : errors.mobile}</span>
                       </p>
@@ -494,7 +494,7 @@ export default function AdminCustomerCreatePage() {
 
                   {/* Email Address */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-medium text-slate-700 mb-1.5">
                       Email Address <span className="text-slate-400 font-normal lowercase">(optional)</span>
                     </label>
                     <div className="relative">
@@ -506,7 +506,7 @@ export default function AdminCustomerCreatePage() {
                         onChange={handleChange}
                         placeholder="patient@example.com"
                         disabled={isLoading}
-                        className={`w-full pl-10 pr-4 py-3 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all ${
+                        className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal ${
                           errors.email
                             ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
                             : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
@@ -514,7 +514,7 @@ export default function AdminCustomerCreatePage() {
                       />
                     </div>
                     {errors.email && (
-                      <p className="text-[11px] text-rose-500 mt-1.5 font-medium flex items-center gap-1">
+                      <p className="text-[11px] text-rose-500 mt-1.5 font-normal flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5" />
                         <span>{Array.isArray(errors.email) ? errors.email[0] : errors.email}</span>
                       </p>
@@ -527,13 +527,13 @@ export default function AdminCustomerCreatePage() {
               <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
                 <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
                   <MapPin className="w-4 h-4 text-blue-600" />
-                  <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  <h2 className="text-xs font-semibold text-slate-800 tracking-wide">
                     3. Residential Address
                   </h2>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
                     Full Address &amp; Location <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
@@ -546,7 +546,7 @@ export default function AdminCustomerCreatePage() {
                       placeholder="House/Plot No., Street/Colony, Landmark, City, District, PIN code..."
                       disabled={isLoading}
                       required
-                      className={`w-full pl-10 pr-4 py-3 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all leading-relaxed ${
+                      className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal leading-relaxed ${
                         errors.address
                           ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
                           : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
@@ -554,7 +554,7 @@ export default function AdminCustomerCreatePage() {
                     />
                   </div>
                   {errors.address && (
-                    <p className="text-[11px] text-rose-500 mt-1.5 font-medium flex items-center gap-1">
+                    <p className="text-[11px] text-rose-500 mt-1.5 font-normal flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5" />
                       <span>{Array.isArray(errors.address) ? errors.address[0] : errors.address}</span>
                     </p>
@@ -569,10 +569,10 @@ export default function AdminCustomerCreatePage() {
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-slate-900">
+                    <div className="text-xs font-semibold text-slate-800">
                       Record Clearance &amp; OPD Eligibility
                     </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                    <div className="text-[11px] text-slate-500 font-normal mt-0.5 leading-relaxed">
                       Enable to allow immediate doctor consultations, billing, and lab prescriptions.
                     </div>
                   </div>
@@ -596,14 +596,14 @@ export default function AdminCustomerCreatePage() {
               <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-5 border-t border-slate-100">
                 <Link
                   to="/admin/customers"
-                  className="w-full sm:w-auto text-center px-6 py-3 rounded-2xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all cursor-pointer"
+                  className="w-full sm:w-auto text-center px-6 py-2.5 rounded-2xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-all cursor-pointer"
                 >
                   Cancel
                 </Link>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-800 text-white text-xs font-bold transition-all shadow-md shadow-blue-500/25 hover:shadow-lg disabled:opacity-50 cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-800 text-white text-xs font-medium transition-all shadow-md shadow-blue-500/25 hover:shadow-lg disabled:opacity-50 cursor-pointer"
                 >
                   {isLoading ? (
                     <>
