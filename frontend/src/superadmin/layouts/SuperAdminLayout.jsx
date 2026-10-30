@@ -154,6 +154,22 @@ export default function SuperAdminLayout() {
               <span>Dashboard</span>
             </NavLink>
 
+            {/* Profile & Security Link */}
+            <NavLink
+              to="/superadmin/profile"
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  isActive
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900'
+                }`
+              }
+            >
+              <User className="w-4 h-4 shrink-0" />
+              <span>Profile &amp; Security</span>
+            </NavLink>
+
             {/* ======================================================== */}
             {/* ADMIN MANAGEMENT ACCORDION SECTION (Phase 2 Requirement) */}
             {/* ======================================================== */}
@@ -410,22 +426,6 @@ export default function SuperAdminLayout() {
                 </div>
               )}
             </div>
-
-            {/* Profile & Security */}
-            <NavLink
-              to="/superadmin/profile"
-              onClick={() => setMobileMenuOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  isActive
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900'
-                }`
-              }
-            >
-              <User className="w-4 h-4 shrink-0" />
-              <span>Profile &amp; Security</span>
-            </NavLink>
           </div>
 
           {/* Security Architecture Badge */}
