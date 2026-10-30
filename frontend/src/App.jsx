@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { ToastProvider } from './context/ToastContext';
-import { SuperAdminAuthProvider } from './features/auth/SuperAdminAuthContext';
+import { SuperAdminAuthProvider } from './superadmin/auth/SuperAdminAuthContext';
 import { AdminAuthProvider } from './features/auth/AdminAuthContext';
 import AppRoutes from './routes/AppRoutes';
 

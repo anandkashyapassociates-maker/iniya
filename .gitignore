@@ -32,3 +32,8 @@ Thumbs.db
 .vscode/
 .idea/
 
+
+/backend/.env.env
+!.env.example
+!/backend/.env.example
+!/frontend/.env.example
