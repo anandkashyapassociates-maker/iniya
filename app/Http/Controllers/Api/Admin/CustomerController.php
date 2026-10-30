@@ -23,8 +23,8 @@ class CustomerController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('mobile', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('mobile', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -57,8 +57,8 @@ class CustomerController extends Controller
             'mobile' => ['required', 'string', 'max:30'],
             'email' => ['nullable', 'email', 'max:255'],
             'gender' => ['required', Rule::in(['male', 'female', 'other'])],
-            'age' => ['nullable', 'integer', 'min:1', 'max:150'],
-            'address' => ['nullable', 'string', 'max:1000'],
+            'age' => ['required', 'integer', 'min:1', 'max:150'],
+            'address' => ['required', 'string', 'max:1000'],
             'is_active' => ['sometimes', 'boolean'],
         ]);
 
@@ -70,8 +70,8 @@ class CustomerController extends Controller
             'mobile' => $validated['mobile'],
             'email' => $validated['email'] ?? null,
             'gender' => $validated['gender'],
-            'age' => $validated['age'] ?? null,
-            'address' => $validated['address'] ?? null,
+            'age' => $validated['age'],
+            'address' => $validated['address'],
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
@@ -111,8 +111,8 @@ class CustomerController extends Controller
             'mobile' => ['required', 'string', 'max:30'],
             'email' => ['nullable', 'email', 'max:255'],
             'gender' => ['required', Rule::in(['male', 'female', 'other'])],
-            'age' => ['nullable', 'integer', 'min:1', 'max:150'],
-            'address' => ['nullable', 'string', 'max:1000'],
+            'age' => ['required', 'integer', 'min:1', 'max:150'],
+            'address' => ['required', 'string', 'max:1000'],
             'is_active' => ['sometimes', 'boolean'],
         ]);
 
@@ -121,8 +121,8 @@ class CustomerController extends Controller
             'mobile' => $validated['mobile'],
             'email' => $validated['email'] ?? null,
             'gender' => $validated['gender'],
-            'age' => $validated['age'] ?? null,
-            'address' => $validated['address'] ?? null,
+            'age' => $validated['age'],
+            'address' => $validated['address'],
             'is_active' => $validated['is_active'] ?? $customer->is_active,
         ]);
 

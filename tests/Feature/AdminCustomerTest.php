@@ -70,7 +70,7 @@ class AdminCustomerTest extends TestCase
         // Missing required fields
         $response = $this->postJson('/api/admin/customers', []);
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['name', 'mobile', 'gender']);
+            ->assertJsonValidationErrors(['name', 'mobile', 'gender', 'age', 'address']);
     }
 
     public function test_admin_can_list_and_search_customers(): void

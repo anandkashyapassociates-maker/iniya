@@ -56,14 +56,26 @@ export default function AdminCustomerCreatePage() {
     setErrors({});
     setIsLoading(true);
 
+    if (!formData.age) {
+      setErrors({ age: 'Age is required.' });
+      setIsLoading(false);
+      return;
+    }
+
+    if (!formData.address || !formData.address.trim()) {
+      setErrors({ address: 'Address is required.' });
+      setIsLoading(false);
+      return;
+    }
+
     try {
       await adminService.createCustomer({
         name: formData.name,
         mobile: formData.mobile,
         email: formData.email || null,
         gender: formData.gender,
-        age: formData.age ? parseInt(formData.age, 10) : null,
-        address: formData.address || null,
+        age: parseInt(formData.age, 10),
+        address: formData.address.trim(),
         is_active: formData.is_active,
       });
 
@@ -108,19 +120,19 @@ export default function AdminCustomerCreatePage() {
       {/* Main Form Card */}
       <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-9 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-7">
-          {/* Section 1: Demographics */}
+          {/* Section 1: Information */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
               <User className="w-4 h-4 text-blue-600" />
               <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                1. Personal Demographics
+                1. Personal Information
               </h2>
             </div>
 
             {/* Customer Name */}
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                Full Legal Name <span className="text-rose-500">*</span>
+                Full Name <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
                 <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -129,7 +141,7 @@ export default function AdminCustomerCreatePage() {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="e.g. Ramesh Kumar / Dr. Sneha Rao"
+                  placeholder="e.g. Ramesh Kumar / Seema Devi"
                   disabled={isLoading}
                   required
                   className={`w-full pl-10 pr-4 py-3 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all ${
@@ -189,7 +201,7 @@ export default function AdminCustomerCreatePage() {
               {/* Age */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Age (Years) <span className="text-slate-400 font-normal lowercase">(optional)</span>
+                  Age (Years) <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <Calendar className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -202,6 +214,7 @@ export default function AdminCustomerCreatePage() {
                     onChange={handleChange}
                     placeholder="e.g. 28"
                     disabled={isLoading}
+                    required
                     className={`w-full pl-10 pr-4 py-3 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all ${
                       errors.age
                         ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
@@ -292,13 +305,13 @@ export default function AdminCustomerCreatePage() {
             <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
               <MapPin className="w-4 h-4 text-blue-600" />
               <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                3. Residential &amp; Clinic Location
+                3. Address
               </h2>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                Postal / Residential Address <span className="text-slate-400 font-normal lowercase">(optional)</span>
+                Residential Address <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
                 <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
@@ -309,6 +322,7 @@ export default function AdminCustomerCreatePage() {
                   onChange={handleChange}
                   placeholder="Flat/House No., Street address, City, District, State, PIN code..."
                   disabled={isLoading}
+                  required
                   className={`w-full pl-10 pr-4 py-3 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all leading-relaxed ${
                     errors.address
                       ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'

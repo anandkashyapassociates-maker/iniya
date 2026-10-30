@@ -81,14 +81,26 @@ export default function AdminCustomerEditPage() {
     setErrors({});
     setIsSaving(true);
 
+    if (!formData.age) {
+      setErrors({ age: 'Age is required.' });
+      setIsSaving(false);
+      return;
+    }
+
+    if (!formData.address || !formData.address.trim()) {
+      setErrors({ address: 'Address is required.' });
+      setIsSaving(false);
+      return;
+    }
+
     try {
       await adminService.updateCustomer(id, {
         name: formData.name,
         mobile: formData.mobile,
         email: formData.email || null,
         gender: formData.gender,
-        age: formData.age ? parseInt(formData.age, 10) : null,
-        address: formData.address || null,
+        age: parseInt(formData.age, 10),
+        address: formData.address.trim(),
         is_active: formData.is_active,
       });
 
@@ -225,7 +237,7 @@ export default function AdminCustomerEditPage() {
               {/* Age */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Age (Years) <span className="text-slate-400 font-normal lowercase">(optional)</span>
+                  Age (Years) <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <Calendar className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -238,6 +250,7 @@ export default function AdminCustomerEditPage() {
                     onChange={handleChange}
                     placeholder="e.g. 28"
                     disabled={isSaving}
+                    required
                     className={`w-full pl-10 pr-4 py-3 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all ${
                       errors.age
                         ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
@@ -334,7 +347,7 @@ export default function AdminCustomerEditPage() {
 
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                Postal / Residential Address <span className="text-slate-400 font-normal lowercase">(optional)</span>
+                Postal / Residential Address <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
                 <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
@@ -345,6 +358,7 @@ export default function AdminCustomerEditPage() {
                   onChange={handleChange}
                   placeholder="Flat/House No., Street address, City, District, State, PIN code..."
                   disabled={isSaving}
+                  required
                   className={`w-full pl-10 pr-4 py-3 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all leading-relaxed ${
                     errors.address
                       ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
