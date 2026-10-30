@@ -27,6 +27,10 @@ export const adminService = {
   },
 
   async updateCustomer(id, data) {
+    if (data instanceof FormData) {
+      const response = await adminApi.post(`/admin/customers/${id}`, data);
+      return response.data;
+    }
     const response = await adminApi.put(`/admin/customers/${id}`, data);
     return response.data;
   },
