@@ -51,6 +51,16 @@ export default function Sidebar({
       icon: LayoutDashboard,
     },
     {
+      to: '/admin/customers',
+      label: 'Customers Directory',
+      icon: Users,
+    },
+    {
+      to: '/admin/customers/create',
+      label: 'Create Customer',
+      icon: UserPlus,
+    },
+    {
       to: '/admin/profile',
       label: 'Account Profile',
       icon: User,

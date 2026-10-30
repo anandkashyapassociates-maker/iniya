@@ -1,0 +1,142 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Admin;
+use App\Models\Customer;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
+
+class AdminCustomerTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected Admin $admin;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->admin = Admin::create([
+            'name' => 'Test Admin',
+            'email' => 'testadmin_' . uniqid() . '@example.com',
+            'password' => Hash::make('password123'),
+            'is_active' => true,
+        ]);
+    }
+
+    public function test_guest_cannot_access_customers_api(): void
+    {
+        $response = $this->getJson('/api/admin/customers');
+        $response->assertStatus(401);
+    }
+
+    public function test_admin_can_create_customer(): void
+    {
+        Sanctum::actingAs($this->admin, ['role:admin']);
+
+        $payload = [
+            'name' => 'Rahul Sharma',
+            'mobile' => '9876543210',
+            'email' => 'rahul@example.com',
+            'gender' => 'male',
+            'age' => 28,
+            'address' => 'Plot 42, Civil Lines, Jaipur, Rajasthan',
+            'is_active' => true,
+        ];
+
+        $response = $this->postJson('/api/admin/customers', $payload);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('message', 'Customer created successfully.')
+            ->assertJsonPath('customer.name', 'Rahul Sharma')
+            ->assertJsonPath('customer.mobile', '9876543210')
+            ->assertJsonPath('customer.gender', 'male')
+            ->assertJsonPath('customer.age', 28);
+
+        $this->assertDatabaseHas('customers', [
+            'name' => 'Rahul Sharma',
+            'mobile' => '9876543210',
+            'email' => 'rahul@example.com',
+        ]);
+    }
+
+    public function test_customer_creation_validation(): void
+    {
+        Sanctum::actingAs($this->admin, ['role:admin']);
+
+        // Missing required fields
+        $response = $this->postJson('/api/admin/customers', []);
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['name', 'mobile', 'gender']);
+    }
+
+    public function test_admin_can_list_and_search_customers(): void
+    {
+        Sanctum::actingAs($this->admin, ['role:admin']);
+
+        Customer::create([
+            'admin_id' => $this->admin->id,
+            'name' => 'Priya Patel',
+            'mobile' => '9123456780',
+            'email' => 'priya@example.com',
+            'gender' => 'female',
+            'age' => 25,
+            'address' => '12 MG Road, Ahmedabad',
+        ]);
+
+        $response = $this->getJson('/api/admin/customers?search=Priya');
+        $response->assertStatus(200)
+            ->assertJsonFragment(['name' => 'Priya Patel']);
+    }
+
+    public function test_admin_can_update_customer(): void
+    {
+        Sanctum::actingAs($this->admin, ['role:admin']);
+
+        $customer = Customer::create([
+            'admin_id' => $this->admin->id,
+            'name' => 'Amit Verma',
+            'mobile' => '9988776655',
+            'email' => 'amit@example.com',
+            'gender' => 'male',
+            'age' => 32,
+            'address' => 'Old Address',
+        ]);
+
+        $response = $this->putJson("/api/admin/customers/{$customer->id}", [
+            'name' => 'Amit Kumar Verma',
+            'mobile' => '9988776655',
+            'email' => 'amit.verma@example.com',
+            'gender' => 'male',
+            'age' => 33,
+            'address' => 'New Address, Delhi',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('customer.name', 'Amit Kumar Verma')
+            ->assertJsonPath('customer.age', 33);
+    }
+
+    public function test_admin_can_delete_customer(): void
+    {
+        Sanctum::actingAs($this->admin, ['role:admin']);
+
+        $customer = Customer::create([
+            'admin_id' => $this->admin->id,
+            'name' => 'Delete Me',
+            'mobile' => '9000000000',
+            'gender' => 'other',
+            'age' => 20,
+        ]);
+
+        $response = $this->deleteJson("/api/admin/customers/{$customer->id}");
+        $response->assertStatus(200);
+
+        $this->assertDatabaseMissing('customers', [
+            'id' => $customer->id,
+        ]);
+    }
+}

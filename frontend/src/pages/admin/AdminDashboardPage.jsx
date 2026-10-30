@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Layers, Activity, User, KeyRound, Clock, CheckCircle2, Shield } from 'lucide-react';
+import { Layers, Activity, User, KeyRound, Clock, CheckCircle2, Shield, Users, UserPlus } from 'lucide-react';
 import StatCard from '../../components/StatCard';
 import LoadingState from '../../components/LoadingState';
 import adminService from '../../services/adminService';
@@ -52,18 +52,34 @@ export default function AdminDashboardPage() {
 
           <div className="flex items-center gap-3">
             <Link
-              to="/admin/profile"
+              to="/admin/customers/create"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-950/40 transition-all cursor-pointer"
             >
-              <User className="w-4 h-4" />
-              <span>Manage Profile</span>
+              <UserPlus className="w-4 h-4" />
+              <span>Add Customer</span>
+            </Link>
+            <Link
+              to="/admin/customers"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition-all cursor-pointer border border-slate-700"
+            >
+              <Users className="w-4 h-4" />
+              <span>Customers</span>
             </Link>
           </div>
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <Link to="/admin/customers" className="block group">
+          <StatCard
+            title="Total Customers"
+            value={stats?.total_customers ?? 0}
+            subtitle="Registered client profiles"
+            icon={Users}
+            colorScheme="blue"
+          />
+        </Link>
         <StatCard
           title="Account Status"
           value={stats?.account_status || 'Active'}
@@ -76,14 +92,14 @@ export default function AdminDashboardPage() {
           value={stats?.activity_count ?? 0}
           subtitle="Total logged security actions"
           icon={Activity}
-          colorScheme="blue"
+          colorScheme="violet"
         />
         <StatCard
           title="Last Session"
           value={stats?.last_login || 'Active now'}
           subtitle="Most recent sign-in"
           icon={Clock}
-          colorScheme="violet"
+          colorScheme="indigo"
         />
       </div>
 

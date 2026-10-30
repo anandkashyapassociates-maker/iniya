@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Admin\AdminAuthController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminProfileController;
+use App\Http\Controllers\Api\Admin\CustomerController;
 use App\Http\Controllers\Api\SuperAdmin\AdminManagementController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminAuthController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminDashboardController;
@@ -87,4 +88,12 @@ Route::prefix('admin')
         Route::get('/dashboard', [AdminDashboardController::class, 'index']);
         Route::put('/profile', [AdminProfileController::class, 'update']);
         Route::post('/change-password', [AdminProfileController::class, 'changePassword']);
+
+        // Customer Management
+        Route::get('/customers/stats', [CustomerController::class, 'stats']);
+        Route::get('/customers', [CustomerController::class, 'index']);
+        Route::post('/customers', [CustomerController::class, 'store']);
+        Route::get('/customers/{id}', [CustomerController::class, 'show']);
+        Route::put('/customers/{id}', [CustomerController::class, 'update']);
+        Route::delete('/customers/{id}', [CustomerController::class, 'destroy']);
     });
