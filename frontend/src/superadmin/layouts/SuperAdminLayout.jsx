@@ -8,6 +8,9 @@ import {
   X,
   Lock,
   UserCheck,
+  Users,
+  UserPlus,
+  User,
 } from 'lucide-react';
 import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import ToastNotifications from '../../components/ToastNotifications';
@@ -32,8 +35,23 @@ export default function SuperAdminLayout() {
   const navItems = [
     {
       to: '/superadmin/dashboard',
-      label: 'Phase 1 Dashboard',
+      label: 'Dashboard',
       icon: LayoutDashboard,
+    },
+    {
+      to: '/superadmin/admins',
+      label: 'Manage Admins',
+      icon: Users,
+    },
+    {
+      to: '/superadmin/admins/create',
+      label: 'Create Admin',
+      icon: UserPlus,
+    },
+    {
+      to: '/superadmin/profile',
+      label: 'Profile & Security',
+      icon: User,
     },
   ];
 
@@ -110,11 +128,11 @@ export default function SuperAdminLayout() {
             })}
           </div>
 
-          {/* Phase 1 Security Architecture Badge */}
+          {/* Security Architecture Badge */}
           <div className="mx-4 mt-2 p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs">
             <div className="flex items-center gap-2 text-blue-400 font-bold mb-1 text-[11px] uppercase tracking-wider">
               <Lock className="w-3.5 h-3.5" />
-              <span>Phase 1 Architecture</span>
+              <span>Security Architecture</span>
             </div>
             <p className="text-[11px] text-slate-400 leading-relaxed">
               Superadmin authentication barrier is active with dedicated <code className="text-blue-300 font-mono text-[10px]">super_admins</code> table and Sanctum token validation.
@@ -170,7 +188,7 @@ export default function SuperAdminLayout() {
                 Superadmin Administration Portal
               </h1>
               <p className="text-[11px] text-slate-500 hidden sm:block">
-                Multi-Panel ERP Architecture • Phase 1 Identity &amp; Access Layer
+                Multi-Panel ERP Architecture • Identity &amp; Access Layer
               </p>
             </div>
           </div>
@@ -199,7 +217,7 @@ export default function SuperAdminLayout() {
 
         {/* Global Footer */}
         <footer className="py-4 px-8 text-center text-xs text-slate-400 border-t border-slate-200 bg-white">
-          Iniya ERP Systems • Phase 1 Superadmin Authentication Module
+          Iniya ERP Systems • Superadmin Authentication Module
         </footer>
       </div>
     </div>

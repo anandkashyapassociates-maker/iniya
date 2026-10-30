@@ -108,6 +108,12 @@ class TurnstileService
                 'errors' => [],
             ];
         }
+
+        return [
+            'success' => false,
+            'message' => 'Security verification failed. Please complete the CAPTCHA.',
+            'errors' => ['invalid-token'],
+        ];
     }
 
     /**
