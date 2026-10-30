@@ -71,9 +71,9 @@ export default function LoginForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Demo Credentials Quick Fill Banner */}
-      <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between text-xs text-slate-300">
+      <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-between text-xs text-slate-300">
         <div>
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+          <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">
             Demo Credentials
           </span>
           <span className="font-mono text-[11px] text-slate-200">
@@ -87,10 +87,10 @@ export default function LoginForm({
             setPassword('123456');
             setErrors({});
           }}
-          className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg text-white transition-all cursor-pointer ${
+          className={`px-3 py-1.5 text-xs font-medium rounded-xl text-white transition-all cursor-pointer shadow-xs ${
             isSuperAdmin
-              ? 'bg-purple-600 hover:bg-purple-500'
-              : 'bg-blue-600 hover:bg-blue-500'
+              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500'
+              : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500'
           }`}
         >
           Auto-fill

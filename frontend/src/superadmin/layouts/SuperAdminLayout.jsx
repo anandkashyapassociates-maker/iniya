@@ -13,6 +13,8 @@ import {
   User,
   ChevronDown,
   ListFilter,
+  Truck,
+  TrendingUp,
 } from 'lucide-react';
 import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import ToastNotifications from '../../components/ToastNotifications';
@@ -34,20 +36,44 @@ export default function SuperAdminLayout() {
     location.pathname.startsWith('/superadmin/staff-management') ||
     location.pathname.startsWith('/superadmin/staff');
 
+  const isInVendorManagement =
+    location.pathname.startsWith('/superadmin/vendor-management') ||
+    location.pathname.startsWith('/superadmin/vendors');
+
+  const isInSalesManagement =
+    location.pathname.startsWith('/superadmin/sales-members') ||
+    location.pathname.startsWith('/superadmin/sales-team');
+
   // Initialize only the currently active section as open on page load / reload
   const [adminMenuOpen, setAdminMenuOpen] = useState(isInAdminManagement);
   const [staffMenuOpen, setStaffMenuOpen] = useState(isInStaffManagement);
+  const [vendorMenuOpen, setVendorMenuOpen] = useState(isInVendorManagement);
+  const [salesMenuOpen, setSalesMenuOpen] = useState(isInSalesManagement);
 
   // When route changes, automatically ensure only the active section is open
   useEffect(() => {
     if (isInAdminManagement) {
       setAdminMenuOpen(true);
       setStaffMenuOpen(false);
+      setVendorMenuOpen(false);
+      setSalesMenuOpen(false);
     } else if (isInStaffManagement) {
       setStaffMenuOpen(true);
       setAdminMenuOpen(false);
+      setVendorMenuOpen(false);
+      setSalesMenuOpen(false);
+    } else if (isInVendorManagement) {
+      setVendorMenuOpen(true);
+      setAdminMenuOpen(false);
+      setStaffMenuOpen(false);
+      setSalesMenuOpen(false);
+    } else if (isInSalesManagement) {
+      setSalesMenuOpen(true);
+      setAdminMenuOpen(false);
+      setStaffMenuOpen(false);
+      setVendorMenuOpen(false);
     }
-  }, [location.pathname, isInAdminManagement, isInStaffManagement]);
+  }, [location.pathname, isInAdminManagement, isInStaffManagement, isInVendorManagement, isInSalesManagement]);
 
   const handleLogout = async () => {
     try {
@@ -89,10 +115,10 @@ export default function SuperAdminLayout() {
                 <Shield className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-sm font-black tracking-tight text-white uppercase block leading-none">
+                <span className="text-sm font-semibold tracking-tight text-white uppercase block leading-none">
                   INIYA<span className="text-blue-500">.</span>ERP
                 </span>
-                <span className="text-[10px] font-bold text-blue-400 tracking-wider uppercase">
+                <span className="text-[10px] font-medium text-blue-400 tracking-wider uppercase">
                   Superadmin Console
                 </span>
               </div>
@@ -108,7 +134,7 @@ export default function SuperAdminLayout() {
 
           {/* Navigation Links */}
           <div className="p-4 space-y-1.5">
-            <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            <div className="px-3 py-2 text-[10px] font-medium uppercase tracking-wider text-slate-500">
               Executive Modules
             </div>
 
@@ -128,6 +154,22 @@ export default function SuperAdminLayout() {
               <span>Dashboard</span>
             </NavLink>
 
+            {/* Profile & Security Link */}
+            <NavLink
+              to="/superadmin/profile"
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  isActive
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900'
+                }`
+              }
+            >
+              <User className="w-4 h-4 shrink-0" />
+              <span>Profile &amp; Security</span>
+            </NavLink>
+
             {/* ======================================================== */}
             {/* ADMIN MANAGEMENT ACCORDION SECTION (Phase 2 Requirement) */}
             {/* ======================================================== */}
@@ -135,7 +177,7 @@ export default function SuperAdminLayout() {
               <button
                 type="button"
                 onClick={() => setAdminMenuOpen(!adminMenuOpen)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium uppercase tracking-wider transition-all cursor-pointer ${
                   isInAdminManagement
                     ? 'text-blue-400 bg-slate-900/90'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
@@ -162,7 +204,7 @@ export default function SuperAdminLayout() {
                     className={({ isActive }) =>
                       `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
                         isActive || isSubItemActive('/superadmin/admins/create')
-                          ? 'bg-blue-600/20 text-blue-300 font-bold border border-blue-500/30'
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
                           : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
                       }`
                     }
@@ -178,7 +220,7 @@ export default function SuperAdminLayout() {
                     className={({ isActive }) =>
                       `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
                         isActive || isSubItemActive('/superadmin/admins')
-                          ? 'bg-blue-600/20 text-blue-300 font-bold border border-blue-500/30'
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
                           : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
                       }`
                     }
@@ -197,7 +239,7 @@ export default function SuperAdminLayout() {
               <button
                 type="button"
                 onClick={() => setStaffMenuOpen(!staffMenuOpen)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium uppercase tracking-wider transition-all cursor-pointer ${
                   isInStaffManagement
                     ? 'text-blue-400 bg-slate-900/90'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
@@ -224,7 +266,7 @@ export default function SuperAdminLayout() {
                     className={({ isActive }) =>
                       `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
                         isActive || isSubItemActive('/superadmin/staff/create')
-                          ? 'bg-blue-600/20 text-blue-300 font-bold border border-blue-500/30'
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
                           : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
                       }`
                     }
@@ -240,7 +282,7 @@ export default function SuperAdminLayout() {
                     className={({ isActive }) =>
                       `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
                         isActive || isSubItemActive('/superadmin/staff')
-                          ? 'bg-blue-600/20 text-blue-300 font-bold border border-blue-500/30'
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
                           : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
                       }`
                     }
@@ -252,26 +294,143 @@ export default function SuperAdminLayout() {
               )}
             </div>
 
-            {/* Profile & Security */}
-            <NavLink
-              to="/superadmin/profile"
-              onClick={() => setMobileMenuOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  isActive
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900'
-                }`
-              }
-            >
-              <User className="w-4 h-4 shrink-0" />
-              <span>Profile &amp; Security</span>
-            </NavLink>
+            {/* ======================================================== */}
+            {/* VENDOR MANAGEMENT ACCORDION SECTION (Phase 4)             */}
+            {/* ======================================================== */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setVendorMenuOpen(!vendorMenuOpen)}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium uppercase tracking-wider transition-all cursor-pointer ${
+                  isInVendorManagement
+                    ? 'text-blue-400 bg-slate-900/90'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Truck className="w-4 h-4 text-sky-400 shrink-0" />
+                  <span>Vendor Management</span>
+                </div>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                    vendorMenuOpen ? 'rotate-0' : '-rotate-90'
+                  }`}
+                />
+              </button>
+
+              {/* Collapsible Submenu */}
+              {vendorMenuOpen && (
+                <div className="pl-6 pr-1 pt-1.5 pb-1 space-y-1">
+                  {/* 1. Vendor Creation */}
+                  <NavLink
+                    to="/superadmin/vendors/create"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive ||
+                        isSubItemActive('/superadmin/vendors/create') ||
+                        isSubItemActive('/superadmin/vendor-management/create')
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <UserPlus className="w-3.5 h-3.5 shrink-0" />
+                    <span>Vendor Creation</span>
+                  </NavLink>
+
+                  {/* 2. Vendor Details */}
+                  <NavLink
+                    to="/superadmin/vendors"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive ||
+                        isSubItemActive('/superadmin/vendors') ||
+                        isSubItemActive('/superadmin/vendor-management') ||
+                        isSubItemActive('/superadmin/vendor-management/details')
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <ListFilter className="w-3.5 h-3.5 shrink-0" />
+                    <span>Vendor Details</span>
+                  </NavLink>
+                </div>
+              )}
+            </div>
+
+            {/* ======================================================== */}
+            {/* SALES TEAM MANAGEMENT ACCORDION SECTION (Phase 5)         */}
+            {/* ======================================================== */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setSalesMenuOpen(!salesMenuOpen)}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium uppercase tracking-wider transition-all cursor-pointer ${
+                  isInSalesManagement
+                    ? 'text-blue-400 bg-slate-900/90'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <TrendingUp className="w-4 h-4 text-indigo-400 shrink-0" />
+                  <span>Sales Team Management</span>
+                </div>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                    salesMenuOpen ? 'rotate-0' : '-rotate-90'
+                  }`}
+                />
+              </button>
+
+              {/* Collapsible Submenu */}
+              {salesMenuOpen && (
+                <div className="pl-6 pr-1 pt-1.5 pb-1 space-y-1">
+                  {/* 1. Sales Member Creation */}
+                  <NavLink
+                    to="/superadmin/sales-members/create"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive ||
+                        isSubItemActive('/superadmin/sales-members/create') ||
+                        isSubItemActive('/superadmin/sales-team/create')
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <UserPlus className="w-3.5 h-3.5 shrink-0" />
+                    <span>Sales Member Creation</span>
+                  </NavLink>
+
+                  {/* 2. Sales Member Details */}
+                  <NavLink
+                    to="/superadmin/sales-members"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive ||
+                        isSubItemActive('/superadmin/sales-members') ||
+                        isSubItemActive('/superadmin/sales-team')
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <ListFilter className="w-3.5 h-3.5 shrink-0" />
+                    <span>Sales Member Details</span>
+                  </NavLink>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Security Architecture Badge */}
           <div className="mx-4 mt-4 p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs">
-            <div className="flex items-center gap-2 text-blue-400 font-bold mb-1 text-[11px] uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-blue-400 font-medium mb-1 text-[11px] uppercase tracking-wider">
               <Lock className="w-3.5 h-3.5" />
               <span>Security Architecture</span>
             </div>
@@ -284,12 +443,12 @@ export default function SuperAdminLayout() {
         {/* User Card & Logout Footer */}
         <div className="p-4 border-t border-slate-800 bg-slate-950/80">
           <div className="flex items-center gap-3 mb-3 px-1">
-            <div className="w-9 h-9 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-xs font-bold text-blue-400">
+            <div className="w-9 h-9 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-xs font-medium text-blue-400">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <p className="text-xs font-bold text-white truncate">
+                <p className="text-xs font-medium text-white truncate">
                   {user?.name || 'Super Administrator'}
                 </p>
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Active" />
@@ -324,7 +483,7 @@ export default function SuperAdminLayout() {
               <Menu className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">
+              <h1 className="text-sm sm:text-base font-medium text-slate-900 tracking-tight">
                 Superadmin Administration Portal
               </h1>
               <p className="text-[11px] text-slate-500 hidden sm:block">

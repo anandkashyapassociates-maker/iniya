@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use App\Models\Admin;
 use App\Models\Customer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -63,6 +65,28 @@ class AdminCustomerTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_create_customer_with_optional_image(): void
+    {
+        Storage::fake('public');
+        Sanctum::actingAs($this->admin, ['role:admin']);
+
+        $file = UploadedFile::fake()->image('patient.jpg');
+
+        $response = $this->postJson('/api/admin/customers', [
+            'name' => 'Kavita Roy',
+            'mobile' => '9888877777',
+            'gender' => 'female',
+            'age' => 29,
+            'address' => '501 Rosewood, Pune',
+            'image' => $file,
+        ]);
+
+        $response->assertStatus(201);
+        $customer = Customer::where('name', 'Kavita Roy')->first();
+        $this->assertNotNull($customer->image);
+        Storage::disk('public')->assertExists($customer->image);
+    }
+
     public function test_customer_creation_validation(): void
     {
         Sanctum::actingAs($this->admin, ['role:admin']);
@@ -118,6 +142,70 @@ class AdminCustomerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonPath('customer.name', 'Amit Kumar Verma')
             ->assertJsonPath('customer.age', 33);
+    }
+
+    public function test_admin_can_update_customer_with_image(): void
+    {
+        Storage::fake('public');
+        Sanctum::actingAs($this->admin, ['role:admin']);
+
+        $customer = Customer::create([
+            'admin_id' => $this->admin->id,
+            'name' => 'Rohit Roy',
+            'mobile' => '9988112233',
+            'gender' => 'male',
+            'age' => 27,
+            'address' => 'Salt Lake, Kolkata',
+        ]);
+
+        $file = UploadedFile::fake()->image('avatar_new.png');
+
+        $response = $this->postJson("/api/admin/customers/{$customer->id}", [
+            'name' => 'Rohit Roy Updated',
+            'mobile' => '9988112233',
+            'gender' => 'male',
+            'age' => 28,
+            'address' => 'Salt Lake Sector 5, Kolkata',
+            'image' => $file,
+        ]);
+
+        $response->assertStatus(200);
+        $customer->refresh();
+        $this->assertNotNull($customer->image);
+        $this->assertNotNull($customer->image_url);
+        Storage::disk('public')->assertExists($customer->image);
+    }
+
+    public function test_admin_can_remove_customer_image(): void
+    {
+        Storage::fake('public');
+        Sanctum::actingAs($this->admin, ['role:admin']);
+
+        $initialFile = UploadedFile::fake()->image('initial.png')->store('customers', 'public');
+
+        $customer = Customer::create([
+            'admin_id' => $this->admin->id,
+            'name' => 'Preeti Jha',
+            'mobile' => '9988443322',
+            'gender' => 'female',
+            'age' => 24,
+            'address' => 'Patna, Bihar',
+            'image' => $initialFile,
+        ]);
+
+        $response = $this->putJson("/api/admin/customers/{$customer->id}", [
+            'name' => 'Preeti Jha',
+            'mobile' => '9988443322',
+            'gender' => 'female',
+            'age' => 24,
+            'address' => 'Patna, Bihar',
+            'remove_image' => true,
+        ]);
+
+        $response->assertStatus(200);
+        $customer->refresh();
+        $this->assertNull($customer->image);
+        Storage::disk('public')->assertMissing($initialFile);
     }
 
     public function test_admin_can_delete_customer(): void

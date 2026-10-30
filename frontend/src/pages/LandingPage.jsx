@@ -18,7 +18,7 @@ export default function LandingPage() {
             <Lock className="w-3.5 h-3.5 text-blue-400" />
             <span>Dual-Tier Enterprise Management Portal</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+          <h1 className="text-3xl sm:text-5xl font-semibold text-white tracking-tight">
             INIYA ENTERPRISE SYSTEMS
           </h1>
           <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto mt-3">

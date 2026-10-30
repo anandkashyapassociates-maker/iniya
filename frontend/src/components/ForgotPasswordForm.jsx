@@ -49,7 +49,7 @@ export default function ForgotPasswordForm({
           <CheckCircle2 className="w-6 h-6" />
         </div>
 
-        <h3 className="text-base font-bold text-white">Recovery Instructions Sent</h3>
+        <h3 className="text-base font-medium text-white">Recovery Instructions Sent</h3>
 
         <p className="text-xs text-slate-300 leading-relaxed">
           If an account exists with <span className="font-semibold text-white">{email}</span>, you will receive password reset instructions.
@@ -58,7 +58,7 @@ export default function ForgotPasswordForm({
         {/* Development fast-track link */}
         {devToken && (
           <div className="p-3 bg-slate-950/80 border border-purple-500/40 rounded-xl text-left">
-            <span className="text-[10px] font-bold text-purple-300 uppercase tracking-wider block mb-1">
+            <span className="text-[10px] font-medium text-purple-300 uppercase tracking-wider block mb-1">
               Development Test Token Generated:
             </span>
             <Link
@@ -116,7 +116,7 @@ export default function ForgotPasswordForm({
       <button
         type="submit"
         disabled={isLoading}
-        className={`w-full py-3 px-4 rounded-xl text-xs font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 ${
+        className={`w-full py-3 px-4 rounded-xl text-xs font-medium text-white shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 ${
           isSuperAdmin
             ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500'
             : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500'

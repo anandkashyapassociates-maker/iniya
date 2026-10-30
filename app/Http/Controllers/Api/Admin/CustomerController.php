@@ -7,6 +7,8 @@ use App\Models\AdminActivityLog;
 use App\Models\Customer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class CustomerController extends Controller
@@ -59,10 +61,35 @@ class CustomerController extends Controller
             'gender' => ['required', Rule::in(['male', 'female', 'other'])],
             'age' => ['required', 'integer', 'min:1', 'max:150'],
             'address' => ['required', 'string', 'max:1000'],
+            'image' => ['nullable'],
             'is_active' => ['sometimes', 'boolean'],
         ]);
 
         $admin = $request->user();
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $request->validate([
+                'image' => ['file', 'mimes:jpeg,png,jpg,webp,gif,bmp,svg', 'max:5120'],
+            ], [
+                'image.file' => 'The customer photo must be a valid image file.',
+                'image.mimes' => 'The customer photo must be a file of type: jpeg, png, jpg, webp, gif, bmp, svg.',
+                'image.max' => 'The customer photo size cannot exceed 5MB.',
+            ]);
+            $imagePath = $request->file('image')->store('customers', 'public');
+        } elseif ($request->filled('image') && is_string($request->input('image')) && str_starts_with($request->input('image'), 'data:image')) {
+            $dataUri = $request->input('image');
+            if (preg_match('/^data:image\/(\w+);base64,/', $dataUri, $type)) {
+                $data = substr($dataUri, strpos($dataUri, ',') + 1);
+                $type = strtolower($type[1]);
+                $data = base64_decode($data);
+                if ($data !== false) {
+                    $fileName = 'customers/' . Str::random(40) . '.' . $type;
+                    Storage::disk('public')->put($fileName, $data);
+                    $imagePath = $fileName;
+                }
+            }
+        }
 
         $customer = Customer::create([
             'admin_id' => $admin->id,
@@ -72,6 +99,7 @@ class CustomerController extends Controller
             'gender' => $validated['gender'],
             'age' => $validated['age'],
             'address' => $validated['address'],
+            'image' => $imagePath,
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
@@ -113,8 +141,47 @@ class CustomerController extends Controller
             'gender' => ['required', Rule::in(['male', 'female', 'other'])],
             'age' => ['required', 'integer', 'min:1', 'max:150'],
             'address' => ['required', 'string', 'max:1000'],
+            'image' => ['nullable'],
+            'remove_image' => ['sometimes', 'boolean'],
             'is_active' => ['sometimes', 'boolean'],
         ]);
+
+        $imagePath = $customer->image;
+
+        if ($request->hasFile('image')) {
+            $request->validate([
+                'image' => ['file', 'mimes:jpeg,png,jpg,webp,gif,bmp,svg', 'max:5120'],
+            ], [
+                'image.file' => 'The customer photo must be a valid image file.',
+                'image.mimes' => 'The customer photo must be a file of type: jpeg, png, jpg, webp, gif, bmp, svg.',
+                'image.max' => 'The customer photo size cannot exceed 5MB.',
+            ]);
+            // Delete old file if present
+            if ($customer->image && Storage::disk('public')->exists($customer->image)) {
+                Storage::disk('public')->delete($customer->image);
+            }
+            $imagePath = $request->file('image')->store('customers', 'public');
+        } elseif ($request->filled('image') && is_string($request->input('image')) && str_starts_with($request->input('image'), 'data:image')) {
+            if ($customer->image && Storage::disk('public')->exists($customer->image)) {
+                Storage::disk('public')->delete($customer->image);
+            }
+            $dataUri = $request->input('image');
+            if (preg_match('/^data:image\/(\w+);base64,/', $dataUri, $type)) {
+                $data = substr($dataUri, strpos($dataUri, ',') + 1);
+                $type = strtolower($type[1]);
+                $data = base64_decode($data);
+                if ($data !== false) {
+                    $fileName = 'customers/' . Str::random(40) . '.' . $type;
+                    Storage::disk('public')->put($fileName, $data);
+                    $imagePath = $fileName;
+                }
+            }
+        } elseif ($request->boolean('remove_image')) {
+            if ($customer->image && Storage::disk('public')->exists($customer->image)) {
+                Storage::disk('public')->delete($customer->image);
+            }
+            $imagePath = null;
+        }
 
         $customer->update([
             'name' => $validated['name'],
@@ -123,6 +190,7 @@ class CustomerController extends Controller
             'gender' => $validated['gender'],
             'age' => $validated['age'],
             'address' => $validated['address'],
+            'image' => $imagePath,
             'is_active' => $validated['is_active'] ?? $customer->is_active,
         ]);
 
@@ -148,6 +216,11 @@ class CustomerController extends Controller
     {
         $customer = Customer::findOrFail($id);
         $customerName = $customer->name;
+
+        if ($customer->image && Storage::disk('public')->exists($customer->image)) {
+            Storage::disk('public')->delete($customer->image);
+        }
+
         $customer->delete();
 
         $admin = $request->user();

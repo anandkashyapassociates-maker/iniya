@@ -81,7 +81,7 @@ export default function SuperAdminEditAdminPage() {
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Admins Directory</span>
         </Link>
-        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 tracking-tight">
           Edit Administrator Account
         </h1>
         <p className="text-xs text-slate-500 mt-0.5">

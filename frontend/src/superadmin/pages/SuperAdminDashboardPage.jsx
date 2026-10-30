@@ -58,7 +58,7 @@ export default function SuperAdminDashboardPage() {
               <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
               <span>Phase 1 Authentication Operational</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-medium tracking-tight">
               Welcome back, {user?.name || 'Super Administrator'}
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl leading-relaxed">
@@ -94,7 +94,7 @@ export default function SuperAdminDashboardPage() {
             </div>
           </div>
           <div>
-            <div className="text-base font-extrabold text-slate-900 font-mono">super_admins</div>
+            <div className="text-base font-medium text-slate-900 font-mono">super_admins</div>
             <p className="text-[11px] text-slate-500 mt-0.5">Strictly dedicated table</p>
           </div>
           <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
@@ -114,7 +114,7 @@ export default function SuperAdminDashboardPage() {
             </div>
           </div>
           <div>
-            <div className="text-base font-extrabold text-slate-900 font-mono">auth.superadmin</div>
+            <div className="text-base font-medium text-slate-900 font-mono">auth.superadmin</div>
             <p className="text-[11px] text-slate-500 mt-0.5">Sanctum Token + Guard</p>
           </div>
           <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
@@ -134,7 +134,7 @@ export default function SuperAdminDashboardPage() {
             </div>
           </div>
           <div>
-            <div className="text-base font-extrabold text-slate-900">
+            <div className="text-base font-medium text-slate-900">
               {user?.is_active ? 'Active & Verified' : 'Inactive'}
             </div>
             <p className="text-[11px] text-slate-500 mt-0.5">Server-side status check</p>
@@ -156,7 +156,7 @@ export default function SuperAdminDashboardPage() {
             </div>
           </div>
           <div>
-            <div className="text-base font-extrabold text-slate-900 font-mono">60 Min Expiry</div>
+            <div className="text-base font-medium text-slate-900 font-mono">60 Min Expiry</div>
             <p className="text-[11px] text-slate-500 mt-0.5">Single-use reset tokens</p>
           </div>
           <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
