@@ -25,8 +25,33 @@ class Customer extends Model
         'gender',
         'age',
         'address',
+        'image',
         'is_active',
     ];
+
+    /**
+     * Appended attributes.
+     */
+    protected $appends = [
+        'image_url',
+    ];
+
+    /**
+     * Accessor for full image URL.
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        if (! $this->image) {
+            return null;
+        }
+
+        // If stored in public storage
+        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
+            return $this->image;
+        }
+
+        return asset('storage/' . ltrim($this->image, '/'));
+    }
 
     /**
      * Get the attributes that should be cast.

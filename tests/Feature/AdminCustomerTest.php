@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use App\Models\Admin;
 use App\Models\Customer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -61,6 +63,28 @@ class AdminCustomerTest extends TestCase
             'mobile' => '9876543210',
             'email' => 'rahul@example.com',
         ]);
+    }
+
+    public function test_admin_can_create_customer_with_optional_image(): void
+    {
+        Storage::fake('public');
+        Sanctum::actingAs($this->admin, ['role:admin']);
+
+        $file = UploadedFile::fake()->image('patient.jpg');
+
+        $response = $this->postJson('/api/admin/customers', [
+            'name' => 'Kavita Roy',
+            'mobile' => '9888877777',
+            'gender' => 'female',
+            'age' => 29,
+            'address' => '501 Rosewood, Pune',
+            'image' => $file,
+        ]);
+
+        $response->assertStatus(201);
+        $customer = Customer::where('name', 'Kavita Roy')->first();
+        $this->assertNotNull($customer->image);
+        Storage::disk('public')->assertExists($customer->image);
     }
 
     public function test_customer_creation_validation(): void

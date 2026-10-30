@@ -7,6 +7,7 @@ use App\Models\AdminActivityLog;
 use App\Models\Customer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class CustomerController extends Controller
@@ -59,10 +60,16 @@ class CustomerController extends Controller
             'gender' => ['required', Rule::in(['male', 'female', 'other'])],
             'age' => ['required', 'integer', 'min:1', 'max:150'],
             'address' => ['required', 'string', 'max:1000'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
             'is_active' => ['sometimes', 'boolean'],
         ]);
 
         $admin = $request->user();
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('customers', 'public');
+        }
 
         $customer = Customer::create([
             'admin_id' => $admin->id,
@@ -72,6 +79,7 @@ class CustomerController extends Controller
             'gender' => $validated['gender'],
             'age' => $validated['age'],
             'address' => $validated['address'],
+            'image' => $imagePath,
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
@@ -113,8 +121,25 @@ class CustomerController extends Controller
             'gender' => ['required', Rule::in(['male', 'female', 'other'])],
             'age' => ['required', 'integer', 'min:1', 'max:150'],
             'address' => ['required', 'string', 'max:1000'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
+            'remove_image' => ['sometimes', 'boolean'],
             'is_active' => ['sometimes', 'boolean'],
         ]);
+
+        $imagePath = $customer->image;
+
+        if ($request->hasFile('image')) {
+            // Delete old file if present
+            if ($customer->image && Storage::disk('public')->exists($customer->image)) {
+                Storage::disk('public')->delete($customer->image);
+            }
+            $imagePath = $request->file('image')->store('customers', 'public');
+        } elseif ($request->boolean('remove_image')) {
+            if ($customer->image && Storage::disk('public')->exists($customer->image)) {
+                Storage::disk('public')->delete($customer->image);
+            }
+            $imagePath = null;
+        }
 
         $customer->update([
             'name' => $validated['name'],
@@ -123,6 +148,7 @@ class CustomerController extends Controller
             'gender' => $validated['gender'],
             'age' => $validated['age'],
             'address' => $validated['address'],
+            'image' => $imagePath,
             'is_active' => $validated['is_active'] ?? $customer->is_active,
         ]);
 
@@ -148,6 +174,11 @@ class CustomerController extends Controller
     {
         $customer = Customer::findOrFail($id);
         $customerName = $customer->name;
+
+        if ($customer->image && Storage::disk('public')->exists($customer->image)) {
+            Storage::disk('public')->delete($customer->image);
+        }
+
         $customer->delete();
 
         $admin = $request->user();
