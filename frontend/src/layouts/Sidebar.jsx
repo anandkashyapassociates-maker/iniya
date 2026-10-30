@@ -12,6 +12,7 @@ import {
   PhoneCall,
   LogOut,
   X,
+  Calendar,
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -68,6 +69,11 @@ export default function Sidebar({
       label: 'Register New Patient',
       icon: UserPlus,
       color: 'from-violet-500 to-purple-600',
+    },
+    {
+      to: '/admin/appointments',
+      label: 'Appointments',
+      icon: Calendar,
     },
     {
       to: '/admin/profile',

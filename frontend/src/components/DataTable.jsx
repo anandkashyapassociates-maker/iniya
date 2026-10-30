@@ -73,7 +73,7 @@ export default function DataTable({
                       key={colIndex}
                       className={`py-3 px-4 text-slate-700 align-middle font-normal ${col.className || ''}`}
                     >
-                      {col.render ? col.render(row) : row[col.accessor]}
+                      {col.render ? col.render(row, rowIndex) : row[col.accessor]}
                     </td>
                   ))}
                 </tr>
