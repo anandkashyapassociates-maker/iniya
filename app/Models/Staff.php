@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
 class Staff extends Model
@@ -14,7 +15,9 @@ class Staff extends Model
     protected $table = 'staff';
 
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_INACTIVE = 'inactive';
+
     public const STATUS_BLOCKED = 'blocked';
 
     /**
@@ -109,5 +112,12 @@ class Staff extends Model
     {
         return $this->belongsTo(SuperAdmin::class, 'created_by_superadmin_id');
     }
-}
 
+    /**
+     * Appointments assigned to this staff member.
+     */
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class, 'staff_id');
+    }
+}
