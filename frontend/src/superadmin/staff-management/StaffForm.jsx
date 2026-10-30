@@ -192,7 +192,7 @@ export default function StaffForm({
             </p>
           </div>
         </div>
-        <div className="px-4 py-1.5 rounded-xl bg-white border border-blue-200 text-blue-700 font-mono text-sm font-extrabold tracking-wider shadow-2xs">
+        <div className="px-4 py-1.5 rounded-xl bg-white border border-blue-200 text-blue-700 font-mono text-sm font-medium tracking-wider shadow-2xs">
           {previewCode || 'STF-0001'}
         </div>
       </div>

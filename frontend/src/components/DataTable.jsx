@@ -54,9 +54,9 @@ export default function DataTable({
         ) : (
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-200/80 bg-slate-50/90 text-[10px] font-extrabold text-slate-600 uppercase tracking-widest micro-label">
+              <tr className="border-b border-slate-200/80 bg-slate-50/90 text-[10px] font-semibold text-slate-500 uppercase tracking-widest micro-label">
                 {columns.map((col, idx) => (
-                  <th key={idx} className={`py-3.5 px-4 ${col.className || ''}`}>
+                  <th key={idx} className={`py-3.5 px-4 font-semibold ${col.className || ''}`}>
                     {col.header}
                   </th>
                 ))}
@@ -87,9 +87,9 @@ export default function DataTable({
       {pagination && pagination.total > 0 && (
         <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 bg-slate-50/40">
           <div>
-            Showing <span className="font-bold text-slate-800 font-mono tabular-numbers">{pagination.from || 1}</span> to{' '}
-            <span className="font-bold text-slate-800 font-mono tabular-numbers">{pagination.to || data.length}</span> of{' '}
-            <span className="font-bold text-slate-800 font-mono tabular-numbers">{pagination.total}</span> entries
+            Showing <span className="font-semibold text-slate-800 font-mono tabular-numbers">{pagination.from || 1}</span> to{' '}
+            <span className="font-semibold text-slate-800 font-mono tabular-numbers">{pagination.to || data.length}</span> of{' '}
+            <span className="font-semibold text-slate-800 font-mono tabular-numbers">{pagination.total}</span> entries
           </div>
 
           <div className="flex items-center gap-1.5">
@@ -100,7 +100,7 @@ export default function DataTable({
             >
               <ChevronLeft className="w-4 h-4 text-slate-600" />
             </button>
-            <span className="px-3 py-1 font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg shadow-2xs font-mono text-xs tabular-numbers">
+            <span className="px-3 py-1 font-medium text-slate-700 bg-white border border-slate-200 rounded-lg shadow-2xs font-mono text-xs tabular-numbers">
               Page {pagination.current_page} of {pagination.last_page}
             </span>
             <button

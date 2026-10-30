@@ -70,7 +70,11 @@ class CustomerController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $request->validate([
-                'image' => ['image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
+                'image' => ['file', 'mimes:jpeg,png,jpg,webp,gif,bmp,svg', 'max:5120'],
+            ], [
+                'image.file' => 'The customer photo must be a valid image file.',
+                'image.mimes' => 'The customer photo must be a file of type: jpeg, png, jpg, webp, gif, bmp, svg.',
+                'image.max' => 'The customer photo size cannot exceed 5MB.',
             ]);
             $imagePath = $request->file('image')->store('customers', 'public');
         } elseif ($request->filled('image') && is_string($request->input('image')) && str_starts_with($request->input('image'), 'data:image')) {
@@ -146,7 +150,11 @@ class CustomerController extends Controller
 
         if ($request->hasFile('image')) {
             $request->validate([
-                'image' => ['image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
+                'image' => ['file', 'mimes:jpeg,png,jpg,webp,gif,bmp,svg', 'max:5120'],
+            ], [
+                'image.file' => 'The customer photo must be a valid image file.',
+                'image.mimes' => 'The customer photo must be a file of type: jpeg, png, jpg, webp, gif, bmp, svg.',
+                'image.max' => 'The customer photo size cannot exceed 5MB.',
             ]);
             // Delete old file if present
             if ($customer->image && Storage::disk('public')->exists($customer->image)) {
