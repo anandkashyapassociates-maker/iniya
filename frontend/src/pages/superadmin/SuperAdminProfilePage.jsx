@@ -119,7 +119,7 @@ export default function SuperAdminProfilePage() {
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 tracking-tight">
                 Profile &amp; Security Settings
               </h1>
               <p className="text-xs text-slate-500">
@@ -133,7 +133,7 @@ export default function SuperAdminProfilePage() {
       {/* Account Identity Card */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-blue-950 p-6 rounded-2xl border border-slate-800 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-blue-600/20 border border-blue-500/30 text-blue-400 flex items-center justify-center text-xl font-black shadow-inner">
+          <div className="w-14 h-14 rounded-2xl bg-blue-600/20 border border-blue-500/30 text-blue-400 flex items-center justify-center text-xl font-semibold shadow-inner">
             {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
           </div>
           <div>

@@ -130,7 +130,7 @@ export default function AdminDetailsPage() {
             <div className="w-8 h-8 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center">
               <Users className="w-4 h-4" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 tracking-tight">
               Admin Details
             </h1>
             {pagination && (
