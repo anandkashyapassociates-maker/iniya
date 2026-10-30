@@ -24,6 +24,38 @@ import ConfirmDialog from '../../components/ConfirmDialog';
 import adminService from '../../services/adminService';
 import { useToast } from '../../context/ToastContext';
 
+function CustomerAvatar({ customer, size = 'sm' }) {
+  const [imgError, setImgError] = useState(false);
+
+  const sizeClass = size === 'lg' ? 'w-14 h-14 rounded-2xl text-xl' : 'w-10 h-10 rounded-xl text-sm';
+
+  const genderBg =
+    customer?.gender === 'female'
+      ? 'bg-gradient-to-tr from-pink-500 to-rose-600'
+      : customer?.gender === 'other'
+      ? 'bg-gradient-to-tr from-purple-500 to-indigo-600'
+      : 'bg-gradient-to-tr from-blue-600 to-cyan-600';
+
+  if (customer?.image_url && !imgError) {
+    return (
+      <img
+        src={customer.image_url}
+        alt={customer.name}
+        className={`${sizeClass} object-cover border border-slate-200/90 shadow-2xs shrink-0`}
+        onError={() => setImgError(true)}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`${sizeClass} flex items-center justify-center font-bold text-white shadow-xs uppercase shrink-0 ${genderBg}`}
+    >
+      {customer?.name ? customer.name.charAt(0) : 'P'}
+    </div>
+  );
+}
+
 export default function AdminCustomersPage() {
   const toast = useToast();
 
@@ -113,29 +145,7 @@ export default function AdminCustomersPage() {
       accessor: 'name',
       render: (c) => (
         <div className="flex items-center gap-3">
-          {c.image_url ? (
-            <img
-              src={c.image_url}
-              alt={c.name}
-              className="w-10 h-10 rounded-xl object-cover border border-slate-200/90 shadow-2xs shrink-0"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.style.display = 'none';
-              }}
-            />
-          ) : (
-            <div
-              className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white shadow-xs uppercase shrink-0 ${
-                c.gender === 'female'
-                  ? 'bg-gradient-to-tr from-pink-500 to-rose-600'
-                  : c.gender === 'other'
-                  ? 'bg-gradient-to-tr from-purple-500 to-indigo-600'
-                  : 'bg-gradient-to-tr from-blue-600 to-cyan-600'
-              }`}
-            >
-              {c.name ? c.name.charAt(0) : 'P'}
-            </div>
-          )}
+          <CustomerAvatar customer={c} size="sm" />
           <div>
             <div className="font-bold text-slate-900 text-xs sm:text-sm hover:text-blue-600 transition-colors">
               {c.name}
@@ -426,17 +436,7 @@ export default function AdminCustomersPage() {
             </button>
 
             <div className="flex items-center gap-3.5 mb-6">
-              {selectedCustomer.image_url ? (
-                <img
-                  src={selectedCustomer.image_url}
-                  alt={selectedCustomer.name}
-                  className="w-14 h-14 rounded-2xl object-cover border border-slate-200 shadow-sm shrink-0"
-                />
-              ) : (
-                <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white font-bold flex items-center justify-center text-xl shadow-sm shrink-0">
-                  {selectedCustomer.name?.charAt(0) || 'P'}
-                </div>
-              )}
+              <CustomerAvatar customer={selectedCustomer} size="lg" />
               <div>
                 <h3 className="text-lg font-black text-slate-900">{selectedCustomer.name}</h3>
                 <div className="flex items-center gap-2 mt-0.5">
