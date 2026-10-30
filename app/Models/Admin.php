@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -82,6 +83,14 @@ class Admin extends Authenticatable
     public function superAdmin(): BelongsTo
     {
         return $this->belongsTo(SuperAdmin::class, 'super_admin_id');
+    }
+
+    /**
+     * Get the customers created by this admin.
+     */
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customer::class, 'admin_id');
     }
 }
 

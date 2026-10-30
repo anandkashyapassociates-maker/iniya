@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminActivityLog;
+use App\Models\Customer;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -44,8 +45,11 @@ class AdminDashboardController extends Controller
             'last_login' => $admin->last_login_at ? Carbon::parse($admin->last_login_at)->diffForHumans() : 'First session',
         ];
 
+        $totalCustomers = Customer::count();
+
         return response()->json([
             'stats' => [
+                'total_customers' => $totalCustomers,
                 'activity_count' => $myActivityCount,
                 'account_status' => $admin->is_active ? 'Active' : 'Inactive',
                 'last_login' => $admin->last_login_at ? Carbon::parse($admin->last_login_at)->diffForHumans() : 'First session',

@@ -22,6 +22,9 @@ import AdminLoginPage from '../pages/admin/AdminLoginPage';
 import AdminForgotPasswordPage from '../pages/admin/AdminForgotPasswordPage';
 import AdminResetPasswordPage from '../pages/admin/AdminResetPasswordPage';
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
+import AdminCustomersPage from '../pages/admin/AdminCustomersPage';
+import AdminCustomerCreatePage from '../pages/admin/AdminCustomerCreatePage';
+import AdminCustomerEditPage from '../pages/admin/AdminCustomerEditPage';
 import AdminProfilePage from '../pages/admin/AdminProfilePage';
 import AdminChangePasswordPage from '../pages/admin/AdminChangePasswordPage';
 
@@ -80,6 +83,9 @@ export default function AppRoutes() {
       <Route element={<AdminProtectedRoute />}>
         <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+          <Route path="/admin/customers" element={<AdminCustomersPage />} />
+          <Route path="/admin/customers/create" element={<AdminCustomerCreatePage />} />
+          <Route path="/admin/customers/:id/edit" element={<AdminCustomerEditPage />} />
           <Route path="/admin/profile" element={<AdminProfilePage />} />
           <Route path="/admin/change-password" element={<AdminChangePasswordPage />} />
         </Route>
