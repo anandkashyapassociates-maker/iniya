@@ -56,7 +56,13 @@ class AdminAuthController extends Controller
             ], 422);
         }
 
-        if (! $admin->is_active) {
+        if ($admin->status === 'blocked') {
+            return response()->json([
+                'message' => 'Your Admin account has been blocked by the Super Administrator. Access denied.',
+            ], 403);
+        }
+
+        if (! $admin->is_active || $admin->status === 'inactive') {
             return response()->json([
                 'message' => 'Your Admin account is deactivated. Please contact your Super Administrator.',
             ], 403);
@@ -83,6 +89,7 @@ class AdminAuthController extends Controller
                 'id' => $admin->id,
                 'name' => $admin->name,
                 'email' => $admin->email,
+                'status' => $admin->status,
                 'is_active' => $admin->is_active,
                 'last_login_at' => $admin->last_login_at,
                 'created_at' => $admin->created_at,
@@ -103,6 +110,7 @@ class AdminAuthController extends Controller
                 'id' => $admin->id,
                 'name' => $admin->name,
                 'email' => $admin->email,
+                'status' => $admin->status,
                 'is_active' => $admin->is_active,
                 'last_login_at' => $admin->last_login_at,
                 'created_at' => $admin->created_at,

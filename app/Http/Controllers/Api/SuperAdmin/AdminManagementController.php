@@ -22,22 +22,35 @@ class AdminManagementController extends Controller
     {
         $query = Admin::with('superAdmin:id,name,email');
 
-        // Search by name or email
+        // Search by name, email, or mobile
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('mobile', 'like', "%{$search}%");
             });
         }
 
-        // Filter by active status
+        // Filter by status (active, inactive, blocked, or legacy boolean)
         if ($request->has('status') && $request->input('status') !== '' && $request->input('status') !== 'all') {
-            $isActive = filter_var($request->input('status'), FILTER_VALIDATE_BOOLEAN);
-            $query->where('is_active', $isActive);
+            $statusInput = $request->input('status');
+            if (in_array($statusInput, ['active', 'inactive', 'blocked'])) {
+                $query->where('status', $statusInput);
+            } elseif ($statusInput === 'true' || $statusInput === '1') {
+                $query->where('is_active', true);
+            } elseif ($statusInput === 'false' || $statusInput === '0') {
+                $query->where('is_active', false);
+            }
         }
 
+        $sortBy = in_array($request->input('sort_by'), ['id', 'name', 'email', 'mobile', 'status', 'is_active', 'created_at', 'updated_at'])
+            ? $request->input('sort_by')
+            : 'created_at';
+        $sortDirection = strtolower($request->input('sort_direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $query->orderBy($sortBy, $sortDirection);
+
         $perPage = min((int) $request->input('per_page', 10), 50);
-        $admins = $query->latest()->paginate($perPage);
+        $admins = $query->paginate($perPage);
 
         return response()->json($admins);
     }
@@ -47,12 +60,24 @@ class AdminManagementController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $validated = $request->validate([
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:admins,email'],
-            'password' => ['required', 'string', Password::min(8)],
+            'mobile' => ['required', 'string', 'min:7', 'max:20', 'unique:admins,mobile'],
+            'status' => ['sometimes', 'string', Rule::in(['active', 'inactive', 'blocked'])],
             'is_active' => ['sometimes', 'boolean'],
-        ]);
+        ];
+
+        if ($request->has('password_confirmation')) {
+            $rules['password'] = ['required', 'string', 'confirmed', Password::min(8)];
+        } else {
+            $rules['password'] = ['required', 'string', Password::min(8)];
+        }
+
+        $validated = $request->validate($rules);
+
+        $status = $validated['status'] ?? (isset($validated['is_active']) ? ($validated['is_active'] ? 'active' : 'inactive') : 'active');
+        $isActive = ($status === 'active');
 
         $superAdmin = $request->user();
 
@@ -60,8 +85,10 @@ class AdminManagementController extends Controller
             'super_admin_id' => $superAdmin->id,
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'mobile' => $validated['mobile'],
+            'status' => $status,
             'password' => Hash::make($validated['password']),
-            'is_active' => $validated['is_active'] ?? true,
+            'is_active' => $isActive,
             'email_verified_at' => Carbon::now(),
         ]);
 
@@ -113,7 +140,9 @@ class AdminManagementController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('admins')->ignore($admin->id)],
+            'mobile' => ['nullable', 'string', 'min:7', 'max:20', Rule::unique('admins')->ignore($admin->id)],
             'password' => ['nullable', 'string', Password::min(8)],
+            'status' => ['sometimes', 'string', Rule::in(['active', 'inactive', 'blocked'])],
             'is_active' => ['sometimes', 'boolean'],
         ]);
 
@@ -122,13 +151,26 @@ class AdminManagementController extends Controller
             'email' => $validated['email'],
         ];
 
-        if (isset($validated['is_active'])) {
+        if (array_key_exists('mobile', $validated)) {
+            $dataToUpdate['mobile'] = $validated['mobile'];
+        }
+
+        if (isset($validated['status'])) {
+            $dataToUpdate['status'] = $validated['status'];
+            $dataToUpdate['is_active'] = ($validated['status'] === 'active');
+        } elseif (isset($validated['is_active'])) {
             $dataToUpdate['is_active'] = $validated['is_active'];
+            $dataToUpdate['status'] = $validated['is_active'] ? 'active' : ($admin->status === 'blocked' ? 'blocked' : 'inactive');
         }
 
         if (! empty($validated['password'])) {
             $dataToUpdate['password'] = Hash::make($validated['password']);
             // Revoke current sessions if password updated
+            $admin->tokens()->delete();
+        }
+
+        // If admin is marked inactive or blocked, revoke all active sessions immediately
+        if (isset($dataToUpdate['is_active']) && ! $dataToUpdate['is_active']) {
             $admin->tokens()->delete();
         }
 
@@ -139,7 +181,7 @@ class AdminManagementController extends Controller
             'super_admin',
             $superAdmin->id,
             'admin_updated',
-            "Super Admin '{$superAdmin->name}' updated Admin '{$admin->name}' details.",
+            "Super Admin '{$superAdmin->name}' updated Admin '{$admin->name}' details (Status: {$admin->status}).",
             $request
         );
 
@@ -150,7 +192,7 @@ class AdminManagementController extends Controller
     }
 
     /**
-     * Update the active status of an Admin.
+     * Update the active/blocked status of an Admin.
      */
     public function updateStatus(Request $request, string $id): JsonResponse
     {
@@ -163,20 +205,38 @@ class AdminManagementController extends Controller
         }
 
         $validated = $request->validate([
-            'is_active' => ['required', 'boolean'],
+            'status' => ['sometimes', 'string', Rule::in(['active', 'inactive', 'blocked'])],
+            'is_active' => ['sometimes', 'boolean'],
         ]);
+
+        if (isset($validated['status'])) {
+            $status = $validated['status'];
+            $isActive = ($status === 'active');
+        } elseif (isset($validated['is_active'])) {
+            $isActive = (bool) $validated['is_active'];
+            $status = $isActive ? 'active' : 'inactive';
+        } else {
+            return response()->json([
+                'message' => 'Status or is_active field is required.',
+            ], 422);
+        }
 
         $admin->update([
-            'is_active' => $validated['is_active'],
+            'status' => $status,
+            'is_active' => $isActive,
         ]);
 
-        // If deactivated, revoke all active tokens immediately
-        if (! $validated['is_active']) {
+        // If deactivated or blocked, revoke all active tokens immediately
+        if (! $isActive) {
             $admin->tokens()->delete();
         }
 
         $superAdmin = $request->user();
-        $statusText = $validated['is_active'] ? 'activated' : 'deactivated';
+        $statusText = match ($status) {
+            'blocked' => 'blocked',
+            'inactive' => 'deactivated',
+            default => 'activated',
+        };
 
         AdminActivityLog::record(
             'super_admin',
@@ -188,7 +248,7 @@ class AdminManagementController extends Controller
 
         return response()->json([
             'message' => "Admin account {$statusText} successfully.",
-            'admin' => $admin,
+            'admin' => $admin->fresh()->load('superAdmin:id,name,email'),
         ]);
     }
 
