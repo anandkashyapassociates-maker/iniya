@@ -221,7 +221,7 @@ class InventoryManagementTest extends TestCase
             ->assertJsonPath('admins.0.total_products', 1);
     }
 
-    public function test_superadmin_can_toggle_product_status_and_delete(): void
+    public function test_superadmin_cannot_edit_or_delete_products(): void
     {
         Sanctum::actingAs($this->superAdmin, ['role:superadmin']);
 
@@ -241,19 +241,102 @@ class InventoryManagementTest extends TestCase
             'created_by_admin_id' => $this->admin->id,
         ]);
 
-        // Toggle status
+        // SuperAdmin attempt status toggle (403 forbidden)
         $statusRes = $this->patchJson("/api/superadmin/inventory/products/{$product->id}/status", [
             'status' => 'inactive',
         ]);
-        $statusRes->assertStatus(200)
-            ->assertJsonPath('product.status', 'inactive');
+        $statusRes->assertStatus(403);
 
-        // Delete product
+        // SuperAdmin attempt delete (403 forbidden)
         $deleteRes = $this->deleteJson("/api/superadmin/inventory/products/{$product->id}");
-        $deleteRes->assertStatus(200);
+        $deleteRes->assertStatus(403);
 
-        $this->assertSoftDeleted('inventory_products', [
+        $this->assertDatabaseHas('inventory_products', [
             'id' => $product->id,
+            'deleted_at' => null,
+        ]);
+    }
+
+    public function test_non_creator_admin_cannot_edit_or_delete_product(): void
+    {
+        $otherAdmin = Admin::create([
+            'super_admin_id' => $this->superAdmin->id,
+            'name' => 'Other Admin',
+            'email' => 'other_'.uniqid().'@iniya.local',
+            'password' => Hash::make('AdminPass123!'),
+            'is_active' => true,
+        ]);
+
+        $category = InventoryCategory::create([
+            'name' => 'Diagnostic Kits',
+            'slug' => 'diagnostic-kits',
+            'status' => 'active',
+            'created_by' => $this->admin->id,
+        ]);
+
+        $product = InventoryProduct::create([
+            'category_id' => $category->id,
+            'product_name' => 'Blood Glucose Meter',
+            'business_unit' => 'Piece',
+            'product_type' => 'Equipment',
+            'status' => 'active',
+            'created_by_admin_id' => $this->admin->id,
+        ]);
+
+        // Log in as other admin
+        Sanctum::actingAs($otherAdmin, ['role:admin']);
+
+        // Attempt edit
+        $editRes = $this->postJson("/api/admin/inventory/products/{$product->id}", [
+            'category_id' => $category->id,
+            'product_name' => 'Hacked Meter Name',
+            'business_unit' => 'Piece',
+            'product_type' => 'Equipment',
+            'status' => 'active',
+        ]);
+        $editRes->assertStatus(403);
+
+        // Attempt delete
+        $deleteRes = $this->deleteJson("/api/admin/inventory/products/{$product->id}");
+        $deleteRes->assertStatus(403);
+
+        // Verify product was not modified or deleted
+        $this->assertDatabaseHas('inventory_products', [
+            'id' => $product->id,
+            'product_name' => 'Blood Glucose Meter',
+            'deleted_at' => null,
+        ]);
+    }
+
+    public function test_product_in_use_cannot_be_deleted(): void
+    {
+        Sanctum::actingAs($this->admin, ['role:admin']);
+
+        $category = InventoryCategory::create([
+            'name' => 'Emergency Medicines',
+            'slug' => 'emergency-medicines',
+            'status' => 'active',
+            'created_by' => $this->admin->id,
+        ]);
+
+        $product = InventoryProduct::create([
+            'category_id' => $category->id,
+            'product_name' => 'Adrenaline Injection',
+            'business_unit' => 'Ampoule',
+            'product_type' => 'Medicine',
+            'status' => 'active',
+            'is_used' => true, // Marked as in-use
+            'created_by_admin_id' => $this->admin->id,
+        ]);
+
+        // Attempt to delete product
+        $deleteRes = $this->deleteJson("/api/admin/inventory/products/{$product->id}");
+        $deleteRes->assertStatus(422)
+            ->assertJsonFragment(['message' => "Cannot delete product 'Adrenaline Injection' because it is in use."]);
+
+        $this->assertDatabaseHas('inventory_products', [
+            'id' => $product->id,
+            'deleted_at' => null,
         ]);
     }
 }

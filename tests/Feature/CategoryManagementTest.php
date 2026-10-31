@@ -205,7 +205,7 @@ class CategoryManagementTest extends TestCase
             ->assertJsonPath('data.0.admin.name', $this->admin->name);
     }
 
-    public function test_superadmin_can_delete_category_with_audit_trail(): void
+    public function test_superadmin_cannot_delete_category(): void
     {
         Sanctum::actingAs($this->superAdmin, ['role:superadmin']);
 
@@ -216,17 +216,11 @@ class CategoryManagementTest extends TestCase
         ]);
 
         $response = $this->deleteJson("/api/superadmin/categories/{$category->id}");
-        $response->assertStatus(200)
-            ->assertJsonPath('message', "Category 'Psychiatry & Mental Health' deleted successfully by Super Admin.");
+        $response->assertStatus(403)
+            ->assertJsonPath('message', 'Unauthorized. Super Admin has read-only oversight. Deleting categories is restricted to creator admins.');
 
-        $this->assertDatabaseMissing('categories', [
+        $this->assertDatabaseHas('categories', [
             'id' => $category->id,
-        ]);
-
-        $this->assertDatabaseHas('admin_activity_logs', [
-            'actor_id' => $this->superAdmin->id,
-            'actor_type' => 'superadmin',
-            'action' => 'category_deleted_by_superadmin',
         ]);
     }
 

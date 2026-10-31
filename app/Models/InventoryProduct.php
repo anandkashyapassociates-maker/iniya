@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class InventoryProduct extends Model
@@ -25,9 +26,18 @@ class InventoryProduct extends Model
         'product_name',
         'business_unit',
         'product_unit',
+        'quantity',
+        'buy_price',
+        'mrp',
+        'average_price',
+        'vendor_id',
+        'low_stock_threshold',
+        'inventory_updated_by',
+        'inventory_updated_at',
         'product_type',
         'custom_product_type',
         'status',
+        'is_used',
         'created_by_admin_id',
     ];
 
@@ -38,6 +48,13 @@ class InventoryProduct extends Model
      */
     protected $casts = [
         'product_unit' => 'integer',
+        'quantity' => 'integer',
+        'buy_price' => 'decimal:2',
+        'mrp' => 'decimal:2',
+        'average_price' => 'decimal:2',
+        'low_stock_threshold' => 'integer',
+        'inventory_updated_at' => 'datetime',
+        'is_used' => 'boolean',
     ];
 
     /**
@@ -48,6 +65,8 @@ class InventoryProduct extends Model
     protected $appends = [
         'image_url',
         'display_product_type',
+        'is_low_stock',
+        'stock_status',
     ];
 
     /**
@@ -79,6 +98,29 @@ class InventoryProduct extends Model
     }
 
     /**
+     * Accessor for low stock alert status.
+     */
+    public function getIsLowStockAttribute(): bool
+    {
+        return (int) $this->quantity <= (int) ($this->low_stock_threshold ?? 10);
+    }
+
+    /**
+     * Accessor for stock status badge.
+     */
+    public function getStockStatusAttribute(): string
+    {
+        if ((int) $this->quantity === 0) {
+            return 'out_of_stock';
+        }
+        if ((int) $this->quantity <= (int) ($this->low_stock_threshold ?? 10)) {
+            return 'low_stock';
+        }
+
+        return 'in_stock';
+    }
+
+    /**
      * Category relation.
      */
     public function category(): BelongsTo
@@ -95,6 +137,30 @@ class InventoryProduct extends Model
     }
 
     /**
+     * Primary vendor relation.
+     */
+    public function vendor(): BelongsTo
+    {
+        return $this->belongsTo(Vendor::class, 'vendor_id');
+    }
+
+    /**
+     * Admin who last added or updated inventory.
+     */
+    public function inventoryUpdater(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'inventory_updated_by');
+    }
+
+    /**
+     * Stock logs relation.
+     */
+    public function stockLogs(): HasMany
+    {
+        return $this->hasMany(InventoryStockLog::class, 'product_id');
+    }
+
+    /**
      * Admin creator relation.
      */
     public function creator(): BelongsTo
@@ -108,5 +174,16 @@ class InventoryProduct extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
+    }
+
+    /**
+     * Scope a query to only include low stock or out of stock products.
+     */
+    public function scopeLowStock($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereColumn('quantity', '<=', 'low_stock_threshold')
+                ->orWhere('quantity', 0);
+        });
     }
 }

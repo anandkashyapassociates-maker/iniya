@@ -25,6 +25,8 @@ import SuperAdminInventoryOverviewPage from '../superadmin/inventory/SuperAdminI
 import SuperAdminProductsPage from '../superadmin/inventory/SuperAdminProductsPage';
 import SuperAdminInventoryCategoriesPage from '../superadmin/inventory/SuperAdminInventoryCategoriesPage';
 import SuperAdminInventoryBrandsPage from '../superadmin/inventory/SuperAdminInventoryBrandsPage';
+import SuperAdminInventoryStocksPage from '../superadmin/inventory/SuperAdminInventoryStocksPage';
+import SuperAdminLowInventoryPage from '../superadmin/inventory/SuperAdminLowInventoryPage';
 
 // Admin Module (Panel 2 - Separate Team Developer)
 import AdminLayout from '../layouts/AdminLayout';
@@ -52,6 +54,8 @@ import AdminInventoryCategoryEditPage from '../pages/admin/inventory/AdminCatego
 import AdminBrandsPage from '../pages/admin/inventory/AdminBrandsPage';
 import AdminBrandCreatePage from '../pages/admin/inventory/AdminBrandCreatePage';
 import AdminBrandEditPage from '../pages/admin/inventory/AdminBrandEditPage';
+import AdminInventoryStocksPage from '../pages/admin/inventory/AdminInventoryStocksPage';
+import AdminLowInventoryPage from '../pages/admin/inventory/AdminLowInventoryPage';
 
 // Portal Root
 import LandingPage from '../pages/LandingPage';
@@ -105,12 +109,14 @@ export default function AppRoutes() {
           <Route path="/superadmin/staff/create" element={<Navigate to="/superadmin/staff-management/create" replace />} />
           
           {/* Executive Category Oversight */}
-          <Route path="/superadmin/categories" element={<SuperAdminCategoriesPage />} />
+          <Route path="/superadmin/categories" element={<Navigate to="/superadmin/inventory/categories" replace />} />
 
           {/* Super Admin Inventory Management Module */}
           <Route path="/superadmin/inventory" element={<Navigate to="/superadmin/inventory/overview" replace />} />
           <Route path="/superadmin/inventory/overview" element={<SuperAdminInventoryOverviewPage />} />
           <Route path="/superadmin/inventory/products" element={<SuperAdminProductsPage />} />
+          <Route path="/superadmin/inventory/stocks" element={<SuperAdminInventoryStocksPage />} />
+          <Route path="/superadmin/inventory/low-stock" element={<SuperAdminLowInventoryPage />} />
           <Route path="/superadmin/inventory/categories" element={<SuperAdminInventoryCategoriesPage />} />
           <Route path="/superadmin/inventory/brands" element={<SuperAdminInventoryBrandsPage />} />
 
@@ -140,7 +146,9 @@ export default function AppRoutes() {
           <Route path="/admin/categories" element={<Navigate to="/admin/inventory/categories" replace />} />
 
           {/* Admin Inventory Management Module */}
-          <Route path="/admin/inventory" element={<Navigate to="/admin/inventory/products/create" replace />} />
+          <Route path="/admin/inventory" element={<Navigate to="/admin/inventory/stocks" replace />} />
+          <Route path="/admin/inventory/stocks" element={<AdminInventoryStocksPage />} />
+          <Route path="/admin/inventory/low-stock" element={<AdminLowInventoryPage />} />
           <Route path="/admin/inventory/products" element={<AdminProductsPage />} />
           <Route path="/admin/inventory/products/create" element={<AdminProductCreatePage />} />
           <Route path="/admin/inventory/products/:id/edit" element={<AdminProductEditPage />} />

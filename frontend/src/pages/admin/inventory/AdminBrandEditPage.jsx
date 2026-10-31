@@ -14,11 +14,13 @@ import {
 import adminInventoryService from '../../../services/adminInventoryService';
 import LoadingState from '../../../components/LoadingState';
 import { useToast } from '../../../context/ToastContext';
+import { useAdminAuth } from '../../../features/auth/AdminAuthContext';
 
 export default function AdminBrandEditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
+  const { user } = useAdminAuth();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -48,6 +50,13 @@ export default function AdminBrandEditPage() {
       setIsLoading(true);
       try {
         const brand = await adminInventoryService.getBrand(id);
+
+        if (brand.created_by && user?.id && Number(brand.created_by) !== Number(user.id)) {
+          toast.error('Unauthorized: You can only edit brands created by you.');
+          navigate('/admin/inventory/brands');
+          return;
+        }
+
         setFormData({
           name: brand.name || '',
           slug: brand.slug || '',

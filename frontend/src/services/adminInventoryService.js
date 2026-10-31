@@ -88,6 +88,42 @@ export const adminInventoryService = {
     const response = await adminApi.delete(`/admin/inventory/brands/${id}`);
     return response.data;
   },
+
+  // ================= INVENTORY STOCKS & REPLENISHMENT =================
+  async getStocks(params = {}) {
+    const response = await adminApi.get('/admin/inventory/stocks', { params });
+    return response.data;
+  },
+
+  async getLowStock(params = {}) {
+    const response = await adminApi.get('/admin/inventory/stocks/low-stock', { params });
+    return response.data;
+  },
+
+  async getStockStats() {
+    const response = await adminApi.get('/admin/inventory/stocks/stats');
+    return response.data;
+  },
+
+  async getVendors() {
+    const response = await adminApi.get('/admin/inventory/stocks/vendors');
+    return response.data;
+  },
+
+  async addStock(id, data) {
+    const response = await adminApi.post(`/admin/inventory/stocks/${id}/add`, data);
+    return response.data;
+  },
+
+  async updateStock(id, data) {
+    const response = await adminApi.put(`/admin/inventory/stocks/${id}`, data);
+    return response.data;
+  },
+
+  async getStockLogs(id) {
+    const response = await adminApi.get(`/admin/inventory/stocks/${id}/logs`);
+    return response.data;
+  },
 };
 
 export default adminInventoryService;

@@ -301,4 +301,63 @@ class AdminManagementController extends Controller
             'is_generated' => $isGenerated,
         ]);
     }
+
+    /**
+     * Impersonate / Log in as an Admin by Super Admin.
+     */
+    public function impersonate(Request $request, string $id): JsonResponse
+    {
+        $admin = Admin::find($id);
+
+        if (! $admin) {
+            return response()->json([
+                'message' => 'Admin account not found.',
+            ], 404);
+        }
+
+        if ($admin->status === 'blocked') {
+            return response()->json([
+                'message' => 'Cannot log in as a blocked Admin account. Please unblock the admin first.',
+            ], 422);
+        }
+
+        if (! $admin->is_active || $admin->status === 'inactive') {
+            return response()->json([
+                'message' => 'Cannot log in as an inactive Admin account. Please activate the admin first.',
+            ], 422);
+        }
+
+        $superAdmin = $request->user();
+
+        // Generate Sanctum access token for the admin with role:admin ability
+        $token = $admin->createToken('admin-impersonate-token', ['role:admin'])->plainTextToken;
+
+        AdminActivityLog::record(
+            'super_admin',
+            $superAdmin->id,
+            'admin_impersonation',
+            "Super Admin '{$superAdmin->name}' logged in as Admin '{$admin->name}' (ID: {$admin->id}).",
+            $request
+        );
+
+        return response()->json([
+            'message' => "Successfully authenticated as Admin '{$admin->name}'.",
+            'token' => $token,
+            'user' => [
+                'id' => $admin->id,
+                'name' => $admin->name,
+                'email' => $admin->email,
+                'mobile' => $admin->mobile,
+                'status' => $admin->status,
+                'is_active' => $admin->is_active,
+                'last_login_at' => $admin->last_login_at,
+                'created_at' => $admin->created_at,
+            ],
+            'impersonated_by' => [
+                'superadmin_id' => $superAdmin->id,
+                'superadmin_name' => $superAdmin->name,
+                'superadmin_email' => $superAdmin->email,
+            ],
+        ]);
+    }
 }

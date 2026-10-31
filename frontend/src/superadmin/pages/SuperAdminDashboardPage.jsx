@@ -20,6 +20,8 @@ import {
   Zap,
   Activity,
   UserPlus,
+  AlertTriangle,
+  Boxes,
 } from 'lucide-react';
 import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import superAdminDashboardService from '../services/superAdminDashboardService';
@@ -123,6 +125,8 @@ export default function SuperAdminDashboardPage() {
   const totalBlocked = summary.total_blocked ?? (modules.admins.blocked + modules.staff.blocked + modules.vendors.blocked + modules.sales_team.blocked);
   const totalPersonnel = summary.total_personnel ?? (totalActive + totalInactive + totalBlocked);
   const activeRate = summary.active_rate ?? (totalPersonnel > 0 ? Math.round((totalActive / totalPersonnel) * 100) : 100);
+  const lowStockCount = summary.low_stock_products_count ?? 0;
+  const totalInventory = summary.total_inventory_products ?? 0;
 
   // Dynamic growth datasets for SplineAreaChart linked to real backend records
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -298,10 +302,39 @@ export default function SuperAdminDashboardPage() {
         </div>
       )}
 
+      {/* Low Inventory Alert Banner (if any products depleted / low) */}
+      {lowStockCount > 0 && (
+        <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-amber-500/10 border border-amber-300 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+              <AlertTriangle className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span>Low Inventory Alert Oversight</span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700">
+                  {lowStockCount} item{lowStockCount > 1 ? 's' : ''} depleted
+                </span>
+              </h4>
+              <p className="text-xs text-slate-600 mt-0.5">
+                Hospital supplies require replenishment. Notify branch administrators to restock depleting medical items.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/superadmin/inventory/low-stock"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-xs transition-colors shrink-0"
+          >
+            <span>Review Low Stock List</span>
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
+      )}
+
       {/* ======================================================== */}
-      {/* 2. Primary KPI Stat Cards (3 by 3 Grid - 3 Top, 3 Below) */}
+      {/* 2. Primary KPI Stat Cards (4 by 2 Grid)                   */}
       {/* ======================================================== */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {/* ROW 1 - CARD 1: Total Administrators */}
         <Link to="/superadmin/admins" className="block group">
           <StatCard
@@ -341,7 +374,7 @@ export default function SuperAdminDashboardPage() {
           />
         </Link>
 
-        {/* ROW 2 - CARD 4: Sales Representatives */}
+        {/* ROW 1 - CARD 4: Sales Representatives */}
         <Link to="/superadmin/sales-management/details" className="block group">
           <StatCard
             title="Sales Representatives"
@@ -355,7 +388,7 @@ export default function SuperAdminDashboardPage() {
         </Link>
 
         {/* ROW 2 - CARD 5: Active Service Categories */}
-        <Link to="/superadmin/categories" className="block group">
+        <Link to="/superadmin/inventory/categories" className="block group">
           <StatCard
             title="Active Service Categories"
             value={totalCategories || 15}
@@ -380,6 +413,32 @@ export default function SuperAdminDashboardPage() {
             sparklineData={[98, 99, 99, 99, 100, 99, 100]}
           />
         </div>
+
+        {/* ROW 2 - CARD 7: Total Inventory Products */}
+        <Link to="/superadmin/inventory/stocks" className="block group">
+          <StatCard
+            title="Total Inventory Products"
+            value={totalInventory}
+            subtitle="Catalog Medical Supplies"
+            icon={Boxes}
+            colorScheme="blue"
+            trend="Catalog"
+            sparklineData={[4, 8, 12, 10, 14, 16, 18]}
+          />
+        </Link>
+
+        {/* ROW 2 - CARD 8: Low Stock Alerts */}
+        <Link to="/superadmin/inventory/low-stock" className="block group">
+          <StatCard
+            title="Low Inventory Alerts"
+            value={lowStockCount}
+            subtitle={lowStockCount > 0 ? 'Depleted Hospital Supplies' : 'Adequate Supply'}
+            icon={AlertTriangle}
+            colorScheme={lowStockCount > 0 ? 'amber' : 'emerald'}
+            trend={lowStockCount > 0 ? 'Depleted' : 'Normal'}
+            sparklineData={[5, 4, 3, 2, 4, 3, lowStockCount]}
+          />
+        </Link>
       </div>
 
       {/* ======================================================== */}
@@ -554,7 +613,7 @@ export default function SuperAdminDashboardPage() {
 
             {/* Tile 4: Service Categories */}
             <Link
-              to="/superadmin/categories"
+              to="/superadmin/inventory/categories"
               className="p-4 rounded-xl bg-[#fffbeb] hover:bg-amber-100/70 border border-amber-100/60 transition-all flex flex-col items-center text-center group cursor-pointer"
             >
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center icon-3d shadow-xs mb-2">

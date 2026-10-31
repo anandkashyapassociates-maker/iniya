@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\Admin\CategoryController;
 use App\Http\Controllers\Api\Admin\CustomerController;
 use App\Http\Controllers\Api\Admin\InventoryBrandController;
 use App\Http\Controllers\Api\Admin\InventoryCategoryController;
+use App\Http\Controllers\Api\Admin\InventoryStockController;
 use App\Http\Controllers\Api\Admin\ProductController;
 use App\Http\Controllers\Api\SuperAdmin\AdminManagementController;
 use App\Http\Controllers\Api\SuperAdmin\SalesMemberManagementController;
@@ -67,6 +68,7 @@ Route::prefix('superadmin')
         Route::put('/admins/{id}', [AdminManagementController::class, 'update']);
         Route::patch('/admins/{id}/status', [AdminManagementController::class, 'updateStatus']);
         Route::post('/admins/{id}/password-reset', [AdminManagementController::class, 'resetPassword']);
+        Route::post('/admins/{id}/impersonate', [AdminManagementController::class, 'impersonate']);
 
         // Staff Management
         Route::get('/staff/preview-code', [StaffManagementController::class, 'previewCode']);
@@ -105,6 +107,10 @@ Route::prefix('superadmin')
         // Inventory Management (SuperAdmin Reporting, Products, Categories, Brands)
         Route::prefix('inventory')->group(function () {
             Route::get('/overview', [SuperAdminInventoryController::class, 'overview']);
+            Route::get('/stocks', [SuperAdminInventoryController::class, 'stocks']);
+            Route::get('/stocks/low-stock', [SuperAdminInventoryController::class, 'lowStock']);
+            Route::post('/stocks/{id}/add', [SuperAdminInventoryController::class, 'addStock']);
+            Route::match(['put', 'post'], '/stocks/{id}', [SuperAdminInventoryController::class, 'updateStock']);
             Route::get('/products', [SuperAdminInventoryController::class, 'products']);
             Route::get('/products/{id}', [SuperAdminInventoryController::class, 'showProduct']);
             Route::match(['put', 'post'], '/products/{id}', [SuperAdminInventoryController::class, 'updateProduct']);
@@ -186,6 +192,15 @@ Route::prefix('admin')
 
         // Inventory Management (Products, Categories, Brands)
         Route::prefix('inventory')->group(function () {
+            // Stocks & Updates
+            Route::get('/stocks', [InventoryStockController::class, 'index']);
+            Route::get('/stocks/low-stock', [InventoryStockController::class, 'lowStock']);
+            Route::get('/stocks/stats', [InventoryStockController::class, 'stats']);
+            Route::get('/stocks/vendors', [InventoryStockController::class, 'vendors']);
+            Route::get('/stocks/{id}/logs', [InventoryStockController::class, 'logs']);
+            Route::post('/stocks/{id}/add', [InventoryStockController::class, 'addStock']);
+            Route::match(['put', 'post'], '/stocks/{id}', [InventoryStockController::class, 'updateStock']);
+
             // Products
             Route::get('/products', [ProductController::class, 'index']);
             Route::post('/products', [ProductController::class, 'store']);

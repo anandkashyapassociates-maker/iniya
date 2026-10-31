@@ -69,6 +69,17 @@ export const superAdminInventoryService = {
     const response = await superAdminApi.delete(`/superadmin/inventory/brands/${id}`);
     return response.data;
   },
+
+  // ================= STOCKS & LOW STOCK OVERSIGHT =================
+  async getStocks(params = {}) {
+    const response = await superAdminApi.get('/superadmin/inventory/stocks', { params });
+    return response.data;
+  },
+
+  async getLowStock(params = {}) {
+    const response = await superAdminApi.get('/superadmin/inventory/stocks/low-stock', { params });
+    return response.data;
+  },
 };
 
 export default superAdminInventoryService;

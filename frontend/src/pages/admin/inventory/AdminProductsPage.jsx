@@ -20,14 +20,17 @@ import {
   Building2,
   CheckCircle2,
   Sparkles,
+  Lock,
 } from 'lucide-react';
 import DataTable from '../../../components/DataTable';
 import ConfirmDialog from '../../../components/ConfirmDialog';
 import adminInventoryService from '../../../services/adminInventoryService';
 import { useToast } from '../../../context/ToastContext';
+import { useAdminAuth } from '../../../features/auth/AdminAuthContext';
 
 export default function AdminProductsPage() {
   const toast = useToast();
+  const { user } = useAdminAuth();
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -223,40 +226,65 @@ export default function AdminProductsPage() {
     {
       header: 'ACTIONS',
       className: 'w-[12%] text-right',
-      render: (p, index) => (
-        <div className="flex items-center justify-end gap-1.5">
-          <button
-            onClick={() => {
-              setViewProduct(p);
-              setViewIndex((pagination?.from || 1) + index);
-            }}
-            className="p-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
-            title="View Product"
-          >
-            <Eye className="w-3.5 h-3.5" />
-          </button>
-          <Link
-            to={`/admin/inventory/products/${p.id}/edit`}
-            className="p-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
-            title="Edit Product"
-          >
-            <Edit className="w-3.5 h-3.5" />
-          </Link>
-          <button
-            onClick={() =>
-              setDeleteDialog({
-                isOpen: true,
-                product: p,
-                isLoading: false,
-              })
-            }
-            className="p-1.5 rounded-xl border border-rose-200 bg-white text-rose-600 hover:text-white hover:bg-rose-600 hover:border-rose-600 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
-            title="Delete Product"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      ),
+      render: (p, index) => {
+        const isOwner = Number(p.created_by_admin_id) === Number(user?.id);
+        const isInUse = Boolean(p.is_used);
+
+        return (
+          <div className="flex items-center justify-end gap-1.5">
+            <button
+              onClick={() => {
+                setViewProduct(p);
+                setViewIndex((pagination?.from || 1) + index);
+              }}
+              className="p-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+              title="View Product"
+            >
+              <Eye className="w-3.5 h-3.5" />
+            </button>
+            {isOwner ? (
+              <>
+                <Link
+                  to={`/admin/inventory/products/${p.id}/edit`}
+                  className="p-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+                  title="Edit Product"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                </Link>
+                {isInUse ? (
+                  <span
+                    className="p-1.5 rounded-xl border border-slate-200 bg-white text-slate-300 cursor-not-allowed inline-flex items-center"
+                    title="Product is in use. Cannot be deleted."
+                  >
+                    <Trash2 className="w-3.5 h-3.5 opacity-40" />
+                  </span>
+                ) : (
+                  <button
+                    onClick={() =>
+                      setDeleteDialog({
+                        isOpen: true,
+                        product: p,
+                        isLoading: false,
+                      })
+                    }
+                    className="p-1.5 rounded-xl border border-rose-200 bg-white text-rose-600 hover:text-white hover:bg-rose-600 hover:border-rose-600 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+                    title="Delete Product"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </>
+            ) : (
+              <span
+                className="p-1.5 rounded-xl text-slate-400 inline-flex items-center cursor-not-allowed"
+                title={`Created by ${p.creator?.name || 'another admin'} (Read-only)`}
+              >
+                <Lock className="w-3.5 h-3.5 text-slate-400" />
+              </span>
+            )}
+          </div>
+        );
+      },
     },
   ];
 
@@ -295,6 +323,15 @@ export default function AdminProductsPage() {
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Refresh</span>
           </button>
+
+          <Link
+            to="/admin/inventory/stocks"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-all shadow-2xs"
+            title="Stock Ledger"
+          >
+            <Boxes className="w-3.5 h-3.5 text-blue-600" />
+            <span className="hidden sm:inline">Stock Ledger</span>
+          </Link>
 
           <Link
             to="/admin/inventory/products/create"
@@ -538,12 +575,14 @@ export default function AdminProductsPage() {
               >
                 Close
               </button>
-              <Link
-                to={`/admin/inventory/products/${viewProduct.id}/edit`}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold font-display shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
-              >
-                Edit Product
-              </Link>
+              {Number(viewProduct.created_by_admin_id) === Number(user?.id) && (
+                <Link
+                  to={`/admin/inventory/products/${viewProduct.id}/edit`}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold font-display shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
+                >
+                  Edit Product
+                </Link>
+              )}
             </div>
           </div>
         </div>

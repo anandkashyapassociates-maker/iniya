@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Award,
-  Trash2,
   Eye,
-  Edit,
   Search,
   RefreshCw,
   X,
@@ -13,7 +11,6 @@ import {
   Sparkles,
 } from 'lucide-react';
 import DataTable from '../../components/DataTable';
-import ConfirmDialog from '../../components/ConfirmDialog';
 import superAdminInventoryService from '../services/superAdminInventoryService';
 import { useToast } from '../../context/ToastContext';
 
@@ -29,21 +26,6 @@ export default function SuperAdminInventoryBrandsPage() {
   // View modal state
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(null);
-
-  // Edit modal state
-  const [editBrand, setEditBrand] = useState(null);
-  const [editFormData, setEditFormData] = useState({
-    name: '',
-    description: '',
-  });
-  const [isUpdating, setIsUpdating] = useState(false);
-
-  // Delete state
-  const [deleteDialog, setDeleteDialog] = useState({
-    isOpen: false,
-    brand: null,
-    isLoading: false,
-  });
 
   const fetchBrands = useCallback(async () => {
     setIsLoading(true);
@@ -73,48 +55,6 @@ export default function SuperAdminInventoryBrandsPage() {
   useEffect(() => {
     fetchBrands();
   }, [fetchBrands]);
-
-  const openEditModal = (brand) => {
-    setEditBrand(brand);
-    setEditFormData({
-      name: brand.name || '',
-      description: brand.description || '',
-    });
-  };
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-    if (!editBrand) return;
-    setIsUpdating(true);
-    try {
-      const payload = {
-        name: editFormData.name.trim(),
-        description: editFormData.description?.trim() || null,
-      };
-      await superAdminInventoryService.updateBrand(editBrand.id, payload);
-      toast.success('Brand updated successfully.');
-      setEditBrand(null);
-      fetchBrands();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update brand.');
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteDialog.brand) return;
-    setDeleteDialog((prev) => ({ ...prev, isLoading: true }));
-    try {
-      const res = await superAdminInventoryService.deleteBrand(deleteDialog.brand.id);
-      toast.success(res.message || 'Brand deleted successfully.');
-      setDeleteDialog({ isOpen: false, brand: null, isLoading: false });
-      fetchBrands();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to delete brand.');
-      setDeleteDialog((prev) => ({ ...prev, isLoading: false }));
-    }
-  };
 
   const columns = [
     {
@@ -188,7 +128,7 @@ export default function SuperAdminInventoryBrandsPage() {
       header: 'ACTIONS',
       className: 'w-[10%] text-right',
       render: (brand, index) => (
-        <div className="flex items-center justify-end gap-1.5">
+        <div className="flex items-center justify-end">
           <button
             onClick={() => {
               setSelectedBrand(brand);
@@ -198,20 +138,6 @@ export default function SuperAdminInventoryBrandsPage() {
             title="View Details"
           >
             <Eye className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => openEditModal(brand)}
-            className="p-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
-            title="Edit Brand"
-          >
-            <Edit className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => setDeleteDialog({ isOpen: true, brand, isLoading: false })}
-            className="p-1.5 rounded-xl border border-rose-200 bg-white text-rose-600 hover:text-white hover:bg-rose-600 hover:border-rose-600 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
-            title="Delete Brand"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
       ),
@@ -366,88 +292,6 @@ export default function SuperAdminInventoryBrandsPage() {
         </div>
       )}
 
-      {/* Edit Brand Modal */}
-      {editBrand && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-lg bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-7 relative overflow-hidden space-y-5">
-            <div className="flex items-start justify-between pb-3.5 border-b border-slate-100">
-              <div>
-                <h3 className="text-base font-bold font-display text-slate-900">Edit Inventory Brand</h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Editing BRD-{String(editBrand.id).padStart(4, '0')} • Creator Admin preserved
-                </p>
-              </div>
-              <button
-                onClick={() => setEditBrand(null)}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleEditSubmit} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1.5">
-                  Brand / Manufacturer Name <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={editFormData.name}
-                  onChange={(e) =>
-                    setEditFormData((prev) => ({ ...prev, name: e.target.value }))
-                  }
-                  required
-                  className="w-full px-4 py-2.5 rounded-2xl bg-slate-50/80 border border-slate-200 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 transition-all font-normal"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1.5">
-                  Brand Profile & Description <span className="text-slate-400 font-normal">(Optional)</span>
-                </label>
-                <textarea
-                  rows="4"
-                  value={editFormData.description}
-                  onChange={(e) =>
-                    setEditFormData((prev) => ({ ...prev, description: e.target.value }))
-                  }
-                  className="w-full p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 transition-all resize-y font-normal"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2.5 pt-3.5 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setEditBrand(null)}
-                  disabled={isUpdating}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold font-display text-slate-600 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isUpdating}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold font-display shadow-md shadow-blue-500/20 hover:shadow-lg transition-all cursor-pointer disabled:opacity-50 active:scale-98"
-                >
-                  {isUpdating ? 'Saving Changes...' : 'Save Brand'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Dialog */}
-      <ConfirmDialog
-        isOpen={deleteDialog.isOpen}
-        title="Delete Inventory Brand?"
-        message={`Are you sure you want to delete '${deleteDialog.brand?.name}'? Note: Brands with linked products cannot be deleted.`}
-        confirmText="Delete Brand"
-        confirmVariant="danger"
-        isLoading={deleteDialog.isLoading}
-        onConfirm={handleDeleteConfirm}
-        onCancel={() => setDeleteDialog({ isOpen: false, brand: null, isLoading: false })}
-      />
     </div>
   );
 }

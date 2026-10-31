@@ -20,6 +20,7 @@ import {
   Package,
   Award,
   BarChart3,
+  AlertTriangle,
 } from 'lucide-react';
 import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import ToastNotifications from '../../components/ToastNotifications';
@@ -184,24 +185,6 @@ export default function SuperAdminLayout() {
                 <LayoutDashboard className="w-4 h-4 drop-shadow-sm" />
               </div>
               <span className="truncate group-hover:translate-x-0.5 transition-transform">Dashboard</span>
-            </NavLink>
-
-            {/* Category Oversight Link */}
-            <NavLink
-              to="/superadmin/categories"
-              onClick={() => setMobileMenuOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group ${
-                  isActive
-                    ? 'bg-gradient-to-r from-purple-600/30 to-indigo-600/20 text-white border-l-4 border-purple-500 shadow-sm'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-900/80'
-                }`
-              }
-            >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-400 via-cyan-500 to-blue-600 text-white flex items-center justify-center shrink-0 icon-3d shadow-md group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-300">
-                <FolderTree className="w-4 h-4 drop-shadow-sm" />
-              </div>
-              <span className="truncate group-hover:translate-x-0.5 transition-transform">Category Registry</span>
             </NavLink>
 
             {/* Profile & Security Link */}
@@ -558,6 +541,38 @@ export default function SuperAdminLayout() {
                     <span>All Products</span>
                   </NavLink>
 
+                  {/* 3. Stock Ledger */}
+                  <NavLink
+                    to="/superadmin/inventory/stocks"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <Boxes className="w-3.5 h-3.5 shrink-0" />
+                    <span>Stock Ledger</span>
+                  </NavLink>
+
+                  {/* 4. Low Stock Alerts */}
+                  <NavLink
+                    to="/superadmin/inventory/low-stock"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                    <span>Low Stock Alerts</span>
+                  </NavLink>
+
                   {/* 3. Categories */}
                   <NavLink
                     to="/superadmin/inventory/categories"
@@ -700,14 +715,6 @@ export default function SuperAdminLayout() {
                   >
                     <User className="w-4 h-4 text-slate-400" />
                     <span>Profile &amp; Security</span>
-                  </NavLink>
-                  <NavLink
-                    to="/superadmin/categories"
-                    onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                  >
-                    <FolderTree className="w-4 h-4 text-slate-400" />
-                    <span>Category Registry</span>
                   </NavLink>
                 </div>
 

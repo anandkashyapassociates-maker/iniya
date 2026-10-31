@@ -22,11 +22,13 @@ import {
 import LoadingState from '../../components/LoadingState';
 import adminService from '../../services/adminService';
 import { useToast } from '../../context/ToastContext';
+import { useAdminAuth } from '../../features/auth/AdminAuthContext';
 
 export default function AdminCustomerEditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
+  const { user } = useAdminAuth();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -50,6 +52,13 @@ export default function AdminCustomerEditPage() {
     const fetchCustomer = async () => {
       try {
         const data = await adminService.getCustomer(id);
+
+        if (data.admin_id && user?.id && Number(data.admin_id) !== Number(user.id)) {
+          toast.error('Unauthorized: You can only edit customers registered by you.');
+          navigate('/admin/customers');
+          return;
+        }
+
         setFormData({
           name: data.name || '',
           mobile: data.mobile || '',
