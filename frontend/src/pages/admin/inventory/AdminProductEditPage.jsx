@@ -20,11 +20,13 @@ import {
 import adminInventoryService from '../../../services/adminInventoryService';
 import LoadingState from '../../../components/LoadingState';
 import { useToast } from '../../../context/ToastContext';
+import { useAdminAuth } from '../../../features/auth/AdminAuthContext';
 
 export default function AdminProductEditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
+  const { user } = useAdminAuth();
   const fileInputRef = useRef(null);
 
   const [categories, setCategories] = useState([]);
@@ -77,6 +79,12 @@ export default function AdminProductEditPage() {
           adminInventoryService.getBrandDropdown(),
           adminInventoryService.getProduct(id),
         ]);
+
+        if (prod.created_by_admin_id && user?.id && Number(prod.created_by_admin_id) !== Number(user.id)) {
+          toast.error('Unauthorized: You can only edit products created by you.');
+          navigate('/admin/inventory/products');
+          return;
+        }
         setCategories(cats || []);
         setBrands(brs || []);
 

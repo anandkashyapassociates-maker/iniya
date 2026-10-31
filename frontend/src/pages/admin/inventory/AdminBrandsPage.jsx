@@ -11,14 +11,17 @@ import {
   Package,
   X,
   UserCheck,
+  Lock,
 } from 'lucide-react';
 import DataTable from '../../../components/DataTable';
 import ConfirmDialog from '../../../components/ConfirmDialog';
 import adminInventoryService from '../../../services/adminInventoryService';
 import { useToast } from '../../../context/ToastContext';
+import { useAdminAuth } from '../../../features/auth/AdminAuthContext';
 
 export default function AdminBrandsPage() {
   const toast = useToast();
+  const { user } = useAdminAuth();
 
   const [brands, setBrands] = useState([]);
   const [pagination, setPagination] = useState(null);
@@ -152,34 +155,63 @@ export default function AdminBrandsPage() {
     {
       header: 'ACTIONS',
       className: 'w-[10%] text-right',
-      render: (brand, index) => (
-        <div className="flex items-center justify-end gap-1.5">
-          <button
-            onClick={() => {
-              setSelectedBrand(brand);
-              setSelectedIndex((pagination?.from || 1) + index);
-            }}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-            title="View Details"
-          >
-            <Eye className="w-3.5 h-3.5" />
-          </button>
-          <Link
-            to={`/admin/inventory/brands/${brand.id}/edit`}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
-            title="Edit Brand"
-          >
-            <Edit className="w-3.5 h-3.5" />
-          </Link>
-          <button
-            onClick={() => setDeleteDialog({ isOpen: true, brand, isLoading: false })}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-            title="Delete Brand"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      ),
+      render: (brand, index) => {
+        const isOwner = Number(brand.created_by) === Number(user?.id);
+        const hasLinkedProducts = (brand.products_count ?? 0) > 0 || brand.has_used_products;
+
+        return (
+          <div className="flex items-center justify-end gap-1.5">
+            <button
+              onClick={() => {
+                setSelectedBrand(brand);
+                setSelectedIndex((pagination?.from || 1) + index);
+              }}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+              title="View Details"
+            >
+              <Eye className="w-3.5 h-3.5" />
+            </button>
+            {isOwner ? (
+              <>
+                <Link
+                  to={`/admin/inventory/brands/${brand.id}/edit`}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                  title="Edit Brand"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                </Link>
+                {hasLinkedProducts ? (
+                  <span
+                    className="p-1.5 rounded-lg text-slate-300 cursor-not-allowed inline-flex items-center"
+                    title={
+                      brand.has_used_products
+                        ? 'Brand has products in use. Cannot be deleted.'
+                        : 'Brand has linked product(s). Cannot be deleted.'
+                    }
+                  >
+                    <Trash2 className="w-3.5 h-3.5 opacity-40" />
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => setDeleteDialog({ isOpen: true, brand, isLoading: false })}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                    title="Delete Brand"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </>
+            ) : (
+              <span
+                className="p-1.5 rounded-lg text-slate-400 inline-flex items-center cursor-not-allowed"
+                title={`Created by ${brand.creator?.name || 'another admin'} (Read-only)`}
+              >
+                <Lock className="w-3.5 h-3.5 text-slate-400" />
+              </span>
+            )}
+          </div>
+        );
+      },
     },
   ];
 

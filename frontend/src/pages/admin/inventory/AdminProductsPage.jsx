@@ -18,14 +18,17 @@ import {
   X,
   AlertCircle,
   Building2,
+  Lock,
 } from 'lucide-react';
 import DataTable from '../../../components/DataTable';
 import ConfirmDialog from '../../../components/ConfirmDialog';
 import adminInventoryService from '../../../services/adminInventoryService';
 import { useToast } from '../../../context/ToastContext';
+import { useAdminAuth } from '../../../features/auth/AdminAuthContext';
 
 export default function AdminProductsPage() {
   const toast = useToast();
+  const { user } = useAdminAuth();
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -221,40 +224,65 @@ export default function AdminProductsPage() {
     {
       header: 'ACTIONS',
       className: 'w-[11%] text-right',
-      render: (p, index) => (
-        <div className="flex items-center justify-end gap-1.5">
-          <button
-            onClick={() => {
-              setViewProduct(p);
-              setViewIndex((pagination?.from || 1) + index);
-            }}
-            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-            title="View Product"
-          >
-            <Eye className="w-3.5 h-3.5" />
-          </button>
-          <Link
-            to={`/admin/inventory/products/${p.id}/edit`}
-            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-            title="Edit Product"
-          >
-            <Edit className="w-3.5 h-3.5" />
-          </Link>
-          <button
-            onClick={() =>
-              setDeleteDialog({
-                isOpen: true,
-                product: p,
-                isLoading: false,
-              })
-            }
-            className="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:text-white hover:bg-rose-600 transition-colors cursor-pointer"
-            title="Delete Product"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      ),
+      render: (p, index) => {
+        const isOwner = Number(p.created_by_admin_id) === Number(user?.id);
+        const isInUse = Boolean(p.is_used);
+
+        return (
+          <div className="flex items-center justify-end gap-1.5">
+            <button
+              onClick={() => {
+                setViewProduct(p);
+                setViewIndex((pagination?.from || 1) + index);
+              }}
+              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+              title="View Product"
+            >
+              <Eye className="w-3.5 h-3.5" />
+            </button>
+            {isOwner ? (
+              <>
+                <Link
+                  to={`/admin/inventory/products/${p.id}/edit`}
+                  className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                  title="Edit Product"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                </Link>
+                {isInUse ? (
+                  <span
+                    className="p-1.5 rounded-lg border border-slate-200 text-slate-300 cursor-not-allowed inline-flex items-center"
+                    title="Product is in use. Cannot be deleted."
+                  >
+                    <Trash2 className="w-3.5 h-3.5 opacity-40" />
+                  </span>
+                ) : (
+                  <button
+                    onClick={() =>
+                      setDeleteDialog({
+                        isOpen: true,
+                        product: p,
+                        isLoading: false,
+                      })
+                    }
+                    className="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:text-white hover:bg-rose-600 transition-colors cursor-pointer"
+                    title="Delete Product"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </>
+            ) : (
+              <span
+                className="p-1.5 rounded-lg text-slate-400 inline-flex items-center cursor-not-allowed"
+                title={`Created by ${p.creator?.name || 'another admin'} (Read-only)`}
+              >
+                <Lock className="w-3.5 h-3.5 text-slate-400" />
+              </span>
+            )}
+          </div>
+        );
+      },
     },
   ];
 

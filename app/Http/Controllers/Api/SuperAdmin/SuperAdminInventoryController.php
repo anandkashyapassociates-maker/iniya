@@ -4,16 +4,12 @@ namespace App\Http\Controllers\Api\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
-use App\Models\AdminActivityLog;
 use App\Models\InventoryBrand;
 use App\Models\InventoryCategory;
 use App\Models\InventoryProduct;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 
 class SuperAdminInventoryController extends Controller
 {
@@ -150,120 +146,33 @@ class SuperAdminInventoryController extends Controller
     }
 
     /**
-     * Super Admin update product.
+     * Super Admin update product (Restricted - Read-only oversight).
      */
     public function updateProduct(Request $request, int $id): JsonResponse
     {
-        $product = InventoryProduct::findOrFail($id);
-
-        $validated = $request->validate([
-            'category_id' => ['required', 'exists:inventory_categories,id'],
-            'brand_id' => ['nullable', 'exists:inventory_brands,id'],
-            'product_name' => ['required', 'string', 'max:255'],
-            'business_unit' => ['required', 'string', 'max:50'],
-            'product_type' => ['required', 'string', 'max:50'],
-            'custom_product_type' => ['nullable', 'string', 'max:100', 'required_if:product_type,Other'],
-            'status' => ['nullable', 'in:active,inactive'],
-            'product_image' => ['nullable', 'file', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
-            'remove_image' => ['sometimes', 'boolean'],
-        ]);
-
-        $superAdmin = $request->user();
-
-        DB::transaction(function () use ($request, $product, $validated) {
-            $imagePath = $product->product_image;
-
-            if ($request->hasFile('product_image')) {
-                if ($product->product_image && Storage::disk('public')->exists($product->product_image)) {
-                    Storage::disk('public')->delete($product->product_image);
-                }
-                $imagePath = $request->file('product_image')->store('inventory/products', 'public');
-            } elseif ($request->boolean('remove_image')) {
-                if ($product->product_image && Storage::disk('public')->exists($product->product_image)) {
-                    Storage::disk('public')->delete($product->product_image);
-                }
-                $imagePath = null;
-            }
-
-            // Note: Original creator admin ID is strictly preserved!
-            $product->update([
-                'category_id' => $validated['category_id'],
-                'brand_id' => $validated['brand_id'] ?? null,
-                'product_image' => $imagePath,
-                'product_name' => $validated['product_name'],
-                'business_unit' => $validated['business_unit'],
-                'product_type' => $validated['product_type'],
-                'custom_product_type' => $validated['product_type'] === 'Other' ? ($validated['custom_product_type'] ?? null) : null,
-                'status' => $validated['status'] ?? $product->status,
-            ]);
-        });
-
-        AdminActivityLog::record(
-            'superadmin',
-            $superAdmin->id,
-            'inventory_product_updated_by_superadmin',
-            "Super Admin '{$superAdmin->name}' modified product '{$product->product_name}' (ID: {$product->id}).",
-            $request
-        );
-
         return response()->json([
-            'message' => "Product '{$product->product_name}' updated successfully by Super Admin.",
-            'product' => $product->fresh()->load(['category', 'brand', 'creator']),
-        ]);
+            'message' => 'Unauthorized. Super Admin has read-only oversight. Editing and deleting products is restricted to creator admins.',
+        ], 403);
     }
 
     /**
-     * Toggle or update product status.
+     * Toggle or update product status (Restricted - Read-only oversight).
      */
     public function updateProductStatus(Request $request, int $id): JsonResponse
     {
-        $product = InventoryProduct::findOrFail($id);
-
-        $validated = $request->validate([
-            'status' => ['required', 'in:active,inactive'],
-        ]);
-
-        $product->update([
-            'status' => $validated['status'],
-        ]);
-
-        $superAdmin = $request->user();
-        AdminActivityLog::record(
-            'superadmin',
-            $superAdmin->id,
-            'inventory_product_status_toggled',
-            "Super Admin '{$superAdmin->name}' changed product '{$product->product_name}' status to '{$validated['status']}'.",
-            $request
-        );
-
         return response()->json([
-            'message' => "Product status updated to {$validated['status']}.",
-            'product' => $product,
-        ]);
+            'message' => 'Unauthorized. Super Admin has read-only oversight. Modifying product status is restricted to creator admins.',
+        ], 403);
     }
 
     /**
-     * Delete product (Super Admin Executive Privilege).
+     * Delete product (Restricted - Read-only oversight).
      */
     public function destroyProduct(Request $request, int $id): JsonResponse
     {
-        $product = InventoryProduct::findOrFail($id);
-        $productName = $product->product_name;
-
-        $product->delete();
-
-        $superAdmin = $request->user();
-        AdminActivityLog::record(
-            'superadmin',
-            $superAdmin->id,
-            'inventory_product_deleted_by_superadmin',
-            "Super Admin '{$superAdmin->name}' deleted product '{$productName}' (ID: {$id}).",
-            $request
-        );
-
         return response()->json([
-            'message' => "Product '{$productName}' deleted successfully by Super Admin.",
-        ]);
+            'message' => 'Unauthorized. Super Admin has read-only oversight. Deleting products is restricted to creator admins.',
+        ], 403);
     }
 
     /**
@@ -289,93 +198,23 @@ class SuperAdminInventoryController extends Controller
     }
 
     /**
-     * Update category by Super Admin.
+     * Update category (Restricted - Read-only oversight).
      */
     public function updateCategory(Request $request, int $id): JsonResponse
     {
-        $category = InventoryCategory::findOrFail($id);
-
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', Rule::unique('inventory_categories', 'name')->ignore($category->id)],
-            'description' => ['nullable', 'string', 'max:2000'],
-            'status' => ['nullable', 'in:active,inactive'],
-            'image' => ['nullable', 'file', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
-            'remove_image' => ['sometimes', 'boolean'],
-        ]);
-
-        $imagePath = $category->image;
-
-        if ($request->hasFile('image')) {
-            if ($category->image && Storage::disk('public')->exists($category->image)) {
-                Storage::disk('public')->delete($category->image);
-            }
-            $imagePath = $request->file('image')->store('inventory/categories', 'public');
-        } elseif ($request->boolean('remove_image')) {
-            if ($category->image && Storage::disk('public')->exists($category->image)) {
-                Storage::disk('public')->delete($category->image);
-            }
-            $imagePath = null;
-        }
-
-        $baseSlug = Str::slug($validated['name']);
-        $slug = $baseSlug;
-        $counter = 1;
-        while (InventoryCategory::where('slug', $slug)->where('id', '!=', $category->id)->exists()) {
-            $slug = "{$baseSlug}-{$counter}";
-            $counter++;
-        }
-
-        $category->update([
-            'name' => $validated['name'],
-            'slug' => $slug,
-            'description' => $validated['description'] ?? null,
-            'image' => $imagePath,
-            'status' => $validated['status'] ?? $category->status,
-        ]);
-
-        $superAdmin = $request->user();
-        AdminActivityLog::record(
-            'superadmin',
-            $superAdmin->id,
-            'inventory_category_updated_by_superadmin',
-            "Super Admin '{$superAdmin->name}' updated category '{$category->name}'.",
-            $request
-        );
-
         return response()->json([
-            'message' => "Category '{$category->name}' updated successfully.",
-            'category' => $category->fresh()->load('creator:id,name,email')->loadCount('products'),
-        ]);
+            'message' => 'Unauthorized. Super Admin has read-only oversight. Editing categories is restricted to creator admins.',
+        ], 403);
     }
 
     /**
-     * Delete category by Super Admin (with dependency protection).
+     * Delete category (Restricted - Read-only oversight).
      */
     public function destroyCategory(Request $request, int $id): JsonResponse
     {
-        $category = InventoryCategory::withCount('products')->findOrFail($id);
-
-        if ($category->products_count > 0) {
-            return response()->json([
-                'message' => "Cannot delete category '{$category->name}' because it contains {$category->products_count} assigned product(s). Please reassign or delete these products first.",
-            ], 422);
-        }
-
-        $categoryName = $category->name;
-        $category->delete();
-
-        $superAdmin = $request->user();
-        AdminActivityLog::record(
-            'superadmin',
-            $superAdmin->id,
-            'inventory_category_deleted_by_superadmin',
-            "Super Admin '{$superAdmin->name}' deleted category '{$categoryName}' (ID: {$id}).",
-            $request
-        );
-
         return response()->json([
-            'message' => "Category '{$categoryName}' deleted successfully by Super Admin.",
-        ]);
+            'message' => 'Unauthorized. Super Admin has read-only oversight. Deleting categories is restricted to creator admins.',
+        ], 403);
     }
 
     /**
@@ -401,93 +240,23 @@ class SuperAdminInventoryController extends Controller
     }
 
     /**
-     * Update brand by Super Admin.
+     * Update brand (Restricted - Read-only oversight).
      */
     public function updateBrand(Request $request, int $id): JsonResponse
     {
-        $brand = InventoryBrand::findOrFail($id);
-
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', Rule::unique('inventory_brands', 'name')->ignore($brand->id)],
-            'description' => ['nullable', 'string', 'max:2000'],
-            'status' => ['nullable', 'in:active,inactive'],
-            'logo' => ['nullable', 'file', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
-            'remove_logo' => ['sometimes', 'boolean'],
-        ]);
-
-        $logoPath = $brand->logo;
-
-        if ($request->hasFile('logo')) {
-            if ($brand->logo && Storage::disk('public')->exists($brand->logo)) {
-                Storage::disk('public')->delete($brand->logo);
-            }
-            $logoPath = $request->file('logo')->store('inventory/brands', 'public');
-        } elseif ($request->boolean('remove_logo')) {
-            if ($brand->logo && Storage::disk('public')->exists($brand->logo)) {
-                Storage::disk('public')->delete($brand->logo);
-            }
-            $logoPath = null;
-        }
-
-        $baseSlug = Str::slug($validated['name']);
-        $slug = $baseSlug;
-        $counter = 1;
-        while (InventoryBrand::where('slug', $slug)->where('id', '!=', $brand->id)->exists()) {
-            $slug = "{$baseSlug}-{$counter}";
-            $counter++;
-        }
-
-        $brand->update([
-            'name' => $validated['name'],
-            'slug' => $slug,
-            'description' => $validated['description'] ?? null,
-            'logo' => $logoPath,
-            'status' => $validated['status'] ?? $brand->status,
-        ]);
-
-        $superAdmin = $request->user();
-        AdminActivityLog::record(
-            'superadmin',
-            $superAdmin->id,
-            'inventory_brand_updated_by_superadmin',
-            "Super Admin '{$superAdmin->name}' updated brand '{$brand->name}'.",
-            $request
-        );
-
         return response()->json([
-            'message' => "Brand '{$brand->name}' updated successfully.",
-            'brand' => $brand->fresh()->load('creator:id,name,email')->loadCount('products'),
-        ]);
+            'message' => 'Unauthorized. Super Admin has read-only oversight. Editing brands is restricted to creator admins.',
+        ], 403);
     }
 
     /**
-     * Delete brand by Super Admin (with dependency protection).
+     * Delete brand (Restricted - Read-only oversight).
      */
     public function destroyBrand(Request $request, int $id): JsonResponse
     {
-        $brand = InventoryBrand::withCount('products')->findOrFail($id);
-
-        if ($brand->products_count > 0) {
-            return response()->json([
-                'message' => "Cannot delete brand '{$brand->name}' because it is assigned to {$brand->products_count} existing product(s). Please reassign or delete these products first.",
-            ], 422);
-        }
-
-        $brandName = $brand->name;
-        $brand->delete();
-
-        $superAdmin = $request->user();
-        AdminActivityLog::record(
-            'superadmin',
-            $superAdmin->id,
-            'inventory_brand_deleted_by_superadmin',
-            "Super Admin '{$superAdmin->name}' deleted brand '{$brandName}' (ID: {$id}).",
-            $request
-        );
-
         return response()->json([
-            'message' => "Brand '{$brandName}' deleted successfully by Super Admin.",
-        ]);
+            'message' => 'Unauthorized. Super Admin has read-only oversight. Deleting brands is restricted to creator admins.',
+        ], 403);
     }
 
     /**
@@ -512,4 +281,3 @@ class SuperAdminInventoryController extends Controller
         ]);
     }
 }
-

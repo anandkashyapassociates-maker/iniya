@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\SuperAdmin;
 
 use App\Http\Controllers\Controller;
-use App\Models\AdminActivityLog;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -52,28 +51,13 @@ class SuperAdminCategoryController extends Controller
     }
 
     /**
-     * Delete a category (Superadmin Executive Privilege).
+     * Delete a category (Restricted - Read-only oversight).
      */
     public function destroy(Request $request, int $id): JsonResponse
     {
-        $category = Category::findOrFail($id);
-        $categoryName = $category->name;
-        $creatorName = $category->admin ? $category->admin->name : 'Unknown Admin';
-
-        $category->delete();
-
-        $superAdmin = $request->user();
-        AdminActivityLog::record(
-            'superadmin',
-            $superAdmin->id,
-            'category_deleted_by_superadmin',
-            "Super Admin '{$superAdmin->name}' deleted category '{$categoryName}' (ID: {$id}) created by '{$creatorName}'.",
-            $request
-        );
-
         return response()->json([
-            'message' => "Category '{$categoryName}' deleted successfully by Super Admin.",
-        ]);
+            'message' => 'Unauthorized. Super Admin has read-only oversight. Deleting categories is restricted to creator admins.',
+        ], 403);
     }
 
     /**

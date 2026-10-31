@@ -28,6 +28,7 @@ class InventoryProduct extends Model
         'product_type',
         'custom_product_type',
         'status',
+        'is_used',
         'created_by_admin_id',
     ];
 
@@ -38,6 +39,7 @@ class InventoryProduct extends Model
      */
     protected $casts = [
         'product_unit' => 'integer',
+        'is_used' => 'boolean',
     ];
 
     /**

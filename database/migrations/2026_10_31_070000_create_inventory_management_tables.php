@@ -57,6 +57,7 @@ return new class extends Migration
             $table->string('product_type', 50)->index();
             $table->string('custom_product_type')->nullable();
             $table->string('status', 20)->default('active')->index();
+            $table->boolean('is_used')->default(false)->index();
             $table->foreignId('created_by_admin_id')
                 ->constrained('admins')
                 ->cascadeOnDelete();

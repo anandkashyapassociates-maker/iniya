@@ -15,14 +15,17 @@ import {
   AlertCircle,
   Calendar,
   UserCheck,
+  Lock,
 } from 'lucide-react';
 import DataTable from '../../../components/DataTable';
 import ConfirmDialog from '../../../components/ConfirmDialog';
 import adminInventoryService from '../../../services/adminInventoryService';
 import { useToast } from '../../../context/ToastContext';
+import { useAdminAuth } from '../../../features/auth/AdminAuthContext';
 
 export default function AdminCategoryListPage() {
   const toast = useToast();
+  const { user } = useAdminAuth();
 
   const [categories, setCategories] = useState([]);
   const [pagination, setPagination] = useState(null);
@@ -156,34 +159,63 @@ export default function AdminCategoryListPage() {
     {
       header: 'ACTIONS',
       className: 'w-[10%] text-right',
-      render: (cat, index) => (
-        <div className="flex items-center justify-end gap-1.5">
-          <button
-            onClick={() => {
-              setSelectedCategory(cat);
-              setSelectedIndex((pagination?.from || 1) + index);
-            }}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-            title="View Details"
-          >
-            <Eye className="w-3.5 h-3.5" />
-          </button>
-          <Link
-            to={`/admin/inventory/categories/${cat.id}/edit`}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
-            title="Edit Category"
-          >
-            <Edit className="w-3.5 h-3.5" />
-          </Link>
-          <button
-            onClick={() => setDeleteDialog({ isOpen: true, category: cat, isLoading: false })}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-            title="Delete Category"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      ),
+      render: (cat, index) => {
+        const isOwner = Number(cat.created_by) === Number(user?.id);
+        const hasLinkedProducts = (cat.products_count ?? 0) > 0 || cat.has_used_products;
+
+        return (
+          <div className="flex items-center justify-end gap-1.5">
+            <button
+              onClick={() => {
+                setSelectedCategory(cat);
+                setSelectedIndex((pagination?.from || 1) + index);
+              }}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+              title="View Details"
+            >
+              <Eye className="w-3.5 h-3.5" />
+            </button>
+            {isOwner ? (
+              <>
+                <Link
+                  to={`/admin/inventory/categories/${cat.id}/edit`}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                  title="Edit Category"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                </Link>
+                {hasLinkedProducts ? (
+                  <span
+                    className="p-1.5 rounded-lg text-slate-300 cursor-not-allowed inline-flex items-center"
+                    title={
+                      cat.has_used_products
+                        ? 'Category has products in use. Cannot be deleted.'
+                        : 'Category has linked product(s). Cannot be deleted.'
+                    }
+                  >
+                    <Trash2 className="w-3.5 h-3.5 opacity-40" />
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => setDeleteDialog({ isOpen: true, category: cat, isLoading: false })}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                    title="Delete Category"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </>
+            ) : (
+              <span
+                className="p-1.5 rounded-lg text-slate-400 inline-flex items-center cursor-not-allowed"
+                title={`Created by ${cat.creator?.name || 'another admin'} (Read-only)`}
+              >
+                <Lock className="w-3.5 h-3.5 text-slate-400" />
+              </span>
+            )}
+          </div>
+        );
+      },
     },
   ];
 

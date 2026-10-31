@@ -134,6 +134,12 @@ class ProductController extends Controller
     {
         $product = InventoryProduct::findOrFail($id);
 
+        if ((int) $product->created_by_admin_id !== (int) $request->user()->id) {
+            return response()->json([
+                'message' => 'Unauthorized. You can only edit products created by you.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'category_id' => ['required', 'exists:inventory_categories,id'],
             'brand_id' => ['nullable', 'exists:inventory_brands,id'],
@@ -197,6 +203,19 @@ class ProductController extends Controller
     public function destroy(Request $request, int $id): JsonResponse
     {
         $product = InventoryProduct::findOrFail($id);
+
+        if ((int) $product->created_by_admin_id !== (int) $request->user()->id) {
+            return response()->json([
+                'message' => 'Unauthorized. You can only delete products created by you.',
+            ], 403);
+        }
+
+        if ($product->is_used) {
+            return response()->json([
+                'message' => "Cannot delete product '{$product->product_name}' because it is in use.",
+            ], 422);
+        }
+
         $productName = $product->product_name;
 
         $product->delete();

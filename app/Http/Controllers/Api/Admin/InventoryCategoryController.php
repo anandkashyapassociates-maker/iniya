@@ -19,7 +19,8 @@ class InventoryCategoryController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = InventoryCategory::with('creator:id,name,email')
-            ->withCount('products');
+            ->withCount('products')
+            ->withExists(['products as has_used_products' => fn ($q) => $q->where('is_used', true)]);
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -125,6 +126,12 @@ class InventoryCategoryController extends Controller
     {
         $category = InventoryCategory::findOrFail($id);
 
+        if ((int) $category->created_by !== (int) $request->user()->id) {
+            return response()->json([
+                'message' => 'Unauthorized. You can only edit categories created by you.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('inventory_categories', 'name')->ignore($category->id)],
             'description' => ['nullable', 'string', 'max:2000'],
@@ -187,6 +194,18 @@ class InventoryCategoryController extends Controller
     {
         $category = InventoryCategory::withCount('products')->findOrFail($id);
 
+        if ((int) $category->created_by !== (int) $request->user()->id) {
+            return response()->json([
+                'message' => 'Unauthorized. You can only delete categories created by you.',
+            ], 403);
+        }
+
+        if ($category->products()->where('is_used', true)->exists()) {
+            return response()->json([
+                'message' => "Cannot delete category '{$category->name}' because it contains products currently in use.",
+            ], 422);
+        }
+
         if ($category->products_count > 0) {
             return response()->json([
                 'message' => "Cannot delete category '{$category->name}' because it is assigned to {$category->products_count} existing product(s). Please reassign or delete the products first.",
@@ -212,4 +231,3 @@ class InventoryCategoryController extends Controller
         ]);
     }
 }
-

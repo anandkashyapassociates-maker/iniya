@@ -5,8 +5,6 @@ import {
   Filter,
   RefreshCw,
   Eye,
-  Edit,
-  Trash2,
   Package,
   Layers,
   X,
@@ -18,7 +16,6 @@ import {
   Sparkles,
 } from 'lucide-react';
 import DataTable from '../../components/DataTable';
-import ConfirmDialog from '../../components/ConfirmDialog';
 import superAdminInventoryService from '../services/superAdminInventoryService';
 import { useToast } from '../../context/ToastContext';
 
@@ -43,26 +40,7 @@ export default function SuperAdminProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(null);
 
-  // Edit modal state
-  const [editProduct, setEditProduct] = useState(null);
-  const [editFormData, setEditFormData] = useState({
-    product_name: '',
-    category_id: '',
-    brand_id: '',
-    business_unit: '',
-    product_type: '',
-    status: 'active',
-  });
-  const [isUpdating, setIsUpdating] = useState(false);
-
-  // Delete state
-  const [deleteDialog, setDeleteDialog] = useState({
-    isOpen: false,
-    product: null,
-    isLoading: false,
-  });
-
-  // Load dropdown options for filters & edit modal
+  // Load dropdown options for filters
   useEffect(() => {
     async function loadDropdowns() {
       try {
@@ -111,71 +89,6 @@ export default function SuperAdminProductsPage() {
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
-
-  const handleStatusToggle = async (product) => {
-    const nextStatus = product.status === 'active' ? 'inactive' : 'active';
-    try {
-      await superAdminInventoryService.updateProductStatus(product.id, nextStatus);
-      toast.success(`Product status updated to ${nextStatus}.`);
-      setProducts((prev) =>
-        prev.map((p) => (p.id === product.id ? { ...p, status: nextStatus } : p))
-      );
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to toggle status.');
-    }
-  };
-
-  const openEditModal = (product) => {
-    setEditProduct(product);
-    setEditFormData({
-      product_name: product.product_name,
-      category_id: product.category_id || '',
-      brand_id: product.brand_id || '',
-      business_unit: product.business_unit || 'Piece',
-      product_unit: product.product_unit || 1,
-      product_type: product.product_type || 'Consumable',
-      status: product.status || 'active',
-    });
-  };
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-    if (!editProduct) return;
-    setIsUpdating(true);
-    try {
-      const payload = new FormData();
-      payload.append('product_name', editFormData.product_name);
-      payload.append('category_id', editFormData.category_id);
-      if (editFormData.brand_id) payload.append('brand_id', editFormData.brand_id);
-      payload.append('business_unit', editFormData.business_unit);
-      payload.append('product_unit', parseInt(editFormData.product_unit, 10) || 1);
-      payload.append('product_type', editFormData.product_type);
-      payload.append('status', editFormData.status);
-
-      await superAdminInventoryService.updateProduct(editProduct.id, payload);
-      toast.success('Product updated successfully.');
-      setEditProduct(null);
-      fetchProducts();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update product.');
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteDialog.product) return;
-    setDeleteDialog((prev) => ({ ...prev, isLoading: true }));
-    try {
-      const res = await superAdminInventoryService.deleteProduct(deleteDialog.product.id);
-      toast.success(res.message || 'Product deleted successfully.');
-      setDeleteDialog({ isOpen: false, product: null, isLoading: false });
-      fetchProducts();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to delete product.');
-      setDeleteDialog((prev) => ({ ...prev, isLoading: false }));
-    }
-  };
 
   const columns = [
     {
@@ -264,30 +177,27 @@ export default function SuperAdminProductsPage() {
       header: 'STATUS',
       className: 'w-[12%] text-center',
       render: (product) => (
-        <button
-          type="button"
-          onClick={() => handleStatusToggle(product)}
-          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium border transition-all cursor-pointer ${
+        <span
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium border ${
             product.status === 'active'
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80 hover:bg-emerald-100'
-              : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
+              : 'bg-slate-100 text-slate-600 border-slate-200'
           }`}
-          title="Click to toggle status"
         >
           <span
             className={`w-1.5 h-1.5 rounded-full ${
-              product.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
+              product.status === 'active' ? 'bg-emerald-500' : 'bg-slate-400'
             }`}
           />
           <span className="capitalize">{product.status}</span>
-        </button>
+        </span>
       ),
     },
     {
       header: 'ACTIONS',
-      className: 'w-[14%] text-right',
+      className: 'w-[10%] text-right',
       render: (product, index) => (
-        <div className="flex items-center justify-end gap-1.5">
+        <div className="flex items-center justify-end">
           <button
             onClick={() => {
               setSelectedProduct(product);
@@ -296,21 +206,7 @@ export default function SuperAdminProductsPage() {
             className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
             title="View Details"
           >
-            <Eye className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => openEditModal(product)}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
-            title="Edit Product"
-          >
-            <Edit className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => setDeleteDialog({ isOpen: true, product, isLoading: false })}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-            title="Delete Product"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Eye className="w-4 h-4" />
           </button>
         </div>
       ),
@@ -547,213 +443,6 @@ export default function SuperAdminProductsPage() {
           </div>
         </div>
       )}
-
-      {/* Edit Product Modal */}
-      {editProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-lg bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-7 relative overflow-hidden space-y-5">
-            <div className="flex items-start justify-between pb-3 border-b border-slate-100">
-              <div>
-                <h3 className="text-base font-semibold text-slate-800">Edit Product Specifications</h3>
-                <p className="text-xs text-slate-400">
-                  Editing {editProduct.product_name} • Creator Admin preserved
-                </p>
-              </div>
-              <button
-                onClick={() => setEditProduct(null)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleEditSubmit} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-700 font-medium mb-1">Product Name *</label>
-                <input
-                  type="text"
-                  value={editFormData.product_name}
-                  onChange={(e) =>
-                    setEditFormData((prev) => ({ ...prev, product_name: e.target.value }))
-                  }
-                  required
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-700 font-medium mb-1">Category *</label>
-                  <select
-                    value={editFormData.category_id}
-                    onChange={(e) =>
-                      setEditFormData((prev) => ({ ...prev, category_id: e.target.value }))
-                    }
-                    required
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600"
-                  >
-                    <option value="">Select Category</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 font-medium mb-1">Brand</label>
-                  <select
-                    value={editFormData.brand_id}
-                    onChange={(e) =>
-                      setEditFormData((prev) => ({ ...prev, brand_id: e.target.value }))
-                    }
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600"
-                  >
-                    <option value="">No Brand</option>
-                    {brands.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-slate-700 font-medium">Business &amp; Product Unit *</label>
-                  </div>
-                  <div className="flex items-center rounded-xl border border-slate-200 overflow-hidden bg-slate-50/80 focus-within:bg-white focus-within:border-blue-600 transition-all">
-                    <div className="w-7/12 border-r border-slate-200">
-                      <select
-                        value={editFormData.business_unit}
-                        onChange={(e) =>
-                          setEditFormData((prev) => ({ ...prev, business_unit: e.target.value }))
-                        }
-                        required
-                        className="w-full px-3 py-2 text-sm bg-transparent border-0 focus:outline-none cursor-pointer truncate"
-                      >
-                        <option value="">Select Unit</option>
-                        {[
-                          'Piece',
-                          'Box',
-                          'Packet',
-                          'Bottle',
-                          'Vial',
-                          'Ampoule',
-                          'Strip',
-                          'Roll',
-                          'Tube',
-                          'Kg',
-                          'Litre',
-                          'Set',
-                        ].map((u) => (
-                          <option key={u} value={u}>
-                            {u}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="w-5/12 flex items-center bg-white px-2">
-                      <span className="text-xs text-slate-400 mr-1 shrink-0 select-none">Qty:</span>
-                      <input
-                        type="number"
-                        min="1"
-                        step="1"
-                        value={editFormData.product_unit}
-                        onChange={(e) =>
-                          setEditFormData((prev) => ({ ...prev, product_unit: e.target.value }))
-                        }
-                        required
-                        placeholder="1"
-                        className="w-full py-2 text-sm bg-transparent border-0 focus:outline-none font-medium"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 font-medium mb-1">Product Type *</label>
-                  <select
-                    value={editFormData.product_type}
-                    onChange={(e) =>
-                      setEditFormData((prev) => ({ ...prev, product_type: e.target.value }))
-                    }
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600"
-                  >
-                    <option value="Consumable">Consumable</option>
-                    <option value="Retail">Retail</option>
-                    <option value="Equipment">Equipment</option>
-                    <option value="Medicine">Medicine</option>
-                    <option value="Service">Service</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-medium mb-1">Status</label>
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="status"
-                      value="active"
-                      checked={editFormData.status === 'active'}
-                      onChange={() => setEditFormData((prev) => ({ ...prev, status: 'active' }))}
-                      className="text-blue-600"
-                    />
-                    <span className="text-slate-700">Active</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="status"
-                      value="inactive"
-                      checked={editFormData.status === 'inactive'}
-                      onChange={() => setEditFormData((prev) => ({ ...prev, status: 'inactive' }))}
-                      className="text-blue-600"
-                    />
-                    <span className="text-slate-700">Inactive</span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setEditProduct(null)}
-                  disabled={isUpdating}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isUpdating}
-                  className="px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50"
-                >
-                  {isUpdating ? 'Saving Changes...' : 'Save Product'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Dialog */}
-      <ConfirmDialog
-        isOpen={deleteDialog.isOpen}
-        title="Delete Inventory Product?"
-        message={`Are you sure you want to delete '${deleteDialog.product?.product_name}'? This action cannot be undone.`}
-        confirmText="Delete Product"
-        confirmVariant="danger"
-        isLoading={deleteDialog.isLoading}
-        onConfirm={handleDeleteConfirm}
-        onCancel={() => setDeleteDialog({ isOpen: false, product: null, isLoading: false })}
-      />
     </div>
   );
 }

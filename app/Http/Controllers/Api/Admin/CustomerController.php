@@ -84,7 +84,7 @@ class CustomerController extends Controller
                 $type = strtolower($type[1]);
                 $data = base64_decode($data);
                 if ($data !== false) {
-                    $fileName = 'customers/' . Str::random(40) . '.' . $type;
+                    $fileName = 'customers/'.Str::random(40).'.'.$type;
                     Storage::disk('public')->put($fileName, $data);
                     $imagePath = $fileName;
                 }
@@ -134,6 +134,12 @@ class CustomerController extends Controller
     {
         $customer = Customer::findOrFail($id);
 
+        if ($customer->admin_id && (int) $customer->admin_id !== (int) $request->user()->id) {
+            return response()->json([
+                'message' => 'Unauthorized. You can only edit customers registered by you.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'mobile' => ['required', 'string', 'max:30'],
@@ -171,7 +177,7 @@ class CustomerController extends Controller
                 $type = strtolower($type[1]);
                 $data = base64_decode($data);
                 if ($data !== false) {
-                    $fileName = 'customers/' . Str::random(40) . '.' . $type;
+                    $fileName = 'customers/'.Str::random(40).'.'.$type;
                     Storage::disk('public')->put($fileName, $data);
                     $imagePath = $fileName;
                 }
@@ -215,6 +221,13 @@ class CustomerController extends Controller
     public function destroy(Request $request, int $id): JsonResponse
     {
         $customer = Customer::findOrFail($id);
+
+        if ($customer->admin_id && (int) $customer->admin_id !== (int) $request->user()->id) {
+            return response()->json([
+                'message' => 'Unauthorized. You can only delete customers registered by you.',
+            ], 403);
+        }
+
         $customerName = $customer->name;
 
         if ($customer->image && Storage::disk('public')->exists($customer->image)) {

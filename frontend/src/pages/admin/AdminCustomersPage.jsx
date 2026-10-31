@@ -23,11 +23,13 @@ import {
   Filter,
   RefreshCw,
   Sparkles,
+  Lock,
 } from 'lucide-react';
 import DataTable from '../../components/DataTable';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import adminService from '../../services/adminService';
 import { useToast } from '../../context/ToastContext';
+import { useAdminAuth } from '../../features/auth/AdminAuthContext';
 
 function CustomerAvatar({ customer, size = 'sm' }) {
   const [imgError, setImgError] = useState(false);
@@ -67,6 +69,7 @@ function CustomerAvatar({ customer, size = 'sm' }) {
 
 export default function AdminCustomersPage() {
   const toast = useToast();
+  const { user } = useAdminAuth();
 
   const [customers, setCustomers] = useState([]);
   const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0 });
@@ -293,39 +296,54 @@ export default function AdminCustomersPage() {
     {
       header: 'ACTIONS',
       accessor: 'actions',
-      render: (c) => (
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setSelectedCustomer(c)}
-            className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all cursor-pointer shadow-2xs"
-            title="View Patient Medical Chart"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
-          <Link
-            to={`/admin/customers/${c.id}/edit`}
-            className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all shadow-2xs"
-            title="Edit Patient Record"
-          >
-            <Edit className="w-4 h-4" />
-          </Link>
-          <button
-            type="button"
-            onClick={() =>
-              setDeleteDialog({
-                isOpen: true,
-                customer: c,
-                isLoading: false,
-              })
-            }
-            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer shadow-2xs"
-            title="Delete Patient Record"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-      ),
+      render: (c) => {
+        const isOwner = Number(c.admin_id) === Number(user?.id);
+
+        return (
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setSelectedCustomer(c)}
+              className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all cursor-pointer shadow-2xs"
+              title="View Patient Medical Chart"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+            {isOwner ? (
+              <>
+                <Link
+                  to={`/admin/customers/${c.id}/edit`}
+                  className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all shadow-2xs"
+                  title="Edit Patient Record"
+                >
+                  <Edit className="w-4 h-4" />
+                </Link>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setDeleteDialog({
+                      isOpen: true,
+                      customer: c,
+                      isLoading: false,
+                    })
+                  }
+                  className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer shadow-2xs"
+                  title="Delete Patient Record"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </>
+            ) : (
+              <span
+                className="p-2 text-slate-400 inline-flex items-center cursor-not-allowed"
+                title={`Registered by ${c.admin?.name || 'another admin'} (Read-only)`}
+              >
+                <Lock className="w-4 h-4 text-slate-400" />
+              </span>
+            )}
+          </div>
+        );
+      },
     },
   ];
 
@@ -615,13 +633,15 @@ export default function AdminCustomersPage() {
               >
                 Close
               </button>
-              <Link
-                to={`/admin/customers/${selectedCustomer.id}/edit`}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-medium transition-all shadow-xs cursor-pointer"
-              >
-                <Edit className="w-3.5 h-3.5" />
-                <span>Edit Patient Record</span>
-              </Link>
+              {Number(selectedCustomer.admin_id) === Number(user?.id) && (
+                <Link
+                  to={`/admin/customers/${selectedCustomer.id}/edit`}
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-medium transition-all shadow-xs cursor-pointer"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                  <span>Edit Patient Record</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>
