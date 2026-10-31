@@ -54,6 +54,14 @@ return new class extends Migration
             $table->string('product_name')->index();
             $table->string('business_unit', 50)->index();
             $table->unsignedInteger('product_unit')->default(1);
+            $table->unsignedInteger('quantity')->default(0)->index();
+            $table->decimal('buy_price', 10, 2)->nullable();
+            $table->decimal('mrp', 10, 2)->nullable();
+            $table->decimal('average_price', 10, 2)->nullable();
+            $table->foreignId('vendor_id')->nullable()->constrained('vendors')->nullOnDelete();
+            $table->unsignedInteger('low_stock_threshold')->default(10)->index();
+            $table->foreignId('inventory_updated_by')->nullable()->constrained('admins')->nullOnDelete();
+            $table->timestamp('inventory_updated_at')->nullable();
             $table->string('product_type', 50)->index();
             $table->string('custom_product_type')->nullable();
             $table->string('status', 20)->default('active')->index();

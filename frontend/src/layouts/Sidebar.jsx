@@ -15,6 +15,10 @@ import {
   Boxes,
   PlusCircle,
   ChevronDown,
+  AlertTriangle,
+  Package,
+  FolderTree,
+  Layers,
 } from 'lucide-react';
 import { ClinicBrandIcon } from '../components/ClinicArtwork';
 
@@ -93,9 +97,34 @@ export default function Sidebar({
 
   const inventorySubItems = [
     {
+      to: '/admin/inventory/stocks',
+      label: 'Stock Ledger',
+      icon: Boxes,
+    },
+    {
+      to: '/admin/inventory/low-stock',
+      label: 'Low Stock Alerts',
+      icon: AlertTriangle,
+    },
+    {
+      to: '/admin/inventory/products',
+      label: 'All Products',
+      icon: Package,
+    },
+    {
       to: '/admin/inventory/products/create',
       label: 'Create Product',
       icon: PlusCircle,
+    },
+    {
+      to: '/admin/inventory/categories',
+      label: 'Categories',
+      icon: FolderTree,
+    },
+    {
+      to: '/admin/inventory/brands',
+      label: 'Brands',
+      icon: Layers,
     },
   ];
 

@@ -16,6 +16,8 @@ import {
   Eye,
   ChevronRight,
   Zap,
+  AlertTriangle,
+  Boxes,
 } from 'lucide-react';
 import StatCard from '../../components/StatCard';
 import DashboardSkeleton from '../../components/DashboardSkeleton';
@@ -276,10 +278,39 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
+      {/* Low Inventory Alert Banner (if any products depleted / low) */}
+      {(stats?.low_stock_count > 0) && (
+        <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-amber-500/10 border border-amber-300 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+              <AlertTriangle className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span>Low Inventory Alert</span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700">
+                  {stats.low_stock_count} item{stats.low_stock_count > 1 ? 's' : ''} low in stock
+                </span>
+              </h4>
+              <p className="text-xs text-slate-600 mt-0.5">
+                Some clinical products have reached or fallen below their replenishment threshold. Please review and replenish stock.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/admin/inventory/low-stock"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-xs transition-colors shrink-0"
+          >
+            <span>Review Low Stock</span>
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
+      )}
+
       {/* ======================================================== */}
-      {/* 2. Primary KPI Stat Cards (3 by 3 Grid - 3 Top, 3 Below) */}
+      {/* 2. Primary KPI Stat Cards (4 by 2 Grid)                   */}
       {/* ======================================================== */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {/* ROW 1 - CARD 1: Total Registered Patients */}
         <Link to="/admin/customers" className="block group">
           <StatCard
@@ -319,7 +350,7 @@ export default function AdminDashboardPage() {
           />
         </Link>
 
-        {/* ROW 2 - CARD 4: Completed Clinical Sessions */}
+        {/* ROW 1 - CARD 4: Completed Clinical Sessions */}
         <Link to="/admin/appointments" className="block group">
           <StatCard
             title="Completed Clinical Sessions"
@@ -358,6 +389,32 @@ export default function AdminDashboardPage() {
             sparklineData={[12, 18, 16, 26, 22, 30, 36]}
           />
         </div>
+
+        {/* ROW 2 - CARD 7: Total Inventory Products */}
+        <Link to="/admin/inventory/stocks" className="block group">
+          <StatCard
+            title="Total Inventory Products"
+            value={stats?.total_inventory_products ?? 0}
+            subtitle="Catalog Medical Supplies"
+            icon={Boxes}
+            colorScheme="blue"
+            trend="Catalog"
+            sparklineData={[4, 8, 12, 10, 14, 16, 18]}
+          />
+        </Link>
+
+        {/* ROW 2 - CARD 8: Low Stock Alerts */}
+        <Link to="/admin/inventory/low-stock" className="block group">
+          <StatCard
+            title="Low Inventory Alerts"
+            value={stats?.low_stock_count ?? 0}
+            subtitle={stats?.low_stock_count > 0 ? 'Requires Replenishment' : 'Adequate Supply'}
+            icon={AlertTriangle}
+            colorScheme={stats?.low_stock_count > 0 ? 'amber' : 'emerald'}
+            trend={stats?.low_stock_count > 0 ? 'Depleted' : 'Normal'}
+            sparklineData={[5, 4, 3, 2, 4, 3, stats?.low_stock_count ?? 0]}
+          />
+        </Link>
       </div>
 
       {/* ======================================================== */}

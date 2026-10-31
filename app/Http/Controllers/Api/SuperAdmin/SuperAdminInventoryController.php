@@ -24,6 +24,10 @@ class SuperAdminInventoryController extends Controller
         $totalCategories = InventoryCategory::count();
         $totalBrands = InventoryBrand::count();
         $contributingAdminsCount = InventoryProduct::distinct('created_by_admin_id')->count('created_by_admin_id');
+        $lowStockProductsCount = InventoryProduct::whereColumn('quantity', '<=', 'low_stock_threshold')
+            ->where('quantity', '>', 0)
+            ->count();
+        $outOfStockProductsCount = InventoryProduct::where('quantity', '<=', 0)->count();
 
         // Recently added products
         $recentProducts = InventoryProduct::with(['category:id,name', 'brand:id,name', 'creator:id,name,email'])
@@ -82,6 +86,9 @@ class SuperAdminInventoryController extends Controller
                 'total_categories' => $totalCategories,
                 'total_brands' => $totalBrands,
                 'contributing_admins_count' => $contributingAdminsCount,
+                'low_stock_products_count' => $lowStockProductsCount,
+                'out_of_stock_products_count' => $outOfStockProductsCount,
+                'total_low_stock_alerts' => $lowStockProductsCount + $outOfStockProductsCount,
             ],
             'recent_products' => $recentProducts,
             'products_by_category' => $productsByCategory,
@@ -279,5 +286,159 @@ class SuperAdminInventoryController extends Controller
         return response()->json([
             'admins' => $admins,
         ]);
+    }
+
+    /**
+     * Super Admin Read-only view of inventory stocks.
+     */
+    public function stocks(Request $request): JsonResponse
+    {
+        $query = InventoryProduct::with([
+            'category:id,name',
+            'brand:id,name',
+            'vendor:id,vendor_code,vendor_name,company_name',
+            'creator:id,name,email',
+            'inventoryUpdater:id,name,email',
+        ]);
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('product_name', 'like', "%{$search}%")
+                    ->orWhere('business_unit', 'like', "%{$search}%")
+                    ->orWhereHas('category', fn ($cq) => $cq->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('brand', fn ($bq) => $bq->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('vendor', fn ($vq) => $vq->where('vendor_name', 'like', "%{$search}%"));
+            });
+        }
+
+        if ($categoryId = $request->input('category_id')) {
+            $query->where('category_id', $categoryId);
+        }
+
+        if ($brandId = $request->input('brand_id')) {
+            $query->where('brand_id', $brandId);
+        }
+
+        if ($vendorId = $request->input('vendor_id')) {
+            $query->where('vendor_id', $vendorId);
+        }
+
+        $statusFilter = $request->input('stock_status', 'all');
+        if ($statusFilter === 'low_stock') {
+            $query->where(function ($q) {
+                $q->whereColumn('quantity', '<=', 'low_stock_threshold')
+                    ->where('quantity', '>', 0);
+            });
+        } elseif ($statusFilter === 'out_of_stock') {
+            $query->where('quantity', '<=', 0);
+        } elseif ($statusFilter === 'in_stock') {
+            $query->whereColumn('quantity', '>', 'low_stock_threshold');
+        } elseif ($statusFilter === 'all_alerts') {
+            $query->where(function ($q) {
+                $q->whereColumn('quantity', '<=', 'low_stock_threshold')
+                    ->orWhere('quantity', '<=', 0);
+            });
+        }
+
+        $perPage = min((int) $request->input('per_page', 10), 100);
+        $products = $query->orderBy('quantity', 'asc')->orderBy('id', 'desc')->paginate($perPage);
+
+        $totalProducts = InventoryProduct::count();
+        $outOfStockCount = InventoryProduct::where('quantity', '<=', 0)->count();
+        $lowStockCount = InventoryProduct::whereColumn('quantity', '<=', 'low_stock_threshold')
+            ->where('quantity', '>', 0)
+            ->count();
+        $inStockCount = InventoryProduct::whereColumn('quantity', '>', 'low_stock_threshold')->count();
+        $totalAlerts = $outOfStockCount + $lowStockCount;
+
+        return response()->json([
+            'data' => $products->items(),
+            'pagination' => [
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+                'from' => $products->firstItem(),
+                'to' => $products->lastItem(),
+            ],
+            'metrics' => [
+                'total_products' => $totalProducts,
+                'in_stock_count' => $inStockCount,
+                'low_stock_count' => $lowStockCount,
+                'out_of_stock_count' => $outOfStockCount,
+                'total_alerts' => $totalAlerts,
+            ],
+        ]);
+    }
+
+    /**
+     * Super Admin Read-only view of low stock items.
+     */
+    public function lowStock(Request $request): JsonResponse
+    {
+        $query = InventoryProduct::with([
+            'category:id,name',
+            'brand:id,name',
+            'vendor:id,vendor_code,vendor_name,company_name,mobile',
+            'creator:id,name,email',
+            'inventoryUpdater:id,name,email',
+        ])->where(function ($q) {
+            $q->whereColumn('quantity', '<=', 'low_stock_threshold')
+                ->orWhere('quantity', '<=', 0);
+        });
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('product_name', 'like', "%{$search}%")
+                    ->orWhereHas('category', fn ($cq) => $cq->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('brand', fn ($bq) => $bq->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('vendor', fn ($vq) => $vq->where('vendor_name', 'like', "%{$search}%"));
+            });
+        }
+
+        $perPage = min((int) $request->input('per_page', 10), 100);
+        $products = $query->orderBy('quantity', 'asc')->paginate($perPage);
+
+        $outOfStockCount = InventoryProduct::where('quantity', '<=', 0)->count();
+        $lowStockCount = InventoryProduct::whereColumn('quantity', '<=', 'low_stock_threshold')
+            ->where('quantity', '>', 0)
+            ->count();
+
+        return response()->json([
+            'data' => $products->items(),
+            'pagination' => [
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+                'from' => $products->firstItem(),
+                'to' => $products->lastItem(),
+            ],
+            'metrics' => [
+                'total_low_stock_alerts' => $products->total(),
+                'out_of_stock_count' => $outOfStockCount,
+                'low_stock_count' => $lowStockCount,
+            ],
+        ]);
+    }
+
+    /**
+     * Add stock (Super Admin restricted).
+     */
+    public function addStock(Request $request, int $id): JsonResponse
+    {
+        return response()->json([
+            'message' => 'Super Admin has read-only oversight for inventory stocks. Adding stock is restricted to Admins.',
+        ], 403);
+    }
+
+    /**
+     * Edit stock (Super Admin restricted).
+     */
+    public function updateStock(Request $request, int $id): JsonResponse
+    {
+        return response()->json([
+            'message' => 'Super Admin has read-only oversight for inventory stocks. Editing stock is restricted to Admins.',
+        ], 403);
     }
 }

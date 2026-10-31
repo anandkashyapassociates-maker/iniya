@@ -20,6 +20,7 @@ import {
   Package,
   Award,
   BarChart3,
+  AlertTriangle,
 } from 'lucide-react';
 import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import ToastNotifications from '../../components/ToastNotifications';
@@ -533,6 +534,38 @@ export default function SuperAdminLayout() {
                   >
                     <Package className="w-3.5 h-3.5 shrink-0" />
                     <span>All Products</span>
+                  </NavLink>
+
+                  {/* 3. Stock Ledger */}
+                  <NavLink
+                    to="/superadmin/inventory/stocks"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <Boxes className="w-3.5 h-3.5 shrink-0" />
+                    <span>Stock Ledger</span>
+                  </NavLink>
+
+                  {/* 4. Low Stock Alerts */}
+                  <NavLink
+                    to="/superadmin/inventory/low-stock"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                    <span>Low Stock Alerts</span>
                   </NavLink>
 
                   {/* 3. Categories */}

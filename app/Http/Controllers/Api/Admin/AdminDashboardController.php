@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminActivityLog;
 use App\Models\Appointment;
 use App\Models\Customer;
+use App\Models\InventoryProduct;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,12 +52,19 @@ class AdminDashboardController extends Controller
         $todayAppointments = Appointment::whereDate('appointment_date', Carbon::today()->toDateString())
             ->where('status', '!=', 'cancelled')
             ->count();
+        $lowStockCount = InventoryProduct::where(function ($q) {
+            $q->whereColumn('quantity', '<=', 'low_stock_threshold')
+                ->orWhere('quantity', '<=', 0);
+        })->count();
+        $totalInventoryProducts = InventoryProduct::count();
 
         return response()->json([
             'stats' => [
                 'total_customers' => $totalCustomers,
                 'total_appointments' => $totalAppointments,
                 'today_appointments' => $todayAppointments,
+                'low_stock_count' => $lowStockCount,
+                'total_inventory_products' => $totalInventoryProducts,
                 'activity_count' => $myActivityCount,
                 'account_status' => $admin->is_active ? 'Active' : 'Inactive',
                 'last_login' => $admin->last_login_at ? Carbon::parse($admin->last_login_at)->diffForHumans() : 'First session',
