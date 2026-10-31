@@ -366,12 +366,14 @@ export default function AdminCategoryListPage() {
               >
                 Close
               </button>
-              <Link
-                to={`/admin/inventory/categories/${selectedCategory.id}/edit`}
-                className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-all"
-              >
-                Edit Category
-              </Link>
+              {Number(selectedCategory.created_by) === Number(user?.id) && (
+                <Link
+                  to={`/admin/inventory/categories/${selectedCategory.id}/edit`}
+                  className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-all"
+                >
+                  Edit Category
+                </Link>
+              )}
             </div>
           </div>
         </div>

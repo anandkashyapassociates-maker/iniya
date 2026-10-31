@@ -362,12 +362,14 @@ export default function AdminBrandsPage() {
               >
                 Close
               </button>
-              <Link
-                to={`/admin/inventory/brands/${selectedBrand.id}/edit`}
-                className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-all"
-              >
-                Edit Brand
-              </Link>
+              {Number(selectedBrand.created_by) === Number(user?.id) && (
+                <Link
+                  to={`/admin/inventory/brands/${selectedBrand.id}/edit`}
+                  className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-all"
+                >
+                  Edit Brand
+                </Link>
+              )}
             </div>
           </div>
         </div>

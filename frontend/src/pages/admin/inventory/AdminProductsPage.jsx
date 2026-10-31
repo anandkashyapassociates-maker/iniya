@@ -560,12 +560,14 @@ export default function AdminProductsPage() {
               >
                 Close
               </button>
-              <Link
-                to={`/admin/inventory/products/${viewProduct.id}/edit`}
-                className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors"
-              >
-                Edit Product
-              </Link>
+              {Number(viewProduct.created_by_admin_id) === Number(user?.id) && (
+                <Link
+                  to={`/admin/inventory/products/${viewProduct.id}/edit`}
+                  className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors"
+                >
+                  Edit Product
+                </Link>
+              )}
             </div>
           </div>
         </div>
