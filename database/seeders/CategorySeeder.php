@@ -53,7 +53,6 @@ class CategorySeeder extends Seeder
                     'admin_id' => $admin->id,
                     'name' => $cat['name'],
                     'description' => $cat['description'],
-                    'is_active' => true,
                 ]
             );
         }

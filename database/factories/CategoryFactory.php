@@ -28,18 +28,6 @@ class CategoryFactory extends Factory
             'name' => ucfirst($name),
             'slug' => Str::slug($name).'-'.fake()->unique()->numberBetween(100, 9999),
             'description' => fake()->sentence(8),
-            'image' => null,
-            'is_active' => true,
         ];
-    }
-
-    /**
-     * Indicate that the category is inactive.
-     */
-    public function inactive(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'is_active' => false,
-        ]);
     }
 }

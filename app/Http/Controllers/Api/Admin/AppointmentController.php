@@ -84,7 +84,7 @@ class AppointmentController extends Controller
         }
 
         $perPage = min((int) $request->input('per_page', 10), 100);
-        $appointments = $query->orderBy('appointment_date', 'desc')
+        $appointments = $query->orderBy('created_at', 'desc')
             ->orderBy('id', 'desc')
             ->paginate($perPage);
 

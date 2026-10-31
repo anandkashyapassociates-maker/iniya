@@ -7,65 +7,35 @@ import {
   Edit,
   Trash2,
   Eye,
-  CheckCircle2,
-  XCircle,
   Stethoscope,
   Activity,
   Layers,
   Search,
-  Filter,
   RefreshCw,
   X,
   FileText,
   UserCheck,
+  Calendar,
+  Sparkles,
 } from 'lucide-react';
 import DataTable from '../../components/DataTable';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import adminService from '../../services/adminService';
 import { useToast } from '../../context/ToastContext';
 
-function CategoryThumbnail({ category, size = 'sm' }) {
-  const [imgError, setImgError] = useState(false);
-
-  useEffect(() => {
-    setImgError(false);
-  }, [category?.image_url, category?.id]);
-
-  const sizeClass = size === 'lg' ? 'w-16 h-16 rounded-2xl text-xl' : 'w-10 h-10 rounded-xl text-xs';
-
-  if (category?.image_url && !imgError) {
-    return (
-      <img
-        src={category.image_url}
-        alt={category.name}
-        className={`${sizeClass} object-cover border border-slate-200/80 shadow-2xs shrink-0 bg-slate-50`}
-        onError={() => setImgError(true)}
-      />
-    );
-  }
-
-  return (
-    <div
-      className={`${sizeClass} flex items-center justify-center font-medium text-white shadow-2xs shrink-0 bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 border border-white ring-1 ring-slate-200/80`}
-    >
-      <Tag className={size === 'lg' ? 'w-7 h-7' : 'w-4 h-4'} />
-    </div>
-  );
-}
-
 export default function AdminCategoriesPage() {
   const toast = useToast();
 
   const [categories, setCategories] = useState([]);
-  const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0 });
+  const [stats, setStats] = useState({ total: 0 });
   const [pagination, setPagination] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(1);
 
   // Selected category for Quick View Modal
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(null);
 
   // Category deletion state
   const [deleteId, setDeleteId] = useState(null);
@@ -88,7 +58,6 @@ export default function AdminCategoriesPage() {
         per_page: 10,
       };
       if (search.trim()) params.search = search.trim();
-      if (statusFilter !== 'all') params.status = statusFilter;
 
       const res = await adminService.getCategories(params);
       setCategories(res.data || []);
@@ -104,7 +73,7 @@ export default function AdminCategoriesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [page, search, statusFilter, toast]);
+  }, [page, search, toast]);
 
   useEffect(() => {
     fetchStats();
@@ -137,11 +106,25 @@ export default function AdminCategoriesPage() {
 
   const columns = [
     {
+      header: 'Sr. No.',
+      className: 'w-[75px] text-center',
+      render: (cat, index) => {
+        const srNo = (pagination?.from || 1) + index;
+        return (
+          <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-600 font-mono text-[11px] font-medium">
+            {srNo}
+          </span>
+        );
+      },
+    },
+    {
       header: 'Category Details',
-      className: 'w-[35%]',
+      className: 'w-[36%]',
       render: (cat) => (
         <div className="flex items-center gap-3">
-          <CategoryThumbnail category={cat} size="sm" />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center font-medium text-white shadow-2xs shrink-0 bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 border border-white ring-1 ring-slate-200/80">
+            <Tag className="w-4 h-4" />
+          </div>
           <div className="min-w-0">
             <span className="font-medium text-slate-800 text-xs sm:text-sm block truncate">
               {cat.name}
@@ -159,78 +142,63 @@ export default function AdminCategoriesPage() {
       ),
     },
     {
-      header: 'Description',
-      className: 'w-[30%] hidden md:table-cell',
+      header: 'Clinical Scope / Description',
+      className: 'w-[28%]',
       render: (cat) => (
-        <p className="text-xs text-slate-600 line-clamp-2 font-normal leading-relaxed">
-          {cat.description || <span className="text-slate-400 italic">No description provided</span>}
+        <p className="text-xs text-slate-600 font-normal line-clamp-2 leading-relaxed">
+          {cat.description || (
+            <span className="text-slate-400 italic">No description provided</span>
+          )}
         </p>
       ),
     },
     {
-      header: 'Created By Admin',
+      header: 'Created By',
       className: 'w-[18%]',
       render: (cat) => (
-        <div className="flex items-center gap-1.5">
-          <div className="w-6 h-6 rounded-full bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center text-[10px] font-medium shrink-0">
-            <UserCheck className="w-3 h-3" />
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-blue-100/80 text-blue-700 flex items-center justify-center font-medium text-xs shrink-0">
+            {cat.admin?.name ? cat.admin.name.charAt(0).toUpperCase() : 'A'}
           </div>
           <div className="min-w-0">
             <span className="text-xs font-medium text-slate-700 block truncate">
-              {cat.admin ? cat.admin.name : 'System Admin'}
+              {cat.admin?.name || 'Clinic Admin'}
             </span>
-            <span className="text-[10px] text-slate-400 truncate block font-normal">
-              {cat.admin?.email || 'admin@clinic'}
+            <span className="text-[10px] font-normal text-slate-400 block truncate">
+              {cat.admin?.email || 'admin@clinic.local'}
             </span>
           </div>
         </div>
       ),
     },
     {
-      header: 'Status',
-      className: 'w-[10%] text-center',
-      render: (cat) =>
-        cat.is_active ? (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Active
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
-            Inactive
-          </span>
-        ),
-    },
-    {
       header: 'Actions',
       className: 'w-[12%] text-right',
-      render: (cat) => (
-        <div className="flex items-center justify-end gap-1">
-          {/* Quick View */}
+      render: (cat, index) => (
+        <div className="flex items-center justify-end gap-1.5">
           <button
-            onClick={() => setSelectedCategory(cat)}
+            onClick={() => {
+              setSelectedCategory(cat);
+              setSelectedCategoryIndex((pagination?.from || 1) + index);
+            }}
+            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
             title="View Details"
-            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="w-3.5 h-3.5" />
           </button>
-
-          {/* Edit */}
           <Link
             to={`/admin/categories/${cat.id}/edit`}
+            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
             title="Edit Category"
-            className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
           >
-            <Edit className="w-4 h-4" />
+            <Edit className="w-3.5 h-3.5" />
           </Link>
-
-          {/* Delete */}
           <button
             onClick={() => setDeleteId(cat.id)}
+            className="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:text-white hover:bg-rose-600 transition-colors cursor-pointer"
             title="Delete Category"
-            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
       ),
@@ -238,253 +206,206 @@ export default function AdminCategoriesPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header Section */}
+    <div className="w-full space-y-6">
+      {/* Top Clinical Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-xs font-medium">
               <Stethoscope className="w-3.5 h-3.5 text-blue-600" />
-              <span>Clinic Catalog System</span>
-            </span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              OPD Active
+              <span>Hospital Department Index</span>
             </span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-medium tracking-normal text-slate-800 mt-1.5">
-            Category Management
+          <h1 className="text-xl sm:text-2xl font-medium text-slate-800 tracking-normal mt-1.5">
+            Category &amp; Department Management
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-normal mt-0.5">
-            Manage medical departments, product groupings, and clinical specialty categories.
+          <p className="text-xs sm:text-sm text-slate-500 font-normal mt-0.5 max-w-2xl leading-relaxed">
+            Manage clinical departments, medical specialties, and outpatient healthcare classification units.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Link
-            to="/admin/categories/create"
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-medium shadow-md shadow-blue-500/25 transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>+ Add Category</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* 3 Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-medium text-slate-500 block uppercase tracking-wider">
-              Total Categories
-            </span>
-            <span className="text-2xl font-medium text-slate-800 block mt-1">
-              {stats.total}
-            </span>
-            <span className="text-[11px] text-slate-400 font-normal mt-0.5 block">
-              Configured departments
-            </span>
-          </div>
-          <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-xs">
-            <FolderTree className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-medium text-slate-500 block uppercase tracking-wider">
-              Active In OPD
-            </span>
-            <span className="text-2xl font-medium text-emerald-600 block mt-1">
-              {stats.active}
-            </span>
-            <span className="text-[11px] text-slate-400 font-normal mt-0.5 block">
-              Available for clinical consult
-            </span>
-          </div>
-          <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-xs">
-            <CheckCircle2 className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-medium text-slate-500 block uppercase tracking-wider">
-              Inactive Categories
-            </span>
-            <span className="text-2xl font-medium text-slate-500 block mt-1">
-              {stats.inactive}
-            </span>
-            <span className="text-[11px] text-slate-400 font-normal mt-0.5 block">
-              Archived or on hold
-            </span>
-          </div>
-          <div className="w-11 h-11 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center shadow-xs">
-            <XCircle className="w-5 h-5" />
-          </div>
-        </div>
-      </div>
-
-      {/* Filter and Search Bar */}
-      <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Search by category name, slug, description..."
-            className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all font-normal text-slate-800 placeholder:text-slate-400"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 self-end sm:self-auto">
-          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl p-1">
-            <button
-              onClick={() => {
-                setStatusFilter('all');
-                setPage(1);
-              }}
-              className={`px-3 py-1 text-xs rounded-lg transition-all cursor-pointer font-medium ${
-                statusFilter === 'all'
-                  ? 'bg-white text-blue-600 shadow-2xs'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => {
-                setStatusFilter('active');
-                setPage(1);
-              }}
-              className={`px-3 py-1 text-xs rounded-lg transition-all cursor-pointer font-medium ${
-                statusFilter === 'active'
-                  ? 'bg-emerald-50 text-emerald-700 shadow-2xs'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              Active
-            </button>
-            <button
-              onClick={() => {
-                setStatusFilter('inactive');
-                setPage(1);
-              }}
-              className={`px-3 py-1 text-xs rounded-lg transition-all cursor-pointer font-medium ${
-                statusFilter === 'inactive'
-                  ? 'bg-slate-200 text-slate-700 shadow-2xs'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              Inactive
-            </button>
-          </div>
-
+        <div className="flex items-center gap-2.5">
           <button
             onClick={() => {
               fetchStats();
               fetchCategories();
             }}
-            title="Refresh"
-            className="p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-50 border border-slate-200 rounded-xl transition-all cursor-pointer shadow-2xs"
+            disabled={isLoading}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all shadow-2xs cursor-pointer"
+            title="Refresh List"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
           </button>
+
+          <Link
+            to="/admin/categories/create"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-medium transition-all shadow-sm shadow-blue-500/20"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Category</span>
+          </Link>
         </div>
       </div>
 
-      {/* Categories Table */}
-      <DataTable
-        columns={columns}
-        data={categories}
-        isLoading={isLoading}
-        emptyTitle="No categories found"
-        emptyDescription="Start by clicking '+ Add Category' to create your first clinical department or specialty."
-        pagination={pagination}
-        onPageChange={(p) => setPage(p)}
-      />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/20">
+            <FolderTree className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="text-xs text-slate-400 font-medium">Total Registered Categories</div>
+            <div className="text-2xl font-medium text-slate-800 mt-0.5">
+              {stats.total ?? 0}
+            </div>
+          </div>
+        </div>
 
-      {/* Quick View Category Modal */}
+        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-emerald-500/20">
+            <Activity className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="text-xs text-slate-400 font-medium">Clinical Classification</div>
+            <div className="text-sm font-medium text-slate-700 mt-1">
+              Active Medical Services
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-indigo-500/20">
+            <Sparkles className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="text-xs text-slate-400 font-medium">OPD &amp; In-Patient</div>
+            <div className="text-sm font-medium text-slate-700 mt-1">
+              Live Department Catalog
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Full-Width Card (col-12) */}
+      <div className="w-full bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-7 shadow-xs space-y-5">
+        {/* Search Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="relative flex-1 max-w-md">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              placeholder="Search category name, slug, or scope..."
+              className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 transition-all font-normal text-slate-900"
+            />
+          </div>
+
+          <div className="text-xs text-slate-400 font-normal">
+            Showing <span className="font-medium text-slate-700">{categories.length}</span> departments
+          </div>
+        </div>
+
+        {/* Categories DataTable */}
+        <DataTable
+          columns={columns}
+          data={categories}
+          isLoading={isLoading}
+          pagination={pagination}
+          onPageChange={setPage}
+          emptyMessage="No clinical categories found. Click 'Add Category' to create the first one."
+        />
+      </div>
+
+      {/* Quick View Modal */}
       {selectedCategory && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200/90 relative animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <Tag className="w-4 h-4 text-blue-600" />
-                <h3 className="text-sm font-medium text-slate-800">Category Profile Overview</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="w-full max-w-lg bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-7 relative overflow-hidden space-y-5">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-medium text-white shadow-2xs shrink-0 bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500">
+                  <Tag className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-medium text-slate-800">
+                      {selectedCategory.name}
+                    </h3>
+                    {selectedCategoryIndex && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200/60 font-mono text-[10px] font-medium">
+                        Sr. No. #{selectedCategoryIndex}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs font-mono font-normal text-slate-400">
+                    /{selectedCategory.slug}
+                  </span>
+                </div>
               </div>
               <button
                 onClick={() => setSelectedCategory(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="py-5 space-y-4">
-              <div className="flex items-center gap-4">
-                <CategoryThumbnail category={selectedCategory} size="lg" />
-                <div>
-                  <h4 className="text-base font-medium text-slate-900">{selectedCategory.name}</h4>
-                  <span className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md inline-block mt-1">
-                    /{selectedCategory.slug}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-slate-500 block mb-1">
-                  Description
-                </span>
-                <p className="text-xs text-slate-700 leading-relaxed font-normal">
-                  {selectedCategory.description || 'No description provided.'}
+            {/* Modal Body */}
+            <div className="space-y-4">
+              <div>
+                <label className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block mb-1">
+                  Clinical Scope &amp; Overview
+                </label>
+                <p className="text-xs text-slate-700 font-normal leading-relaxed bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+                  {selectedCategory.description || (
+                    <span className="text-slate-400 italic">No scope or procedure description documented for this category.</span>
+                  )}
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
-                  <span className="text-[10px] text-slate-400 block font-normal">Creator Administrator</span>
-                  <span className="font-medium text-slate-800 block mt-0.5 truncate">
-                    {selectedCategory.admin?.name || 'Administrator'}
-                  </span>
-                  <span className="text-[10px] text-slate-400 block font-normal truncate">
-                    {selectedCategory.admin?.email}
-                  </span>
+              {/* Creator Admin Details */}
+              <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200/60 space-y-1.5">
+                <div className="flex items-center gap-2 text-xs font-medium text-blue-900">
+                  <UserCheck className="w-4 h-4 text-blue-600" />
+                  <span>Enrolled By Administrator</span>
                 </div>
+                <div className="text-xs text-slate-700 font-medium">
+                  {selectedCategory.admin?.name || 'Authorized Clinic Admin'}
+                </div>
+                <div className="text-[11px] text-slate-500 font-normal">
+                  {selectedCategory.admin?.email}
+                </div>
+              </div>
 
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
-                  <span className="text-[10px] text-slate-400 block font-normal">Current Status</span>
-                  <div className="mt-1">
-                    {selectedCategory.is_active ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        Active in System
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-500">
-                        <XCircle className="w-3.5 h-3.5" />
-                        Inactive / Suspended
-                      </span>
-                    )}
-                  </div>
+              {/* Metadata */}
+              <div className="grid grid-cols-2 gap-3 text-xs text-slate-500 pt-2 border-t border-slate-100">
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Created: {new Date(selectedCategory.created_at).toLocaleDateString()}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Updated: {new Date(selectedCategory.updated_at).toLocaleDateString()}</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                Close
+              </button>
               <Link
                 to={`/admin/categories/${selectedCategory.id}/edit`}
                 className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors"
               >
                 Edit Category
               </Link>
-              <button
-                onClick={() => setSelectedCategory(null)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-medium hover:bg-slate-50 transition-colors cursor-pointer"
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>
@@ -494,8 +415,8 @@ export default function AdminCategoriesPage() {
       <ConfirmDialog
         isOpen={Boolean(deleteId)}
         title="Delete Clinic Category?"
-        message="Are you sure you want to delete this category? This action will permanently remove it from the clinic registry."
-        confirmText="Yes, Delete Category"
+        message="Are you sure you want to delete this clinical department? This operation cannot be undone."
+        confirmText={isDeleting ? 'Deleting...' : 'Yes, Delete Category'}
         confirmVariant="danger"
         isLoading={isDeleting}
         onConfirm={handleDeleteConfirm}

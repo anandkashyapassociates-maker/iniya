@@ -24,46 +24,7 @@ class Category extends Model
         'name',
         'slug',
         'description',
-        'image',
-        'is_active',
     ];
-
-    /**
-     * Appended attributes.
-     *
-     * @var list<string>
-     */
-    protected $appends = [
-        'image_url',
-    ];
-
-    /**
-     * Accessor for full image URL.
-     */
-    public function getImageUrlAttribute(): ?string
-    {
-        if (! $this->image) {
-            return null;
-        }
-
-        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
-            return $this->image;
-        }
-
-        return asset('storage/'.ltrim($this->image, '/'));
-    }
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'is_active' => 'boolean',
-        ];
-    }
 
     /**
      * Get the admin who created this category.
