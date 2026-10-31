@@ -36,9 +36,6 @@ import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
 import AdminCustomersPage from '../pages/admin/AdminCustomersPage';
 import AdminCustomerCreatePage from '../pages/admin/AdminCustomerCreatePage';
 import AdminCustomerEditPage from '../pages/admin/AdminCustomerEditPage';
-import AdminCategoriesPage from '../pages/admin/AdminCategoriesPage';
-import AdminCategoryCreatePage from '../pages/admin/AdminCategoryCreatePage';
-import AdminCategoryEditPage from '../pages/admin/AdminCategoryEditPage';
 import AdminProfilePage from '../pages/admin/AdminProfilePage';
 import AdminChangePasswordPage from '../pages/admin/AdminChangePasswordPage';
 import AdminAppointmentsPage from '../pages/admin/AdminAppointmentsPage';
@@ -140,9 +137,7 @@ export default function AppRoutes() {
           <Route path="/admin/customers" element={<AdminCustomersPage />} />
           <Route path="/admin/customers/create" element={<AdminCustomerCreatePage />} />
           <Route path="/admin/customers/:id/edit" element={<AdminCustomerEditPage />} />
-          <Route path="/admin/categories" element={<AdminCategoriesPage />} />
-          <Route path="/admin/categories/create" element={<AdminCategoryCreatePage />} />
-          <Route path="/admin/categories/:id/edit" element={<AdminCategoryEditPage />} />
+          <Route path="/admin/categories" element={<Navigate to="/admin/inventory/categories" replace />} />
 
           {/* Admin Inventory Management Module */}
           <Route path="/admin/inventory" element={<Navigate to="/admin/inventory/products/create" replace />} />
