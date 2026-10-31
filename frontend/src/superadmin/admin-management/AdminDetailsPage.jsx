@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Users,
   UserPlus,
@@ -14,19 +14,24 @@ import {
   AlertCircle,
   Clock,
   Pencil,
+  LogIn,
 } from 'lucide-react';
 import AdminStatusBadge from './AdminStatusBadge';
 import AdminEditModal from './AdminEditModal';
 import adminManagementService from '../services/adminManagementService';
 import { useToast } from '../../context/ToastContext';
+import { useAdminAuth } from '../../features/auth/AdminAuthContext';
 
 export default function AdminDetailsPage() {
   const toast = useToast();
+  const navigate = useNavigate();
+  const { setSession } = useAdminAuth();
 
   const [admins, setAdmins] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [loggingInAdminId, setLoggingInAdminId] = useState(null);
 
   // Filters & search state
   const [searchInput, setSearchInput] = useState('');
@@ -54,6 +59,44 @@ export default function AdminDetailsPage() {
       prev.map((adm) => (adm.id === updatedAdmin.id ? { ...adm, ...updatedAdmin } : adm))
     );
     fetchAdmins();
+  };
+
+  const handleLoginAsAdmin = async (adm) => {
+    if (adm.status === 'blocked') {
+      toast.error(`Cannot login as '${adm.name}': Account is blocked.`);
+      return;
+    }
+    if (!adm.is_active || adm.status === 'inactive') {
+      toast.error(`Cannot login as '${adm.name}': Account is inactive.`);
+      return;
+    }
+
+    setLoggingInAdminId(adm.id);
+    try {
+      const res = await adminManagementService.impersonateAdmin(adm.id);
+
+      // Store in localStorage
+      localStorage.setItem('admin_token', res.token);
+      localStorage.setItem('admin_user', JSON.stringify(res.user));
+      localStorage.setItem(
+        'admin_impersonated_by_superadmin',
+        JSON.stringify(res.impersonated_by || { active: true, admin_id: adm.id })
+      );
+
+      if (setSession) {
+        setSession(res.token, res.user);
+      }
+
+      toast.success(`Logged in as Admin '${adm.name}'! Entering Admin Panel...`);
+
+      setTimeout(() => {
+        navigate('/admin/dashboard');
+      }, 400);
+    } catch (err) {
+      toast.error(err.response?.data?.message || `Failed to log in as ${adm.name}.`);
+    } finally {
+      setLoggingInAdminId(null);
+    }
   };
 
   const fetchAdmins = useCallback(async () => {
@@ -399,17 +442,40 @@ export default function AdminDetailsPage() {
                       </div>
                     </td>
 
-                    {/* Actions: Edit button */}
+                    {/* Actions: Login & Edit buttons */}
                     <td className="py-3.5 px-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEditModal(adm)}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-300 text-slate-700 hover:text-blue-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
-                        title={`Edit Admin ${adm.name}`}
-                      >
-                        <Pencil className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600" />
-                        <span>Edit</span>
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleLoginAsAdmin(adm)}
+                          disabled={adm.status === 'blocked' || !adm.is_active || loggingInAdminId === adm.id}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-2xs transition-all cursor-pointer ${
+                            adm.status === 'blocked' || !adm.is_active
+                              ? 'border border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed opacity-60'
+                              : 'border border-blue-600 bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
+                          }`}
+                          title={
+                            adm.status === 'blocked'
+                              ? 'Account blocked - cannot login'
+                              : !adm.is_active
+                              ? 'Account inactive - cannot login'
+                              : `Log in to Admin Panel as ${adm.name}`
+                          }
+                        >
+                          <LogIn className={`w-3.5 h-3.5 ${loggingInAdminId === adm.id ? 'animate-spin' : ''}`} />
+                          <span>{loggingInAdminId === adm.id ? 'Entering...' : 'Login'}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditModal(adm)}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+                          title={`Edit Admin ${adm.name}`}
+                        >
+                          <Pencil className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Edit</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

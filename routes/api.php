@@ -67,6 +67,7 @@ Route::prefix('superadmin')
         Route::put('/admins/{id}', [AdminManagementController::class, 'update']);
         Route::patch('/admins/{id}/status', [AdminManagementController::class, 'updateStatus']);
         Route::post('/admins/{id}/password-reset', [AdminManagementController::class, 'resetPassword']);
+        Route::post('/admins/{id}/impersonate', [AdminManagementController::class, 'impersonate']);
 
         // Staff Management
         Route::get('/staff/preview-code', [StaffManagementController::class, 'previewCode']);
