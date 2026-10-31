@@ -199,6 +199,7 @@ Route::prefix('admin')
             Route::get('/stocks/vendors', [InventoryStockController::class, 'vendors']);
             Route::get('/stocks/{id}/logs', [InventoryStockController::class, 'logs']);
             Route::post('/stocks/{id}/add', [InventoryStockController::class, 'addStock']);
+            Route::post('/stocks/{id}/issue', [InventoryStockController::class, 'issueStock']);
             Route::match(['put', 'post'], '/stocks/{id}', [InventoryStockController::class, 'updateStock']);
 
             // Products

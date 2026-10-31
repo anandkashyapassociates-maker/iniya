@@ -24,6 +24,7 @@ class InventoryStockController extends Controller
             'vendor:id,vendor_code,vendor_name,company_name',
             'creator:id,name,email',
             'inventoryUpdater:id,name,email',
+            'issueIssuer:id,name,email',
         ]);
 
         // Search by product name, category, or brand
@@ -110,6 +111,7 @@ class InventoryStockController extends Controller
             'vendor:id,vendor_code,vendor_name,company_name,mobile',
             'creator:id,name,email',
             'inventoryUpdater:id,name,email',
+            'issueIssuer:id,name,email',
         ])->where(function ($q) {
             $q->whereColumn('quantity', '<=', 'low_stock_threshold')
                 ->orWhere('quantity', '<=', 0);
@@ -240,6 +242,86 @@ class InventoryStockController extends Controller
                 'brand:id,name',
                 'vendor:id,vendor_code,vendor_name,company_name',
                 'inventoryUpdater:id,name,email',
+                'issueIssuer:id,name,email',
+            ]),
+        ]);
+    }
+
+    /**
+     * Issue / Dispense inventory stock (less quantity).
+     */
+    public function issueStock(Request $request, int $id): JsonResponse
+    {
+        $product = InventoryProduct::findOrFail($id);
+
+        $validated = $request->validate([
+            'quantity' => ['required', 'integer', 'min:1'],
+            'inventory_date' => ['nullable', 'date', 'after_or_equal:today'],
+            'notes' => ['nullable', 'string', 'max:500'],
+        ], [
+            'quantity.required' => 'Please enter the quantity to issue.',
+            'quantity.min' => 'Quantity to issue must be at least 1.',
+            'inventory_date.after_or_equal' => 'Issue date cannot be in the past. Please select today or a future date.',
+        ]);
+
+        $quantityToIssue = (int) $validated['quantity'];
+        $currentQty = (int) $product->quantity;
+
+        if ($quantityToIssue > $currentQty) {
+            return response()->json([
+                'message' => "Cannot issue {$quantityToIssue} units. Only {$currentQty} units are currently available in stock.",
+                'errors' => [
+                    'quantity' => ["Cannot issue {$quantityToIssue} units. Only {$currentQty} units available in stock."],
+                ],
+            ], 422);
+        }
+
+        $admin = $request->user();
+        $newQty = $currentQty - $quantityToIssue;
+
+        $issueDate = ! empty($validated['inventory_date'])
+            ? Carbon::parse($validated['inventory_date'])
+            : Carbon::now();
+
+        $product->update([
+            'quantity' => $newQty,
+            'last_issued_quantity' => $quantityToIssue,
+            'last_issued_at' => $issueDate,
+            'last_issued_by' => $admin->id,
+        ]);
+
+        // Record stock issue log
+        InventoryStockLog::create([
+            'product_id' => $product->id,
+            'vendor_id' => $product->vendor_id,
+            'admin_id' => $admin->id,
+            'quantity' => -$quantityToIssue,
+            'business_unit' => $product->business_unit,
+            'buy_price' => $product->buy_price,
+            'mrp' => $product->mrp,
+            'average_price' => $product->average_price,
+            'type' => 'issue',
+            'notes' => $validated['notes'] ?? 'Issued from inventory stock',
+            'created_at' => $issueDate,
+            'updated_at' => $issueDate,
+        ]);
+
+        AdminActivityLog::record(
+            'admin',
+            $admin->id,
+            'inventory_stock_issued',
+            "Admin '{$admin->name}' issued {$quantityToIssue} units of '{$product->product_name}'. Remaining stock: {$newQty}.",
+            $request
+        );
+
+        return response()->json([
+            'message' => "Successfully issued {$quantityToIssue} units of '{$product->product_name}'. Remaining available stock: {$newQty}.",
+            'product' => $product->fresh()->load([
+                'category:id,name',
+                'brand:id,name',
+                'vendor:id,vendor_code,vendor_name,company_name',
+                'inventoryUpdater:id,name,email',
+                'issueIssuer:id,name,email',
             ]),
         ]);
     }
@@ -330,6 +412,7 @@ class InventoryStockController extends Controller
                 'brand:id,name',
                 'vendor:id,vendor_code,vendor_name,company_name',
                 'inventoryUpdater:id,name,email',
+                'issueIssuer:id,name,email',
             ]),
         ]);
     }

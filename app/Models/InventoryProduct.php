@@ -28,6 +28,7 @@ class InventoryProduct extends Model
         'product_unit',
         'quantity',
         'last_added_quantity',
+        'last_issued_quantity',
         'buy_price',
         'mrp',
         'average_price',
@@ -35,6 +36,8 @@ class InventoryProduct extends Model
         'low_stock_threshold',
         'inventory_updated_by',
         'inventory_updated_at',
+        'last_issued_by',
+        'last_issued_at',
         'product_type',
         'custom_product_type',
         'status',
@@ -51,11 +54,13 @@ class InventoryProduct extends Model
         'product_unit' => 'integer',
         'quantity' => 'integer',
         'last_added_quantity' => 'integer',
+        'last_issued_quantity' => 'integer',
         'buy_price' => 'decimal:2',
         'mrp' => 'decimal:2',
         'average_price' => 'decimal:2',
         'low_stock_threshold' => 'integer',
         'inventory_updated_at' => 'datetime',
+        'last_issued_at' => 'datetime',
         'is_used' => 'boolean',
     ];
 
@@ -169,6 +174,14 @@ class InventoryProduct extends Model
     public function inventoryUpdater(): BelongsTo
     {
         return $this->belongsTo(Admin::class, 'inventory_updated_by');
+    }
+
+    /**
+     * Admin who last issued inventory.
+     */
+    public function issueIssuer(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'last_issued_by');
     }
 
     /**

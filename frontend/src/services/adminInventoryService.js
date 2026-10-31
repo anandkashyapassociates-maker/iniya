@@ -115,6 +115,11 @@ export const adminInventoryService = {
     return response.data;
   },
 
+  async issueStock(id, data) {
+    const response = await adminApi.post(`/admin/inventory/stocks/${id}/issue`, data);
+    return response.data;
+  },
+
   async updateStock(id, data) {
     const response = await adminApi.put(`/admin/inventory/stocks/${id}`, data);
     return response.data;

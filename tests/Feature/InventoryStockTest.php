@@ -356,4 +356,66 @@ class InventoryStockTest extends TestCase
         $this->product->refresh();
         $this->assertEquals($futureDate, $this->product->inventory_updated_at->toDateString());
     }
+
+    /**
+     * 10. Admin can issue inventory stock (reduce quantity).
+     */
+    public function test_admin_can_issue_inventory_stock(): void
+    {
+        // Give product 50 units first
+        $this->product->update([
+            'quantity' => 50,
+            'last_added_quantity' => 50,
+            'inventory_updated_by' => $this->admin1->id,
+        ]);
+
+        $payload = [
+            'quantity' => 15,
+            'inventory_date' => now()->toDateString(),
+            'notes' => 'Dispensed to Emergency Ward #2',
+        ];
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->admin1Token)
+            ->postJson("/api/admin/inventory/stocks/{$this->product->id}/issue", $payload);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('product.quantity', 35)
+            ->assertJsonPath('product.last_issued_quantity', 15)
+            ->assertJsonPath('product.last_issued_by', $this->admin1->id);
+
+        $this->assertDatabaseHas('inventory_products', [
+            'id' => $this->product->id,
+            'quantity' => 35,
+            'last_issued_quantity' => 15,
+            'last_issued_by' => $this->admin1->id,
+        ]);
+
+        $this->assertDatabaseHas('inventory_stock_logs', [
+            'product_id' => $this->product->id,
+            'admin_id' => $this->admin1->id,
+            'type' => 'issue',
+            'quantity' => -15,
+        ]);
+    }
+
+    /**
+     * 11. Admin cannot issue more than available stock.
+     */
+    public function test_admin_cannot_issue_more_than_available_stock(): void
+    {
+        $this->product->update([
+            'quantity' => 10,
+        ]);
+
+        $payload = [
+            'quantity' => 20, // exceeds 10
+            'inventory_date' => now()->toDateString(),
+        ];
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->admin1Token)
+            ->postJson("/api/admin/inventory/stocks/{$this->product->id}/issue", $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['quantity']);
+    }
 }

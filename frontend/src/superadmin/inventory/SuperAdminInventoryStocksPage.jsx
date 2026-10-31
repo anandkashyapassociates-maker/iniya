@@ -213,6 +213,22 @@ export default function SuperAdminInventoryStocksPage() {
                 <span>{new Date(p.inventory_updated_at).toLocaleDateString()}</span>
               </div>
             )}
+            {p.last_issued_at && (
+              <div
+                className="text-[10px] text-slate-500 font-mono mt-0.5 flex items-center gap-1 flex-wrap"
+                title={`Inventory Issued: ${p.last_issued_quantity} ${p.business_unit || 'Units'} on ${new Date(p.last_issued_at).toLocaleDateString()}${p.issue_issuer?.name ? ` by ${p.issue_issuer.name}` : ''}`}
+              >
+                <span className="text-amber-600 font-semibold">Issued:</span>
+                <span className="font-semibold text-amber-800">
+                  -{p.last_issued_quantity} {p.business_unit || 'Units'}
+                </span>
+                <span className="text-slate-400 font-sans">•</span>
+                <span>{new Date(p.last_issued_at).toLocaleDateString()}</span>
+                {p.issue_issuer?.name && (
+                  <span className="text-slate-400 font-sans text-[9px]">({p.issue_issuer.name})</span>
+                )}
+              </div>
+            )}
           </div>
         );
       },
@@ -236,6 +252,7 @@ export default function SuperAdminInventoryStocksPage() {
       className: 'w-[18%]',
       render: (p) => {
         const addedQty = p.last_added_quantity ?? p.quantity ?? 0;
+        const issuedQty = p.last_issued_quantity;
         return (
           <div>
             <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor?.vendor_name || 'No Vendor Assigned'}>
@@ -247,6 +264,14 @@ export default function SuperAdminInventoryStocksPage() {
                 title={`Inventory Added: ${addedQty} ${p.business_unit || 'Units'} on ${new Date(p.inventory_updated_at).toLocaleString()}`}
               >
                 Added: {addedQty} {p.business_unit || 'Units'} on {new Date(p.inventory_updated_at).toLocaleDateString()}
+              </span>
+            )}
+            {p.last_issued_at && (
+              <span
+                className="text-[10px] text-amber-700 font-mono block mt-0.5"
+                title={`Inventory Issued: ${issuedQty} ${p.business_unit || 'Units'} on ${new Date(p.last_issued_at).toLocaleString()}${p.issue_issuer?.name ? ` by ${p.issue_issuer.name}` : ''}`}
+              >
+                Issued: -{issuedQty} {p.business_unit || 'Units'} on {new Date(p.last_issued_at).toLocaleDateString()}
               </span>
             )}
           </div>
@@ -590,6 +615,22 @@ export default function SuperAdminInventoryStocksPage() {
                     {viewProduct.inventory_updated_at ? new Date(viewProduct.inventory_updated_at).toLocaleString() : '—'}
                   </span>
                 </div>
+                {viewProduct.last_issued_at && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">Last Issued Quantity:</span>
+                      <span className="font-semibold text-amber-700">
+                        -{viewProduct.last_issued_quantity} {viewProduct.business_unit || 'Units'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">Issued At / By:</span>
+                      <span className="font-semibold text-slate-800">
+                        {new Date(viewProduct.last_issued_at).toLocaleString()} {viewProduct.issue_issuer?.name ? `(${viewProduct.issue_issuer.name})` : ''}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 flex items-center gap-2">
