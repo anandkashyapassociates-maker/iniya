@@ -14,6 +14,7 @@ import {
   AlertCircle,
   Clock,
   Pencil,
+  Eye,
   LogIn,
 } from 'lucide-react';
 import AdminStatusBadge from './AdminStatusBadge';
@@ -464,14 +465,14 @@ export default function AdminDetailsPage() {
                           }`}
                           title={
                             adm.status === 'blocked'
-                              ? 'Account blocked - cannot login'
+                              ? 'Account blocked - cannot view'
                               : !adm.is_active
-                              ? 'Account inactive - cannot login'
-                              : `Log in as ${adm.name} (Opens in next tab)`
+                              ? 'Account inactive - cannot view'
+                              : `View Admin Panel as ${adm.name} (Opens in next tab)`
                           }
                         >
-                          <LogIn className={`w-3.5 h-3.5 ${loggingInAdminId === adm.id ? 'animate-spin' : ''}`} />
-                          <span>{loggingInAdminId === adm.id ? 'Opening...' : 'Login'}</span>
+                          <Eye className={`w-3.5 h-3.5 ${loggingInAdminId === adm.id ? 'animate-spin' : ''}`} />
+                          <span>{loggingInAdminId === adm.id ? 'Opening...' : 'View'}</span>
                         </button>
 
                         <button
