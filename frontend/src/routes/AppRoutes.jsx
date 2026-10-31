@@ -105,7 +105,7 @@ export default function AppRoutes() {
           <Route path="/superadmin/staff/create" element={<Navigate to="/superadmin/staff-management/create" replace />} />
           
           {/* Executive Category Oversight */}
-          <Route path="/superadmin/categories" element={<SuperAdminCategoriesPage />} />
+          <Route path="/superadmin/categories" element={<Navigate to="/superadmin/inventory/categories" replace />} />
 
           {/* Super Admin Inventory Management Module */}
           <Route path="/superadmin/inventory" element={<Navigate to="/superadmin/inventory/overview" replace />} />

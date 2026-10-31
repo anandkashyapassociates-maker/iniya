@@ -359,7 +359,7 @@ export default function SuperAdminDashboardPage() {
         </Link>
 
         {/* ROW 2 - CARD 5: Active Service Categories */}
-        <Link to="/superadmin/categories" className="block group">
+        <Link to="/superadmin/inventory/categories" className="block group">
           <StatCard
             title="Active Service Categories"
             value={totalCategories || 15}
@@ -558,7 +558,7 @@ export default function SuperAdminDashboardPage() {
 
             {/* Tile 4: Service Categories */}
             <Link
-              to="/superadmin/categories"
+              to="/superadmin/inventory/categories"
               className="p-4 rounded-xl bg-[#fffbeb] hover:bg-amber-100/70 border border-amber-100/60 transition-all flex flex-col items-center text-center group cursor-pointer"
             >
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center icon-3d shadow-xs mb-2">
