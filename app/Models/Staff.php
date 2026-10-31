@@ -114,10 +114,10 @@ class Staff extends Model
     }
 
     /**
-     * Appointments assigned to this staff member.
+     * Appointment sessions assigned to this staff member.
      */
-    public function appointments(): HasMany
+    public function appointmentSessions(): HasMany
     {
-        return $this->hasMany(Appointment::class, 'staff_id');
+        return $this->hasMany(AppointmentSession::class, 'staff_id');
     }
 }

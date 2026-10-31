@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('vendors')) {
+        if (! Schema::hasTable('vendors')) {
             Schema::create('vendors', function (Blueprint $table) {
                 $table->id();
                 $table->string('vendor_code', 30)->unique()->index();
@@ -48,4 +48,3 @@ return new class extends Migration
         Schema::dropIfExists('vendors');
     }
 };
-

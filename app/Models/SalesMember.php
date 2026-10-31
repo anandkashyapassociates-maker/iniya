@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
 class SalesMember extends Model
@@ -14,7 +15,9 @@ class SalesMember extends Model
     protected $table = 'sales_members';
 
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_INACTIVE = 'inactive';
+
     public const STATUS_BLOCKED = 'blocked';
 
     /**
@@ -136,5 +139,12 @@ class SalesMember extends Model
     {
         return $this->belongsTo(SuperAdmin::class, 'created_by_superadmin_id');
     }
-}
 
+    /**
+     * Master appointments handled by this sales member.
+     */
+    public function masterAppointments(): HasMany
+    {
+        return $this->hasMany(MasterAppointment::class, 'sales_team_id');
+    }
+}

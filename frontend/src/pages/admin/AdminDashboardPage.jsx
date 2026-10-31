@@ -9,15 +9,7 @@ import {
   DollarSign,
   TrendingUp,
   UserPlus,
-  CalendarPlus,
-  Layers,
-  Sparkles,
-  RefreshCw,
-  Eye,
-  ChevronRight,
-  Zap,
-  AlertTriangle,
-  Boxes,
+  Calendar,
 } from 'lucide-react';
 import StatCard from '../../components/StatCard';
 import DashboardSkeleton from '../../components/DashboardSkeleton';
@@ -263,18 +255,33 @@ export default function AdminDashboardPage() {
               Here&apos;s what&apos;s happening at your clinic today.
             </p>
 
-            {/* Quick sync & refresh action */}
-            <div className="flex items-center gap-2 mt-4">
-              <button
-                type="button"
-                onClick={() => loadAllDashboardData(true)}
-                disabled={isRefreshing}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/95 hover:bg-white text-slate-700 hover:text-blue-700 text-xs font-semibold border border-blue-200/80 shadow-2xs hover:shadow-xs transition-all cursor-pointer backdrop-blur-xs"
-                title="Refresh live metrics"
+            {/* Heartbeat ECG Line beneath greeting */}
+            <div className="mt-4 max-w-xs text-blue-400 opacity-80">
+              <ClinicHeartbeatLine className="w-full h-6" />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 mt-4">
+              <Link
+                to="/admin/appointments/create"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-md shadow-blue-950/40 transition-all cursor-pointer font-display"
               >
-                <RefreshCw className={`w-3.5 h-3.5 text-blue-600 ${isRefreshing ? 'animate-spin' : ''}`} />
-                <span>{isRefreshing ? 'Syncing...' : 'Sync Live OPD'}</span>
-              </button>
+                <Calendar className="w-3.5 h-3.5 text-blue-200" />
+                <span>+ Book Appointment</span>
+              </Link>
+              <Link
+                to="/admin/customers/create"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-800 text-white text-xs font-semibold border border-slate-700 hover:border-slate-600 transition-all cursor-pointer font-display"
+              >
+                <UserPlus className="w-3.5 h-3.5 text-teal-400" />
+                <span>+ Register Patient</span>
+              </Link>
+              <Link
+                to="/admin/appointments"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-800 text-white text-xs font-semibold border border-slate-700 hover:border-slate-600 transition-all cursor-pointer font-display"
+              >
+                <Users className="w-3.5 h-3.5 text-blue-400" />
+                <span>Appointments Directory</span>
+              </Link>
             </div>
           </div>
         </div>
@@ -417,6 +424,31 @@ export default function AdminDashboardPage() {
             sparklineData={[5, 4, 3, 2, 4, 3, lowStockCount]}
           />
         </Link>
+        <Link to="/admin/appointments" className="block group">
+          <StatCard
+            title="Master Appointments"
+            value={stats?.total_appointments ?? 0}
+            subtitle={`${stats?.today_appointments ?? 0} booked today`}
+            icon={Calendar}
+            colorScheme="indigo"
+          />
+        </Link>
+        <Link to="/admin/appointments/calendar" className="block group">
+          <StatCard
+            title="Clinical Sessions"
+            value={stats?.total_sessions ?? 0}
+            subtitle={`${stats?.today_sessions ?? 0} scheduled today`}
+            icon={Activity}
+            colorScheme="violet"
+          />
+        </Link>
+        <StatCard
+          title="OPD Duty Status"
+          value={stats?.account_status || 'Active'}
+          subtitle="Clinical desk verified"
+          icon={CheckCircle2}
+          colorScheme="emerald"
+        />
       </div>
 
       {/* ======================================================== */}

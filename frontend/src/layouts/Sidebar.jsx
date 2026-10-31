@@ -11,13 +11,11 @@ import {
   LogOut,
   X,
   Calendar,
-  Boxes,
-  PlusCircle,
+  CalendarDays,
+  CalendarPlus,
+  ListFilter,
+  Sparkles,
   ChevronDown,
-  AlertTriangle,
-  Package,
-  FolderTree,
-  Layers,
 } from 'lucide-react';
 import { ClinicBrandIcon } from '../components/ClinicArtwork';
 
@@ -31,14 +29,14 @@ export default function Sidebar({
   const isSuperAdmin = role === 'superadmin';
   const location = useLocation();
 
-  const isInInventory = location.pathname.startsWith('/admin/inventory');
-  const [inventoryOpen, setInventoryOpen] = useState(isInInventory);
+  const isAppointmentsActive = location.pathname.startsWith('/admin/appointments');
+  const [appointmentsOpen, setAppointmentsOpen] = useState(isAppointmentsActive);
 
   useEffect(() => {
-    if (isInInventory) {
-      setInventoryOpen(true);
+    if (isAppointmentsActive) {
+      setAppointmentsOpen(true);
     }
-  }, [isInInventory]);
+  }, [isAppointmentsActive]);
 
   const superAdminNavItems = [
     {
@@ -87,38 +85,34 @@ export default function Sidebar({
       color: 'from-violet-500 to-purple-600',
     },
     {
-      to: '/admin/appointments',
       label: 'Appointments',
       icon: Calendar,
-      color: 'from-amber-500 to-orange-600',
-    },
-  ];
-
-  const inventorySubItems = [
-    {
-      to: '/admin/inventory/stocks',
-      label: 'Stock Ledger',
-      icon: Boxes,
-    },
-    {
-      to: '/admin/inventory/low-stock',
-      label: 'Low Stock Alerts',
-      icon: AlertTriangle,
-    },
-    {
-      to: '/admin/inventory/products',
-      label: 'All Products',
-      icon: Package,
-    },
-    {
-      to: '/admin/inventory/products/create',
-      label: 'Create Product',
-      icon: PlusCircle,
-    },
-    {
-      to: '/admin/inventory/categories',
-      label: 'Categories',
-      icon: FolderTree,
+      color: 'from-blue-600 to-indigo-600',
+      isDropdown: true,
+      basePath: '/admin/appointments',
+      children: [
+        {
+          to: '/admin/appointments/create',
+          label: 'Create Appointments',
+          icon: CalendarPlus,
+        },
+        {
+          to: '/admin/appointments',
+          label: 'Appointments Directory',
+          icon: ListFilter,
+          end: true,
+        },
+        {
+          to: '/admin/appointments/services',
+          label: 'Services',
+          icon: Sparkles,
+        },
+        {
+          to: '/admin/appointments/calendar',
+          label: 'Session Calendar',
+          icon: CalendarDays,
+        },
+      ],
     },
     {
       to: '/admin/inventory/brands',
@@ -188,69 +182,75 @@ export default function Sidebar({
               Clinical Desk Modules
             </div>
 
-            {isSuperAdmin ? (
-              superAdminNavItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    onClick={onClose}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all group ${
-                        isActive
-                          ? 'bg-gradient-to-r from-blue-600/25 via-indigo-600/15 to-transparent text-white border-l-4 border-blue-500 shadow-sm'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-                      }`
-                    }
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${item.color} text-white flex items-center justify-center shrink-0 icon-3d shadow-md group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-300`}
-                    >
-                      <Icon className="w-4 h-4 drop-shadow-sm" />
-                    </div>
-                    <span className="truncate group-hover:translate-x-0.5 transition-transform">{item.label}</span>
-                  </NavLink>
-                );
-              })
-            ) : (
-              <>
-                {/* Standard Admin Top Items */}
-                {adminNavItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      onClick={onClose}
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all group ${
-                          isActive
-                            ? 'bg-gradient-to-r from-blue-600/25 via-indigo-600/15 to-transparent text-white border-l-4 border-blue-500 shadow-sm'
-                            : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-                        }`
-                      }
-                    >
-                      <div
-                        className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${item.color} text-white flex items-center justify-center shrink-0 icon-3d shadow-md group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-300`}
-                      >
-                        <Icon className="w-4 h-4 drop-shadow-sm" />
-                      </div>
-                      <span className="truncate group-hover:translate-x-0.5 transition-transform">{item.label}</span>
-                    </NavLink>
-                  );
-                })}
+            {navItems.map((item) => {
+              const Icon = item.icon;
 
-                {/* ======================================================== */}
-                {/* INVENTORY MANAGEMENT ACCORDION SECTION (Phase 5)         */}
-                {/* ======================================================== */}
-                <div className="pt-1.5 pb-1">
-                  <button
-                    type="button"
-                    onClick={() => setInventoryOpen(!inventoryOpen)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer group ${
-                      isInInventory
-                        ? 'bg-blue-600/15 text-blue-300 border border-blue-500/30'
+              if (item.isDropdown) {
+                const isGroupActive = location.pathname.startsWith(item.basePath || '');
+                return (
+                  <div key={item.label} className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => setAppointmentsOpen((prev) => !prev)}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+                        isGroupActive
+                          ? 'bg-gradient-to-r from-blue-600/20 via-indigo-600/15 to-transparent text-white border-l-4 border-blue-500 shadow-sm'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className={`w-7 h-7 rounded-xl bg-gradient-to-tr ${item.color || 'from-blue-600 to-indigo-600'} text-white flex items-center justify-center shrink-0 shadow-xs`}
+                        >
+                          <Icon className="w-3.5 h-3.5" />
+                        </div>
+                        <span className="truncate">{item.label}</span>
+                      </div>
+                      <ChevronDown
+                        className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
+                          appointmentsOpen ? 'rotate-180 text-blue-400' : ''
+                        }`}
+                      />
+                    </button>
+
+                    {appointmentsOpen && (
+                      <div className="pl-6 pr-1 pt-1 pb-1 space-y-1">
+                        {item.children?.map((sub) => {
+                          const SubIcon = sub.icon;
+                          return (
+                            <NavLink
+                              key={sub.to}
+                              to={sub.to}
+                              end={sub.end}
+                              onClick={onClose}
+                              className={({ isActive }) =>
+                                `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                                  isActive
+                                    ? 'bg-blue-600/25 text-blue-300 font-semibold border border-blue-500/30 shadow-xs'
+                                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                                }`
+                              }
+                            >
+                              {SubIcon && <SubIcon className="w-3.5 h-3.5 shrink-0" />}
+                              <span className="truncate">{sub.label}</span>
+                            </NavLink>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={onClose}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all ${
+                      isActive
+                        ? 'bg-gradient-to-r from-blue-600/20 via-indigo-600/15 to-transparent text-white border-l-4 border-blue-500 shadow-sm'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
                     }`}
                   >
