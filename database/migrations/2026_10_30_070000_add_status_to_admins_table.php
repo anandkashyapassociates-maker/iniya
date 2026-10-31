@@ -12,14 +12,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('admins', function (Blueprint $table) {
-            $table->string('status', 20)->default('active')->after('mobile')->index();
-        });
+        if (!Schema::hasColumn('admins', 'status')) {
+            Schema::table('admins', function (Blueprint $table) {
+                $table->string('status', 20)->default('active')->after('mobile')->index();
+            });
 
-        // Sync existing records with their active state
-        DB::table('admins')
-            ->where('is_active', false)
-            ->update(['status' => 'inactive']);
+            // Sync existing records with their active state
+            DB::table('admins')
+                ->where('is_active', false)
+                ->update(['status' => 'inactive']);
+        }
     }
 
     /**
