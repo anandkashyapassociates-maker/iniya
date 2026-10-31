@@ -31,9 +31,12 @@ import AdminCustomerCreatePage from '../pages/admin/AdminCustomerCreatePage';
 import AdminCustomerEditPage from '../pages/admin/AdminCustomerEditPage';
 import AdminProfilePage from '../pages/admin/AdminProfilePage';
 import AdminChangePasswordPage from '../pages/admin/AdminChangePasswordPage';
-import AdminAppointmentsPage from '../pages/admin/AdminAppointmentsPage';
-import AdminAppointmentCreatePage from '../pages/admin/AdminAppointmentCreatePage';
-import AdminAppointmentEditPage from '../pages/admin/AdminAppointmentEditPage';
+import AdminMasterAppointmentsPage from '../pages/admin/AdminMasterAppointmentsPage';
+import AdminMasterAppointmentCreatePage from '../pages/admin/AdminMasterAppointmentCreatePage';
+import AdminMasterAppointmentEditPage from '../pages/admin/AdminMasterAppointmentEditPage';
+import AdminMasterAppointmentDetailsPage from '../pages/admin/AdminMasterAppointmentDetailsPage';
+import AdminAppointmentCalendarPage from '../pages/admin/AdminAppointmentCalendarPage';
+import AdminServicesManagementPage from '../pages/admin/AdminServicesManagementPage';
 
 // Portal Root
 import LandingPage from '../pages/LandingPage';
@@ -103,9 +106,13 @@ export default function AppRoutes() {
       <Route element={<AdminProtectedRoute />}>
         <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-          <Route path="/admin/appointments" element={<AdminAppointmentsPage />} />
-          <Route path="/admin/appointments/create" element={<AdminAppointmentCreatePage />} />
-          <Route path="/admin/appointments/:id/edit" element={<AdminAppointmentEditPage />} />
+          <Route path="/admin/appointments" element={<AdminMasterAppointmentsPage />} />
+          <Route path="/admin/appointments/create" element={<AdminMasterAppointmentCreatePage />} />
+          <Route path="/admin/appointments/services" element={<AdminServicesManagementPage />} />
+          <Route path="/admin/services" element={<Navigate to="/admin/appointments/services" replace />} />
+          <Route path="/admin/appointments/calendar" element={<AdminAppointmentCalendarPage />} />
+          <Route path="/admin/appointments/:id" element={<AdminMasterAppointmentDetailsPage />} />
+          <Route path="/admin/appointments/:id/edit" element={<AdminMasterAppointmentEditPage />} />
           <Route path="/admin/customers" element={<AdminCustomersPage />} />
           <Route path="/admin/customers/create" element={<AdminCustomerCreatePage />} />
           <Route path="/admin/customers/:id/edit" element={<AdminCustomerEditPage />} />

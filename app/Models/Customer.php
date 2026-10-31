@@ -51,7 +51,7 @@ class Customer extends Model
             return $this->image;
         }
 
-        return asset('storage/' . ltrim($this->image, '/'));
+        return asset('storage/'.ltrim($this->image, '/'));
     }
 
     /**
@@ -76,10 +76,10 @@ class Customer extends Model
     }
 
     /**
-     * Appointments booked for this customer.
+     * Master appointments booked for this customer.
      */
-    public function appointments(): HasMany
+    public function masterAppointments(): HasMany
     {
-        return $this->hasMany(Appointment::class, 'customer_id');
+        return $this->hasMany(MasterAppointment::class, 'customer_id');
     }
 }

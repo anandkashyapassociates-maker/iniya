@@ -455,6 +455,28 @@ class AppointmentController extends Controller
     }
 
     /**
+     * Delete an appointment.
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        $appointment = Appointment::find($id);
+
+        if (! $appointment) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Appointment already removed.',
+            ]);
+        }
+
+        $appointment->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Appointment deleted successfully.',
+        ]);
+    }
+
+    /**
      * Provide active staff members for dropdown select in appointment forms.
      */
     public function staffOptions(): JsonResponse

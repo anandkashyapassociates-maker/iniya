@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   Users,
   UserPlus,
+  Calendar,
 } from 'lucide-react';
 import StatCard from '../../components/StatCard';
 import LoadingState from '../../components/LoadingState';
@@ -69,18 +70,25 @@ export default function AdminDashboardPage() {
 
             <div className="flex flex-wrap items-center gap-3 mt-4">
               <Link
-                to="/admin/customers/create"
+                to="/admin/appointments/create"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-md shadow-blue-950/40 transition-all cursor-pointer font-display"
               >
-                <UserPlus className="w-3.5 h-3.5" />
-                <span>+ Register New Patient</span>
+                <Calendar className="w-3.5 h-3.5 text-blue-200" />
+                <span>+ Book Appointment</span>
               </Link>
               <Link
-                to="/admin/customers"
+                to="/admin/customers/create"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-800 text-white text-xs font-semibold border border-slate-700 hover:border-slate-600 transition-all cursor-pointer font-display"
               >
-                <Users className="w-3.5 h-3.5 text-teal-400" />
-                <span>Patient Directory</span>
+                <UserPlus className="w-3.5 h-3.5 text-teal-400" />
+                <span>+ Register Patient</span>
+              </Link>
+              <Link
+                to="/admin/appointments"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-800 text-white text-xs font-semibold border border-slate-700 hover:border-slate-600 transition-all cursor-pointer font-display"
+              >
+                <Users className="w-3.5 h-3.5 text-blue-400" />
+                <span>Appointments Directory</span>
               </Link>
             </div>
           </div>
@@ -101,26 +109,30 @@ export default function AdminDashboardPage() {
             colorScheme="blue"
           />
         </Link>
+        <Link to="/admin/appointments" className="block group">
+          <StatCard
+            title="Master Appointments"
+            value={stats?.total_appointments ?? 0}
+            subtitle={`${stats?.today_appointments ?? 0} booked today`}
+            icon={Calendar}
+            colorScheme="indigo"
+          />
+        </Link>
+        <Link to="/admin/appointments/calendar" className="block group">
+          <StatCard
+            title="Clinical Sessions"
+            value={stats?.total_sessions ?? 0}
+            subtitle={`${stats?.today_sessions ?? 0} scheduled today`}
+            icon={Activity}
+            colorScheme="violet"
+          />
+        </Link>
         <StatCard
           title="OPD Duty Status"
           value={stats?.account_status || 'Active'}
           subtitle="Clinical desk verified"
           icon={CheckCircle2}
           colorScheme="emerald"
-        />
-        <StatCard
-          title="Clinical Log Actions"
-          value={stats?.activity_count ?? 0}
-          subtitle="Audit actions logged"
-          icon={Activity}
-          colorScheme="violet"
-        />
-        <StatCard
-          title="Last Session"
-          value={stats?.last_login || 'Active now'}
-          subtitle="Most recent sign-in"
-          icon={Clock}
-          colorScheme="indigo"
         />
       </div>
 

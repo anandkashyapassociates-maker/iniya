@@ -1,5 +1,5 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
@@ -12,6 +12,11 @@ import {
   LogOut,
   X,
   Calendar,
+  CalendarDays,
+  CalendarPlus,
+  ListFilter,
+  Sparkles,
+  ChevronDown,
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -22,6 +27,16 @@ export default function Sidebar({
   onClose,
 }) {
   const isSuperAdmin = role === 'superadmin';
+  const location = useLocation();
+
+  const isAppointmentsActive = location.pathname.startsWith('/admin/appointments');
+  const [appointmentsOpen, setAppointmentsOpen] = useState(isAppointmentsActive);
+
+  useEffect(() => {
+    if (isAppointmentsActive) {
+      setAppointmentsOpen(true);
+    }
+  }, [isAppointmentsActive]);
 
   const superAdminNavItems = [
     {
@@ -70,9 +85,34 @@ export default function Sidebar({
       color: 'from-violet-500 to-purple-600',
     },
     {
-      to: '/admin/appointments',
       label: 'Appointments',
       icon: Calendar,
+      color: 'from-blue-600 to-indigo-600',
+      isDropdown: true,
+      basePath: '/admin/appointments',
+      children: [
+        {
+          to: '/admin/appointments/create',
+          label: 'Create Appointments',
+          icon: CalendarPlus,
+        },
+        {
+          to: '/admin/appointments',
+          label: 'Appointments Directory',
+          icon: ListFilter,
+          end: true,
+        },
+        {
+          to: '/admin/appointments/services',
+          label: 'Services',
+          icon: Sparkles,
+        },
+        {
+          to: '/admin/appointments/calendar',
+          label: 'Session Calendar',
+          icon: CalendarDays,
+        },
+      ],
     },
     {
       to: '/admin/profile',
@@ -152,6 +192,64 @@ export default function Sidebar({
 
             {navItems.map((item) => {
               const Icon = item.icon;
+
+              if (item.isDropdown) {
+                const isGroupActive = location.pathname.startsWith(item.basePath || '');
+                return (
+                  <div key={item.label} className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => setAppointmentsOpen((prev) => !prev)}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+                        isGroupActive
+                          ? 'bg-gradient-to-r from-blue-600/20 via-indigo-600/15 to-transparent text-white border-l-4 border-blue-500 shadow-sm'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className={`w-7 h-7 rounded-xl bg-gradient-to-tr ${item.color || 'from-blue-600 to-indigo-600'} text-white flex items-center justify-center shrink-0 shadow-xs`}
+                        >
+                          <Icon className="w-3.5 h-3.5" />
+                        </div>
+                        <span className="truncate">{item.label}</span>
+                      </div>
+                      <ChevronDown
+                        className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
+                          appointmentsOpen ? 'rotate-180 text-blue-400' : ''
+                        }`}
+                      />
+                    </button>
+
+                    {appointmentsOpen && (
+                      <div className="pl-6 pr-1 pt-1 pb-1 space-y-1">
+                        {item.children?.map((sub) => {
+                          const SubIcon = sub.icon;
+                          return (
+                            <NavLink
+                              key={sub.to}
+                              to={sub.to}
+                              end={sub.end}
+                              onClick={onClose}
+                              className={({ isActive }) =>
+                                `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                                  isActive
+                                    ? 'bg-blue-600/25 text-blue-300 font-semibold border border-blue-500/30 shadow-xs'
+                                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                                }`
+                              }
+                            >
+                              {SubIcon && <SubIcon className="w-3.5 h-3.5 shrink-0" />}
+                              <span className="truncate">{sub.label}</span>
+                            </NavLink>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
               return (
                 <NavLink
                   key={item.to}

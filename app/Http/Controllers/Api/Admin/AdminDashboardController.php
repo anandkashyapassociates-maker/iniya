@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminActivityLog;
-use App\Models\Appointment;
+use App\Models\AppointmentSession;
 use App\Models\Customer;
+use App\Models\MasterAppointment;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -47,9 +48,11 @@ class AdminDashboardController extends Controller
         ];
 
         $totalCustomers = Customer::count();
-        $totalAppointments = Appointment::count();
-        $todayAppointments = Appointment::whereDate('appointment_date', Carbon::today()->toDateString())
-            ->where('status', '!=', 'cancelled')
+        $totalAppointments = MasterAppointment::count();
+        $todayAppointments = MasterAppointment::whereDate('appointment_date', Carbon::today()->toDateString())->count();
+        $totalSessions = AppointmentSession::count();
+        $todaySessions = AppointmentSession::whereDate('session_date', Carbon::today()->toDateString())
+            ->where('status', '!=', AppointmentSession::STATUS_CANCELLED)
             ->count();
 
         return response()->json([
@@ -57,6 +60,8 @@ class AdminDashboardController extends Controller
                 'total_customers' => $totalCustomers,
                 'total_appointments' => $totalAppointments,
                 'today_appointments' => $todayAppointments,
+                'total_sessions' => $totalSessions,
+                'today_sessions' => $todaySessions,
                 'activity_count' => $myActivityCount,
                 'account_status' => $admin->is_active ? 'Active' : 'Inactive',
                 'last_login' => $admin->last_login_at ? Carbon::parse($admin->last_login_at)->diffForHumans() : 'First session',

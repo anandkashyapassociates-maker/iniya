@@ -11,21 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('customers', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('admin_id')
-                ->nullable()
-                ->constrained('admins')
-                ->nullOnDelete();
-            $table->string('name');
-            $table->string('mobile', 30)->index();
-            $table->string('email')->nullable()->index();
-            $table->enum('gender', ['male', 'female', 'other'])->default('male');
-            $table->unsignedInteger('age')->nullable();
-            $table->text('address')->nullable();
-            $table->boolean('is_active')->default(true)->index();
-            $table->timestamps();
-        });
+        if (! Schema::hasTable('customers')) {
+            Schema::create('customers', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('admin_id')
+                    ->nullable()
+                    ->constrained('admins')
+                    ->nullOnDelete();
+                $table->string('name');
+                $table->string('mobile', 30)->index();
+                $table->string('email')->nullable()->index();
+                $table->enum('gender', ['male', 'female', 'other'])->default('male');
+                $table->unsignedInteger('age')->nullable();
+                $table->text('address')->nullable();
+                $table->boolean('is_active')->default(true)->index();
+                $table->timestamps();
+            });
+        }
     }
 
     /**
@@ -36,4 +38,3 @@ return new class extends Migration
         Schema::dropIfExists('customers');
     }
 };
-
