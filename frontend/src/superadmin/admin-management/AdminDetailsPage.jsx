@@ -71,6 +71,9 @@ export default function AdminDetailsPage() {
       return;
     }
 
+    // Pre-open tab synchronously on user action to prevent browser popup blockers
+    const newTab = window.open('about:blank', '_blank');
+
     setLoggingInAdminId(adm.id);
     try {
       const res = await adminManagementService.impersonateAdmin(adm.id);
@@ -87,12 +90,17 @@ export default function AdminDetailsPage() {
         setSession(res.token, res.user);
       }
 
-      toast.success(`Logged in as Admin '${adm.name}'! Entering Admin Panel...`);
+      toast.success(`Logged in as Admin '${adm.name}'! Admin Panel opened in next tab.`);
 
-      setTimeout(() => {
-        navigate('/admin/dashboard');
-      }, 400);
+      if (newTab) {
+        newTab.location.href = '/admin/dashboard';
+      } else {
+        window.open('/admin/dashboard', '_blank');
+      }
     } catch (err) {
+      if (newTab) {
+        newTab.close();
+      }
       toast.error(err.response?.data?.message || `Failed to log in as ${adm.name}.`);
     } finally {
       setLoggingInAdminId(null);
@@ -459,11 +467,11 @@ export default function AdminDetailsPage() {
                               ? 'Account blocked - cannot login'
                               : !adm.is_active
                               ? 'Account inactive - cannot login'
-                              : `Log in to Admin Panel as ${adm.name}`
+                              : `Log in as ${adm.name} (Opens in next tab)`
                           }
                         >
                           <LogIn className={`w-3.5 h-3.5 ${loggingInAdminId === adm.id ? 'animate-spin' : ''}`} />
-                          <span>{loggingInAdminId === adm.id ? 'Entering...' : 'Login'}</span>
+                          <span>{loggingInAdminId === adm.id ? 'Opening...' : 'Login'}</span>
                         </button>
 
                         <button

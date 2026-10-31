@@ -19,8 +19,12 @@ export default function AdminLayout() {
     localStorage.removeItem('admin_token');
     localStorage.removeItem('admin_user');
     localStorage.removeItem('admin_impersonated_by_superadmin');
-    toast.info('Exited Admin Panel. Returned to Superadmin Administration Portal.');
-    navigate('/superadmin/admin-management/details');
+    toast.info('Exited Admin Panel.');
+    if (window.opener && !window.opener.closed) {
+      window.close();
+    } else {
+      navigate('/superadmin/admin-management/details');
+    }
   };
 
   return (
