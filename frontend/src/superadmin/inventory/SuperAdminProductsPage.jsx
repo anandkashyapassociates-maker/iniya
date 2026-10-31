@@ -470,9 +470,6 @@ export default function SuperAdminProductsPage() {
                   <h3 className="text-base font-semibold text-slate-800">
                     {selectedProduct.product_name}
                   </h3>
-                  <span className="font-mono text-xs text-slate-400">
-                    PRD-{String(selectedProduct.id).padStart(4, '0')}
-                  </span>
                 </div>
               </div>
               <button
@@ -559,7 +556,7 @@ export default function SuperAdminProductsPage() {
               <div>
                 <h3 className="text-base font-semibold text-slate-800">Edit Product Specifications</h3>
                 <p className="text-xs text-slate-400">
-                  Editing PRD-{String(editProduct.id).padStart(4, '0')} • Creator Admin preserved
+                  Editing {editProduct.product_name} • Creator Admin preserved
                 </p>
               </div>
               <button

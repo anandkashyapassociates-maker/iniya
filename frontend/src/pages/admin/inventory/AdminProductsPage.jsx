@@ -139,17 +139,8 @@ export default function AdminProductsPage() {
       },
     },
     {
-      header: 'PRODUCT ID',
-      className: 'w-[100px]',
-      render: (p) => (
-        <span className="font-mono text-[11px] font-medium text-blue-700 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded-md">
-          PRD-{String(p.id).padStart(4, '0')}
-        </span>
-      ),
-    },
-    {
       header: 'PRODUCT DETAILS',
-      className: 'w-[28%]',
+      className: 'w-[32%]',
       render: (p) => (
         <div className="flex items-center gap-3">
           {p.image_url ? (
@@ -454,9 +445,6 @@ export default function AdminProductsPage() {
                       </span>
                     )}
                   </div>
-                  <span className="font-mono text-xs text-slate-400">
-                    PRD-{String(viewProduct.id).padStart(4, '0')}
-                  </span>
                 </div>
               </div>
               <button

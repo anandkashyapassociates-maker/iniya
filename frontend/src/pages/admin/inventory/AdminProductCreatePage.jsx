@@ -545,7 +545,7 @@ export default function AdminProductCreatePage() {
                   }`}
                 >
                   {/* Select Dropdown for Business Unit */}
-                  <div className="w-7/12 min-w-0 border-r border-slate-200/90">
+                  <div className="w-6/12 min-w-0 border-r border-slate-200/90">
                     <select
                       name="business_unit"
                       value={formData.business_unit}
@@ -564,7 +564,7 @@ export default function AdminProductCreatePage() {
                   </div>
 
                   {/* Integer Input for Product Unit */}
-                  <div className="w-5/12 min-w-0 flex items-center bg-white/70 px-3">
+                  <div className="w-6/12 min-w-0 flex items-center bg-white/70 px-3">
                     <span className="text-[11px] text-slate-400 mr-2 shrink-0 select-none">Qty:</span>
                     <input
                       type="number"
