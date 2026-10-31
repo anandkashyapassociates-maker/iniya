@@ -34,6 +34,7 @@ import {
   SplineAreaChart,
   MultiSegmentDonut,
 } from '../../components/MiniCharts';
+import { getIndianGreeting } from '../../utils/timeGreeting';
 
 export default function AdminDashboardPage() {
   const { user } = useAdminAuth();
@@ -233,6 +234,7 @@ export default function AdminDashboardPage() {
       ];
 
   const adminDisplayName = user?.name || account?.name || 'Dr. Rajesh Kumar';
+  const greeting = getIndianGreeting();
 
   return (
     <div className="space-y-6 pb-12 animate-fade-in font-sans">
@@ -243,18 +245,12 @@ export default function AdminDashboardPage() {
         {/* Animated Clinic Room Panoramic Background with protective readability scrim */}
         <ClinicBannerBackground isSuperAdmin={false} />
 
-        {/* Top-Right Corner Status Badge (Clean & Unobstructed) */}
-        <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-20">
-          <span className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full bg-white/95 text-emerald-700 text-xs font-semibold border border-emerald-200/80 shadow-xs backdrop-blur-xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            OPD Active Desk
-          </span>
-        </div>
+
 
         <div className="relative z-10 w-full flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="max-w-xl">
             <h1 className="text-xl sm:text-2xl lg:text-[26px] font-bold tracking-tight text-slate-900 font-display flex items-center gap-2">
-              <span>Good Morning, {adminDisplayName}!</span>
+              <span>{greeting}, {adminDisplayName}!</span>
               <span className="text-xl sm:text-2xl animate-bounce">👋</span>
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 font-normal mt-1 leading-relaxed max-w-md">

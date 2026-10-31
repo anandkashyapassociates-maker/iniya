@@ -8,7 +8,6 @@ import {
   KeyRound,
   Shield,
   Stethoscope,
-  HeartPulse,
   LogOut,
   X,
   Calendar,
@@ -256,10 +255,10 @@ export default function Sidebar({
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shrink-0 icon-3d shadow-md group-hover:scale-110 transition-all">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-500 to-blue-600 text-white flex items-center justify-center shrink-0 icon-3d shadow-md group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-300">
                         <Boxes className="w-4 h-4 drop-shadow-sm" />
                       </div>
-                      <span className="truncate">Inventory Management</span>
+                      <span className="truncate group-hover:translate-x-0.5 transition-transform">Inventory Management</span>
                     </div>
                     <ChevronDown
                       className={`w-4 h-4 transition-transform duration-200 ${
@@ -326,18 +325,8 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* Bottom Section: Clinic Help & User Info */}
+        {/* Bottom Section: User Info & Sign Out */}
         <div className="p-4 border-t border-slate-800/80 bg-slate-950/40 space-y-3 shrink-0">
-          <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-950/70 to-indigo-950/70 border border-blue-900/40">
-            <div className="flex items-center gap-2 text-xs font-semibold text-blue-300 mb-1 font-display">
-              <HeartPulse className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
-              <span>OPD Helpline 24/7</span>
-            </div>
-            <p className="text-[11px] text-slate-400 font-normal leading-tight">
-              Emergency &amp; triage support desk active.
-            </p>
-          </div>
-
           <div className="flex items-center gap-3 px-1 pt-1">
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0 font-display">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}

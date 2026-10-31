@@ -369,8 +369,8 @@ export default function VendorDetailsPage() {
                       </td>
 
                       {/* Vendor Code */}
-                      <td className="py-3 px-4 font-medium">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-mono text-[11px] font-bold border border-blue-200/70">
+                      <td className="py-3 px-4 font-medium whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-mono text-[11px] font-bold border border-blue-200/70 whitespace-nowrap">
                           <Hash className="w-3 h-3 text-blue-500" />
                           {vendor.vendor_code}
                         </span>

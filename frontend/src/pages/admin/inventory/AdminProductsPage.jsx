@@ -18,6 +18,8 @@ import {
   X,
   AlertCircle,
   Building2,
+  CheckCircle2,
+  Sparkles,
   Lock,
 } from 'lucide-react';
 import DataTable from '../../../components/DataTable';
@@ -131,11 +133,11 @@ export default function AdminProductsPage() {
   const columns = [
     {
       header: 'SR. NO.',
-      className: 'w-[70px] text-center',
+      className: 'w-[75px] text-center',
       render: (p, index) => {
         const srNo = (pagination?.from || 1) + index;
         return (
-          <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-600 font-mono text-[11px] font-medium">
+          <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-600 font-mono text-[11px] font-semibold tabular-numbers">
             {srNo}
           </span>
         );
@@ -150,23 +152,23 @@ export default function AdminProductsPage() {
             <img
               src={p.image_url}
               alt={p.product_name}
-              className="w-10 h-10 rounded-xl object-cover border border-slate-200 shadow-2xs shrink-0 bg-slate-50"
+              className="w-10 h-10 rounded-xl object-cover border border-slate-200/80 shadow-2xs shrink-0 bg-slate-50"
             />
           ) : (
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 text-white flex items-center justify-center font-medium shadow-2xs shrink-0">
-              <Package className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold shadow-2xs shrink-0 icon-3d">
+              <Package className="w-5 h-5 drop-shadow-sm" />
             </div>
           )}
           <div className="min-w-0">
-            <span className="text-xs font-semibold text-slate-800 block truncate">
+            <span className="text-xs font-bold font-display text-slate-900 block truncate">
               {p.product_name}
             </span>
-            <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-slate-400">
+            <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-slate-400 font-medium">
               <span>
-                Unit: <strong className="text-slate-600 font-medium">{p.business_unit} ({p.product_unit ?? 1})</strong>
+                Unit: <strong className="text-slate-700 font-semibold font-mono">{p.business_unit} ({p.product_unit ?? 1})</strong>
               </span>
               <span>•</span>
-              <span>{new Date(p.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+              <span className="font-mono">{new Date(p.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</span>
             </div>
           </div>
         </div>
@@ -176,7 +178,7 @@ export default function AdminProductsPage() {
       header: 'CATEGORY',
       className: 'w-[15%]',
       render: (p) => (
-        <span className="inline-flex items-center gap-1 text-xs text-slate-700 font-medium">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200/60 max-w-full">
           <Tag className="w-3.5 h-3.5 text-blue-600 shrink-0" />
           <span className="truncate">{p.category?.name || 'Unassigned'}</span>
         </span>
@@ -186,8 +188,8 @@ export default function AdminProductsPage() {
       header: 'BRAND',
       className: 'w-[14%]',
       render: (p) => (
-        <span className="inline-flex items-center gap-1 text-xs text-slate-600 font-normal">
-          <Bookmark className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50/70 text-indigo-700 border border-indigo-200/60 max-w-full">
+          <Bookmark className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
           <span className="truncate">{p.brand?.name || 'Generic / None'}</span>
         </span>
       ),
@@ -196,7 +198,7 @@ export default function AdminProductsPage() {
       header: 'TYPE',
       className: 'w-[12%]',
       render: (p) => (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
+        <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200/70 font-mono">
           {p.display_product_type}
         </span>
       ),
@@ -206,9 +208,9 @@ export default function AdminProductsPage() {
       className: 'w-[10%]',
       render: (p) => (
         <span
-          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium border ${
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
             p.status === 'active'
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
               : 'bg-slate-100 text-slate-600 border-slate-200'
           }`}
         >
@@ -223,7 +225,7 @@ export default function AdminProductsPage() {
     },
     {
       header: 'ACTIONS',
-      className: 'w-[11%] text-right',
+      className: 'w-[12%] text-right',
       render: (p, index) => {
         const isOwner = Number(p.created_by_admin_id) === Number(user?.id);
         const isInUse = Boolean(p.is_used);
@@ -235,7 +237,7 @@ export default function AdminProductsPage() {
                 setViewProduct(p);
                 setViewIndex((pagination?.from || 1) + index);
               }}
-              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+              className="p-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
               title="View Product"
             >
               <Eye className="w-3.5 h-3.5" />
@@ -244,14 +246,14 @@ export default function AdminProductsPage() {
               <>
                 <Link
                   to={`/admin/inventory/products/${p.id}/edit`}
-                  className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                  className="p-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                   title="Edit Product"
                 >
                   <Edit className="w-3.5 h-3.5" />
                 </Link>
                 {isInUse ? (
                   <span
-                    className="p-1.5 rounded-lg border border-slate-200 text-slate-300 cursor-not-allowed inline-flex items-center"
+                    className="p-1.5 rounded-xl border border-slate-200 bg-white text-slate-300 cursor-not-allowed inline-flex items-center"
                     title="Product is in use. Cannot be deleted."
                   >
                     <Trash2 className="w-3.5 h-3.5 opacity-40" />
@@ -265,7 +267,7 @@ export default function AdminProductsPage() {
                         isLoading: false,
                       })
                     }
-                    className="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:text-white hover:bg-rose-600 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-xl border border-rose-200 bg-white text-rose-600 hover:text-white hover:bg-rose-600 hover:border-rose-600 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                     title="Delete Product"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -274,7 +276,7 @@ export default function AdminProductsPage() {
               </>
             ) : (
               <span
-                className="p-1.5 rounded-lg text-slate-400 inline-flex items-center cursor-not-allowed"
+                className="p-1.5 rounded-xl text-slate-400 inline-flex items-center cursor-not-allowed"
                 title={`Created by ${p.creator?.name || 'another admin'} (Read-only)`}
               >
                 <Lock className="w-3.5 h-3.5 text-slate-400" />
@@ -287,17 +289,21 @@ export default function AdminProductsPage() {
   ];
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-6 animate-in fade-in duration-300">
       {/* Top Clinical Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-xs font-medium">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-xs font-semibold font-display">
               <Boxes className="w-3.5 h-3.5 text-blue-600" />
               <span>Clinic Supply &amp; Pharmacy Logistics</span>
             </span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-semibold font-display">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Active Inventory
+            </span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-medium text-slate-800 tracking-normal mt-1.5">
+          <h1 className="text-xl sm:text-2xl font-bold font-display text-slate-900 tracking-tight mt-1.5">
             Inventory Products Directory
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-normal mt-0.5 max-w-2xl leading-relaxed">
@@ -311,7 +317,7 @@ export default function AdminProductsPage() {
               fetchProducts();
             }}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all shadow-2xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-600 text-xs font-semibold font-display transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-98"
             title="Refresh List"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -329,7 +335,7 @@ export default function AdminProductsPage() {
 
           <Link
             to="/admin/inventory/products/create"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-medium transition-all shadow-sm shadow-blue-500/20"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold font-display shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all cursor-pointer active:scale-98"
           >
             <Plus className="w-4 h-4" />
             <span>Create Product</span>
@@ -338,9 +344,9 @@ export default function AdminProductsPage() {
       </div>
 
       {/* Main Table Card (col-12) */}
-      <div className="w-full bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-7 shadow-xs space-y-5">
+      <div className="w-full bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-7 shadow-xs space-y-6">
         {/* Search & Comprehensive Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 items-center">
           {/* Search box */}
           <div className="lg:col-span-4 relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -364,7 +370,7 @@ export default function AdminProductsPage() {
                 setSelectedCategory(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2.5 text-xs bg-slate-50/80 border border-slate-200 rounded-2xl focus:outline-none focus:border-blue-600 text-slate-700 font-normal"
+              className="w-full px-3.5 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-700 font-medium transition-all"
             >
               <option value="">All Categories</option>
               {categories.map((c) => (
@@ -383,7 +389,7 @@ export default function AdminProductsPage() {
                 setSelectedBrand(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2.5 text-xs bg-slate-50/80 border border-slate-200 rounded-2xl focus:outline-none focus:border-blue-600 text-slate-700 font-normal"
+              className="w-full px-3.5 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-700 font-medium transition-all"
             >
               <option value="">All Brands</option>
               {brands.map((b) => (
@@ -402,7 +408,7 @@ export default function AdminProductsPage() {
                 setSelectedType(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2.5 text-xs bg-slate-50/80 border border-slate-200 rounded-2xl focus:outline-none focus:border-blue-600 text-slate-700 font-normal"
+              className="w-full px-3.5 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-700 font-medium transition-all"
             >
               <option value="">All Types</option>
               <option value="Consumable">Consumable</option>
@@ -422,7 +428,7 @@ export default function AdminProductsPage() {
                 setSelectedStatus(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2.5 text-xs bg-slate-50/80 border border-slate-200 rounded-2xl focus:outline-none focus:border-blue-600 text-slate-700 font-normal"
+              className="w-full px-3.5 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-700 font-medium transition-all"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -433,7 +439,7 @@ export default function AdminProductsPage() {
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="px-2.5 py-2 text-xs text-slate-400 hover:text-rose-600 transition-colors shrink-0"
+                className="px-2.5 py-2 text-xs font-semibold text-slate-400 hover:text-rose-600 transition-colors shrink-0 cursor-pointer"
                 title="Reset Filters"
               >
                 Clear
@@ -456,10 +462,10 @@ export default function AdminProductsPage() {
       {/* Quick View Product Modal */}
       {viewProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-lg bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-7 relative overflow-hidden space-y-5">
+          <div className="w-full max-w-lg bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-7 relative overflow-hidden space-y-6">
             {/* Modal Header */}
-            <div className="flex items-start justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-3">
+            <div className="flex items-start justify-between pb-3.5 border-b border-slate-100">
+              <div className="flex items-center gap-3.5">
                 {viewProduct.image_url ? (
                   <img
                     src={viewProduct.image_url}
@@ -467,85 +473,85 @@ export default function AdminProductsPage() {
                     className="w-14 h-14 rounded-2xl object-cover border border-slate-200 shadow-xs"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-xs">
-                    <Package className="w-7 h-7" />
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 icon-3d">
+                    <Package className="w-7 h-7 drop-shadow-sm" />
                   </div>
                 )}
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-semibold text-slate-800">
+                    <h3 className="text-base font-bold font-display text-slate-900">
                       {viewProduct.product_name}
                     </h3>
-                    {viewIndex && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200/60 font-mono text-[10px] font-medium">
-                        Sr. No. #{viewIndex}
-                      </span>
-                    )}
                   </div>
+                  {viewIndex && (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60 font-mono text-[10px] font-bold mt-1">
+                      Sr. No. #{viewIndex}
+                    </span>
+                  )}
                 </div>
               </div>
               <button
                 onClick={() => setViewProduct(null)}
-                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Modal Details Grid */}
-            <div className="space-y-3.5">
+            <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                  <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+                <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider micro-label">
                     Category
                   </div>
-                  <div className="text-xs font-semibold text-slate-800 mt-0.5 flex items-center gap-1">
+                  <div className="text-xs font-bold text-slate-800 mt-1 flex items-center gap-1.5">
                     <Tag className="w-3.5 h-3.5 text-blue-600" />
                     <span>{viewProduct.category?.name || 'Unassigned'}</span>
                   </div>
                 </div>
 
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                  <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+                <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider micro-label">
                     Brand
                   </div>
-                  <div className="text-xs font-semibold text-slate-800 mt-0.5 flex items-center gap-1">
+                  <div className="text-xs font-bold text-slate-800 mt-1 flex items-center gap-1.5">
                     <Bookmark className="w-3.5 h-3.5 text-indigo-600" />
                     <span>{viewProduct.brand?.name || 'Generic / None'}</span>
                   </div>
                 </div>
 
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                  <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+                <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider micro-label">
                     Business Unit
                   </div>
-                  <div className="text-xs font-semibold text-slate-800 mt-0.5">
+                  <div className="text-xs font-bold text-slate-800 mt-1 font-mono">
                     {viewProduct.business_unit} ({viewProduct.product_unit ?? 1})
                   </div>
                 </div>
 
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                  <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+                <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider micro-label">
                     Product Type
                   </div>
-                  <div className="text-xs font-semibold text-slate-800 mt-0.5">
+                  <div className="text-xs font-bold text-slate-800 mt-1">
                     {viewProduct.display_product_type}
                   </div>
                 </div>
               </div>
 
               {/* Status and Creator Info */}
-              <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200/60 flex items-center justify-between">
+              <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200/60 flex items-center justify-between">
                 <div>
-                  <div className="text-[11px] font-medium text-slate-500">
+                  <div className="text-[11px] font-semibold text-slate-500">
                     Enrolled by Administrator
                   </div>
-                  <div className="text-xs font-semibold text-blue-900">
+                  <div className="text-xs font-bold text-blue-900 mt-0.5">
                     {viewProduct.creator?.name || 'Clinic Administrator'}
                   </div>
                 </div>
                 <span
-                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
                     viewProduct.status === 'active'
                       ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                       : 'bg-slate-100 text-slate-600 border-slate-200'
@@ -553,7 +559,7 @@ export default function AdminProductsPage() {
                 >
                   <span
                     className={`w-1.5 h-1.5 rounded-full ${
-                      viewProduct.status === 'active' ? 'bg-emerald-500' : 'bg-slate-400'
+                      viewProduct.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
                     }`}
                   />
                   <span className="capitalize">{viewProduct.status}</span>
@@ -562,17 +568,17 @@ export default function AdminProductsPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-2.5 pt-3.5 border-t border-slate-100">
               <button
                 onClick={() => setViewProduct(null)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold font-display text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 Close
               </button>
               {Number(viewProduct.created_by_admin_id) === Number(user?.id) && (
                 <Link
                   to={`/admin/inventory/products/${viewProduct.id}/edit`}
-                  className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold font-display shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
                 >
                   Edit Product
                 </Link>
@@ -596,4 +602,3 @@ export default function AdminProductsPage() {
     </div>
   );
 }
-
