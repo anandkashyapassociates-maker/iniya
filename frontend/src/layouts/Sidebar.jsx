@@ -1,5 +1,5 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
@@ -11,8 +11,13 @@ import {
   HeartPulse,
   LogOut,
   X,
-  FolderTree,
   Calendar,
+  Boxes,
+  Package,
+  PlusCircle,
+  FolderTree,
+  Award,
+  ChevronDown,
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -23,6 +28,16 @@ export default function Sidebar({
   onClose,
 }) {
   const isSuperAdmin = role === 'superadmin';
+  const location = useLocation();
+
+  const isInInventory = location.pathname.startsWith('/admin/inventory');
+  const [inventoryOpen, setInventoryOpen] = useState(isInInventory);
+
+  useEffect(() => {
+    if (isInInventory) {
+      setInventoryOpen(true);
+    }
+  }, [isInInventory]);
 
   const superAdminNavItems = [
     {
@@ -76,12 +91,42 @@ export default function Sidebar({
       icon: Calendar,
       color: 'from-amber-500 to-orange-600',
     },
+  ];
+
+  const inventorySubItems = [
     {
-      to: '/admin/categories',
-      label: 'Clinic Categories',
-      icon: FolderTree,
-      color: 'from-cyan-500 to-blue-600',
+      to: '/admin/inventory/products',
+      label: 'Products',
+      icon: Package,
     },
+    {
+      to: '/admin/inventory/products/create',
+      label: 'Create Product',
+      icon: PlusCircle,
+    },
+    {
+      to: '/admin/inventory/categories',
+      label: 'Categories',
+      icon: FolderTree,
+    },
+    {
+      to: '/admin/inventory/categories/create',
+      label: 'Create Category',
+      icon: PlusCircle,
+    },
+    {
+      to: '/admin/inventory/brands',
+      label: 'Brands',
+      icon: Award,
+    },
+    {
+      to: '/admin/inventory/brands/create',
+      label: 'Create Brand',
+      icon: PlusCircle,
+    },
+  ];
+
+  const adminFooterNavItems = [
     {
       to: '/admin/profile',
       label: 'Doctor / Admin Profile',
@@ -95,8 +140,6 @@ export default function Sidebar({
       color: 'from-amber-500 to-orange-600',
     },
   ];
-
-  const navItems = isSuperAdmin ? superAdminNavItems : adminNavItems;
 
   return (
     <>
@@ -115,8 +158,8 @@ export default function Sidebar({
         }`}
       >
         {/* Top Branding Section */}
-        <div>
-          <div className="h-18 px-5 border-b border-slate-800/80 flex items-center justify-between">
+        <div className="flex-1 flex flex-col min-h-0">
+          <div className="h-18 px-5 border-b border-slate-800/80 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
               <div
                 className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg relative ${
@@ -130,7 +173,6 @@ export default function Sidebar({
                 ) : (
                   <Stethoscope className="w-5 h-5" />
                 )}
-                {/* Pulsing online status indicator */}
                 <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full ring-2 ring-slate-900 animate-pulse" />
               </div>
               <div>
@@ -152,42 +194,151 @@ export default function Sidebar({
             </button>
           </div>
 
-          {/* Navigation Items */}
-          <div className="py-5 px-3 space-y-1.5">
+          {/* Scrollable Navigation Items */}
+          <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1.5 custom-scrollbar">
             <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-500 micro-label">
               Clinical Desk Modules
             </div>
 
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  onClick={onClose}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all ${
-                      isActive
-                        ? 'bg-gradient-to-r from-blue-600/20 via-indigo-600/15 to-transparent text-white border-l-4 border-blue-500 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                    }`
-                  }
-                >
-                  <div
-                    className={`w-7 h-7 rounded-xl bg-gradient-to-tr ${item.color} text-white flex items-center justify-center shrink-0 shadow-xs`}
+            {isSuperAdmin ? (
+              superAdminNavItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-gradient-to-r from-blue-600/20 via-indigo-600/15 to-transparent text-white border-l-4 border-blue-500 shadow-sm'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                      }`
+                    }
                   >
-                    <Icon className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="truncate">{item.label}</span>
-                </NavLink>
-              );
-            })}
+                    <div
+                      className={`w-7 h-7 rounded-xl bg-gradient-to-tr ${item.color} text-white flex items-center justify-center shrink-0 shadow-xs`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="truncate">{item.label}</span>
+                  </NavLink>
+                );
+              })
+            ) : (
+              <>
+                {/* Standard Admin Top Items */}
+                {adminNavItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      onClick={onClose}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all ${
+                          isActive
+                            ? 'bg-gradient-to-r from-blue-600/20 via-indigo-600/15 to-transparent text-white border-l-4 border-blue-500 shadow-sm'
+                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                        }`
+                      }
+                    >
+                      <div
+                        className={`w-7 h-7 rounded-xl bg-gradient-to-tr ${item.color} text-white flex items-center justify-center shrink-0 shadow-xs`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="truncate">{item.label}</span>
+                    </NavLink>
+                  );
+                })}
+
+                {/* ======================================================== */}
+                {/* INVENTORY MANAGEMENT ACCORDION SECTION (Phase 5)         */}
+                {/* ======================================================== */}
+                <div className="pt-1.5 pb-1">
+                  <button
+                    type="button"
+                    onClick={() => setInventoryOpen(!inventoryOpen)}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+                      isInInventory
+                        ? 'bg-blue-600/15 text-blue-300 border border-blue-500/30'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                        <Boxes className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="truncate">Inventory Management</span>
+                    </div>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        inventoryOpen ? 'rotate-0' : '-rotate-90'
+                      }`}
+                    />
+                  </button>
+
+                  {/* Collapsible Submenu */}
+                  {inventoryOpen && (
+                    <div className="pl-4 pr-1 pt-1.5 space-y-1">
+                      {inventorySubItems.map((sub) => {
+                        const SubIcon = sub.icon;
+                        return (
+                          <NavLink
+                            key={sub.to}
+                            to={sub.to}
+                            end
+                            onClick={onClose}
+                            className={({ isActive }) =>
+                              `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                                isActive
+                                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs'
+                                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                              }`
+                            }
+                          >
+                            <SubIcon className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate">{sub.label}</span>
+                          </NavLink>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Profile & Security Footer Items */}
+                {adminFooterNavItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      onClick={onClose}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all ${
+                          isActive
+                            ? 'bg-gradient-to-r from-blue-600/20 via-indigo-600/15 to-transparent text-white border-l-4 border-blue-500 shadow-sm'
+                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                        }`
+                      }
+                    >
+                      <div
+                        className={`w-7 h-7 rounded-xl bg-gradient-to-tr ${item.color} text-white flex items-center justify-center shrink-0 shadow-xs`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="truncate">{item.label}</span>
+                    </NavLink>
+                  );
+                })}
+              </>
+            )}
           </div>
         </div>
 
         {/* Bottom Section: Clinic Help & User Info */}
-        <div className="p-4 border-t border-slate-800/80 bg-slate-950/40 space-y-3">
-          {/* Clinic Emergency Quick Card */}
+        <div className="p-4 border-t border-slate-800/80 bg-slate-950/40 space-y-3 shrink-0">
           <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-950/70 to-indigo-950/70 border border-blue-900/40">
             <div className="flex items-center gap-2 text-xs font-semibold text-blue-300 mb-1 font-display">
               <HeartPulse className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
@@ -198,7 +349,6 @@ export default function Sidebar({
             </p>
           </div>
 
-          {/* Logged in admin profile */}
           <div className="flex items-center gap-3 px-1 pt-1">
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0 font-display">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
