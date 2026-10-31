@@ -25,6 +25,21 @@ import adminInventoryService from '../../../services/adminInventoryService';
 import { useToast } from '../../../context/ToastContext';
 import { useAdminAuth } from '../../../features/auth/AdminAuthContext';
 
+const commonBusinessUnits = [
+  'Piece',
+  'Box',
+  'Packet',
+  'Bottle',
+  'Vial',
+  'Ampoule',
+  'Strip',
+  'Roll',
+  'Tube',
+  'Kg',
+  'Litre',
+  'Set',
+];
+
 export default function AdminInventoryStocksPage() {
   const toast = useToast();
   const { user } = useAdminAuth();
@@ -720,20 +735,28 @@ export default function AdminInventoryStocksPage() {
                   )}
                 </div>
 
-                {/* Business Unit */}
+                {/* Business Unit Dropdown */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Business Unit *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     name="business_unit"
-                    placeholder="e.g. Piece, Box, Bottle, Packet"
                     value={formData.business_unit}
                     onChange={handleModalChange}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 cursor-pointer"
                     required
-                  />
+                  >
+                    <option value="">Select Unit (Piece, Box...)</option>
+                    {commonBusinessUnits.map((u) => (
+                      <option key={u} value={u}>
+                        {u}
+                      </option>
+                    ))}
+                    {formData.business_unit && !commonBusinessUnits.includes(formData.business_unit) && (
+                      <option value={formData.business_unit}>{formData.business_unit}</option>
+                    )}
+                  </select>
                 </div>
 
                 {/* Buy Price */}

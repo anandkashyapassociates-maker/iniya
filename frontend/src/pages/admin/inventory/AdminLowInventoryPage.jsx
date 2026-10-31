@@ -24,6 +24,21 @@ import adminInventoryService from '../../../services/adminInventoryService';
 import { useToast } from '../../../context/ToastContext';
 import { useAdminAuth } from '../../../features/auth/AdminAuthContext';
 
+const commonBusinessUnits = [
+  'Piece',
+  'Box',
+  'Packet',
+  'Bottle',
+  'Vial',
+  'Ampoule',
+  'Strip',
+  'Roll',
+  'Tube',
+  'Kg',
+  'Litre',
+  'Set',
+];
+
 export default function AdminLowInventoryPage() {
   const toast = useToast();
   const { user } = useAdminAuth();
@@ -611,18 +626,28 @@ export default function AdminLowInventoryPage() {
                   )}
                 </div>
 
+                {/* Business Unit Dropdown */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Business Unit / Packaging *
+                    Business Unit *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     name="business_unit"
                     value={formData.business_unit}
                     onChange={handleModalChange}
-                    placeholder="e.g. Box, Strip, Bottle"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
-                  />
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 cursor-pointer"
+                    required
+                  >
+                    <option value="">Select Unit (Piece, Box...)</option>
+                    {commonBusinessUnits.map((u) => (
+                      <option key={u} value={u}>
+                        {u}
+                      </option>
+                    ))}
+                    {formData.business_unit && !commonBusinessUnits.includes(formData.business_unit) && (
+                      <option value={formData.business_unit}>{formData.business_unit}</option>
+                    )}
+                  </select>
                 </div>
               </div>
 
@@ -747,3 +772,4 @@ export default function AdminLowInventoryPage() {
     </div>
   );
 }
+
