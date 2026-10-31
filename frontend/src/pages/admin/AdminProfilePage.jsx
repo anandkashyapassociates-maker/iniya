@@ -36,10 +36,10 @@ export default function AdminProfilePage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 tracking-tight">
+        <h1 className="text-lg sm:text-xl font-bold font-display text-slate-900 tracking-tight">
           Account Profile
         </h1>
-        <p className="text-xs text-slate-500 mt-0.5">
+        <p className="text-xs text-slate-500 mt-0.5 font-normal">
           View and update your administrator identity details.
         </p>
       </div>
@@ -47,7 +47,7 @@ export default function AdminProfilePage() {
       <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xs">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 font-display">
               Full Name
             </label>
             <div className="relative">
@@ -68,7 +68,7 @@ export default function AdminProfilePage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 font-display">
               Email Address
             </label>
             <div className="relative">
@@ -78,7 +78,7 @@ export default function AdminProfilePage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all ${
+                className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-mono ${
                   errors.email ? 'border-rose-400' : 'border-slate-200 focus:border-blue-500'
                 }`}
               />
@@ -92,7 +92,7 @@ export default function AdminProfilePage() {
             <button
               type="submit"
               disabled={isSaving}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-900/20 transition-all cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-900/20 transition-all cursor-pointer disabled:opacity-50 font-display"
             >
               {isSaving ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -107,4 +107,3 @@ export default function AdminProfilePage() {
     </div>
   );
 }
-

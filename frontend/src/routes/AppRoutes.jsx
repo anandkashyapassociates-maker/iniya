@@ -35,6 +35,9 @@ import AdminCategoryCreatePage from '../pages/admin/AdminCategoryCreatePage';
 import AdminCategoryEditPage from '../pages/admin/AdminCategoryEditPage';
 import AdminProfilePage from '../pages/admin/AdminProfilePage';
 import AdminChangePasswordPage from '../pages/admin/AdminChangePasswordPage';
+import AdminAppointmentsPage from '../pages/admin/AdminAppointmentsPage';
+import AdminAppointmentCreatePage from '../pages/admin/AdminAppointmentCreatePage';
+import AdminAppointmentEditPage from '../pages/admin/AdminAppointmentEditPage';
 
 // Portal Root
 import LandingPage from '../pages/LandingPage';
@@ -107,6 +110,9 @@ export default function AppRoutes() {
       <Route element={<AdminProtectedRoute />}>
         <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+          <Route path="/admin/appointments" element={<AdminAppointmentsPage />} />
+          <Route path="/admin/appointments/create" element={<AdminAppointmentCreatePage />} />
+          <Route path="/admin/appointments/:id/edit" element={<AdminAppointmentEditPage />} />
           <Route path="/admin/customers" element={<AdminCustomersPage />} />
           <Route path="/admin/customers/create" element={<AdminCustomerCreatePage />} />
           <Route path="/admin/customers/:id/edit" element={<AdminCustomerEditPage />} />

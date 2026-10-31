@@ -151,7 +151,7 @@ export default function StaffDetailsPage() {
             <div className="w-8 h-8 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center">
               <UserCheck className="w-4 h-4" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 tracking-tight">
+            <h1 className="text-lg sm:text-xl font-bold font-display text-slate-900 tracking-tight">
               Staff Details
             </h1>
             {pagination && (

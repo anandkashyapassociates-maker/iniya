@@ -335,8 +335,7 @@ export default function AdminCustomersPage() {
               <span>Sorted: Newest First</span>
             </span>
           </div>
-
-          <h1 className="text-2xl sm:text-3xl font-semibold text-slate-800 tracking-tight">
+          <h1 className="text-lg sm:text-xl font-bold font-display text-slate-800 tracking-tight">
             Patient &amp; Customer Directory
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-normal mt-1 max-w-2xl leading-relaxed">
@@ -362,12 +361,12 @@ export default function AdminCustomersPage() {
           <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center font-medium shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
             <Users className="w-6 h-6" />
           </div>
-          <div className="min-w-0">
-            <div className="text-[11px] font-medium text-slate-400">
+          <div>
+            <div className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest micro-label">
               Total Enrolled
             </div>
-            <div className="text-2xl font-semibold text-slate-800 mt-0.5">{stats.total}</div>
-            <div className="text-[10px] text-slate-500 font-normal truncate">All registered patients</div>
+            <div className="text-xl sm:text-2xl font-bold font-display tabular-numbers text-slate-900 mt-0.5 tracking-tight">{stats.total}</div>
+            <div className="text-[10px] text-slate-500 mt-0.5 font-medium">All registered patients</div>
           </div>
         </div>
 
@@ -376,12 +375,12 @@ export default function AdminCustomersPage() {
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center font-medium shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
             <ShieldCheck className="w-6 h-6" />
           </div>
-          <div className="min-w-0">
-            <div className="text-[11px] font-medium text-slate-400">
+          <div>
+            <div className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest micro-label">
               Active OPD Records
             </div>
-            <div className="text-2xl font-semibold text-emerald-600 mt-0.5">{stats.active}</div>
-            <div className="text-[10px] text-emerald-700 font-normal truncate">Cleared for consultations</div>
+            <div className="text-xl sm:text-2xl font-bold font-display tabular-numbers text-emerald-600 mt-0.5 tracking-tight">{stats.active}</div>
+            <div className="text-[10px] text-emerald-700 font-medium">Cleared for consultations</div>
           </div>
         </div>
 
@@ -390,12 +389,12 @@ export default function AdminCustomersPage() {
           <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 text-amber-600 flex items-center justify-center font-medium shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
             <Clock className="w-6 h-6" />
           </div>
-          <div className="min-w-0">
-            <div className="text-[11px] font-medium text-slate-400">
-              Inactive / On Hold
+          <div>
+            <div className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest micro-label">
+              Inactive Records
             </div>
-            <div className="text-2xl font-semibold text-amber-600 mt-0.5">{stats.inactive}</div>
-            <div className="text-[10px] text-amber-700 font-normal truncate">Archived or pending</div>
+            <div className="text-xl sm:text-2xl font-bold font-display tabular-numbers text-slate-700 mt-0.5 tracking-tight">{stats.inactive}</div>
+            <div className="text-[10px] text-slate-500 font-medium">Archived or pending review</div>
           </div>
         </div>
 
@@ -405,11 +404,11 @@ export default function AdminCustomersPage() {
             <Activity className="w-6 h-6 text-indigo-600" />
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] font-medium text-slate-400">
+            <div className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest micro-label">
               Registry Status
             </div>
-            <div className="text-base font-semibold text-indigo-900 mt-0.5">Clinic Operational</div>
-            <div className="text-[10px] text-indigo-600 font-normal truncate">Real-time sync active</div>
+            <div className="text-base font-bold font-display text-indigo-900 mt-0.5">Clinic Operational</div>
+            <div className="text-[10px] text-indigo-600 font-medium truncate">Real-time sync active</div>
           </div>
         </div>
       </div>
@@ -511,10 +510,13 @@ export default function AdminCustomersPage() {
             <div className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 border border-blue-100 mb-5">
               <CustomerAvatar customer={selectedCustomer} size="lg" />
               <div className="min-w-0">
-                <h3 className="text-lg font-semibold text-slate-800 truncate">
+                <h3 className="text-base sm:text-lg font-bold font-display text-slate-800 tracking-tight truncate">
                   {selectedCustomer.name}
                 </h3>
                 <div className="flex items-center gap-2 mt-1">
+                  <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60">
+                    {formatRecordId(selectedCustomer.id)}
+                  </span>
                   <span
                     className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium ${
                       selectedCustomer.is_active

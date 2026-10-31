@@ -116,10 +116,10 @@ export default function SuperAdminLayout() {
                 <Shield className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-sm font-semibold tracking-tight text-white uppercase block leading-none">
+                <span className="text-sm font-bold font-display tracking-tight text-white uppercase block leading-none">
                   INIYA<span className="text-blue-500">.</span>ERP
                 </span>
-                <span className="text-[10px] font-medium text-blue-400 tracking-wider uppercase">
+                <span className="text-[10px] font-extrabold text-blue-400 tracking-widest uppercase micro-label">
                   Superadmin Console
                 </span>
               </div>
@@ -135,7 +135,7 @@ export default function SuperAdminLayout() {
 
           {/* Navigation Links */}
           <div className="p-4 space-y-1.5">
-            <div className="px-3 py-2 text-[10px] font-medium uppercase tracking-wider text-slate-500">
+            <div className="px-3 py-2 text-[10px] font-extrabold uppercase tracking-widest text-slate-500 micro-label">
               Executive Modules
             </div>
 
@@ -500,10 +500,10 @@ export default function SuperAdminLayout() {
               <Menu className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-sm sm:text-base font-medium text-slate-900 tracking-tight">
+              <h1 className="text-xs sm:text-sm font-bold font-display text-slate-900 tracking-tight">
                 Superadmin Administration Portal
               </h1>
-              <p className="text-[11px] text-slate-500 hidden sm:block">
+              <p className="text-[11px] text-slate-500 font-medium hidden sm:block">
                 Multi-Panel ERP Architecture • Identity &amp; Access Layer
               </p>
             </div>

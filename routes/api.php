@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Admin\AdminAuthController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminProfileController;
+use App\Http\Controllers\Api\Admin\AppointmentController;
 use App\Http\Controllers\Api\Admin\CategoryController;
 use App\Http\Controllers\Api\Admin\CustomerController;
 use App\Http\Controllers\Api\SuperAdmin\AdminManagementController;
@@ -143,4 +144,19 @@ Route::prefix('admin')
         Route::get('/categories/{id}', [CategoryController::class, 'show']);
         Route::match(['put', 'post'], '/categories/{id}', [CategoryController::class, 'update']);
         Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+
+        // Appointment Management (Session-wise, Staff assignment, Reschedule & Cancel)
+        Route::get('/appointments/stats', [AppointmentController::class, 'stats']);
+        Route::get('/appointments', [AppointmentController::class, 'index']);
+        Route::post('/appointments', [AppointmentController::class, 'store']);
+        Route::get('/appointments/{id}', [AppointmentController::class, 'show']);
+        Route::put('/appointments/{id}', [AppointmentController::class, 'update']);
+        Route::post('/appointments/{id}/reschedule', [AppointmentController::class, 'reschedule']);
+        Route::post('/appointments/{id}/cancel', [AppointmentController::class, 'cancel']);
+        Route::post('/appointments/{id}/assign-staff', [AppointmentController::class, 'assignStaff']);
+        Route::patch('/appointments/{id}/status', [AppointmentController::class, 'updateStatus']);
+
+        // Appointment Dropdown Options
+        Route::get('/staff-options', [AppointmentController::class, 'staffOptions']);
+        Route::get('/customer-options', [AppointmentController::class, 'customerOptions']);
     });

@@ -40,14 +40,14 @@ export default function StatCard({
   return (
     <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-200 flex items-start justify-between">
       <div>
-        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 micro-label">
           {title}
         </span>
-        <div className="text-2xl font-bold text-slate-900 mt-1.5 tracking-tight">
+        <div className="text-xl sm:text-2xl font-bold font-display tabular-numbers text-slate-900 mt-1.5 tracking-tight">
           {value}
         </div>
         {subtitle && (
-          <p className="text-xs text-slate-500 mt-1 font-medium">{subtitle}</p>
+          <p className="text-xs text-slate-400 mt-1 font-medium tracking-tight">{subtitle}</p>
         )}
       </div>
       {Icon && (
@@ -58,4 +58,3 @@ export default function StatCard({
     </div>
   );
 }
-

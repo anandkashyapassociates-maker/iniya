@@ -1,7 +1,7 @@
 import React from 'react';
-import { Shield, Lock, Layers, Stethoscope, HeartPulse, CheckCircle2 } from 'lucide-react';
+import { Shield, Lock, Stethoscope, CheckCircle2, HeartPulse } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { ClinicAuthIllustration, ClinicHeartbeatLine } from '../components/ClinicArtwork';
+import { ClinicAuthIllustration } from '../components/ClinicArtwork';
 
 export default function AuthLayout({
   children,
@@ -12,17 +12,17 @@ export default function AuthLayout({
   const isSuperAdmin = role === 'superadmin';
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center p-3 sm:p-6 lg:p-8 bg-slate-950 relative overflow-hidden font-sans antialiased selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen flex flex-col justify-center items-center p-4 sm:p-6 bg-slate-950 relative overflow-hidden font-sans">
       {/* Dynamic ambient backgrounds */}
       {isSuperAdmin ? (
         <>
-          <div className="absolute top-[-15%] left-[-10%] w-[550px] h-[550px] rounded-full bg-purple-600/15 blur-[130px] pointer-events-none" />
-          <div className="absolute bottom-[-15%] right-[-10%] w-[550px] h-[550px] rounded-full bg-blue-600/15 blur-[130px] pointer-events-none" />
+          <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-blue-600/15 blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-purple-600/15 blur-[120px] pointer-events-none" />
         </>
       ) : (
         <>
-          <div className="absolute top-[-15%] right-[-10%] w-[550px] h-[550px] rounded-full bg-cyan-600/15 blur-[130px] pointer-events-none" />
-          <div className="absolute bottom-[-15%] left-[-10%] w-[550px] h-[550px] rounded-full bg-blue-600/15 blur-[130px] pointer-events-none" />
+          <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-cyan-600/15 blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-blue-600/15 blur-[120px] pointer-events-none" />
         </>
       )}
 
@@ -52,21 +52,21 @@ export default function AuthLayout({
                 {isSuperAdmin ? <Shield className="w-5 h-5" /> : <Stethoscope className="w-5 h-5" />}
               </div>
               <div>
-                <span className="text-base font-medium tracking-tight text-white uppercase block leading-tight font-sans">
+                <span className="text-base font-bold tracking-tight text-white uppercase block leading-tight font-display">
                   INIYA <span className="text-blue-400">CLINIC</span>
                 </span>
-                <span className="text-[10px] font-medium tracking-wider uppercase text-blue-300">
+                <span className="text-[10px] font-extrabold tracking-widest uppercase text-blue-300 micro-label">
                   {isSuperAdmin ? 'Executive Governance' : 'Doctor & OPD Care Portal'}
                 </span>
               </div>
             </div>
 
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-[11px] font-medium mb-3">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-[10px] font-extrabold micro-label mb-3">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span>{isSuperAdmin ? 'SUPERADMIN EXECUTIVE CONTROL' : 'CLINICAL ADMIN SYSTEM ONLINE'}</span>
             </div>
 
-            <h2 className="text-lg sm:text-xl font-semibold text-white tracking-tight leading-snug">
+            <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight leading-snug font-display">
               {isSuperAdmin
                 ? 'Clinical Governance & Enterprise Control'
                 : 'Doctor Consultation & Hospital Records Desk'}
@@ -87,11 +87,11 @@ export default function AuthLayout({
           <div className="relative z-10 pt-3 border-t border-slate-800/80 space-y-2 text-xs text-slate-400">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span className="text-[11px]">256-bit Encrypted Medical Data Storage</span>
+              <span className="text-[11px] font-medium">256-bit Encrypted Medical Data Storage</span>
             </div>
             <div className="flex items-center gap-2">
               <HeartPulse className="w-3.5 h-3.5 text-rose-400 shrink-0 animate-pulse" />
-              <span className="text-[11px]">Real-Time OPD Token &amp; Consultation Tracking</span>
+              <span className="text-[11px] font-medium">Real-Time OPD Token &amp; Consultation Tracking</span>
             </div>
           </div>
         </div>
@@ -102,11 +102,11 @@ export default function AuthLayout({
         <div className="lg:col-span-7 p-6 sm:p-9 lg:p-10 flex flex-col justify-between bg-slate-900/60">
           <div>
             <div className="mb-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-xs font-medium mb-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-[10px] font-extrabold micro-label mb-2">
                 <Lock className="w-3.5 h-3.5" />
                 <span>{isSuperAdmin ? 'Executive Authentication' : 'Clinical Access Verification'}</span>
               </div>
-              <h1 className="text-2xl font-semibold text-white tracking-tight">{title}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight font-display">{title}</h1>
               {subtitle && <p className="text-xs text-slate-400 font-normal mt-1">{subtitle}</p>}
             </div>
 
@@ -133,7 +133,7 @@ export default function AuthLayout({
                 </span>
               )}
             </div>
-            <div className="text-[11px] text-slate-600">
+            <div className="text-[11px] text-slate-600 font-mono">
               &copy; {new Date().getFullYear()} Iniya Clinical Suite
             </div>
           </div>
