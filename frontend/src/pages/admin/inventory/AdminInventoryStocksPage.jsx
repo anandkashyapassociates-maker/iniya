@@ -296,22 +296,8 @@ export default function AdminInventoryStocksPage() {
       ),
     },
     {
-      header: 'UNIT SPEC',
-      className: 'w-[12%]',
-      render: (p) => (
-        <div className="text-xs text-slate-700 font-medium">
-          <span>{p.business_unit || 'Piece'}</span>
-          {p.product_unit > 1 && (
-            <span className="text-[10px] text-slate-400 block font-normal">
-              ({p.product_unit} units/pack)
-            </span>
-          )}
-        </div>
-      ),
-    },
-    {
       header: 'AVAILABLE STOCK',
-      className: 'w-[15%]',
+      className: 'w-[20%]',
       render: (p) => {
         const qty = p.quantity ?? 0;
         const threshold = p.low_stock_threshold ?? 10;
@@ -332,7 +318,7 @@ export default function AdminInventoryStocksPage() {
               >
                 {qty}
               </span>
-              <span className="text-[10px] text-slate-400 font-normal">
+              <span className="text-[11px] text-slate-500 font-medium">
                 {p.business_unit || 'Units'}
               </span>
             </div>
@@ -359,71 +345,30 @@ export default function AdminInventoryStocksPage() {
       },
     },
     {
-      header: 'PRICING METRICS',
-      className: 'w-[15%]',
-      render: (p) => (
-        <div className="space-y-0.5 text-xs font-mono">
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-400 font-sans text-[10px]">Buy:</span>
-            <span className="font-semibold text-slate-700">
-              {p.buy_price ? `₹${parseFloat(p.buy_price).toFixed(2)}` : '—'}
-            </span>
-          </div>
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-400 font-sans text-[10px]">MRP:</span>
-            <span className="font-semibold text-blue-600">
-              {p.mrp ? `₹${parseFloat(p.mrp).toFixed(2)}` : '—'}
-            </span>
-          </div>
-          <div className="flex items-center justify-between text-[10px] pt-0.5 border-t border-slate-100">
-            <span className="text-slate-400 font-sans">Avg:</span>
-            <span className="text-slate-500">
-              {p.average_price ? `₹${parseFloat(p.average_price).toFixed(2)}` : '—'}
-            </span>
-          </div>
-        </div>
-      ),
+      header: 'AVG. PRICE',
+      className: 'w-[16%]',
+      render: (p) => {
+        const avgPrice = p.calculated_average_price ?? p.average_price ?? p.buy_price;
+        return avgPrice && Number(avgPrice) > 0 ? (
+          <span className="text-xs font-bold font-mono text-slate-800">
+            ₹{parseFloat(avgPrice).toFixed(2)}
+          </span>
+        ) : (
+          <span className="text-slate-400 italic text-[11px]">—</span>
+        );
+      },
     },
     {
-      header: 'VENDOR ALLOCATION',
-      className: 'w-[14%]',
+      header: 'VENDOR',
+      className: 'w-[18%]',
       render: (p) =>
         p.vendor ? (
-          <div>
-            <span className="text-xs font-bold text-slate-800 block truncate" title={p.vendor.vendor_name}>
-              {p.vendor.vendor_name}
-            </span>
-            <span className="text-[10px] text-slate-400 font-mono block truncate">
-              {p.vendor.vendor_code}
-            </span>
-          </div>
+          <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor.vendor_name}>
+            {p.vendor.vendor_name}
+          </span>
         ) : (
           <span className="text-slate-400 italic text-[11px]">No Vendor Assigned</span>
         ),
-    },
-    {
-      header: 'UPDATED BY',
-      className: 'w-[14%]',
-      render: (p) => {
-        const updater = p.inventory_updater;
-        return updater ? (
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-[10px] shrink-0">
-              {updater.name ? updater.name.charAt(0).toUpperCase() : 'A'}
-            </div>
-            <div className="min-w-0">
-              <span className="text-xs font-medium text-slate-800 block truncate">
-                {updater.name}
-              </span>
-              <span className="text-[10px] text-slate-400 font-mono block truncate">
-                {p.inventory_updated_at ? new Date(p.inventory_updated_at).toLocaleDateString() : '—'}
-              </span>
-            </div>
-          </div>
-        ) : (
-          <span className="text-slate-400 italic text-[11px]">Not yet stocked</span>
-        );
-      },
     },
     {
       header: 'ACTIONS',

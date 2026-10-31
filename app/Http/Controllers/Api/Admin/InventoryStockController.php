@@ -177,13 +177,15 @@ class InventoryStockController extends Controller
         $oldAvg = (float) ($product->average_price ?? $product->buy_price ?? 0);
         $totalQty = $oldQty + $quantityAdded;
 
-        // Calculate weighted average price if not manually provided
+        // Calculate weighted average price
         if (isset($validated['average_price']) && is_numeric($validated['average_price']) && (float) $validated['average_price'] > 0) {
             $averagePrice = (float) $validated['average_price'];
         } else {
             $averagePrice = $totalQty > 0
-                ? round((($oldQty * $oldAvg) + ($quantityAdded * $buyPrice)) / $totalQty, 2)
-                : $buyPrice;
+                ? ($oldQty > 0 && $oldAvg > 0
+                    ? round((($oldQty * $oldAvg) + ($quantityAdded * $buyPrice)) / $totalQty, 2)
+                    : round($buyPrice, 2))
+                : round($buyPrice, 2);
         }
 
         $product->update([

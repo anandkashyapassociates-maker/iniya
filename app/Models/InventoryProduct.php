@@ -67,6 +67,7 @@ class InventoryProduct extends Model
         'display_product_type',
         'is_low_stock',
         'stock_status',
+        'calculated_average_price',
     ];
 
     /**
@@ -118,6 +119,22 @@ class InventoryProduct extends Model
         }
 
         return 'in_stock';
+    }
+
+    /**
+     * Accessor for calculated average cost price.
+     */
+    public function getCalculatedAveragePriceAttribute(): ?float
+    {
+        if ($this->average_price !== null && (float) $this->average_price > 0) {
+            return round((float) $this->average_price, 2);
+        }
+
+        if ($this->buy_price !== null && (float) $this->buy_price > 0) {
+            return round((float) $this->buy_price, 2);
+        }
+
+        return null;
     }
 
     /**

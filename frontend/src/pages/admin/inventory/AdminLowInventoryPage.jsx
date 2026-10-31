@@ -321,44 +321,27 @@ export default function AdminLowInventoryPage() {
       },
     },
     {
-      header: 'PRICING METRICS',
-      className: 'w-[15%]',
-      render: (p) => (
-        <div className="space-y-0.5 text-xs font-mono">
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-400 font-sans text-[10px]">Buy:</span>
-            <span className="font-semibold text-slate-700">
-              {p.buy_price ? `₹${parseFloat(p.buy_price).toFixed(2)}` : '—'}
-            </span>
-          </div>
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-400 font-sans text-[10px]">MRP:</span>
-            <span className="font-semibold text-blue-600">
-              {p.mrp ? `₹${parseFloat(p.mrp).toFixed(2)}` : '—'}
-            </span>
-          </div>
-          <div className="flex items-center justify-between text-[10px] pt-0.5 border-t border-slate-100">
-            <span className="text-slate-400 font-sans">Avg:</span>
-            <span className="text-slate-500">
-              {p.average_price ? `₹${parseFloat(p.average_price).toFixed(2)}` : '—'}
-            </span>
-          </div>
-        </div>
-      ),
+      header: 'AVG. PRICE',
+      className: 'w-[16%]',
+      render: (p) => {
+        const avgPrice = p.calculated_average_price ?? p.average_price ?? p.buy_price;
+        return avgPrice && Number(avgPrice) > 0 ? (
+          <span className="text-xs font-bold font-mono text-slate-800">
+            ₹{parseFloat(avgPrice).toFixed(2)}
+          </span>
+        ) : (
+          <span className="text-slate-400 italic text-[11px]">—</span>
+        );
+      },
     },
     {
-      header: 'SUPPLIER / VENDOR',
-      className: 'w-[15%]',
+      header: 'VENDOR',
+      className: 'w-[16%]',
       render: (p) =>
         p.vendor ? (
-          <div>
-            <span className="text-xs font-bold text-slate-800 block truncate" title={p.vendor.vendor_name}>
-              {p.vendor.vendor_name}
-            </span>
-            <span className="text-[10px] text-slate-400 font-mono block truncate">
-              {p.vendor.mobile || p.vendor.vendor_code}
-            </span>
-          </div>
+          <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor.vendor_name}>
+            {p.vendor.vendor_name}
+          </span>
         ) : (
           <span className="text-slate-400 italic text-[11px]">No Vendor Assigned</span>
         ),
