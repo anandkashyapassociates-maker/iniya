@@ -14,6 +14,7 @@ import {
   FolderTree,
   Calendar,
 } from 'lucide-react';
+import { ClinicBrandIcon } from '../components/ClinicArtwork';
 
 export default function Sidebar({
   role = 'admin', // 'superadmin' | 'admin'
@@ -118,21 +119,7 @@ export default function Sidebar({
         <div>
           <div className="h-18 px-5 border-b border-slate-800/80 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div
-                className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg relative ${
-                  isSuperAdmin
-                    ? 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-purple-900/30'
-                    : 'bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-blue-900/40'
-                }`}
-              >
-                {isSuperAdmin ? (
-                  <Shield className="w-5 h-5" />
-                ) : (
-                  <Stethoscope className="w-5 h-5" />
-                )}
-                {/* Pulsing online status indicator */}
-                <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full ring-2 ring-slate-900 animate-pulse" />
-              </div>
+              <ClinicBrandIcon size={40} variant={isSuperAdmin ? 'purple' : 'blue'} />
               <div>
                 <span className="text-sm font-bold tracking-tight text-white block leading-snug font-display">
                   Iniya Clinic<span className="text-blue-400">.</span>OPD
@@ -166,19 +153,19 @@ export default function Sidebar({
                   to={item.to}
                   onClick={onClose}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all ${
+                    `flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all group ${
                       isActive
-                        ? 'bg-gradient-to-r from-blue-600/20 via-indigo-600/15 to-transparent text-white border-l-4 border-blue-500 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                        ? 'bg-gradient-to-r from-blue-600/25 via-indigo-600/15 to-transparent text-white border-l-4 border-blue-500 shadow-sm'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
                     }`
                   }
                 >
                   <div
-                    className={`w-7 h-7 rounded-xl bg-gradient-to-tr ${item.color} text-white flex items-center justify-center shrink-0 shadow-xs`}
+                    className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${item.color} text-white flex items-center justify-center shrink-0 icon-3d shadow-md group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-300`}
                   >
-                    <Icon className="w-3.5 h-3.5" />
+                    <Icon className="w-4 h-4 drop-shadow-sm" />
                   </div>
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate group-hover:translate-x-0.5 transition-transform">{item.label}</span>
                 </NavLink>
               );
             })}
