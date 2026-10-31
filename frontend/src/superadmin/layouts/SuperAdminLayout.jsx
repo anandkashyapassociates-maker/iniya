@@ -26,6 +26,7 @@ import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import ToastNotifications from '../../components/ToastNotifications';
 import { useToast } from '../../context/ToastContext';
 import { ClinicBrandIcon } from '../../components/ClinicArtwork';
+import LiveClock from '../../components/LiveClock';
 
 export default function SuperAdminLayout() {
   const { user, logout } = useSuperAdminAuth();
@@ -484,18 +485,22 @@ export default function SuperAdminLayout() {
               <button
                 type="button"
                 onClick={() => setInventoryMenuOpen(!inventoryMenuOpen)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium uppercase tracking-wider transition-all cursor-pointer ${
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold tracking-normal transition-all cursor-pointer group text-left ${
                   isInInventory
                     ? 'text-blue-400 bg-slate-900/90'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <Boxes className="w-4 h-4 text-cyan-400 shrink-0" />
-                  <span>Inventory Management</span>
+                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-500 to-blue-600 text-white flex items-center justify-center shrink-0 icon-3d shadow-md group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-300">
+                    <Boxes className="w-4 h-4 drop-shadow-sm" />
+                  </div>
+                  <span className="text-left truncate group-hover:translate-x-0.5 transition-transform" title="Inventory Management">
+                    Inventory Management
+                  </span>
                 </div>
                 <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ml-1 ${
                     inventoryMenuOpen ? 'rotate-0' : '-rotate-90'
                   }`}
                 />
@@ -639,25 +644,34 @@ export default function SuperAdminLayout() {
       {/* ======================================================== */}
       <div className="flex-1 flex flex-col min-w-0 min-h-screen">
         {/* Top Header */}
-        <header className="h-18 bg-white border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30 shadow-xs">
-          <div className="flex items-center gap-3">
+        <header className="h-18 bg-white border-b border-slate-200 px-3 sm:px-8 flex items-center justify-between sticky top-0 z-30 shadow-xs relative">
+          {/* Left: Mobile Menu Toggle & Portal Title (Short on mobile, Full on desktop) */}
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 z-10">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 cursor-pointer"
+              className="lg:hidden p-1.5 sm:p-2 -ml-1 rounded-lg text-slate-600 hover:bg-slate-100 cursor-pointer shrink-0"
+              aria-label="Open sidebar menu"
             >
               <Menu className="w-5 h-5" />
             </button>
-            <h1 className="text-sm sm:text-base font-bold font-display text-slate-900 tracking-tight">
-              Superadmin Administration Portal
+            <h1 className="text-xs sm:text-base font-bold font-display text-slate-900 tracking-tight whitespace-nowrap">
+              <span className="sm:hidden">Superadmin</span>
+              <span className="hidden sm:inline">Superadmin Administration Portal</span>
             </h1>
           </div>
 
-          {/* Right side: Profile Dropdown Menu System */}
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-2.5 px-3 py-1.5 rounded-2xl hover:bg-slate-100/80 border border-slate-200/80 transition-all focus:outline-none cursor-pointer bg-white shadow-2xs group"
-            >
+          {/* Center: Live Clock & Clean Calendar */}
+          <div className="absolute left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
+            <LiveClock />
+          </div>
+
+          {/* Right side: Profile Dropdown */}
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0 z-10">
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex items-center gap-2.5 px-3 py-1.5 rounded-2xl hover:bg-slate-100/80 border border-slate-200/80 transition-all focus:outline-none cursor-pointer bg-white shadow-2xs group"
+              >
               <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center text-xs font-bold font-display icon-3d shadow-2xs">
                 {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
               </div>
@@ -720,7 +734,8 @@ export default function SuperAdminLayout() {
               </div>
             )}
           </div>
-        </header>
+        </div>
+      </header>
 
         {/* Page View Body */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">

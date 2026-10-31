@@ -14,6 +14,7 @@ import {
   Sparkles,
   Layers,
   HelpCircle,
+  Info,
 } from 'lucide-react';
 import adminInventoryService from '../../../services/adminInventoryService';
 import { useToast } from '../../../context/ToastContext';
@@ -221,8 +222,8 @@ export default function AdminProductCreatePage() {
       if (addAnother) {
         // Reset form for next entry
         setFormData({
-          category_id: formData.category_id, // keep category
-          brand_id: formData.brand_id, // keep brand
+          category_id: formData.category_id,
+          brand_id: formData.brand_id,
           product_name: '',
           business_unit: formData.business_unit,
           product_unit: 1,
@@ -246,28 +247,28 @@ export default function AdminProductCreatePage() {
   };
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-7 animate-in fade-in duration-300">
       {/* Top Clinical Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <Link
             to="/admin/inventory/products"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-blue-600 transition-colors mb-2"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold font-display text-slate-500 hover:text-blue-600 transition-colors mb-2"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Products Directory</span>
           </Link>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-xs font-medium">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-xs font-semibold font-display">
               <Boxes className="w-3.5 h-3.5 text-blue-600" />
               <span>Inventory Enrollment Desk</span>
             </span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-medium">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-semibold font-display">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Stock Intake
             </span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-medium text-slate-800 tracking-normal mt-1.5">
+          <h1 className="text-xl sm:text-2xl font-bold font-display text-slate-900 tracking-tight mt-1.5">
             Add New Inventory Product
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-normal mt-0.5 max-w-2xl leading-relaxed">
@@ -278,9 +279,9 @@ export default function AdminProductCreatePage() {
         <div className="flex items-center gap-2">
           <Link
             to="/admin/inventory/products"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-medium transition-all shadow-sm shadow-blue-500/20"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold font-display shadow-md shadow-blue-500/20 hover:shadow-lg transition-all active:scale-98"
           >
-            <Package className="w-3.5 h-3.5" />
+            <Package className="w-4 h-4" />
             <span>View Products</span>
           </Link>
         </div>
@@ -290,20 +291,27 @@ export default function AdminProductCreatePage() {
       <div className="w-full bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-8 lg:p-9 shadow-xs relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-50/60 via-indigo-50/30 to-transparent rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
 
-        <form onSubmit={(e) => handleSubmit(e, false)} className="relative z-10 space-y-6">
+        <form onSubmit={(e) => handleSubmit(e, false)} className="relative z-10 space-y-7">
           {/* SECTION 1: CLASSIFICATION (Category & Brand) */}
-          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
-            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
-              <Layers className="w-4 h-4 text-blue-600" />
-              <h2 className="text-xs font-medium text-slate-800 tracking-wide uppercase">
-                1. Product Classification
-              </h2>
+          <div className="p-5 sm:p-7 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-5">
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 icon-3d">
+                <Layers className="w-4 h-4 drop-shadow-sm" />
+              </div>
+              <div>
+                <h2 className="text-xs font-bold text-slate-800 tracking-wider uppercase micro-label">
+                  1. Product Classification
+                </h2>
+                <p className="text-[11px] text-slate-400 font-normal">
+                  Assign clinical category tiers and certified manufacturing brand.
+                </p>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               {/* FIELD 1: Select Category */}
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Select Category <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
@@ -313,10 +321,10 @@ export default function AdminProductCreatePage() {
                     onChange={handleChange}
                     disabled={isSubmitting || isLoadingDropdowns}
                     required
-                    className={`w-full px-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal ${
+                    className={`w-full px-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal text-slate-900 ${
                       errors.category_id
-                        ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
-                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
+                        ? 'border-rose-400 focus:ring-rose-500/20'
+                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20'
                     }`}
                   >
                     <option value="">
@@ -342,9 +350,9 @@ export default function AdminProductCreatePage() {
                   <button
                     type="button"
                     onClick={handleRedirectCreateCategory}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer font-display"
                   >
-                    <Plus className="w-3 h-3" />
+                    <Plus className="w-3.5 h-3.5" />
                     <span>+ Create Category</span>
                   </button>
                 </div>
@@ -352,7 +360,7 @@ export default function AdminProductCreatePage() {
 
               {/* FIELD 2: Select Brand */}
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Select Brand <span className="text-slate-400 font-normal">(Optional)</span>
                 </label>
                 <div className="relative">
@@ -361,10 +369,10 @@ export default function AdminProductCreatePage() {
                     value={formData.brand_id}
                     onChange={handleChange}
                     disabled={isSubmitting || isLoadingDropdowns}
-                    className={`w-full px-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal ${
+                    className={`w-full px-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal text-slate-900 ${
                       errors.brand_id
-                        ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
-                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
+                        ? 'border-rose-400 focus:ring-rose-500/20'
+                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20'
                     }`}
                   >
                     <option value="">
@@ -390,9 +398,9 @@ export default function AdminProductCreatePage() {
                   <button
                     type="button"
                     onClick={handleRedirectCreateBrand}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:underline cursor-pointer"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:underline cursor-pointer font-display"
                   >
-                    <Plus className="w-3 h-3" />
+                    <Plus className="w-3.5 h-3.5" />
                     <span>+ Create Brand</span>
                   </button>
                 </div>
@@ -401,17 +409,24 @@ export default function AdminProductCreatePage() {
           </div>
 
           {/* SECTION 2: PRODUCT IMAGE & MEDIA */}
-          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
-            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
-              <UploadCloud className="w-4 h-4 text-blue-600" />
-              <h2 className="text-xs font-medium text-slate-800 tracking-wide uppercase">
-                2. Product Image
-              </h2>
+          <div className="p-5 sm:p-7 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-5">
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 icon-3d">
+                <UploadCloud className="w-4 h-4 drop-shadow-sm" />
+              </div>
+              <div>
+                <h2 className="text-xs font-bold text-slate-800 tracking-wider uppercase micro-label">
+                  2. Product Specimen Media
+                </h2>
+                <p className="text-[11px] text-slate-400 font-normal">
+                  Upload high resolution specimen image for visual packaging verification.
+                </p>
+              </div>
             </div>
 
             {/* FIELD 3: Product Image */}
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Product Photo / Specimen Image <span className="text-slate-400 font-normal">(Optional)</span>
               </label>
 
@@ -419,15 +434,15 @@ export default function AdminProductCreatePage() {
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                className={`p-6 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center text-center ${
+                className={`p-7 rounded-3xl border-2 border-dashed transition-all flex flex-col items-center justify-center text-center ${
                   isDragging
-                    ? 'border-blue-500 bg-blue-50/50'
-                    : 'border-slate-200 bg-slate-50/60 hover:bg-slate-50'
+                    ? 'border-blue-500 bg-blue-50/50 shadow-inner'
+                    : 'border-slate-200 bg-slate-50/60 hover:bg-slate-50 hover:border-slate-300'
                 }`}
               >
                 {imagePreview ? (
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="relative w-32 h-32 rounded-2xl overflow-hidden border-2 border-blue-500 shadow-md">
+                  <div className="flex flex-col items-center gap-3.5">
+                    <div className="relative w-36 h-36 rounded-2xl overflow-hidden border-2 border-blue-500 shadow-md">
                       <img
                         src={imagePreview}
                         alt="Product preview"
@@ -436,15 +451,15 @@ export default function AdminProductCreatePage() {
                       <button
                         type="button"
                         onClick={handleRemoveImage}
-                        className="absolute top-1.5 right-1.5 p-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700 transition-colors shadow-xs cursor-pointer"
+                        className="absolute top-2 right-2 p-1.5 rounded-xl bg-rose-600 text-white hover:bg-rose-700 transition-colors shadow-xs cursor-pointer"
                         title="Remove image"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
 
-                    <label className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-blue-50 text-blue-700 text-xs font-medium border border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors">
-                      <UploadCloud className="w-3.5 h-3.5" />
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 text-blue-700 text-xs font-semibold font-display border border-blue-200/80 cursor-pointer hover:bg-blue-100 transition-all shadow-2xs">
+                      <UploadCloud className="w-4 h-4" />
                       <span>Change Image</span>
                       <input
                         ref={fileInputRef}
@@ -456,13 +471,13 @@ export default function AdminProductCreatePage() {
                     </label>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
-                      <UploadCloud className="w-6 h-6" />
+                  <div className="space-y-2.5">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-50 to-indigo-50 border border-blue-200/70 text-blue-600 flex items-center justify-center mx-auto shadow-2xs icon-3d">
+                      <UploadCloud className="w-7 h-7 drop-shadow-sm" />
                     </div>
-                    <div className="text-xs font-medium text-slate-700">
+                    <div className="text-xs font-semibold text-slate-700">
                       Drag &amp; drop product photo here, or{' '}
-                      <label className="text-blue-600 hover:underline cursor-pointer">
+                      <label className="text-blue-600 hover:underline cursor-pointer font-bold">
                         browse files
                         <input
                           ref={fileInputRef}
@@ -489,18 +504,25 @@ export default function AdminProductCreatePage() {
           </div>
 
           {/* SECTION 3: SPECIFICATIONS (Name, Unit, Type, Status) */}
-          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
-            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
-              <Package className="w-4 h-4 text-blue-600" />
-              <h2 className="text-xs font-medium text-slate-800 tracking-wide uppercase">
-                3. Specifications &amp; Operational Details
-              </h2>
+          <div className="p-5 sm:p-7 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-5">
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 icon-3d">
+                <Package className="w-4 h-4 drop-shadow-sm" />
+              </div>
+              <div>
+                <h2 className="text-xs font-bold text-slate-800 tracking-wider uppercase micro-label">
+                  3. Specifications &amp; Operational Details
+                </h2>
+                <p className="text-[11px] text-slate-400 font-normal">
+                  Core packaging units, item classification, and inventory status.
+                </p>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               {/* FIELD 4: Product Name */}
               <div className="sm:col-span-2">
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Product Name <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
@@ -510,13 +532,13 @@ export default function AdminProductCreatePage() {
                     name="product_name"
                     value={formData.product_name}
                     onChange={handleChange}
-                    placeholder="e.g. Surgical Gloves, Face Mask, Medicine, Digital Thermometer"
+                    placeholder="e.g. Surgical Gloves, Face Mask, Amoxicillin 500mg, Digital Thermometer"
                     disabled={isSubmitting}
                     required
-                    className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal ${
+                    className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal text-slate-900 ${
                       errors.product_name
-                        ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
-                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
+                        ? 'border-rose-400 focus:ring-rose-500/20'
+                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20'
                     }`}
                   />
                 </div>
@@ -531,10 +553,10 @@ export default function AdminProductCreatePage() {
               {/* FIELD 5: Business Unit & Product Unit (Group Input in col-6) */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-medium text-slate-700">
+                  <label className="block text-xs font-semibold text-slate-700">
                     Business Unit &amp; Product Unit <span className="text-rose-500">*</span>
                   </label>
-                  <span className="text-[11px] text-slate-400">Packaging / Count</span>
+                  <span className="text-[11px] text-slate-400 font-mono">Packaging / Count</span>
                 </div>
 
                 <div
@@ -552,7 +574,7 @@ export default function AdminProductCreatePage() {
                       onChange={handleChange}
                       disabled={isSubmitting}
                       required
-                      className="w-full px-3.5 py-2.5 text-xs bg-transparent border-0 focus:outline-none focus:ring-0 text-slate-900 cursor-pointer font-normal truncate"
+                      className="w-full px-3.5 py-2.5 text-xs bg-transparent border-0 focus:outline-none focus:ring-0 text-slate-900 cursor-pointer font-medium truncate"
                     >
                       <option value="">Select Unit (Piece, Box...)</option>
                       {commonBusinessUnits.map((u) => (
@@ -565,7 +587,7 @@ export default function AdminProductCreatePage() {
 
                   {/* Integer Input for Product Unit */}
                   <div className="w-6/12 min-w-0 flex items-center bg-white/70 px-3">
-                    <span className="text-[11px] text-slate-400 mr-2 shrink-0 select-none">Qty:</span>
+                    <span className="text-[11px] text-slate-400 mr-2 shrink-0 select-none font-mono">Qty:</span>
                     <input
                       type="number"
                       name="product_unit"
@@ -576,7 +598,7 @@ export default function AdminProductCreatePage() {
                       placeholder="1"
                       disabled={isSubmitting}
                       required
-                      className="w-full py-2.5 text-xs bg-transparent border-0 focus:outline-none focus:ring-0 text-slate-900 font-medium"
+                      className="w-full py-2.5 text-xs bg-transparent border-0 focus:outline-none focus:ring-0 text-slate-900 font-mono font-bold tabular-numbers"
                     />
                   </div>
                 </div>
@@ -591,7 +613,7 @@ export default function AdminProductCreatePage() {
 
               {/* FIELD 6: Product Type */}
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Product Type <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
@@ -601,10 +623,10 @@ export default function AdminProductCreatePage() {
                     onChange={handleChange}
                     disabled={isSubmitting}
                     required
-                    className={`w-full px-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal ${
+                    className={`w-full px-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-medium text-slate-900 ${
                       errors.product_type
-                        ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
-                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
+                        ? 'border-rose-400 focus:ring-rose-500/20'
+                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20'
                     }`}
                   >
                     <option value="Consumable">Consumable</option>
@@ -626,7 +648,7 @@ export default function AdminProductCreatePage() {
               {/* Custom Product Type (Shown only if Other selected) */}
               {formData.product_type === 'Other' && (
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                     Specify Custom Product Type <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -637,10 +659,10 @@ export default function AdminProductCreatePage() {
                     placeholder="Enter custom classification e.g. Diagnostic Kit, Surgical Implant"
                     disabled={isSubmitting}
                     required
-                    className={`w-full px-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal ${
+                    className={`w-full px-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal text-slate-900 ${
                       errors.custom_product_type
-                        ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
-                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
+                        ? 'border-rose-400 focus:ring-rose-500/20'
+                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20'
                     }`}
                   />
                   {errors.custom_product_type && (
@@ -654,14 +676,14 @@ export default function AdminProductCreatePage() {
 
               {/* FIELD 7: Status */}
               <div className="sm:col-span-2">
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Product Operational Status <span className="text-rose-500">*</span>
                 </label>
                 <div className="grid grid-cols-2 gap-3 max-w-sm">
                   <label
-                    className={`flex items-center gap-2 p-3 rounded-2xl border cursor-pointer transition-all ${
+                    className={`flex items-center gap-2.5 p-3 rounded-2xl border cursor-pointer transition-all ${
                       formData.status === 'active'
-                        ? 'bg-blue-50/70 border-blue-500/80 text-blue-900 font-medium'
+                        ? 'bg-blue-50/70 border-blue-500/80 text-blue-900 font-semibold'
                         : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
@@ -684,13 +706,13 @@ export default function AdminProductCreatePage() {
                         <div className="w-1.5 h-1.5 rounded-full bg-white" />
                       )}
                     </div>
-                    <span className="text-xs">Active</span>
+                    <span className="text-xs">Active Stock</span>
                   </label>
 
                   <label
-                    className={`flex items-center gap-2 p-3 rounded-2xl border cursor-pointer transition-all ${
+                    className={`flex items-center gap-2.5 p-3 rounded-2xl border cursor-pointer transition-all ${
                       formData.status === 'inactive'
-                        ? 'bg-rose-50/70 border-rose-500/80 text-rose-900 font-medium'
+                        ? 'bg-rose-50/70 border-rose-500/80 text-rose-900 font-semibold'
                         : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
@@ -724,7 +746,7 @@ export default function AdminProductCreatePage() {
           <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <Link
               to="/admin/inventory/products"
-              className="w-full sm:w-auto text-center px-6 py-2.5 rounded-2xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-all cursor-pointer"
+              className="w-full sm:w-auto text-center px-6 py-2.5 rounded-2xl border border-slate-200 bg-white text-xs font-semibold font-display text-slate-600 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
             >
               Cancel
             </Link>
@@ -733,7 +755,7 @@ export default function AdminProductCreatePage() {
               type="button"
               onClick={(e) => handleSubmit(e, true)}
               disabled={isSubmitting}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-2xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-medium transition-all cursor-pointer disabled:opacity-50"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-2xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-semibold font-display transition-all cursor-pointer disabled:opacity-50 shadow-2xs hover:shadow-xs active:scale-98"
             >
               <Plus className="w-4 h-4" />
               <span>Save &amp; Add Another</span>
@@ -742,7 +764,7 @@ export default function AdminProductCreatePage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-800 text-white text-xs font-medium transition-all shadow-md shadow-blue-500/25 hover:shadow-lg disabled:opacity-50 cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-800 text-white text-xs font-semibold font-display transition-all shadow-md shadow-blue-500/25 hover:shadow-lg disabled:opacity-50 cursor-pointer active:scale-98"
             >
               {isSubmitting ? (
                 <>
@@ -762,4 +784,3 @@ export default function AdminProductCreatePage() {
     </div>
   );
 }
-
