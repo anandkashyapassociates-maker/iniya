@@ -27,6 +27,7 @@ class InventoryProduct extends Model
         'business_unit',
         'product_unit',
         'quantity',
+        'last_added_quantity',
         'buy_price',
         'mrp',
         'average_price',
@@ -49,6 +50,7 @@ class InventoryProduct extends Model
     protected $casts = [
         'product_unit' => 'integer',
         'quantity' => 'integer',
+        'last_added_quantity' => 'integer',
         'buy_price' => 'decimal:2',
         'mrp' => 'decimal:2',
         'average_price' => 'decimal:2',
@@ -175,6 +177,14 @@ class InventoryProduct extends Model
     public function stockLogs(): HasMany
     {
         return $this->hasMany(InventoryStockLog::class, 'product_id');
+    }
+
+    /**
+     * Latest stock addition log relation.
+     */
+    public function latestStockLog(): HasOne
+    {
+        return $this->hasOne(InventoryStockLog::class, 'product_id')->latestOfMany('id');
     }
 
     /**

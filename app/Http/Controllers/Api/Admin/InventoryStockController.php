@@ -197,6 +197,7 @@ class InventoryStockController extends Controller
 
         $product->update([
             'quantity' => $totalQty,
+            'last_added_quantity' => $quantityAdded,
             'buy_price' => $buyPrice,
             'mrp' => $mrp,
             'average_price' => $averagePrice,
@@ -287,6 +288,7 @@ class InventoryStockController extends Controller
 
         $product->update([
             'quantity' => $newQty,
+            'last_added_quantity' => $newQty,
             'buy_price' => (float) $validated['buy_price'],
             'mrp' => (float) $validated['mrp'],
             'average_price' => $averagePrice,

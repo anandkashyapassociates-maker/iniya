@@ -166,6 +166,19 @@ export default function SuperAdminLowInventoryPage() {
                 </span>
               )}
             </div>
+            {p.inventory_updated_at && (
+              <div
+                className="text-[10px] text-slate-500 font-mono mt-1 flex items-center gap-1 flex-wrap"
+                title={`Inventory Added: ${p.last_added_quantity ?? qty} ${p.business_unit || 'Units'} on ${new Date(p.inventory_updated_at).toLocaleDateString()}`}
+              >
+                <span className="text-slate-400">Added:</span>
+                <span className="font-semibold text-slate-700">
+                  {p.last_added_quantity ?? qty} {p.business_unit || 'Units'}
+                </span>
+                <span className="text-slate-400 font-sans">•</span>
+                <span>{new Date(p.inventory_updated_at).toLocaleDateString()}</span>
+              </div>
+            )}
           </div>
         );
       },
@@ -187,18 +200,24 @@ export default function SuperAdminLowInventoryPage() {
     {
       header: 'VENDOR',
       className: 'w-[16%]',
-      render: (p) => (
-        <div>
-          <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor?.vendor_name || 'No Vendor Assigned'}>
-            {p.vendor ? p.vendor.vendor_name : <span className="text-slate-400 italic text-[11px]">No Vendor Assigned</span>}
-          </span>
-          {p.inventory_updated_at && (
-            <span className="text-[10px] text-slate-400 font-mono block mt-0.5" title={`Inventory Added: ${new Date(p.inventory_updated_at).toLocaleString()}`}>
-              Added: {new Date(p.inventory_updated_at).toLocaleDateString()}
+      render: (p) => {
+        const addedQty = p.last_added_quantity ?? p.quantity ?? 0;
+        return (
+          <div>
+            <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor?.vendor_name || 'No Vendor Assigned'}>
+              {p.vendor ? p.vendor.vendor_name : <span className="text-slate-400 italic text-[11px]">No Vendor Assigned</span>}
             </span>
-          )}
-        </div>
-      ),
+            {p.inventory_updated_at && (
+              <span
+                className="text-[10px] text-slate-500 font-mono block mt-0.5"
+                title={`Inventory Added: ${addedQty} ${p.business_unit || 'Units'} on ${new Date(p.inventory_updated_at).toLocaleString()}`}
+              >
+                Added: {addedQty} {p.business_unit || 'Units'} on {new Date(p.inventory_updated_at).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+        );
+      },
     },
     {
       header: 'OVERSIGHT',
@@ -388,11 +407,17 @@ export default function SuperAdminLowInventoryPage() {
             </div>
 
             <div className="p-6 space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="grid grid-cols-3 gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
                 <div>
                   <span className="text-slate-400 text-[10px] uppercase font-semibold block">Available Stock</span>
                   <span className="text-base font-bold font-mono text-rose-600">
                     {viewProduct.quantity ?? 0} {viewProduct.business_unit || 'Units'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 text-[10px] uppercase font-semibold block">Last Added Qty</span>
+                  <span className="text-base font-bold font-mono text-emerald-700">
+                    {viewProduct.last_added_quantity ?? viewProduct.quantity ?? 0} {viewProduct.business_unit || 'Units'}
                   </span>
                 </div>
                 <div>

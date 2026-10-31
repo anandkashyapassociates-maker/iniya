@@ -273,7 +273,7 @@ export default function AdminInventoryStocksPage() {
     },
     {
       header: 'PRODUCT DETAILS',
-      className: 'w-[26%]',
+      className: 'w-[24%]',
       render: (p) => (
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
@@ -307,7 +307,7 @@ export default function AdminInventoryStocksPage() {
     },
     {
       header: 'UNIT SPEC',
-      className: 'w-[12%]',
+      className: 'w-[10%]',
       render: (p) => (
         <div className="text-xs text-slate-700 font-medium">
           <span>{p.business_unit || 'Piece'}</span>
@@ -316,12 +316,13 @@ export default function AdminInventoryStocksPage() {
     },
     {
       header: 'AVAILABLE STOCK',
-      className: 'w-[16%]',
+      className: 'w-[18%]',
       render: (p) => {
         const qty = p.quantity ?? 0;
         const threshold = p.low_stock_threshold ?? 10;
         const isOutOfStock = qty <= 0;
         const isLow = qty > 0 && qty <= threshold;
+        const addedQty = p.last_added_quantity ?? qty;
 
         return (
           <div>
@@ -340,8 +341,9 @@ export default function AdminInventoryStocksPage() {
               <span className="text-[11px] text-slate-500 font-medium">
                 {p.business_unit || 'Units'}
               </span>
+              <span className="text-[10px] text-slate-400 font-normal">Available</span>
             </div>
-            <div className="mt-1">
+            <div className="mt-1 flex items-center gap-1.5 flex-wrap">
               {isOutOfStock ? (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
@@ -359,13 +361,26 @@ export default function AdminInventoryStocksPage() {
                 </span>
               )}
             </div>
+            {p.inventory_updated_at && (
+              <div
+                className="text-[10px] text-slate-500 font-mono mt-1 flex items-center gap-1 flex-wrap"
+                title={`Inventory Added: ${addedQty} ${p.business_unit || 'Units'} on ${new Date(p.inventory_updated_at).toLocaleDateString()}`}
+              >
+                <span className="text-slate-400">Added:</span>
+                <span className="font-semibold text-slate-700">
+                  {addedQty} {p.business_unit || 'Units'}
+                </span>
+                <span className="text-slate-400 font-sans">•</span>
+                <span>{new Date(p.inventory_updated_at).toLocaleDateString()}</span>
+              </div>
+            )}
           </div>
         );
       },
     },
     {
       header: 'AVG. PRICE',
-      className: 'w-[16%]',
+      className: 'w-[14%]',
       render: (p) => {
         const avgPrice = p.calculated_average_price ?? p.average_price ?? p.buy_price;
         return avgPrice && Number(avgPrice) > 0 ? (
@@ -379,19 +394,25 @@ export default function AdminInventoryStocksPage() {
     },
     {
       header: 'VENDOR',
-      className: 'w-[16%]',
-      render: (p) => (
-        <div>
-          <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor?.vendor_name || 'No Vendor Assigned'}>
-            {p.vendor ? p.vendor.vendor_name : <span className="text-slate-400 italic text-[11px]">No Vendor Assigned</span>}
-          </span>
-          {p.inventory_updated_at && (
-            <span className="text-[10px] text-slate-400 font-mono block mt-0.5" title={`Inventory Added: ${new Date(p.inventory_updated_at).toLocaleString()}`}>
-              Added: {new Date(p.inventory_updated_at).toLocaleDateString()}
+      className: 'w-[18%]',
+      render: (p) => {
+        const addedQty = p.last_added_quantity ?? p.quantity ?? 0;
+        return (
+          <div>
+            <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor?.vendor_name || 'No Vendor Assigned'}>
+              {p.vendor ? p.vendor.vendor_name : <span className="text-slate-400 italic text-[11px]">No Vendor Assigned</span>}
             </span>
-          )}
-        </div>
-      ),
+            {p.inventory_updated_at && (
+              <span
+                className="text-[10px] text-slate-500 font-mono block mt-0.5"
+                title={`Inventory Added: ${addedQty} ${p.business_unit || 'Units'} on ${new Date(p.inventory_updated_at).toLocaleString()}`}
+              >
+                Added: {addedQty} {p.business_unit || 'Units'} on {new Date(p.inventory_updated_at).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+        );
+      },
     },
     {
       header: 'ACTIONS',

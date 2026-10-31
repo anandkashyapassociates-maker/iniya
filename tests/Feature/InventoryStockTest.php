@@ -152,6 +152,7 @@ class InventoryStockTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonPath('product.quantity', 50)
+            ->assertJsonPath('product.last_added_quantity', 50)
             ->assertJsonPath('product.buy_price', '120.00')
             ->assertJsonPath('product.mrp', '180.00')
             ->assertJsonPath('product.average_price', '120.00')
@@ -160,6 +161,7 @@ class InventoryStockTest extends TestCase
         $this->assertDatabaseHas('inventory_products', [
             'id' => $this->product->id,
             'quantity' => 50,
+            'last_added_quantity' => 50,
             'buy_price' => 120.00,
             'mrp' => 180.00,
             'inventory_updated_by' => $this->admin1->id,
