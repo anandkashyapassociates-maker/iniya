@@ -18,6 +18,7 @@ import SalesMemberCreationPage from '../superadmin/sales-management/SalesMemberC
 import SalesMemberDetailsPage from '../superadmin/sales-management/SalesMemberDetailsPage';
 import SuperAdminEditAdminPage from '../pages/superadmin/SuperAdminEditAdminPage';
 import SuperAdminProfilePage from '../pages/superadmin/SuperAdminProfilePage';
+import SuperAdminCategoriesPage from '../superadmin/categories/SuperAdminCategoriesPage';
 
 // Admin Module (Panel 2 - Separate Team Developer)
 import AdminLayout from '../layouts/AdminLayout';
@@ -29,6 +30,9 @@ import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
 import AdminCustomersPage from '../pages/admin/AdminCustomersPage';
 import AdminCustomerCreatePage from '../pages/admin/AdminCustomerCreatePage';
 import AdminCustomerEditPage from '../pages/admin/AdminCustomerEditPage';
+import AdminCategoriesPage from '../pages/admin/AdminCategoriesPage';
+import AdminCategoryCreatePage from '../pages/admin/AdminCategoryCreatePage';
+import AdminCategoryEditPage from '../pages/admin/AdminCategoryEditPage';
 import AdminProfilePage from '../pages/admin/AdminProfilePage';
 import AdminChangePasswordPage from '../pages/admin/AdminChangePasswordPage';
 
@@ -83,6 +87,9 @@ export default function AppRoutes() {
           <Route path="/superadmin/staff" element={<Navigate to="/superadmin/staff-management/details" replace />} />
           <Route path="/superadmin/staff/create" element={<Navigate to="/superadmin/staff-management/create" replace />} />
           
+          {/* Executive Category Oversight */}
+          <Route path="/superadmin/categories" element={<SuperAdminCategoriesPage />} />
+
           <Route path="/superadmin/profile" element={<SuperAdminProfilePage />} />
         </Route>
       </Route>
@@ -103,6 +110,9 @@ export default function AppRoutes() {
           <Route path="/admin/customers" element={<AdminCustomersPage />} />
           <Route path="/admin/customers/create" element={<AdminCustomerCreatePage />} />
           <Route path="/admin/customers/:id/edit" element={<AdminCustomerEditPage />} />
+          <Route path="/admin/categories" element={<AdminCategoriesPage />} />
+          <Route path="/admin/categories/create" element={<AdminCategoryCreatePage />} />
+          <Route path="/admin/categories/:id/edit" element={<AdminCategoryEditPage />} />
           <Route path="/admin/profile" element={<AdminProfilePage />} />
           <Route path="/admin/change-password" element={<AdminChangePasswordPage />} />
         </Route>

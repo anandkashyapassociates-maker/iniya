@@ -12,6 +12,7 @@ import {
   PhoneCall,
   LogOut,
   X,
+  FolderTree,
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -68,6 +69,12 @@ export default function Sidebar({
       label: 'Register New Patient',
       icon: UserPlus,
       color: 'from-violet-500 to-purple-600',
+    },
+    {
+      to: '/admin/categories',
+      label: 'Clinic Categories',
+      icon: FolderTree,
+      color: 'from-cyan-500 to-blue-600',
     },
     {
       to: '/admin/profile',

@@ -3,13 +3,15 @@
 use App\Http\Controllers\Api\Admin\AdminAuthController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminProfileController;
+use App\Http\Controllers\Api\Admin\CategoryController;
 use App\Http\Controllers\Api\Admin\CustomerController;
 use App\Http\Controllers\Api\SuperAdmin\AdminManagementController;
+use App\Http\Controllers\Api\SuperAdmin\SalesMemberManagementController;
 use App\Http\Controllers\Api\SuperAdmin\StaffManagementController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminAuthController;
+use App\Http\Controllers\Api\SuperAdmin\SuperAdminCategoryController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminDashboardController;
 use App\Http\Controllers\Api\SuperAdmin\VendorManagementController;
-use App\Http\Controllers\Api\SuperAdmin\SalesMemberManagementController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -88,6 +90,12 @@ Route::prefix('superadmin')
         Route::get('/sales-members/{id}', [SalesMemberManagementController::class, 'show']);
         Route::put('/sales-members/{id}', [SalesMemberManagementController::class, 'update']);
         Route::patch('/sales-members/{id}/status', [SalesMemberManagementController::class, 'updateStatus']);
+
+        // Category Oversight (SuperAdmin View and Delete Power)
+        Route::get('/categories/stats', [SuperAdminCategoryController::class, 'stats']);
+        Route::get('/categories', [SuperAdminCategoryController::class, 'index']);
+        Route::get('/categories/{id}', [SuperAdminCategoryController::class, 'show']);
+        Route::delete('/categories/{id}', [SuperAdminCategoryController::class, 'destroy']);
     });
 
 /*
@@ -127,4 +135,12 @@ Route::prefix('admin')
         Route::get('/customers/{id}', [CustomerController::class, 'show']);
         Route::match(['put', 'post'], '/customers/{id}', [CustomerController::class, 'update']);
         Route::delete('/customers/{id}', [CustomerController::class, 'destroy']);
+
+        // Category Management (Admin Create, Edit, Update, Delete, List)
+        Route::get('/categories/stats', [CategoryController::class, 'stats']);
+        Route::get('/categories', [CategoryController::class, 'index']);
+        Route::post('/categories', [CategoryController::class, 'store']);
+        Route::get('/categories/{id}', [CategoryController::class, 'show']);
+        Route::match(['put', 'post'], '/categories/{id}', [CategoryController::class, 'update']);
+        Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
     });

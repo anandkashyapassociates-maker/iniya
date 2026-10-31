@@ -15,6 +15,7 @@ import {
   ListFilter,
   Truck,
   TrendingUp,
+  FolderTree,
 } from 'lucide-react';
 import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import ToastNotifications from '../../components/ToastNotifications';
@@ -152,6 +153,22 @@ export default function SuperAdminLayout() {
             >
               <LayoutDashboard className="w-4 h-4 shrink-0" />
               <span>Dashboard</span>
+            </NavLink>
+
+            {/* Category Oversight Link */}
+            <NavLink
+              to="/superadmin/categories"
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  isActive
+                    ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
+                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900'
+                }`
+              }
+            >
+              <FolderTree className="w-4 h-4 shrink-0" />
+              <span>Category Registry</span>
             </NavLink>
 
             {/* Profile & Security Link */}
