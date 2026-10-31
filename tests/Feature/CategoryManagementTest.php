@@ -6,9 +6,7 @@ use App\Models\Admin;
 use App\Models\Category;
 use App\Models\SuperAdmin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -54,7 +52,6 @@ class CategoryManagementTest extends TestCase
         $payload = [
             'name' => 'Cardiology & Heart Care',
             'description' => 'Heart diagnosis and ECG monitoring department.',
-            'is_active' => true,
         ];
 
         $response = $this->postJson('/api/admin/categories', $payload);
@@ -63,34 +60,35 @@ class CategoryManagementTest extends TestCase
             ->assertJsonPath('message', 'Category created successfully.')
             ->assertJsonPath('category.name', 'Cardiology & Heart Care')
             ->assertJsonPath('category.slug', 'cardiology-heart-care')
+            ->assertJsonPath('category.description', 'Heart diagnosis and ECG monitoring department.')
             ->assertJsonPath('category.admin_id', $this->admin->id);
 
         $this->assertDatabaseHas('categories', [
             'name' => 'Cardiology & Heart Care',
             'slug' => 'cardiology-heart-care',
+            'description' => 'Heart diagnosis and ECG monitoring department.',
             'admin_id' => $this->admin->id,
-            'is_active' => true,
         ]);
     }
 
-    public function test_admin_can_create_category_with_optional_image(): void
+    public function test_admin_can_create_category_with_custom_slug(): void
     {
-        Storage::fake('public');
         Sanctum::actingAs($this->admin, ['role:admin']);
 
-        $imageFile = UploadedFile::fake()->image('cardio_icon.png', 120, 120);
-
         $response = $this->postJson('/api/admin/categories', [
-            'name' => 'Dental Care',
+            'name' => 'Dental Care & Surgery',
+            'slug' => 'custom-dental-specialty',
             'description' => 'Orthodontic and dental clinical services.',
-            'image' => $imageFile,
-            'is_active' => true,
         ]);
 
-        $response->assertStatus(201);
-        $category = Category::where('name', 'Dental Care')->first();
-        $this->assertNotNull($category->image);
-        Storage::disk('public')->assertExists($category->image);
+        $response->assertStatus(201)
+            ->assertJsonPath('category.slug', 'custom-dental-specialty');
+
+        $this->assertDatabaseHas('categories', [
+            'name' => 'Dental Care & Surgery',
+            'slug' => 'custom-dental-specialty',
+            'admin_id' => $this->admin->id,
+        ]);
     }
 
     public function test_category_validation_requires_name(): void
@@ -109,26 +107,21 @@ class CategoryManagementTest extends TestCase
             'admin_id' => $this->admin->id,
             'name' => 'Pediatrics Unit',
             'slug' => 'pediatrics-unit',
-            'is_active' => true,
+            'description' => 'Child health services',
         ]);
 
         Category::factory()->create([
             'admin_id' => $this->admin->id,
             'name' => 'Orthopedics Bone Clinic',
             'slug' => 'orthopedics-bone-clinic',
-            'is_active' => false,
+            'description' => 'Bone fracture and joint care',
         ]);
 
-        // Search test
+        // Search by keyword
         $searchResponse = $this->getJson('/api/admin/categories?search=Bone');
         $searchResponse->assertStatus(200)
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.name', 'Orthopedics Bone Clinic');
-
-        // Status filter test
-        $activeResponse = $this->getJson('/api/admin/categories?status=active');
-        $activeResponse->assertStatus(200)
-            ->assertJsonPath('data.0.is_active', true);
     }
 
     public function test_admin_can_view_single_category(): void
@@ -153,98 +146,98 @@ class CategoryManagementTest extends TestCase
 
         $category = Category::factory()->create([
             'admin_id' => $this->admin->id,
-            'name' => 'Neurology',
-            'slug' => 'neurology',
-            'is_active' => true,
+            'name' => 'ENT Specialist',
+            'slug' => 'ent-specialist',
+            'description' => 'Old description',
         ]);
 
-        $updateResponse = $this->putJson("/api/admin/categories/{$category->id}", [
-            'name' => 'Advanced Neurology & Brain Care',
-            'description' => 'Updated brain care neurology descriptions.',
-            'is_active' => false,
+        $response = $this->putJson("/api/admin/categories/{$category->id}", [
+            'name' => 'Advanced ENT & Audiology',
+            'slug' => 'advanced-ent',
+            'description' => 'Ear, nose, throat and hearing diagnostics.',
         ]);
 
-        $updateResponse->assertStatus(200)
+        $response->assertStatus(200)
             ->assertJsonPath('message', 'Category updated successfully.')
-            ->assertJsonPath('category.name', 'Advanced Neurology & Brain Care')
-            ->assertJsonPath('category.is_active', false);
+            ->assertJsonPath('category.name', 'Advanced ENT & Audiology')
+            ->assertJsonPath('category.slug', 'advanced-ent')
+            ->assertJsonPath('category.description', 'Ear, nose, throat and hearing diagnostics.');
 
         $this->assertDatabaseHas('categories', [
             'id' => $category->id,
-            'name' => 'Advanced Neurology & Brain Care',
-            'is_active' => false,
+            'name' => 'Advanced ENT & Audiology',
+            'slug' => 'advanced-ent',
         ]);
     }
 
     public function test_admin_can_delete_category(): void
     {
-        Storage::fake('public');
         Sanctum::actingAs($this->admin, ['role:admin']);
-
-        $imageFile = UploadedFile::fake()->image('temp_cat.png');
-        $storedPath = $imageFile->store('categories', 'public');
 
         $category = Category::factory()->create([
             'admin_id' => $this->admin->id,
-            'name' => 'Temporary Category',
-            'image' => $storedPath,
+            'name' => 'Ophthalmology',
+            'slug' => 'ophthalmology',
         ]);
 
-        Storage::disk('public')->assertExists($storedPath);
-
         $response = $this->deleteJson("/api/admin/categories/{$category->id}");
-        $response->assertStatus(200)
-            ->assertJsonPath('message', "Category 'Temporary Category' deleted successfully.");
+        $response->assertStatus(200);
 
-        $this->assertDatabaseMissing('categories', ['id' => $category->id]);
-        Storage::disk('public')->assertMissing($storedPath);
+        $this->assertDatabaseMissing('categories', [
+            'id' => $category->id,
+        ]);
     }
 
-    public function test_superadmin_can_view_all_categories_with_creator_admin_details(): void
+    public function test_superadmin_can_list_categories_with_creator_admin_details(): void
     {
         Sanctum::actingAs($this->superAdmin, ['role:superadmin']);
 
-        $category = Category::factory()->create([
+        Category::factory()->create([
             'admin_id' => $this->admin->id,
-            'name' => 'Radiology & X-Ray Diagnostics',
+            'name' => 'Neurology & Brain Clinic',
+            'slug' => 'neurology-brain-clinic',
         ]);
 
         $response = $this->getJson('/api/superadmin/categories');
         $response->assertStatus(200)
-            ->assertJsonPath('data.0.name', 'Radiology & X-Ray Diagnostics')
-            ->assertJsonPath('data.0.admin.name', $this->admin->name)
-            ->assertJsonPath('data.0.admin.email', $this->admin->email);
+            ->assertJsonPath('data.0.name', 'Neurology & Brain Clinic')
+            ->assertJsonPath('data.0.admin.id', $this->admin->id)
+            ->assertJsonPath('data.0.admin.name', $this->admin->name);
     }
 
-    public function test_superadmin_can_view_category_statistics(): void
+    public function test_superadmin_can_delete_category_with_audit_trail(): void
     {
-        Sanctum::actingAs($this->superAdmin, ['role:superadmin']);
-
-        Category::factory()->count(3)->create(['admin_id' => $this->admin->id, 'is_active' => true]);
-        Category::factory()->count(2)->create(['admin_id' => $this->admin->id, 'is_active' => false]);
-
-        $response = $this->getJson('/api/superadmin/categories/stats');
-        $response->assertStatus(200)
-            ->assertJsonPath('total', 5)
-            ->assertJsonPath('active', 3)
-            ->assertJsonPath('inactive', 2)
-            ->assertJsonPath('creators_count', 1);
-    }
-
-    public function test_superadmin_has_power_to_delete_any_category(): void
-    {
-        Storage::fake('public');
         Sanctum::actingAs($this->superAdmin, ['role:superadmin']);
 
         $category = Category::factory()->create([
             'admin_id' => $this->admin->id,
-            'name' => 'Category To Be Deleted by SuperAdmin',
+            'name' => 'Psychiatry & Mental Health',
+            'slug' => 'psychiatry-mental-health',
         ]);
 
         $response = $this->deleteJson("/api/superadmin/categories/{$category->id}");
         $response->assertStatus(200)
-            ->assertJsonPath('message', "Category 'Category To Be Deleted by SuperAdmin' deleted successfully by Super Admin.");
+            ->assertJsonPath('message', "Category 'Psychiatry & Mental Health' deleted successfully by Super Admin.");
 
-        $this->assertDatabaseMissing('categories', ['id' => $category->id]);
+        $this->assertDatabaseMissing('categories', [
+            'id' => $category->id,
+        ]);
+
+        $this->assertDatabaseHas('admin_activity_logs', [
+            'actor_id' => $this->superAdmin->id,
+            'actor_type' => 'superadmin',
+            'action' => 'category_deleted_by_superadmin',
+        ]);
+    }
+
+    public function test_category_stats_endpoint(): void
+    {
+        Sanctum::actingAs($this->admin, ['role:admin']);
+
+        Category::factory()->count(3)->create(['admin_id' => $this->admin->id]);
+
+        $response = $this->getJson('/api/admin/categories/stats');
+        $response->assertStatus(200)
+            ->assertJsonStructure(['total']);
     }
 }

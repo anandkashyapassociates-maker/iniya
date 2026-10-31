@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, ChevronDown, User, LogOut, CheckCircle2, UserPlus } from 'lucide-react';
+import { Menu, ChevronDown, User, LogOut, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Topbar({
@@ -48,18 +48,8 @@ export default function Topbar({
         </div>
       </div>
 
-      {/* Right side: Status, Quick Action & Profile dropdown */}
+      {/* Right side: Status & Profile dropdown */}
       <div className="flex items-center gap-2.5 sm:gap-4">
-        {!isSuperAdmin && (
-          <Link
-            to="/admin/customers/create"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-xs shadow-blue-500/20 transition-all cursor-pointer font-display"
-          >
-            <UserPlus className="w-3.5 h-3.5" />
-            <span>+ Add Patient</span>
-          </Link>
-        )}
-
         {/* Profile Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button

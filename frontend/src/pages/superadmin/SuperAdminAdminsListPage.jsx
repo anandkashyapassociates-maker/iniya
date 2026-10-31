@@ -110,6 +110,18 @@ export default function SuperAdminAdminsListPage() {
 
   const columns = [
     {
+      header: 'Sr. No.',
+      className: 'w-[75px] text-center',
+      render: (row, index) => {
+        const srNo = (pagination?.from || 1) + index;
+        return (
+          <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-600 font-mono text-[11px] font-medium">
+            {srNo}
+          </span>
+        );
+      },
+    },
+    {
       header: 'Admin Name & Email',
       render: (row) => (
         <div className="flex items-center gap-3">

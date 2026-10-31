@@ -26,8 +26,8 @@ class AdminManagementController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('mobile', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('mobile', 'like', "%{$search}%");
             });
         }
 
@@ -47,7 +47,7 @@ class AdminManagementController extends Controller
             ? $request->input('sort_by')
             : 'created_at';
         $sortDirection = strtolower($request->input('sort_direction', 'desc')) === 'asc' ? 'asc' : 'desc';
-        $query->orderBy($sortBy, $sortDirection);
+        $query->orderBy($sortBy, $sortDirection)->orderBy('id', 'desc');
 
         $perPage = min((int) $request->input('per_page', 10), 50);
         $admins = $query->paginate($perPage);
@@ -302,4 +302,3 @@ class AdminManagementController extends Controller
         ]);
     }
 }
-

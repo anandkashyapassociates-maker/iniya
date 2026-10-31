@@ -7,7 +7,6 @@ use App\Models\AdminActivityLog;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class SuperAdminCategoryController extends Controller
 {
@@ -36,16 +35,6 @@ class SuperAdminCategoryController extends Controller
             $query->where('admin_id', $adminId);
         }
 
-        // Filter by active status
-        if ($request->has('status') && $request->input('status') !== '' && $request->input('status') !== 'all') {
-            $statusInput = strtolower((string) $request->input('status'));
-            if ($statusInput === 'active' || $statusInput === 'true' || $statusInput === '1') {
-                $query->where('is_active', true);
-            } elseif ($statusInput === 'inactive' || $statusInput === 'false' || $statusInput === '0') {
-                $query->where('is_active', false);
-            }
-        }
-
         $perPage = min((int) $request->input('per_page', 10), 100);
         $categories = $query->orderBy('created_at', 'desc')->orderBy('id', 'desc')->paginate($perPage);
 
@@ -71,10 +60,6 @@ class SuperAdminCategoryController extends Controller
         $categoryName = $category->name;
         $creatorName = $category->admin ? $category->admin->name : 'Unknown Admin';
 
-        if ($category->image && Storage::disk('public')->exists($category->image)) {
-            Storage::disk('public')->delete($category->image);
-        }
-
         $category->delete();
 
         $superAdmin = $request->user();
@@ -92,19 +77,15 @@ class SuperAdminCategoryController extends Controller
     }
 
     /**
-     * Executive category statistics across the entire hospital system.
+     * Executive category statistics across the entire clinic system.
      */
     public function stats(): JsonResponse
     {
         $total = Category::count();
-        $active = Category::where('is_active', true)->count();
-        $inactive = Category::where('is_active', false)->count();
         $creatorsCount = Category::whereNotNull('admin_id')->distinct('admin_id')->count('admin_id');
 
         return response()->json([
             'total' => $total,
-            'active' => $active,
-            'inactive' => $inactive,
             'creators_count' => $creatorsCount,
         ]);
     }

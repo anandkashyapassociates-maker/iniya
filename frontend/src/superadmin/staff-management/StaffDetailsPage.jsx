@@ -375,7 +375,7 @@ export default function StaffDetailsPage() {
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="py-3.5 px-4 w-14">ID</th>
+                  <th className="py-3.5 px-4 w-14 text-center">Sr. No.</th>
                   <th className="py-3.5 px-4">Staff Code</th>
                   <th className="py-3.5 px-4">Full Name</th>
                   <th className="py-3.5 px-4">Email</th>
@@ -389,11 +389,13 @@ export default function StaffDetailsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
-                {staffList.map((member) => (
+                {staffList.map((member, index) => (
                   <tr key={member.id} className="hover:bg-slate-50/60 transition-colors">
-                    {/* ID */}
-                    <td className="py-3.5 px-4 font-mono text-slate-400 font-bold">
-                      #{member.id}
+                    {/* Sr. No. */}
+                    <td className="py-3.5 px-4 text-center">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-600 font-mono text-[11px] font-medium">
+                        {(pagination?.from || 1) + index}
+                      </span>
                     </td>
 
                     {/* Staff Code */}

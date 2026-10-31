@@ -23,3 +23,4 @@ export const superAdminCategoryService = {
 };
 
 export default superAdminCategoryService;
+

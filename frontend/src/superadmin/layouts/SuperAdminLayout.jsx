@@ -16,6 +16,10 @@ import {
   Truck,
   TrendingUp,
   FolderTree,
+  Boxes,
+  Package,
+  Award,
+  BarChart3,
 } from 'lucide-react';
 import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import ToastNotifications from '../../components/ToastNotifications';
@@ -58,11 +62,14 @@ export default function SuperAdminLayout() {
     location.pathname.startsWith('/superadmin/sales-members') ||
     location.pathname.startsWith('/superadmin/sales-team');
 
+  const isInInventory = location.pathname.startsWith('/superadmin/inventory');
+
   // Initialize only the currently active section as open on page load / reload
   const [adminMenuOpen, setAdminMenuOpen] = useState(isInAdminManagement);
   const [staffMenuOpen, setStaffMenuOpen] = useState(isInStaffManagement);
   const [vendorMenuOpen, setVendorMenuOpen] = useState(isInVendorManagement);
   const [salesMenuOpen, setSalesMenuOpen] = useState(isInSalesManagement);
+  const [inventoryMenuOpen, setInventoryMenuOpen] = useState(isInInventory);
 
   // When route changes, automatically ensure only the active section is open
   useEffect(() => {
@@ -71,23 +78,33 @@ export default function SuperAdminLayout() {
       setStaffMenuOpen(false);
       setVendorMenuOpen(false);
       setSalesMenuOpen(false);
+      setInventoryMenuOpen(false);
     } else if (isInStaffManagement) {
       setStaffMenuOpen(true);
       setAdminMenuOpen(false);
       setVendorMenuOpen(false);
       setSalesMenuOpen(false);
+      setInventoryMenuOpen(false);
     } else if (isInVendorManagement) {
       setVendorMenuOpen(true);
       setAdminMenuOpen(false);
       setStaffMenuOpen(false);
       setSalesMenuOpen(false);
+      setInventoryMenuOpen(false);
     } else if (isInSalesManagement) {
       setSalesMenuOpen(true);
       setAdminMenuOpen(false);
       setStaffMenuOpen(false);
       setVendorMenuOpen(false);
+      setInventoryMenuOpen(false);
+    } else if (isInInventory) {
+      setInventoryMenuOpen(true);
+      setAdminMenuOpen(false);
+      setStaffMenuOpen(false);
+      setVendorMenuOpen(false);
+      setSalesMenuOpen(false);
     }
-  }, [location.pathname, isInAdminManagement, isInStaffManagement, isInVendorManagement, isInSalesManagement]);
+  }, [location.pathname, isInAdminManagement, isInStaffManagement, isInVendorManagement, isInSalesManagement, isInInventory]);
 
   const handleLogout = async () => {
     try {
@@ -472,6 +489,100 @@ export default function SuperAdminLayout() {
                   >
                     <ListFilter className="w-3.5 h-3.5 shrink-0" />
                     <span>Sales Member Details</span>
+                  </NavLink>
+                </div>
+              )}
+            </div>
+
+            {/* ======================================================== */}
+            {/* INVENTORY MANAGEMENT ACCORDION SECTION (Superadmin Phase) */}
+            {/* ======================================================== */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setInventoryMenuOpen(!inventoryMenuOpen)}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium uppercase tracking-wider transition-all cursor-pointer ${
+                  isInInventory
+                    ? 'text-blue-400 bg-slate-900/90'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Boxes className="w-4 h-4 text-cyan-400 shrink-0" />
+                  <span>Inventory Management</span>
+                </div>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                    inventoryMenuOpen ? 'rotate-0' : '-rotate-90'
+                  }`}
+                />
+              </button>
+
+              {/* Collapsible Submenu */}
+              {inventoryMenuOpen && (
+                <div className="pl-6 pr-1 pt-1.5 pb-1 space-y-1">
+                  {/* 1. Inventory Overview */}
+                  <NavLink
+                    to="/superadmin/inventory/overview"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <BarChart3 className="w-3.5 h-3.5 shrink-0" />
+                    <span>Inventory Overview</span>
+                  </NavLink>
+
+                  {/* 2. All Products */}
+                  <NavLink
+                    to="/superadmin/inventory/products"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <Package className="w-3.5 h-3.5 shrink-0" />
+                    <span>All Products</span>
+                  </NavLink>
+
+                  {/* 3. Categories */}
+                  <NavLink
+                    to="/superadmin/inventory/categories"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <FolderTree className="w-3.5 h-3.5 shrink-0" />
+                    <span>Categories</span>
+                  </NavLink>
+
+                  {/* 4. Brands */}
+                  <NavLink
+                    to="/superadmin/inventory/brands"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <Award className="w-3.5 h-3.5 shrink-0" />
+                    <span>Brands</span>
                   </NavLink>
                 </div>
               )}
