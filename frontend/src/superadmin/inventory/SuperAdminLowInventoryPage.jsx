@@ -80,7 +80,7 @@ export default function SuperAdminLowInventoryPage() {
     },
     {
       header: 'PRODUCT DETAILS',
-      className: 'w-[28%]',
+      className: 'w-[30%]',
       render: (p) => (
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
@@ -114,7 +114,7 @@ export default function SuperAdminLowInventoryPage() {
     },
     {
       header: 'STOCK & ALERT STATUS',
-      className: 'w-[20%]',
+      className: 'w-[24%]',
       render: (p) => {
         const qty = p.quantity ?? 0;
         const threshold = p.low_stock_threshold ?? 10;
@@ -133,9 +133,6 @@ export default function SuperAdminLowInventoryPage() {
               </span>
               <span className="text-[11px] text-slate-500 font-normal">
                 {p.business_unit || 'Units'}
-              </span>
-              <span className="text-[10px] text-slate-400">
-                (Min: {threshold})
               </span>
             </div>
             <div className="mt-1 flex items-center gap-1.5">
@@ -157,7 +154,7 @@ export default function SuperAdminLowInventoryPage() {
     },
     {
       header: 'AVG. PRICE',
-      className: 'w-[16%]',
+      className: 'w-[18%]',
       render: (p) => {
         const avgPrice = p.calculated_average_price ?? p.average_price ?? p.buy_price;
         return avgPrice && Number(avgPrice) > 0 ? (
@@ -183,7 +180,7 @@ export default function SuperAdminLowInventoryPage() {
     },
     {
       header: 'OVERSIGHT',
-      className: 'w-[8%] text-center',
+      className: 'w-[10%] text-center',
       render: (p) => (
         <button
           onClick={() => setViewProduct(p)}

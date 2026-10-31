@@ -263,7 +263,7 @@ export default function AdminInventoryStocksPage() {
     },
     {
       header: 'PRODUCT DETAILS',
-      className: 'w-[30%]',
+      className: 'w-[26%]',
       render: (p) => (
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
@@ -296,8 +296,17 @@ export default function AdminInventoryStocksPage() {
       ),
     },
     {
+      header: 'UNIT SPEC',
+      className: 'w-[12%]',
+      render: (p) => (
+        <div className="text-xs text-slate-700 font-medium">
+          <span>{p.business_unit || 'Piece'}</span>
+        </div>
+      ),
+    },
+    {
       header: 'AVAILABLE STOCK',
-      className: 'w-[20%]',
+      className: 'w-[16%]',
       render: (p) => {
         const qty = p.quantity ?? 0;
         const threshold = p.low_stock_threshold ?? 10;
@@ -331,7 +340,7 @@ export default function AdminInventoryStocksPage() {
               ) : isLow ? (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                  Low Stock (&le;{threshold})
+                  Low Stock
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -360,7 +369,7 @@ export default function AdminInventoryStocksPage() {
     },
     {
       header: 'VENDOR',
-      className: 'w-[18%]',
+      className: 'w-[16%]',
       render: (p) =>
         p.vendor ? (
           <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor.vendor_name}>
@@ -372,7 +381,7 @@ export default function AdminInventoryStocksPage() {
     },
     {
       header: 'ACTIONS',
-      className: 'w-[12%] text-right',
+      className: 'w-[14%] text-right',
       render: (p) => {
         const isStockOwner = p.inventory_updated_by && Number(p.inventory_updated_by) === Number(user?.id);
         const hasStock = (p.quantity ?? 0) > 0 || p.inventory_updated_by;

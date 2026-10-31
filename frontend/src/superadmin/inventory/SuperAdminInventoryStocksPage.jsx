@@ -145,8 +145,17 @@ export default function SuperAdminInventoryStocksPage() {
       ),
     },
     {
+      header: 'UNIT SPEC',
+      className: 'w-[12%]',
+      render: (p) => (
+        <div className="text-xs text-slate-700 font-medium">
+          <span>{p.business_unit || 'Piece'}</span>
+        </div>
+      ),
+    },
+    {
       header: 'AVAILABLE STOCK',
-      className: 'w-[20%]',
+      className: 'w-[18%]',
       render: (p) => {
         const qty = p.quantity ?? 0;
         const threshold = p.low_stock_threshold ?? 10;
@@ -180,7 +189,7 @@ export default function SuperAdminInventoryStocksPage() {
               ) : isLow ? (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                  Low Stock (&le;{threshold})
+                  Low Stock
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -209,7 +218,7 @@ export default function SuperAdminInventoryStocksPage() {
     },
     {
       header: 'VENDOR',
-      className: 'w-[18%]',
+      className: 'w-[16%]',
       render: (p) =>
         p.vendor ? (
           <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor.vendor_name}>
@@ -221,7 +230,7 @@ export default function SuperAdminInventoryStocksPage() {
     },
     {
       header: 'OVERSIGHT',
-      className: 'w-[8%] text-center',
+      className: 'w-[10%] text-center',
       render: (p) => (
         <button
           onClick={() => setViewProduct(p)}

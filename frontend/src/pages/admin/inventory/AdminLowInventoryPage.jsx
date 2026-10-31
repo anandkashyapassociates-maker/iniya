@@ -279,7 +279,7 @@ export default function AdminLowInventoryPage() {
     },
     {
       header: 'STOCK & ALERT STATUS',
-      className: 'w-[20%]',
+      className: 'w-[22%]',
       render: (p) => {
         const qty = p.quantity ?? 0;
         const threshold = p.low_stock_threshold ?? 10;
@@ -298,9 +298,6 @@ export default function AdminLowInventoryPage() {
               </span>
               <span className="text-[11px] text-slate-500 font-normal">
                 {p.business_unit || 'Units'}
-              </span>
-              <span className="text-[10px] text-slate-400">
-                (Min: {threshold})
               </span>
             </div>
             <div className="mt-1 flex items-center gap-1.5">
@@ -322,7 +319,7 @@ export default function AdminLowInventoryPage() {
     },
     {
       header: 'AVG. PRICE',
-      className: 'w-[16%]',
+      className: 'w-[18%]',
       render: (p) => {
         const avgPrice = p.calculated_average_price ?? p.average_price ?? p.buy_price;
         return avgPrice && Number(avgPrice) > 0 ? (
