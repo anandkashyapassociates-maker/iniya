@@ -227,10 +227,8 @@ export default function AdminInventoryStocksPage() {
         quantity: parseInt(formData.quantity, 10),
         buy_price: parseFloat(formData.buy_price),
         mrp: parseFloat(formData.mrp),
-        average_price: formData.average_price ? parseFloat(formData.average_price) : parseFloat(formData.buy_price),
         vendor_id: formData.vendor_id ? parseInt(formData.vendor_id, 10) : null,
         business_unit: formData.business_unit,
-        low_stock_threshold: parseInt(formData.low_stock_threshold || 10, 10),
         notes: formData.notes?.trim() || null,
       };
 
@@ -799,46 +797,6 @@ export default function AdminInventoryStocksPage() {
                   {formErrors.mrp && (
                     <p className="text-[11px] text-rose-500 mt-1">{formErrors.mrp}</p>
                   )}
-                </div>
-
-                {/* Average Price */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Average Cost Price (₹) *
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    name="average_price"
-                    placeholder="Auto-calculated or enter"
-                    value={formData.average_price}
-                    onChange={handleModalChange}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-mono"
-                    required
-                  />
-                  <span className="text-[10px] text-slate-400 mt-0.5 block">
-                    Weighted average based on procurement.
-                  </span>
-                </div>
-
-                {/* Low Stock Alert Threshold */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Low Stock Threshold (Alert Level)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    name="low_stock_threshold"
-                    placeholder="e.g. 10"
-                    value={formData.low_stock_threshold}
-                    onChange={handleModalChange}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-mono"
-                  />
-                  <span className="text-[10px] text-slate-400 mt-0.5 block">
-                    Alert triggers when stock reaches &le; this value.
-                  </span>
                 </div>
               </div>
 

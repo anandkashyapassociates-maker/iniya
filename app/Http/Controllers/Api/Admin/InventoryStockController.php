@@ -251,7 +251,7 @@ class InventoryStockController extends Controller
             'quantity' => ['required', 'integer', 'min:0'],
             'buy_price' => ['required', 'numeric', 'min:0'],
             'mrp' => ['required', 'numeric', 'min:0'],
-            'average_price' => ['required', 'numeric', 'min:0'],
+            'average_price' => ['nullable', 'numeric', 'min:0'],
             'vendor_id' => ['nullable', 'exists:vendors,id'],
             'business_unit' => ['nullable', 'string', 'max:50'],
             'low_stock_threshold' => ['nullable', 'integer', 'min:1'],
@@ -263,11 +263,15 @@ class InventoryStockController extends Controller
         $newQty = (int) $validated['quantity'];
         $diff = $newQty - $oldQty;
 
+        $averagePrice = isset($validated['average_price']) && (float) $validated['average_price'] > 0
+            ? (float) $validated['average_price']
+            : ($product->average_price ?? (float) $validated['buy_price']);
+
         $product->update([
             'quantity' => $newQty,
             'buy_price' => (float) $validated['buy_price'],
             'mrp' => (float) $validated['mrp'],
-            'average_price' => (float) $validated['average_price'],
+            'average_price' => $averagePrice,
             'vendor_id' => $validated['vendor_id'] ?? null,
             'business_unit' => $validated['business_unit'] ?? $product->business_unit,
             'low_stock_threshold' => $validated['low_stock_threshold'] ?? $product->low_stock_threshold ?? 10,

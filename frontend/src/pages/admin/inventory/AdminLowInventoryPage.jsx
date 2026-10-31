@@ -209,10 +209,8 @@ export default function AdminLowInventoryPage() {
         quantity: parseInt(formData.quantity, 10),
         buy_price: parseFloat(formData.buy_price),
         mrp: parseFloat(formData.mrp),
-        average_price: formData.average_price ? parseFloat(formData.average_price) : parseFloat(formData.buy_price),
         vendor_id: formData.vendor_id ? parseInt(formData.vendor_id, 10) : null,
         business_unit: formData.business_unit,
-        low_stock_threshold: parseInt(formData.low_stock_threshold || 10, 10),
         notes: formData.notes?.trim() || null,
       };
 
@@ -652,7 +650,7 @@ export default function AdminLowInventoryPage() {
               </div>
 
               {/* Pricing Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Buy Price (₹) *
@@ -694,58 +692,26 @@ export default function AdminLowInventoryPage() {
                     <p className="text-[11px] text-rose-600 mt-1">{formErrors.mrp}</p>
                   )}
                 </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Avg Price (₹)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    name="average_price"
-                    value={formData.average_price}
-                    onChange={handleModalChange}
-                    placeholder="Weighted Avg"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
-                  />
-                </div>
               </div>
 
-              {/* Vendor & Low Threshold */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Vendor / Supplier
-                  </label>
-                  <select
-                    name="vendor_id"
-                    value={formData.vendor_id}
-                    onChange={handleModalChange}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
-                  >
-                    <option value="">-- Select Vendor --</option>
-                    {vendors.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.vendor_name} ({v.vendor_code})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Low Stock Threshold
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    name="low_stock_threshold"
-                    value={formData.low_stock_threshold}
-                    onChange={handleModalChange}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
-                  />
-                </div>
+              {/* Vendor Selection */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Vendor / Supplier
+                </label>
+                <select
+                  name="vendor_id"
+                  value={formData.vendor_id}
+                  onChange={handleModalChange}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                >
+                  <option value="">-- Select Vendor --</option>
+                  {vendors.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.vendor_name} ({v.vendor_code})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Action Buttons */}
