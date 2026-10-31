@@ -16,6 +16,8 @@ import {
   UserCheck,
   ShieldAlert,
   Sparkles,
+  Tag,
+  Bookmark,
 } from 'lucide-react';
 import DataTable from '../../components/DataTable';
 import ConfirmDialog from '../../components/ConfirmDialog';
@@ -50,6 +52,7 @@ export default function SuperAdminProductsPage() {
     category_id: '',
     brand_id: '',
     business_unit: '',
+    product_unit: 1,
     product_type: '',
     status: 'active',
   });
@@ -129,8 +132,8 @@ export default function SuperAdminProductsPage() {
     setEditProduct(product);
     setEditFormData({
       product_name: product.product_name,
-      category_id: product.category_id || '',
-      brand_id: product.brand_id || '',
+      category_id: String(product.category_id || ''),
+      brand_id: String(product.brand_id || ''),
       business_unit: product.business_unit || 'Piece',
       product_unit: product.product_unit || 1,
       product_type: product.product_type || 'Consumable',
@@ -143,17 +146,17 @@ export default function SuperAdminProductsPage() {
     if (!editProduct) return;
     setIsUpdating(true);
     try {
-      const payload = new FormData();
-      payload.append('product_name', editFormData.product_name);
-      payload.append('category_id', editFormData.category_id);
-      if (editFormData.brand_id) payload.append('brand_id', editFormData.brand_id);
-      payload.append('business_unit', editFormData.business_unit);
-      payload.append('product_unit', parseInt(editFormData.product_unit, 10) || 1);
-      payload.append('product_type', editFormData.product_type);
-      payload.append('status', editFormData.status);
-
-      await superAdminInventoryService.updateProduct(editProduct.id, payload);
-      toast.success('Product updated successfully.');
+      const payload = {
+        product_name: editFormData.product_name,
+        category_id: editFormData.category_id,
+        brand_id: editFormData.brand_id || null,
+        business_unit: editFormData.business_unit,
+        product_unit: parseInt(editFormData.product_unit, 10) || 1,
+        product_type: editFormData.product_type,
+        status: editFormData.status,
+      };
+      const res = await superAdminInventoryService.updateProduct(editProduct.id, payload);
+      toast.success(res.message || 'Product updated successfully.');
       setEditProduct(null);
       fetchProducts();
     } catch (err) {
@@ -168,7 +171,7 @@ export default function SuperAdminProductsPage() {
     setDeleteDialog((prev) => ({ ...prev, isLoading: true }));
     try {
       const res = await superAdminInventoryService.deleteProduct(deleteDialog.product.id);
-      toast.success(res.message || 'Product deleted successfully.');
+      toast.success(res.message || 'Product deleted from inventory.');
       setDeleteDialog({ isOpen: false, product: null, isLoading: false });
       fetchProducts();
     } catch (err) {
@@ -180,19 +183,19 @@ export default function SuperAdminProductsPage() {
   const columns = [
     {
       header: 'SR. NO.',
-      className: 'w-[70px] text-center',
+      className: 'w-[75px] text-center',
       render: (product, index) => {
         const srNo = (pagination?.from || 1) + index;
         return (
-          <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-600 font-mono text-[11px] font-medium">
+          <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-600 font-mono text-[11px] font-semibold tabular-numbers">
             {srNo}
           </span>
         );
       },
     },
     {
-      header: 'PRODUCT IDENTIFICATION',
-      className: 'w-[28%]',
+      header: 'PRODUCT SPECIFICATIONS',
+      className: 'w-[30%]',
       render: (product) => (
         <div className="flex items-center gap-3">
           {product.image_url ? (
@@ -202,20 +205,20 @@ export default function SuperAdminProductsPage() {
               className="w-11 h-11 rounded-xl object-cover border border-slate-200 shadow-2xs shrink-0 bg-slate-50"
             />
           ) : (
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-medium shadow-2xs shrink-0">
-              <Package className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold shadow-2xs shrink-0 icon-3d">
+              <Package className="w-5 h-5 drop-shadow-sm" />
             </div>
           )}
           <div className="min-w-0">
-            <span className="text-xs font-semibold text-slate-800 block truncate">
+            <span className="text-xs font-bold font-display text-slate-900 block truncate">
               {product.product_name}
             </span>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[10px] text-slate-400 font-normal">
-                Unit: <span className="text-slate-700 font-medium">{product.business_unit} ({product.product_unit ?? 1})</span>
+              <span className="text-[10px] text-slate-400 font-medium">
+                Unit: <span className="text-slate-700 font-semibold font-mono">{product.business_unit} ({product.product_unit ?? 1})</span>
               </span>
               <span className="text-slate-300">•</span>
-              <span className="text-[10px] text-blue-600 font-medium bg-blue-50 px-1.5 py-0.5 rounded">
+              <span className="text-[10px] text-blue-700 font-semibold bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200/60 font-mono">
                 {product.display_product_type || product.product_type}
               </span>
             </div>
@@ -227,8 +230,9 @@ export default function SuperAdminProductsPage() {
       header: 'CATEGORY',
       className: 'w-[14%]',
       render: (product) => (
-        <span className="text-xs text-slate-700 font-medium">
-          {product.category?.name || <span className="text-slate-400 italic">None</span>}
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200/60 max-w-full">
+          <Tag className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+          <span className="truncate">{product.category?.name || 'Unassigned'}</span>
         </span>
       ),
     },
@@ -236,8 +240,9 @@ export default function SuperAdminProductsPage() {
       header: 'BRAND',
       className: 'w-[14%]',
       render: (product) => (
-        <span className="text-xs text-slate-600 font-normal">
-          {product.brand?.name || <span className="text-slate-400 italic">None</span>}
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60 max-w-full">
+          <Bookmark className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+          <span className="truncate">{product.brand?.name || 'Generic / None'}</span>
         </span>
       ),
     },
@@ -246,14 +251,14 @@ export default function SuperAdminProductsPage() {
       className: 'w-[18%]',
       render: (product) => (
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-medium text-xs shrink-0">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
             {product.creator?.name ? product.creator.name.charAt(0).toUpperCase() : 'A'}
           </div>
           <div className="min-w-0">
-            <span className="text-xs font-medium text-slate-700 block truncate">
+            <span className="text-xs font-semibold text-slate-800 block truncate">
               {product.creator?.name || 'Clinic Admin'}
             </span>
-            <span className="text-[10px] font-normal text-slate-400 block truncate font-mono">
+            <span className="text-[10px] font-mono text-slate-400 block truncate">
               {product.creator?.email || 'admin@clinic.local'}
             </span>
           </div>
@@ -267,9 +272,9 @@ export default function SuperAdminProductsPage() {
         <button
           type="button"
           onClick={() => handleStatusToggle(product)}
-          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium border transition-all cursor-pointer ${
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border transition-all cursor-pointer ${
             product.status === 'active'
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80 hover:bg-emerald-100'
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 shadow-2xs'
               : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
           }`}
           title="Click to toggle status"
@@ -285,7 +290,7 @@ export default function SuperAdminProductsPage() {
     },
     {
       header: 'ACTIONS',
-      className: 'w-[14%] text-right',
+      className: 'w-[12%] text-right',
       render: (product, index) => (
         <div className="flex items-center justify-end gap-1.5">
           <button
@@ -293,21 +298,21 @@ export default function SuperAdminProductsPage() {
               setSelectedProduct(product);
               setSelectedIndex((pagination?.from || 1) + index);
             }}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
             title="View Details"
           >
             <Eye className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => openEditModal(product)}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
             title="Edit Product"
           >
             <Edit className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setDeleteDialog({ isOpen: true, product, isLoading: false })}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl border border-rose-200 bg-white text-rose-600 hover:text-white hover:bg-rose-600 hover:border-rose-600 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
             title="Delete Product"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -318,17 +323,21 @@ export default function SuperAdminProductsPage() {
   ];
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-6 animate-in fade-in duration-300">
       {/* Top Clinical Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-xs font-medium">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-xs font-semibold font-display">
               <Boxes className="w-3.5 h-3.5 text-blue-600" />
               <span>Global Product Registry</span>
             </span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-semibold font-display">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Live Clinic Feeds
+            </span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-medium text-slate-800 tracking-normal mt-1.5">
+          <h1 className="text-xl sm:text-2xl font-bold font-display text-slate-900 tracking-tight mt-1.5">
             All Inventory Products
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-normal mt-0.5 max-w-2xl leading-relaxed">
@@ -340,7 +349,7 @@ export default function SuperAdminProductsPage() {
           <button
             onClick={() => fetchProducts()}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all shadow-2xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-600 text-xs font-semibold font-display transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-98"
             title="Refresh List"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -350,9 +359,9 @@ export default function SuperAdminProductsPage() {
       </div>
 
       {/* Main Table Card (col-12) */}
-      <div className="w-full bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-7 shadow-xs space-y-5">
+      <div className="w-full bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-7 shadow-xs space-y-6">
         {/* Search & 4 Filters */}
-        <div className="space-y-3">
+        <div className="space-y-3.5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="relative flex-1 max-w-md">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -369,7 +378,7 @@ export default function SuperAdminProductsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1 border-t border-slate-100">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-slate-100">
             {/* Category Filter */}
             <select
               value={categoryFilter}
@@ -377,7 +386,7 @@ export default function SuperAdminProductsPage() {
                 setCategoryFilter(e.target.value);
                 setPage(1);
               }}
-              className="px-3 py-2 text-xs bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 text-slate-700 font-normal"
+              className="px-3.5 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-700 font-medium transition-all"
             >
               <option value="all">All Categories</option>
               {categories.map((c) => (
@@ -394,7 +403,7 @@ export default function SuperAdminProductsPage() {
                 setBrandFilter(e.target.value);
                 setPage(1);
               }}
-              className="px-3 py-2 text-xs bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 text-slate-700 font-normal"
+              className="px-3.5 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-700 font-medium transition-all"
             >
               <option value="all">All Brands</option>
               {brands.map((b) => (
@@ -411,7 +420,7 @@ export default function SuperAdminProductsPage() {
                 setTypeFilter(e.target.value);
                 setPage(1);
               }}
-              className="px-3 py-2 text-xs bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 text-slate-700 font-normal"
+              className="px-3.5 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-700 font-medium transition-all"
             >
               <option value="all">All Types</option>
               <option value="Consumable">Consumable</option>
@@ -429,7 +438,7 @@ export default function SuperAdminProductsPage() {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="px-3 py-2 text-xs bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 text-slate-700 font-normal"
+              className="px-3.5 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-700 font-medium transition-all"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -452,83 +461,90 @@ export default function SuperAdminProductsPage() {
       {/* Quick View Product Modal */}
       {selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-lg bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-7 relative overflow-hidden space-y-5">
-            <div className="flex items-start justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-3">
+          <div className="w-full max-w-lg bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-7 relative overflow-hidden space-y-6">
+            <div className="flex items-start justify-between pb-3.5 border-b border-slate-100">
+              <div className="flex items-center gap-3.5">
                 {selectedProduct.image_url ? (
                   <img
                     src={selectedProduct.image_url}
                     alt={selectedProduct.product_name}
-                    className="w-12 h-12 rounded-2xl object-cover border border-slate-200 shadow-xs shrink-0"
+                    className="w-14 h-14 rounded-2xl object-cover border border-slate-200 shadow-xs shrink-0"
                   />
                 ) : (
-                  <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-medium border border-blue-200 shrink-0">
-                    <Package className="w-6 h-6" />
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 icon-3d shrink-0">
+                    <Package className="w-7 h-7 drop-shadow-sm" />
                   </div>
                 )}
                 <div>
-                  <h3 className="text-base font-semibold text-slate-800">
+                  <h3 className="text-base font-bold font-display text-slate-900">
                     {selectedProduct.product_name}
                   </h3>
+                  {selectedIndex && (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60 font-mono text-[10px] font-bold mt-1">
+                      Sr. No. #{selectedIndex}
+                    </span>
+                  )}
                 </div>
               </div>
               <button
                 onClick={() => setSelectedProduct(null)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-3 text-xs">
+            <div className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-                  <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block mb-0.5">
+                <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1 micro-label">
                     Category
                   </span>
-                  <p className="font-semibold text-slate-800">
-                    {selectedProduct.category?.name || 'None'}
+                  <p className="font-bold text-slate-900 flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5 text-blue-600" />
+                    <span>{selectedProduct.category?.name || 'None'}</span>
                   </p>
                 </div>
-                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-                  <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block mb-0.5">
+                <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1 micro-label">
                     Brand
                   </span>
-                  <p className="font-semibold text-slate-800">
-                    {selectedProduct.brand?.name || 'None'}
+                  <p className="font-bold text-slate-900 flex items-center gap-1.5">
+                    <Bookmark className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>{selectedProduct.brand?.name || 'None'}</span>
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-                  <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block mb-0.5">
+                <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1 micro-label">
                     Business Unit
                   </span>
-                  <p className="font-semibold text-slate-800">
+                  <p className="font-bold text-slate-900 font-mono">
                     {selectedProduct.business_unit} ({selectedProduct.product_unit ?? 1})
                   </p>
                 </div>
-                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-                  <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block mb-0.5">
+                <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1 micro-label">
                     Product Type
                   </span>
-                  <p className="font-semibold text-slate-800">
+                  <p className="font-bold text-slate-900">
                     {selectedProduct.display_product_type || selectedProduct.product_type}
                   </p>
                 </div>
               </div>
 
               {selectedProduct.creator && (
-                <div className="p-3.5 rounded-2xl bg-blue-50/50 border border-blue-100 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-medium shrink-0">
+                <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200/60 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
                     <UserCheck className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <span className="text-[11px] text-blue-700 font-medium block">
+                    <span className="text-xs font-bold text-blue-900 block">
                       Cataloged by {selectedProduct.creator.name}
                     </span>
-                    <span className="text-[10px] text-slate-500 block truncate">
+                    <span className="text-[11px] font-mono text-slate-500 block truncate">
                       {selectedProduct.creator.email}
                     </span>
                   </div>
@@ -536,10 +552,10 @@ export default function SuperAdminProductsPage() {
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-2.5 pt-3.5 border-t border-slate-100">
               <button
                 onClick={() => setSelectedProduct(null)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all cursor-pointer"
+                className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold font-display text-slate-600 hover:bg-slate-50 transition-all cursor-pointer"
               >
                 Close
               </button>
@@ -551,17 +567,17 @@ export default function SuperAdminProductsPage() {
       {/* Edit Product Modal */}
       {editProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-lg bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-7 relative overflow-hidden space-y-5">
-            <div className="flex items-start justify-between pb-3 border-b border-slate-100">
+          <div className="w-full max-w-lg bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-7 relative overflow-hidden space-y-6">
+            <div className="flex items-start justify-between pb-3.5 border-b border-slate-100">
               <div>
-                <h3 className="text-base font-semibold text-slate-800">Edit Product Specifications</h3>
-                <p className="text-xs text-slate-400">
-                  Editing {editProduct.product_name} • Creator Admin preserved
+                <h3 className="text-base font-bold font-display text-slate-900">Edit Product Specifications</h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Editing {editProduct.product_name} • Clinic author attribution preserved
                 </p>
               </div>
               <button
                 onClick={() => setEditProduct(null)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -569,7 +585,7 @@ export default function SuperAdminProductsPage() {
 
             <form onSubmit={handleEditSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="block text-slate-700 font-medium mb-1">Product Name *</label>
+                <label className="block text-slate-700 font-semibold mb-1.5">Product Name <span className="text-rose-500">*</span></label>
                 <input
                   type="text"
                   value={editFormData.product_name}
@@ -577,20 +593,20 @@ export default function SuperAdminProductsPage() {
                     setEditFormData((prev) => ({ ...prev, product_name: e.target.value }))
                   }
                   required
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600"
+                  className="w-full px-4 py-2.5 rounded-2xl bg-slate-50/80 border border-slate-200 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 transition-all"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-700 font-medium mb-1">Category *</label>
+                  <label className="block text-slate-700 font-semibold mb-1.5">Category <span className="text-rose-500">*</span></label>
                   <select
                     value={editFormData.category_id}
                     onChange={(e) =>
                       setEditFormData((prev) => ({ ...prev, category_id: e.target.value }))
                     }
                     required
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600"
+                    className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50/80 border border-slate-200 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 font-medium transition-all"
                   >
                     <option value="">Select Category</option>
                     {categories.map((c) => (
@@ -602,13 +618,13 @@ export default function SuperAdminProductsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-medium mb-1">Brand</label>
+                  <label className="block text-slate-700 font-semibold mb-1.5">Brand</label>
                   <select
                     value={editFormData.brand_id}
                     onChange={(e) =>
                       setEditFormData((prev) => ({ ...prev, brand_id: e.target.value }))
                     }
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600"
+                    className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50/80 border border-slate-200 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 font-medium transition-all"
                   >
                     <option value="">No Brand</option>
                     {brands.map((b) => (
@@ -622,10 +638,10 @@ export default function SuperAdminProductsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-slate-700 font-medium">Business &amp; Product Unit *</label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-slate-700 font-semibold">Business &amp; Product Unit <span className="text-rose-500">*</span></label>
                   </div>
-                  <div className="flex items-center rounded-xl border border-slate-200 overflow-hidden bg-slate-50/80 focus-within:bg-white focus-within:border-blue-600 transition-all">
+                  <div className="flex items-center rounded-2xl border border-slate-200 overflow-hidden bg-slate-50/80 focus-within:bg-white focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
                     <div className="w-7/12 border-r border-slate-200">
                       <select
                         value={editFormData.business_unit}
@@ -633,7 +649,7 @@ export default function SuperAdminProductsPage() {
                           setEditFormData((prev) => ({ ...prev, business_unit: e.target.value }))
                         }
                         required
-                        className="w-full px-3 py-2 text-sm bg-transparent border-0 focus:outline-none cursor-pointer truncate"
+                        className="w-full px-3 py-2.5 text-xs bg-transparent border-0 focus:outline-none cursor-pointer truncate font-medium"
                       >
                         <option value="">Select Unit</option>
                         {[
@@ -656,8 +672,8 @@ export default function SuperAdminProductsPage() {
                         ))}
                       </select>
                     </div>
-                    <div className="w-5/12 flex items-center bg-white px-2">
-                      <span className="text-xs text-slate-400 mr-1 shrink-0 select-none">Qty:</span>
+                    <div className="w-5/12 flex items-center bg-white px-2.5">
+                      <span className="text-[11px] text-slate-400 mr-1 shrink-0 select-none font-mono">Qty:</span>
                       <input
                         type="number"
                         min="1"
@@ -668,20 +684,20 @@ export default function SuperAdminProductsPage() {
                         }
                         required
                         placeholder="1"
-                        className="w-full py-2 text-sm bg-transparent border-0 focus:outline-none font-medium"
+                        className="w-full py-2.5 text-xs bg-transparent border-0 focus:outline-none font-mono font-bold tabular-numbers"
                       />
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-medium mb-1">Product Type *</label>
+                  <label className="block text-slate-700 font-semibold mb-1.5">Product Type <span className="text-rose-500">*</span></label>
                   <select
                     value={editFormData.product_type}
                     onChange={(e) =>
                       setEditFormData((prev) => ({ ...prev, product_type: e.target.value }))
                     }
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600"
+                    className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50/80 border border-slate-200 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 font-medium transition-all"
                   >
                     <option value="Consumable">Consumable</option>
                     <option value="Retail">Retail</option>
@@ -694,46 +710,81 @@ export default function SuperAdminProductsPage() {
               </div>
 
               <div>
-                <label className="block text-slate-700 font-medium mb-1">Status</label>
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                <label className="block text-slate-700 font-semibold mb-1.5">Operational Status</label>
+                <div className="grid grid-cols-2 gap-3 max-w-xs">
+                  <label
+                    className={`flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer transition-all ${
+                      editFormData.status === 'active'
+                        ? 'bg-blue-50/70 border-blue-500/80 text-blue-900 font-semibold'
+                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
                     <input
                       type="radio"
                       name="status"
                       value="active"
                       checked={editFormData.status === 'active'}
                       onChange={() => setEditFormData((prev) => ({ ...prev, status: 'active' }))}
-                      className="text-blue-600"
+                      className="sr-only"
                     />
-                    <span className="text-slate-700">Active</span>
+                    <div
+                      className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                        editFormData.status === 'active'
+                          ? 'border-blue-600 bg-blue-600'
+                          : 'border-slate-300'
+                      }`}
+                    >
+                      {editFormData.status === 'active' && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                      )}
+                    </div>
+                    <span>Active</span>
                   </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
+
+                  <label
+                    className={`flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer transition-all ${
+                      editFormData.status === 'inactive'
+                        ? 'bg-rose-50/70 border-rose-500/80 text-rose-900 font-semibold'
+                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
                     <input
                       type="radio"
                       name="status"
                       value="inactive"
                       checked={editFormData.status === 'inactive'}
                       onChange={() => setEditFormData((prev) => ({ ...prev, status: 'inactive' }))}
-                      className="text-blue-600"
+                      className="sr-only"
                     />
-                    <span className="text-slate-700">Inactive</span>
+                    <div
+                      className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                        editFormData.status === 'inactive'
+                          ? 'border-rose-600 bg-rose-600'
+                          : 'border-slate-300'
+                      }`}
+                    >
+                      {editFormData.status === 'inactive' && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                      )}
+                    </div>
+                    <span>Inactive</span>
                   </label>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-2.5 pt-3.5 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setEditProduct(null)}
                   disabled={isUpdating}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold font-display text-slate-600 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isUpdating}
-                  className="px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-50"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold font-display shadow-md shadow-blue-500/20 hover:shadow-lg transition-all cursor-pointer disabled:opacity-50 active:scale-98"
                 >
                   {isUpdating ? 'Saving Changes...' : 'Save Product'}
                 </button>
@@ -757,4 +808,3 @@ export default function SuperAdminProductsPage() {
     </div>
   );
 }
-

@@ -104,30 +104,30 @@ export default function AdminBrandCreatePage() {
   };
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-7 animate-in fade-in duration-300">
       {/* Top Breadcrumb & Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <Link
             to={fromProductCreate ? '/admin/inventory/products/create' : '/admin/inventory/brands'}
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-blue-600 transition-colors mb-2"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold font-display text-slate-500 hover:text-blue-600 transition-colors mb-2"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>{fromProductCreate ? 'Return to Product Creation' : 'Back to Inventory Brands'}</span>
           </Link>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-xs font-medium">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-xs font-semibold font-display">
               <Stethoscope className="w-3.5 h-3.5 text-blue-600" />
               <span>Inventory Management</span>
             </span>
             {fromProductCreate && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-medium">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-semibold font-display">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Active Product Workflow
               </span>
             )}
           </div>
-          <h1 className="text-xl sm:text-2xl font-medium text-slate-800 tracking-normal mt-1.5">
+          <h1 className="text-xl sm:text-2xl font-bold font-display text-slate-900 tracking-tight mt-1.5">
             Add New Brand
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-normal mt-0.5 max-w-2xl leading-relaxed">
@@ -138,9 +138,9 @@ export default function AdminBrandCreatePage() {
         <div className="flex items-center gap-2">
           <Link
             to="/admin/inventory/brands"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-medium transition-all shadow-sm shadow-blue-500/20"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold font-display shadow-md shadow-blue-500/20 hover:shadow-lg transition-all active:scale-98"
           >
-            <Award className="w-3.5 h-3.5" />
+            <Award className="w-4 h-4" />
             <span>View Brands</span>
           </Link>
         </div>
@@ -150,20 +150,27 @@ export default function AdminBrandCreatePage() {
       <div className="w-full bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-8 lg:p-9 shadow-xs relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-50/60 via-indigo-50/30 to-transparent rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
 
-        <form onSubmit={handleSubmit} className="relative z-10 space-y-6">
+        <form onSubmit={handleSubmit} className="relative z-10 space-y-7">
           {/* Section 1: Brand Identification */}
-          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
-            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
-              <Award className="w-4 h-4 text-blue-600" />
-              <h2 className="text-xs font-medium text-slate-800 tracking-wide">
-                1. Brand Identification
-              </h2>
+          <div className="p-5 sm:p-7 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-5">
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 icon-3d">
+                <Award className="w-4 h-4 drop-shadow-sm" />
+              </div>
+              <div>
+                <h2 className="text-xs font-bold text-slate-800 tracking-wider uppercase micro-label">
+                  1. Brand Identification
+                </h2>
+                <p className="text-[11px] text-slate-400 font-normal">
+                  Unique manufacturer trademark name and system URL slug identifier.
+                </p>
+              </div>
             </div>
 
             <div className="space-y-4">
               {/* Brand Name */}
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Brand / Manufacturer Name <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
@@ -176,10 +183,10 @@ export default function AdminBrandCreatePage() {
                     placeholder="e.g. 3M Healthcare, Johnson & Johnson, Pfizer, BD Medical"
                     disabled={isSubmitting}
                     required
-                    className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal ${
+                    className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal text-slate-900 ${
                       errors.name
-                        ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
-                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
+                        ? 'border-rose-400 focus:ring-rose-500/20'
+                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20'
                     }`}
                   />
                 </div>
@@ -194,7 +201,7 @@ export default function AdminBrandCreatePage() {
               {/* URL Slug Identifier (Auto-generated) */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-medium text-slate-700">
+                  <label className="block text-xs font-semibold text-slate-700">
                     URL Slug Identifier <span className="text-slate-400 font-normal">(Auto-generated)</span>
                   </label>
                   {isCustomSlug && (
@@ -204,7 +211,7 @@ export default function AdminBrandCreatePage() {
                         setIsCustomSlug(false);
                         setFormData((prev) => ({ ...prev, slug: slugify(prev.name) }));
                       }}
-                      className="text-[10px] text-blue-600 hover:underline font-medium cursor-pointer"
+                      className="text-[10px] text-blue-600 hover:underline font-bold cursor-pointer font-display"
                     >
                       Reset Auto Slug
                     </button>
@@ -235,16 +242,23 @@ export default function AdminBrandCreatePage() {
           </div>
 
           {/* Section 2: Description & Scope */}
-          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
-            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100">
-              <FileText className="w-4 h-4 text-blue-600" />
-              <h2 className="text-xs font-medium text-slate-800 tracking-wide">
-                2. Brand Profile & Description
-              </h2>
+          <div className="p-5 sm:p-7 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-5">
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 icon-3d">
+                <FileText className="w-4 h-4 drop-shadow-sm" />
+              </div>
+              <div>
+                <h2 className="text-xs font-bold text-slate-800 tracking-wider uppercase micro-label">
+                  2. Brand Profile & Description
+                </h2>
+                <p className="text-[11px] text-slate-400 font-normal">
+                  Overview of brand lines, regulatory certifications, or supplier details.
+                </p>
+              </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Brand Description & Origin <span className="text-slate-400 font-normal">(Optional)</span>
               </label>
               <textarea
@@ -277,14 +291,14 @@ export default function AdminBrandCreatePage() {
                 }
               }}
               disabled={isSubmitting}
-              className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all cursor-pointer"
+              className="px-6 py-2.5 rounded-2xl border border-slate-200 bg-white text-xs font-semibold font-display text-slate-600 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-medium shadow-sm transition-all cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-7 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold font-display shadow-md shadow-blue-500/20 hover:shadow-lg transition-all cursor-pointer disabled:opacity-50 active:scale-98"
             >
               <Sparkles className="w-4 h-4" />
               <span>
@@ -301,4 +315,3 @@ export default function AdminBrandCreatePage() {
     </div>
   );
 }
-
