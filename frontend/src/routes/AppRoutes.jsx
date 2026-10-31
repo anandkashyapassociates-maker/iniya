@@ -145,7 +145,7 @@ export default function AppRoutes() {
           <Route path="/admin/categories/:id/edit" element={<AdminCategoryEditPage />} />
 
           {/* Admin Inventory Management Module */}
-          <Route path="/admin/inventory" element={<Navigate to="/admin/inventory/products" replace />} />
+          <Route path="/admin/inventory" element={<Navigate to="/admin/inventory/products/create" replace />} />
           <Route path="/admin/inventory/products" element={<AdminProductsPage />} />
           <Route path="/admin/inventory/products/create" element={<AdminProductCreatePage />} />
           <Route path="/admin/inventory/products/:id/edit" element={<AdminProductEditPage />} />

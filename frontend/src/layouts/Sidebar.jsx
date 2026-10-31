@@ -13,10 +13,7 @@ import {
   X,
   Calendar,
   Boxes,
-  Package,
   PlusCircle,
-  FolderTree,
-  Award,
   ChevronDown,
 } from 'lucide-react';
 
@@ -95,33 +92,8 @@ export default function Sidebar({
 
   const inventorySubItems = [
     {
-      to: '/admin/inventory/products',
-      label: 'Products',
-      icon: Package,
-    },
-    {
       to: '/admin/inventory/products/create',
       label: 'Create Product',
-      icon: PlusCircle,
-    },
-    {
-      to: '/admin/inventory/categories',
-      label: 'Categories',
-      icon: FolderTree,
-    },
-    {
-      to: '/admin/inventory/categories/create',
-      label: 'Create Category',
-      icon: PlusCircle,
-    },
-    {
-      to: '/admin/inventory/brands',
-      label: 'Brands',
-      icon: Award,
-    },
-    {
-      to: '/admin/inventory/brands/create',
-      label: 'Create Brand',
       icon: PlusCircle,
     },
   ];
