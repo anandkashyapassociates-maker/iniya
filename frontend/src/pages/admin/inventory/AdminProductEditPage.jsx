@@ -460,67 +460,63 @@ export default function AdminProductEditPage() {
                 )}
               </div>
 
-              {/* Business Unit Dropdown */}
+              {/* FIELD 5: Business Unit & Product Unit (Group Input in col-6) */}
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
-                  Business Unit <span className="text-rose-500">*</span>
-                </label>
-                <div className="relative">
-                  <select
-                    name="business_unit"
-                    value={formData.business_unit}
-                    onChange={handleChange}
-                    disabled={isSubmitting}
-                    required
-                    className={`w-full px-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal ${
-                      errors.business_unit
-                        ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
-                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
-                    }`}
-                  >
-                    <option value="">Select Business Unit (Piece, Box, Packet, Bottle, etc.)</option>
-                    {commonBusinessUnits.map((u) => (
-                      <option key={u} value={u}>
-                        {u}
-                      </option>
-                    ))}
-                  </select>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-medium text-slate-700">
+                    Business Unit &amp; Product Unit <span className="text-rose-500">*</span>
+                  </label>
+                  <span className="text-[11px] text-slate-400">Packaging / Count</span>
                 </div>
-                {errors.business_unit && (
-                  <p className="text-[11px] text-rose-500 mt-1.5 font-normal flex items-center gap-1">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    <span>{Array.isArray(errors.business_unit) ? errors.business_unit[0] : errors.business_unit}</span>
-                  </p>
-                )}
-              </div>
 
-              {/* Product Unit (Integer) */}
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
-                  Product Unit (Integer) <span className="text-rose-500">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    name="product_unit"
-                    min="1"
-                    step="1"
-                    value={formData.product_unit}
-                    onChange={handleChange}
-                    placeholder="e.g. 1, 10, 50, 100"
-                    disabled={isSubmitting}
-                    required
-                    className={`w-full px-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal ${
-                      errors.product_unit
-                        ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
-                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
-                    }`}
-                  />
+                <div
+                  className={`flex items-center rounded-2xl border bg-slate-50/80 transition-all overflow-hidden focus-within:bg-white focus-within:ring-2 ${
+                    errors.business_unit || errors.product_unit
+                      ? 'border-rose-400 focus-within:ring-rose-500/20'
+                      : 'border-slate-200 focus-within:border-blue-600 focus-within:ring-blue-500/20'
+                  }`}
+                >
+                  {/* Select Dropdown for Business Unit */}
+                  <div className="w-7/12 min-w-0 border-r border-slate-200/90">
+                    <select
+                      name="business_unit"
+                      value={formData.business_unit}
+                      onChange={handleChange}
+                      disabled={isSubmitting}
+                      required
+                      className="w-full px-3.5 py-2.5 text-xs bg-transparent border-0 focus:outline-none focus:ring-0 text-slate-900 cursor-pointer font-normal truncate"
+                    >
+                      <option value="">Select Unit (Piece, Box...)</option>
+                      {commonBusinessUnits.map((u) => (
+                        <option key={u} value={u}>
+                          {u}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Integer Input for Product Unit */}
+                  <div className="w-5/12 min-w-0 flex items-center bg-white/70 px-3">
+                    <span className="text-[11px] text-slate-400 mr-2 shrink-0 select-none">Qty:</span>
+                    <input
+                      type="number"
+                      name="product_unit"
+                      min="1"
+                      step="1"
+                      value={formData.product_unit}
+                      onChange={handleChange}
+                      placeholder="1"
+                      disabled={isSubmitting}
+                      required
+                      className="w-full py-2.5 text-xs bg-transparent border-0 focus:outline-none focus:ring-0 text-slate-900 font-medium"
+                    />
+                  </div>
                 </div>
-                {errors.product_unit && (
+
+                {(errors.business_unit || errors.product_unit) && (
                   <p className="text-[11px] text-rose-500 mt-1.5 font-normal flex items-center gap-1">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    <span>{Array.isArray(errors.product_unit) ? errors.product_unit[0] : errors.product_unit}</span>
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{errors.business_unit || errors.product_unit}</span>
                   </p>
                 )}
               </div>

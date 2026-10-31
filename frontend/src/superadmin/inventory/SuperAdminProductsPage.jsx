@@ -625,52 +625,57 @@ export default function SuperAdminProductsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-700 font-medium mb-1">Business Unit *</label>
-                  <select
-                    value={editFormData.business_unit}
-                    onChange={(e) =>
-                      setEditFormData((prev) => ({ ...prev, business_unit: e.target.value }))
-                    }
-                    required
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600"
-                  >
-                    <option value="">Select Business Unit</option>
-                    {[
-                      'Piece',
-                      'Box',
-                      'Packet',
-                      'Bottle',
-                      'Vial',
-                      'Ampoule',
-                      'Strip',
-                      'Roll',
-                      'Tube',
-                      'Kg',
-                      'Litre',
-                      'Set',
-                    ].map((u) => (
-                      <option key={u} value={u}>
-                        {u}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-slate-700 font-medium">Business &amp; Product Unit *</label>
+                  </div>
+                  <div className="flex items-center rounded-xl border border-slate-200 overflow-hidden bg-slate-50/80 focus-within:bg-white focus-within:border-blue-600 transition-all">
+                    <div className="w-7/12 border-r border-slate-200">
+                      <select
+                        value={editFormData.business_unit}
+                        onChange={(e) =>
+                          setEditFormData((prev) => ({ ...prev, business_unit: e.target.value }))
+                        }
+                        required
+                        className="w-full px-3 py-2 text-sm bg-transparent border-0 focus:outline-none cursor-pointer truncate"
+                      >
+                        <option value="">Select Unit</option>
+                        {[
+                          'Piece',
+                          'Box',
+                          'Packet',
+                          'Bottle',
+                          'Vial',
+                          'Ampoule',
+                          'Strip',
+                          'Roll',
+                          'Tube',
+                          'Kg',
+                          'Litre',
+                          'Set',
+                        ].map((u) => (
+                          <option key={u} value={u}>
+                            {u}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="w-5/12 flex items-center bg-white px-2">
+                      <span className="text-xs text-slate-400 mr-1 shrink-0 select-none">Qty:</span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={editFormData.product_unit}
+                        onChange={(e) =>
+                          setEditFormData((prev) => ({ ...prev, product_unit: e.target.value }))
+                        }
+                        required
+                        placeholder="1"
+                        className="w-full py-2 text-sm bg-transparent border-0 focus:outline-none font-medium"
+                      />
+                    </div>
+                  </div>
                 </div>
-
-                <div>
-                  <label className="block text-slate-700 font-medium mb-1">Product Unit (Integer) *</label>
-                  <input
-                    type="number"
-                    min="1"
-                    step="1"
-                    value={editFormData.product_unit}
-                    onChange={(e) =>
-                      setEditFormData((prev) => ({ ...prev, product_unit: e.target.value }))
-                    }
-                    required
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600"
-                  />
-                </div>
-              </div>
 
                 <div>
                   <label className="block text-slate-700 font-medium mb-1">Product Type *</label>
@@ -689,6 +694,7 @@ export default function SuperAdminProductsPage() {
                     <option value="Other">Other</option>
                   </select>
                 </div>
+              </div>
 
               <div>
                 <label className="block text-slate-700 font-medium mb-1">Status</label>
