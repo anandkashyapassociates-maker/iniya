@@ -209,10 +209,8 @@ export default function AdminLowInventoryPage() {
         quantity: parseInt(formData.quantity, 10),
         buy_price: parseFloat(formData.buy_price),
         mrp: parseFloat(formData.mrp),
-        average_price: formData.average_price ? parseFloat(formData.average_price) : parseFloat(formData.buy_price),
         vendor_id: formData.vendor_id ? parseInt(formData.vendor_id, 10) : null,
         business_unit: formData.business_unit,
-        low_stock_threshold: parseInt(formData.low_stock_threshold || 10, 10),
         notes: formData.notes?.trim() || null,
       };
 
@@ -323,44 +321,27 @@ export default function AdminLowInventoryPage() {
       },
     },
     {
-      header: 'PRICING METRICS',
-      className: 'w-[15%]',
-      render: (p) => (
-        <div className="space-y-0.5 text-xs font-mono">
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-400 font-sans text-[10px]">Buy:</span>
-            <span className="font-semibold text-slate-700">
-              {p.buy_price ? `₹${parseFloat(p.buy_price).toFixed(2)}` : '—'}
-            </span>
-          </div>
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-400 font-sans text-[10px]">MRP:</span>
-            <span className="font-semibold text-blue-600">
-              {p.mrp ? `₹${parseFloat(p.mrp).toFixed(2)}` : '—'}
-            </span>
-          </div>
-          <div className="flex items-center justify-between text-[10px] pt-0.5 border-t border-slate-100">
-            <span className="text-slate-400 font-sans">Avg:</span>
-            <span className="text-slate-500">
-              {p.average_price ? `₹${parseFloat(p.average_price).toFixed(2)}` : '—'}
-            </span>
-          </div>
-        </div>
-      ),
+      header: 'AVG. PRICE',
+      className: 'w-[16%]',
+      render: (p) => {
+        const avgPrice = p.calculated_average_price ?? p.average_price ?? p.buy_price;
+        return avgPrice && Number(avgPrice) > 0 ? (
+          <span className="text-xs font-bold font-mono text-slate-800">
+            ₹{parseFloat(avgPrice).toFixed(2)}
+          </span>
+        ) : (
+          <span className="text-slate-400 italic text-[11px]">—</span>
+        );
+      },
     },
     {
-      header: 'SUPPLIER / VENDOR',
-      className: 'w-[15%]',
+      header: 'VENDOR',
+      className: 'w-[16%]',
       render: (p) =>
         p.vendor ? (
-          <div>
-            <span className="text-xs font-bold text-slate-800 block truncate" title={p.vendor.vendor_name}>
-              {p.vendor.vendor_name}
-            </span>
-            <span className="text-[10px] text-slate-400 font-mono block truncate">
-              {p.vendor.mobile || p.vendor.vendor_code}
-            </span>
-          </div>
+          <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor.vendor_name}>
+            {p.vendor.vendor_name}
+          </span>
         ) : (
           <span className="text-slate-400 italic text-[11px]">No Vendor Assigned</span>
         ),
@@ -652,7 +633,7 @@ export default function AdminLowInventoryPage() {
               </div>
 
               {/* Pricing Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Buy Price (₹) *
@@ -694,58 +675,26 @@ export default function AdminLowInventoryPage() {
                     <p className="text-[11px] text-rose-600 mt-1">{formErrors.mrp}</p>
                   )}
                 </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Avg Price (₹)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    name="average_price"
-                    value={formData.average_price}
-                    onChange={handleModalChange}
-                    placeholder="Weighted Avg"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
-                  />
-                </div>
               </div>
 
-              {/* Vendor & Low Threshold */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Vendor / Supplier
-                  </label>
-                  <select
-                    name="vendor_id"
-                    value={formData.vendor_id}
-                    onChange={handleModalChange}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
-                  >
-                    <option value="">-- Select Vendor --</option>
-                    {vendors.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.vendor_name} ({v.vendor_code})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Low Stock Threshold
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    name="low_stock_threshold"
-                    value={formData.low_stock_threshold}
-                    onChange={handleModalChange}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
-                  />
-                </div>
+              {/* Vendor Selection */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Vendor / Supplier
+                </label>
+                <select
+                  name="vendor_id"
+                  value={formData.vendor_id}
+                  onChange={handleModalChange}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                >
+                  <option value="">-- Select Vendor --</option>
+                  {vendors.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.vendor_name} ({v.vendor_code})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Action Buttons */}
