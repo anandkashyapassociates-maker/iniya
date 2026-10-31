@@ -201,6 +201,11 @@ export default function AdminLowInventoryPage() {
       errs.mrp = 'Please enter a valid MRP.';
     }
 
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (formData.inventory_date && formData.inventory_date < todayStr) {
+      errs.inventory_date = 'Inventory date cannot be in the past. Please select today or a future date.';
+    }
+
     if (Object.keys(errs).length > 0) {
       setFormErrors(errs);
       return;
@@ -730,12 +735,18 @@ export default function AdminLowInventoryPage() {
                 <input
                   type="date"
                   name="inventory_date"
+                  min={new Date().toISOString().split('T')[0]}
                   value={formData.inventory_date}
                   onChange={handleModalChange}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                  className={`w-full px-3.5 py-2.5 rounded-xl border text-xs font-mono ${
+                    formErrors.inventory_date ? 'border-rose-400 bg-rose-50' : 'border-slate-200 bg-white'
+                  } focus:outline-hidden focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500`}
                   required
                 />
-                <p className="text-[10px] text-slate-400 mt-1">Date when this inventory was added / received.</p>
+                {formErrors.inventory_date && (
+                  <p className="text-[11px] text-rose-600 mt-1">{formErrors.inventory_date}</p>
+                )}
+                <p className="text-[10px] text-slate-400 mt-1">Date must be today or a future date (past dates not allowed).</p>
               </div>
 
               {/* Procurement Notes */}
