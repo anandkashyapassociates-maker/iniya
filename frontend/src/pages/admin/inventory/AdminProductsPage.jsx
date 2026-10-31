@@ -168,7 +168,9 @@ export default function AdminProductsPage() {
               {p.product_name}
             </span>
             <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-slate-400">
-              <span>Unit: <strong className="text-slate-600 font-medium">{p.business_unit}</strong></span>
+              <span>
+                Unit: <strong className="text-slate-600 font-medium">{p.business_unit} ({p.product_unit ?? 1})</strong>
+              </span>
               <span>•</span>
               <span>{new Date(p.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</span>
             </div>
@@ -493,7 +495,7 @@ export default function AdminProductsPage() {
                     Business Unit
                   </div>
                   <div className="text-xs font-semibold text-slate-800 mt-0.5">
-                    {viewProduct.business_unit}
+                    {viewProduct.business_unit} ({viewProduct.product_unit ?? 1})
                   </div>
                 </div>
 

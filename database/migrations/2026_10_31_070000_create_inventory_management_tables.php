@@ -53,6 +53,7 @@ return new class extends Migration
             $table->string('product_image')->nullable();
             $table->string('product_name')->index();
             $table->string('business_unit', 50)->index();
+            $table->unsignedInteger('product_unit')->default(1);
             $table->string('product_type', 50)->index();
             $table->string('custom_product_type')->nullable();
             $table->string('status', 20)->default('active')->index();
@@ -74,4 +75,3 @@ return new class extends Migration
         Schema::dropIfExists('inventory_categories');
     }
 };
-

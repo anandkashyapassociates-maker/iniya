@@ -132,6 +132,7 @@ export default function SuperAdminProductsPage() {
       category_id: product.category_id || '',
       brand_id: product.brand_id || '',
       business_unit: product.business_unit || 'Piece',
+      product_unit: product.product_unit || 1,
       product_type: product.product_type || 'Consumable',
       status: product.status || 'active',
     });
@@ -147,6 +148,7 @@ export default function SuperAdminProductsPage() {
       payload.append('category_id', editFormData.category_id);
       if (editFormData.brand_id) payload.append('brand_id', editFormData.brand_id);
       payload.append('business_unit', editFormData.business_unit);
+      payload.append('product_unit', parseInt(editFormData.product_unit, 10) || 1);
       payload.append('product_type', editFormData.product_type);
       payload.append('status', editFormData.status);
 
@@ -210,7 +212,7 @@ export default function SuperAdminProductsPage() {
             </span>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-[10px] text-slate-400 font-normal">
-                Unit: <span className="text-slate-700 font-medium">{product.business_unit}</span>
+                Unit: <span className="text-slate-700 font-medium">{product.business_unit} ({product.product_unit ?? 1})</span>
               </span>
               <span className="text-slate-300">•</span>
               <span className="text-[10px] text-blue-600 font-medium bg-blue-50 px-1.5 py-0.5 rounded">
@@ -506,7 +508,9 @@ export default function SuperAdminProductsPage() {
                   <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block mb-0.5">
                     Business Unit
                   </span>
-                  <p className="font-semibold text-slate-800">{selectedProduct.business_unit}</p>
+                  <p className="font-semibold text-slate-800">
+                    {selectedProduct.business_unit} ({selectedProduct.product_unit ?? 1})
+                  </p>
                 </div>
                 <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
                   <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block mb-0.5">
@@ -622,16 +626,51 @@ export default function SuperAdminProductsPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-slate-700 font-medium mb-1">Business Unit *</label>
-                  <input
-                    type="text"
+                  <select
                     value={editFormData.business_unit}
                     onChange={(e) =>
                       setEditFormData((prev) => ({ ...prev, business_unit: e.target.value }))
                     }
                     required
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600"
+                  >
+                    <option value="">Select Business Unit</option>
+                    {[
+                      'Piece',
+                      'Box',
+                      'Packet',
+                      'Bottle',
+                      'Vial',
+                      'Ampoule',
+                      'Strip',
+                      'Roll',
+                      'Tube',
+                      'Kg',
+                      'Litre',
+                      'Set',
+                    ].map((u) => (
+                      <option key={u} value={u}>
+                        {u}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-medium mb-1">Product Unit (Integer) *</label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={editFormData.product_unit}
+                    onChange={(e) =>
+                      setEditFormData((prev) => ({ ...prev, product_unit: e.target.value }))
+                    }
+                    required
                     className="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600"
                   />
                 </div>
+              </div>
 
                 <div>
                   <label className="block text-slate-700 font-medium mb-1">Product Type *</label>
@@ -650,7 +689,6 @@ export default function SuperAdminProductsPage() {
                     <option value="Other">Other</option>
                   </select>
                 </div>
-              </div>
 
               <div>
                 <label className="block text-slate-700 font-medium mb-1">Status</label>

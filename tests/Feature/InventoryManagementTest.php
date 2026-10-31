@@ -114,6 +114,7 @@ class InventoryManagementTest extends TestCase
             'brand_id' => $brand->id,
             'product_name' => 'Digital Pulse Oximeter Pro',
             'business_unit' => 'Piece',
+            'product_unit' => 25,
             'product_type' => 'Equipment',
             'status' => 'active',
             'product_image' => $image,
@@ -124,6 +125,7 @@ class InventoryManagementTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonPath('product.product_name', 'Digital Pulse Oximeter Pro')
             ->assertJsonPath('product.business_unit', 'Piece')
+            ->assertJsonPath('product.product_unit', 25)
             ->assertJsonPath('product.product_type', 'Equipment')
             ->assertJsonPath('product.created_by_admin_id', $this->admin->id);
 
@@ -255,4 +257,3 @@ class InventoryManagementTest extends TestCase
         ]);
     }
 }
-

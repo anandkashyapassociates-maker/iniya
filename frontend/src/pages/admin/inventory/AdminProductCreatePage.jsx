@@ -34,6 +34,7 @@ export default function AdminProductCreatePage() {
     brand_id: '',
     product_name: '',
     business_unit: 'Piece',
+    product_unit: 1,
     product_type: 'Consumable',
     custom_product_type: '',
     status: 'active',
@@ -183,7 +184,10 @@ export default function AdminProductCreatePage() {
     const errs = {};
     if (!formData.category_id) errs.category_id = 'Category is required.';
     if (!formData.product_name?.trim()) errs.product_name = 'Product name is required.';
-    if (!formData.business_unit?.trim()) errs.business_unit = 'Business unit is required.';
+    if (!formData.business_unit?.trim()) errs.business_unit = 'Please select a business unit.';
+    if (formData.product_unit === '' || formData.product_unit === null || isNaN(formData.product_unit) || parseInt(formData.product_unit, 10) < 1) {
+      errs.product_unit = 'Please enter a valid positive integer unit (e.g. 1, 10).';
+    }
     if (!formData.product_type) errs.product_type = 'Product type is required.';
     if (formData.product_type === 'Other' && !formData.custom_product_type?.trim()) {
       errs.custom_product_type = 'Please specify the custom product type.';
@@ -201,6 +205,7 @@ export default function AdminProductCreatePage() {
       if (formData.brand_id) payload.append('brand_id', formData.brand_id);
       payload.append('product_name', formData.product_name.trim());
       payload.append('business_unit', formData.business_unit.trim());
+      payload.append('product_unit', parseInt(formData.product_unit, 10) || 1);
       payload.append('product_type', formData.product_type);
       if (formData.product_type === 'Other' && formData.custom_product_type) {
         payload.append('custom_product_type', formData.custom_product_type.trim());
@@ -220,6 +225,7 @@ export default function AdminProductCreatePage() {
           brand_id: formData.brand_id, // keep brand
           product_name: '',
           business_unit: formData.business_unit,
+          product_unit: 1,
           product_type: formData.product_type,
           custom_product_type: '',
           status: 'active',
@@ -522,19 +528,16 @@ export default function AdminProductCreatePage() {
                 )}
               </div>
 
-              {/* FIELD 5: Business Unit */}
+              {/* FIELD 5: Business Unit Dropdown */}
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   Business Unit <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
-                  <input
-                    type="text"
+                  <select
                     name="business_unit"
                     value={formData.business_unit}
                     onChange={handleChange}
-                    placeholder="e.g. Piece, Box, Packet, Bottle, Kg, Litre"
-                    list="business-units-list"
                     disabled={isSubmitting}
                     required
                     className={`w-full px-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal ${
@@ -542,17 +545,50 @@ export default function AdminProductCreatePage() {
                         ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
                         : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
                     }`}
-                  />
-                  <datalist id="business-units-list">
+                  >
+                    <option value="">Select Business Unit (Piece, Box, Packet, Bottle, etc.)</option>
                     {commonBusinessUnits.map((u) => (
-                      <option key={u} value={u} />
+                      <option key={u} value={u}>
+                        {u}
+                      </option>
                     ))}
-                  </datalist>
+                  </select>
                 </div>
                 {errors.business_unit && (
                   <p className="text-[11px] text-rose-500 mt-1.5 font-normal flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
                     <span>{Array.isArray(errors.business_unit) ? errors.business_unit[0] : errors.business_unit}</span>
+                  </p>
+                )}
+              </div>
+
+              {/* FIELD 5.2: Product Unit (Integer) */}
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                  Product Unit (Integer) <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    name="product_unit"
+                    min="1"
+                    step="1"
+                    value={formData.product_unit}
+                    onChange={handleChange}
+                    placeholder="e.g. 1, 10, 50, 100"
+                    disabled={isSubmitting}
+                    required
+                    className={`w-full px-4 py-2.5 text-xs bg-slate-50/80 hover:bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-normal ${
+                      errors.product_unit
+                        ? 'border-rose-400 focus:ring-rose-500/20 text-slate-900'
+                        : 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20 text-slate-900'
+                    }`}
+                  />
+                </div>
+                {errors.product_unit && (
+                  <p className="text-[11px] text-rose-500 mt-1.5 font-normal flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    <span>{Array.isArray(errors.product_unit) ? errors.product_unit[0] : errors.product_unit}</span>
                   </p>
                 )}
               </div>

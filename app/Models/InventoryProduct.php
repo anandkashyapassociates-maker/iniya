@@ -24,10 +24,20 @@ class InventoryProduct extends Model
         'product_image',
         'product_name',
         'business_unit',
+        'product_unit',
         'product_type',
         'custom_product_type',
         'status',
         'created_by_admin_id',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'product_unit' => 'integer',
     ];
 
     /**
@@ -100,4 +110,3 @@ class InventoryProduct extends Model
         return $query->where('status', 'active');
     }
 }
-
