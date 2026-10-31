@@ -165,6 +165,7 @@ class InventoryStockController extends Controller
             'vendor_id' => ['nullable', 'exists:vendors,id'],
             'business_unit' => ['nullable', 'string', 'max:50'],
             'low_stock_threshold' => ['nullable', 'integer', 'min:1'],
+            'inventory_date' => ['nullable', 'date'],
             'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
@@ -188,6 +189,10 @@ class InventoryStockController extends Controller
                 : round($buyPrice, 2);
         }
 
+        $inventoryDate = ! empty($validated['inventory_date'])
+            ? Carbon::parse($validated['inventory_date'])
+            : Carbon::now();
+
         $product->update([
             'quantity' => $totalQty,
             'buy_price' => $buyPrice,
@@ -197,7 +202,7 @@ class InventoryStockController extends Controller
             'business_unit' => $validated['business_unit'] ?? $product->business_unit,
             'low_stock_threshold' => $validated['low_stock_threshold'] ?? $product->low_stock_threshold ?? 10,
             'inventory_updated_by' => $admin->id,
-            'inventory_updated_at' => Carbon::now(),
+            'inventory_updated_at' => $inventoryDate,
             'is_used' => true, // Product now has active inventory
         ]);
 
@@ -213,6 +218,8 @@ class InventoryStockController extends Controller
             'average_price' => $averagePrice,
             'type' => 'purchase',
             'notes' => $validated['notes'] ?? null,
+            'created_at' => $inventoryDate,
+            'updated_at' => $inventoryDate,
         ]);
 
         AdminActivityLog::record(
@@ -257,6 +264,7 @@ class InventoryStockController extends Controller
             'vendor_id' => ['nullable', 'exists:vendors,id'],
             'business_unit' => ['nullable', 'string', 'max:50'],
             'low_stock_threshold' => ['nullable', 'integer', 'min:1'],
+            'inventory_date' => ['nullable', 'date'],
             'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
@@ -269,6 +277,10 @@ class InventoryStockController extends Controller
             ? (float) $validated['average_price']
             : ($product->average_price ?? (float) $validated['buy_price']);
 
+        $inventoryDate = ! empty($validated['inventory_date'])
+            ? Carbon::parse($validated['inventory_date'])
+            : Carbon::now();
+
         $product->update([
             'quantity' => $newQty,
             'buy_price' => (float) $validated['buy_price'],
@@ -278,7 +290,7 @@ class InventoryStockController extends Controller
             'business_unit' => $validated['business_unit'] ?? $product->business_unit,
             'low_stock_threshold' => $validated['low_stock_threshold'] ?? $product->low_stock_threshold ?? 10,
             'inventory_updated_by' => $admin->id,
-            'inventory_updated_at' => Carbon::now(),
+            'inventory_updated_at' => $inventoryDate,
         ]);
 
         // Record adjustment log
@@ -293,6 +305,8 @@ class InventoryStockController extends Controller
             'average_price' => (float) $validated['average_price'],
             'type' => 'adjustment',
             'notes' => $validated['notes'] ?? 'Manual stock edit / adjustment',
+            'created_at' => $inventoryDate,
+            'updated_at' => $inventoryDate,
         ]);
 
         AdminActivityLog::record(

@@ -169,14 +169,18 @@ export default function SuperAdminLowInventoryPage() {
     {
       header: 'VENDOR',
       className: 'w-[18%]',
-      render: (p) =>
-        p.vendor ? (
-          <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor.vendor_name}>
-            {p.vendor.vendor_name}
+      render: (p) => (
+        <div>
+          <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor?.vendor_name || 'No Vendor Assigned'}>
+            {p.vendor ? p.vendor.vendor_name : <span className="text-slate-400 italic text-[11px]">No Vendor Assigned</span>}
           </span>
-        ) : (
-          <span className="text-slate-400 italic text-[11px]">No Vendor Assigned</span>
-        ),
+          {p.inventory_updated_at && (
+            <span className="text-[10px] text-slate-400 font-mono block mt-0.5" title={`Inventory Added: ${new Date(p.inventory_updated_at).toLocaleString()}`}>
+              Added: {new Date(p.inventory_updated_at).toLocaleDateString()}
+            </span>
+          )}
+        </div>
+      ),
     },
     {
       header: 'OVERSIGHT',

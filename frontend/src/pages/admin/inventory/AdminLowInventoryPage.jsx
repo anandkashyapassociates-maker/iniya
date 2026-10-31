@@ -73,6 +73,7 @@ export default function AdminLowInventoryPage() {
     vendor_id: '',
     business_unit: '',
     low_stock_threshold: 10,
+    inventory_date: new Date().toISOString().split('T')[0],
     notes: '',
   });
 
@@ -128,6 +129,7 @@ export default function AdminLowInventoryPage() {
       vendor_id: product.vendor_id ? String(product.vendor_id) : '',
       business_unit: defaultBU,
       low_stock_threshold: product.low_stock_threshold ?? 10,
+      inventory_date: new Date().toISOString().split('T')[0],
       notes: '',
     });
     setStockModal({
@@ -148,6 +150,7 @@ export default function AdminLowInventoryPage() {
       vendor_id: product.vendor_id ? String(product.vendor_id) : '',
       business_unit: product.business_unit || 'Piece',
       low_stock_threshold: product.low_stock_threshold ?? 10,
+      inventory_date: product.inventory_updated_at ? new Date(product.inventory_updated_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
       notes: '',
     });
     setStockModal({
@@ -212,6 +215,7 @@ export default function AdminLowInventoryPage() {
         vendor_id: formData.vendor_id ? parseInt(formData.vendor_id, 10) : null,
         business_unit: formData.business_unit,
         low_stock_threshold: formData.low_stock_threshold ? parseInt(formData.low_stock_threshold, 10) : 10,
+        inventory_date: formData.inventory_date || new Date().toISOString().split('T')[0],
         notes: formData.notes?.trim() || null,
       };
 
@@ -335,14 +339,18 @@ export default function AdminLowInventoryPage() {
     {
       header: 'VENDOR',
       className: 'w-[16%]',
-      render: (p) =>
-        p.vendor ? (
-          <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor.vendor_name}>
-            {p.vendor.vendor_name}
+      render: (p) => (
+        <div>
+          <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor?.vendor_name || 'No Vendor Assigned'}>
+            {p.vendor ? p.vendor.vendor_name : <span className="text-slate-400 italic text-[11px]">No Vendor Assigned</span>}
           </span>
-        ) : (
-          <span className="text-slate-400 italic text-[11px]">No Vendor Assigned</span>
-        ),
+          {p.inventory_updated_at && (
+            <span className="text-[10px] text-slate-400 font-mono block mt-0.5" title={`Inventory Added: ${new Date(p.inventory_updated_at).toLocaleString()}`}>
+              Added: {new Date(p.inventory_updated_at).toLocaleDateString()}
+            </span>
+          )}
+        </div>
+      ),
     },
     {
       header: 'ACTIONS',
@@ -697,7 +705,7 @@ export default function AdminLowInventoryPage() {
               {/* Vendor Selection */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Vendor / Supplier
+                  Procured From Vendor (Supplier)
                 </label>
                 <select
                   name="vendor_id"
@@ -705,13 +713,44 @@ export default function AdminLowInventoryPage() {
                   onChange={handleModalChange}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
                 >
-                  <option value="">-- Select Vendor --</option>
+                  <option value="">-- Select Vendor / Supplier (Optional) --</option>
                   {vendors.map((v) => (
                     <option key={v.id} value={v.id}>
-                      {v.vendor_name} ({v.vendor_code})
+                      {v.vendor_name} ({v.company_name || v.vendor_code})
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Inventory Addition Date */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Inventory Date (Stock Addition Date) *
+                </label>
+                <input
+                  type="date"
+                  name="inventory_date"
+                  value={formData.inventory_date}
+                  onChange={handleModalChange}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                  required
+                />
+                <p className="text-[10px] text-slate-400 mt-1">Date when this inventory was added / received.</p>
+              </div>
+
+              {/* Procurement Notes */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Procurement Notes / Batch / Supplier Bill No (Optional)
+                </label>
+                <textarea
+                  name="notes"
+                  rows="2"
+                  placeholder="e.g. Invoice #INV-2026-889, Expiry Oct 2028"
+                  value={formData.notes}
+                  onChange={handleModalChange}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                />
               </div>
 
               {/* Action Buttons */}
@@ -726,9 +765,10 @@ export default function AdminLowInventoryPage() {
                 <button
                   type="submit"
                   disabled={stockModal.isSubmitting}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white text-xs font-bold shadow-md shadow-rose-600/25 transition-all cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white text-xs font-bold shadow-md shadow-rose-600/25 transition-all cursor-pointer disabled:opacity-50"
                 >
-                  {stockModal.isSubmitting ? 'Saving...' : stockModal.mode === 'add' ? 'Replenish Inventory' : 'Update Details'}
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{stockModal.isSubmitting ? 'Saving...' : stockModal.mode === 'add' ? 'Confirm & Add Stock' : 'Update Details'}</span>
                 </button>
               </div>
             </form>

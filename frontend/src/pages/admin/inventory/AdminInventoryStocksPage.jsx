@@ -81,6 +81,7 @@ export default function AdminInventoryStocksPage() {
     vendor_id: '',
     business_unit: '',
     low_stock_threshold: 10,
+    inventory_date: new Date().toISOString().split('T')[0],
     notes: '',
   });
 
@@ -145,6 +146,7 @@ export default function AdminInventoryStocksPage() {
       vendor_id: product.vendor_id ? String(product.vendor_id) : '',
       business_unit: defaultBU,
       low_stock_threshold: product.low_stock_threshold ?? 10,
+      inventory_date: new Date().toISOString().split('T')[0],
       notes: '',
     });
     setStockModal({
@@ -165,6 +167,7 @@ export default function AdminInventoryStocksPage() {
       vendor_id: product.vendor_id ? String(product.vendor_id) : '',
       business_unit: product.business_unit || 'Piece',
       low_stock_threshold: product.low_stock_threshold ?? 10,
+      inventory_date: product.inventory_updated_at ? new Date(product.inventory_updated_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
       notes: '',
     });
     setStockModal({
@@ -230,6 +233,7 @@ export default function AdminInventoryStocksPage() {
         vendor_id: formData.vendor_id ? parseInt(formData.vendor_id, 10) : null,
         business_unit: formData.business_unit,
         low_stock_threshold: formData.low_stock_threshold ? parseInt(formData.low_stock_threshold, 10) : 10,
+        inventory_date: formData.inventory_date || new Date().toISOString().split('T')[0],
         notes: formData.notes?.trim() || null,
       };
 
@@ -371,14 +375,18 @@ export default function AdminInventoryStocksPage() {
     {
       header: 'VENDOR',
       className: 'w-[16%]',
-      render: (p) =>
-        p.vendor ? (
-          <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor.vendor_name}>
-            {p.vendor.vendor_name}
+      render: (p) => (
+        <div>
+          <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor?.vendor_name || 'No Vendor Assigned'}>
+            {p.vendor ? p.vendor.vendor_name : <span className="text-slate-400 italic text-[11px]">No Vendor Assigned</span>}
           </span>
-        ) : (
-          <span className="text-slate-400 italic text-[11px]">No Vendor Assigned</span>
-        ),
+          {p.inventory_updated_at && (
+            <span className="text-[10px] text-slate-400 font-mono block mt-0.5" title={`Inventory Added: ${new Date(p.inventory_updated_at).toLocaleString()}`}>
+              Added: {new Date(p.inventory_updated_at).toLocaleDateString()}
+            </span>
+          )}
+        </div>
+      ),
     },
     {
       header: 'ACTIONS',
@@ -792,6 +800,22 @@ export default function AdminInventoryStocksPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Inventory Addition Date */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Inventory Date (Stock Addition Date) *
+                </label>
+                <input
+                  type="date"
+                  name="inventory_date"
+                  value={formData.inventory_date}
+                  onChange={handleModalChange}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white font-mono"
+                  required
+                />
+                <p className="text-[10px] text-slate-400 mt-1">Date when this inventory was added / received.</p>
               </div>
 
               {/* Notes */}
