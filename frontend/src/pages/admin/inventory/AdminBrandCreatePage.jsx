@@ -138,9 +138,10 @@ export default function AdminBrandCreatePage() {
         <div className="flex items-center gap-2">
           <Link
             to="/admin/inventory/brands"
-            className="w-full sm:w-auto text-center px-4 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all shadow-2xs"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-medium transition-all shadow-sm shadow-blue-500/20"
           >
-            View Brands
+            <Award className="w-3.5 h-3.5" />
+            <span>View Brands</span>
           </Link>
         </div>
       </div>
