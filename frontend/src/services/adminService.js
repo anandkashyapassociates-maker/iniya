@@ -39,6 +39,11 @@ export const adminService = {
     const response = await adminApi.delete(`/admin/customers/${id}`);
     return response.data;
   },
+
+  async getCategoryStats() {
+    const response = await adminApi.get('/admin/categories/stats');
+    return response.data;
+  },
 };
 
 export default adminService;

@@ -23,6 +23,7 @@ import StatCard from '../../components/StatCard';
 import DashboardSkeleton from '../../components/DashboardSkeleton';
 import adminService from '../../services/adminService';
 import adminAppointmentService from '../../services/adminAppointmentService';
+import adminInventoryService from '../../services/adminInventoryService';
 import { useAdminAuth } from '../../features/auth/AdminAuthContext';
 import {
   ClinicBannerBackground,
@@ -46,6 +47,7 @@ export default function AdminDashboardPage() {
   const [todayAppointments, setTodayAppointments] = useState([]);
   const [recentPatients, setRecentPatients] = useState([]);
   const [categoryStats, setCategoryStats] = useState(null);
+  const [inventoryStats, setInventoryStats] = useState(null);
 
   const loadAllDashboardData = useCallback(async (refresh = false) => {
     if (refresh) {
@@ -55,12 +57,13 @@ export default function AdminDashboardPage() {
     }
 
     try {
-      const [dashRes, aptStatsRes, todayAptRes, patientsRes, catStatsRes] = await Promise.allSettled([
+      const [dashRes, aptStatsRes, todayAptRes, patientsRes, catStatsRes, stockStatsRes] = await Promise.allSettled([
         adminService.getDashboard(),
         adminAppointmentService.getStats(),
         adminAppointmentService.getAppointments({ date: 'today', per_page: 5 }),
         adminService.getCustomers({ per_page: 5 }),
         adminService.getCategoryStats(),
+        adminInventoryService.getStockStats(),
       ]);
 
       if (dashRes.status === 'fulfilled') setDashboardData(dashRes.value);
@@ -74,6 +77,7 @@ export default function AdminDashboardPage() {
         setRecentPatients(Array.isArray(pData) ? pData : []);
       }
       if (catStatsRes.status === 'fulfilled') setCategoryStats(catStatsRes.value);
+      if (stockStatsRes.status === 'fulfilled') setInventoryStats(stockStatsRes.value);
     } catch (err) {
       console.error('Failed to load Admin dashboard data:', err);
     } finally {
@@ -100,6 +104,8 @@ export default function AdminDashboardPage() {
   const completedCount = appointmentStats?.completed ?? 102;
   const scheduledCount = appointmentStats?.scheduled ?? (pendingCount + confirmedCount) ?? 96;
   const activePackages = categoryStats?.active ?? categoryStats?.total ?? 275;
+  const lowStockCount = inventoryStats?.total_low_stock_alerts ?? inventoryStats?.low_stock_count ?? stats?.low_stock_count ?? 0;
+  const totalInventory = inventoryStats?.total_products ?? stats?.total_inventory_products ?? 0;
 
   // Revenue calculation from appointments
   const liveRevenueSum = todayAppointments.reduce((acc, apt) => acc + (parseFloat(apt.fee) || 0), 0);
@@ -275,7 +281,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Low Inventory Alert Banner (if any products depleted / low) */}
-      {(stats?.low_stock_count > 0) && (
+      {lowStockCount > 0 && (
         <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-amber-500/10 border border-amber-300 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm">
@@ -285,11 +291,11 @@ export default function AdminDashboardPage() {
               <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <span>Low Inventory Alert</span>
                 <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700">
-                  {stats.low_stock_count} item{stats.low_stock_count > 1 ? 's' : ''} low in stock
+                  {lowStockCount} item{lowStockCount > 1 ? 's' : ''} depleted
                 </span>
               </h4>
               <p className="text-xs text-slate-600 mt-0.5">
-                Some clinical products have reached or fallen below their replenishment threshold. Please review and replenish stock.
+                Hospital supplies require replenishment. Immediate restocking needed for clinical operations.
               </p>
             </div>
           </div>
@@ -297,7 +303,7 @@ export default function AdminDashboardPage() {
             to="/admin/inventory/low-stock"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-xs transition-colors shrink-0"
           >
-            <span>Review Low Stock</span>
+            <span>Review Low Stock List</span>
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -390,7 +396,7 @@ export default function AdminDashboardPage() {
         <Link to="/admin/inventory/stocks" className="block group">
           <StatCard
             title="Total Inventory Products"
-            value={stats?.total_inventory_products ?? 0}
+            value={totalInventory}
             subtitle="Catalog Medical Supplies"
             icon={Boxes}
             colorScheme="blue"
@@ -403,12 +409,12 @@ export default function AdminDashboardPage() {
         <Link to="/admin/inventory/low-stock" className="block group">
           <StatCard
             title="Low Inventory Alerts"
-            value={stats?.low_stock_count ?? 0}
-            subtitle={stats?.low_stock_count > 0 ? 'Requires Replenishment' : 'Adequate Supply'}
+            value={lowStockCount}
+            subtitle={lowStockCount > 0 ? 'Depleted Hospital Supplies' : 'Adequate Supply'}
             icon={AlertTriangle}
-            colorScheme={stats?.low_stock_count > 0 ? 'amber' : 'emerald'}
-            trend={stats?.low_stock_count > 0 ? 'Depleted' : 'Normal'}
-            sparklineData={[5, 4, 3, 2, 4, 3, stats?.low_stock_count ?? 0]}
+            colorScheme={lowStockCount > 0 ? 'amber' : 'emerald'}
+            trend={lowStockCount > 0 ? 'Depleted' : 'Normal'}
+            sparklineData={[5, 4, 3, 2, 4, 3, lowStockCount]}
           />
         </Link>
       </div>
