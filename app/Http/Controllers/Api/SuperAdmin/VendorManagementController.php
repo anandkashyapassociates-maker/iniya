@@ -22,11 +22,11 @@ class VendorManagementController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('vendor_code', 'like', "%{$search}%")
-                  ->orWhere('vendor_name', 'like', "%{$search}%")
-                  ->orWhere('company_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('mobile', 'like', "%{$search}%")
-                  ->orWhere('gst_number', 'like', "%{$search}%");
+                    ->orWhere('vendor_name', 'like', "%{$search}%")
+                    ->orWhere('company_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('mobile', 'like', "%{$search}%")
+                    ->orWhere('gst_number', 'like', "%{$search}%");
             });
         }
 
@@ -56,13 +56,13 @@ class VendorManagementController extends Controller
         $allowedSorts = [
             'id', 'vendor_code', 'vendor_name', 'company_name',
             'email', 'mobile', 'vendor_type', 'city', 'gst_number',
-            'status', 'created_at', 'updated_at'
+            'status', 'created_at', 'updated_at',
         ];
         $sortBy = in_array($request->input('sort_by'), $allowedSorts)
             ? $request->input('sort_by')
             : 'created_at';
         $sortDirection = strtolower($request->input('sort_direction', 'desc')) === 'asc' ? 'asc' : 'desc';
-        $query->orderBy($sortBy, $sortDirection);
+        $query->orderBy($sortBy, $sortDirection)->orderBy('id', 'desc');
 
         $perPage = min((int) $request->input('per_page', 10), 50);
         $vendors = $query->paginate($perPage);

@@ -84,7 +84,7 @@ class AppointmentController extends Controller
         }
 
         $perPage = min((int) $request->input('per_page', 10), 100);
-        $appointments = $query->orderBy('appointment_date', 'desc')
+        $appointments = $query->orderBy('created_at', 'desc')
             ->orderBy('id', 'desc')
             ->paginate($perPage);
 
@@ -101,6 +101,7 @@ class AppointmentController extends Controller
         $stats = [
             'total' => Appointment::count(),
             'today' => Appointment::whereDate('appointment_date', $today)->where('status', '!=', 'cancelled')->count(),
+            'scheduled' => Appointment::whereIn('status', ['pending', 'confirmed', 'scheduled'])->count(),
             'pending' => Appointment::where('status', 'pending')->count(),
             'confirmed' => Appointment::where('status', 'confirmed')->count(),
             'completed' => Appointment::where('status', 'completed')->count(),
@@ -312,7 +313,9 @@ class AppointmentController extends Controller
 
         // Keep previous appointment details for audit trail
         $appointment->update([
-            'previous_appointment_date' => $appointment->appointment_date,
+            'previous_appointment_date' => $appointment->appointment_date instanceof \DateTimeInterface
+                ? $appointment->appointment_date->format('Y-m-d')
+                : $appointment->appointment_date,
             'previous_appointment_time' => $appointment->appointment_time,
             'previous_session_slot' => $appointment->session_slot,
             'appointment_date' => $validated['appointment_date'],

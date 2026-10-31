@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, ChevronDown, User, LogOut, CheckCircle2, UserPlus } from 'lucide-react';
+import { Menu, ChevronDown, User, LogOut, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import LiveClock from '../components/LiveClock';
 
 export default function Topbar({
   role = 'admin',
@@ -24,42 +25,38 @@ export default function Topbar({
   }, []);
 
   return (
-    <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6">
+    <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 flex items-center justify-between px-3 sm:px-6 relative">
       {/* Left side: Mobile Toggle & Clinic Context Pill */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 z-10">
         <button
           onClick={onOpenMobileSidebar}
-          className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+          className="lg:hidden p-1.5 sm:p-2 -ml-1 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         <div className="flex items-center gap-2">
           <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold micro-label ${
+            className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[10px] font-semibold micro-label whitespace-nowrap ${
               isSuperAdmin
                 ? 'bg-purple-50 text-purple-700 border border-purple-200/80'
                 : 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
             }`}
           >
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            {isSuperAdmin ? 'Hospital Governance HQ' : 'OPD Live • Doctors On Duty'}
+            <span className="sm:hidden">{isSuperAdmin ? 'HQ' : 'OPD Live'}</span>
+            <span className="hidden sm:inline">{isSuperAdmin ? 'Hospital Governance HQ' : 'OPD Live • Doctors On Duty'}</span>
           </span>
         </div>
       </div>
 
-      {/* Right side: Status, Quick Action & Profile dropdown */}
-      <div className="flex items-center gap-2.5 sm:gap-4">
-        {!isSuperAdmin && (
-          <Link
-            to="/admin/customers/create"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-xs shadow-blue-500/20 transition-all cursor-pointer font-display"
-          >
-            <UserPlus className="w-3.5 h-3.5" />
-            <span>+ Add Patient</span>
-          </Link>
-        )}
+      {/* Center: Live Clock & Clean Calendar */}
+      <div className="absolute left-1/2 -translate-x-1/2 z-10 pointer-events-auto">
+        <LiveClock />
+      </div>
 
+      {/* Right side: Profile dropdown */}
+      <div className="flex items-center gap-2.5 sm:gap-4 shrink-0 z-10">
         {/* Profile Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button

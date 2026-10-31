@@ -293,7 +293,7 @@ export default function VendorDetailsPage() {
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200/90 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-4">#</th>
+                <th className="py-3 px-4 w-14 text-center">Sr. No.</th>
                 <th className="py-3 px-4">Vendor Code</th>
                 <th className="py-3 px-4">Vendor / Company</th>
                 <th className="py-3 px-4">Type</th>
@@ -361,14 +361,16 @@ export default function VendorDetailsPage() {
                       key={vendor.id}
                       className="hover:bg-slate-50/70 transition-colors group"
                     >
-                      {/* # */}
-                      <td className="py-3 px-4 font-mono text-slate-400 text-[11px]">
-                        {rowNumber}
+                      {/* Sr. No. */}
+                      <td className="py-3 px-4 text-center">
+                        <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-600 font-mono text-[11px] font-medium">
+                          {rowNumber}
+                        </span>
                       </td>
 
                       {/* Vendor Code */}
-                      <td className="py-3 px-4 font-medium">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-mono text-[11px] font-bold border border-blue-200/70">
+                      <td className="py-3 px-4 font-medium whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-mono text-[11px] font-bold border border-blue-200/70 whitespace-nowrap">
                           <Hash className="w-3 h-3 text-blue-500" />
                           {vendor.vendor_code}
                         </span>

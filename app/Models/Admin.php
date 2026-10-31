@@ -16,7 +16,9 @@ class Admin extends Authenticatable
     protected $table = 'admins';
 
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_INACTIVE = 'inactive';
+
     public const STATUS_BLOCKED = 'blocked';
 
     /**
@@ -92,5 +94,36 @@ class Admin extends Authenticatable
     {
         return $this->hasMany(Customer::class, 'admin_id');
     }
-}
 
+    /**
+     * Get the categories created by this admin.
+     */
+    public function categories(): HasMany
+    {
+        return $this->hasMany(Category::class, 'admin_id');
+    }
+
+    /**
+     * Get inventory products created by this admin.
+     */
+    public function inventoryProducts(): HasMany
+    {
+        return $this->hasMany(InventoryProduct::class, 'created_by_admin_id');
+    }
+
+    /**
+     * Get inventory categories created by this admin.
+     */
+    public function inventoryCategories(): HasMany
+    {
+        return $this->hasMany(InventoryCategory::class, 'created_by');
+    }
+
+    /**
+     * Get inventory brands created by this admin.
+     */
+    public function inventoryBrands(): HasMany
+    {
+        return $this->hasMany(InventoryBrand::class, 'created_by');
+    }
+}

@@ -54,6 +54,11 @@ class AdminDashboardController extends Controller
         $todaySessions = AppointmentSession::whereDate('session_date', Carbon::today()->toDateString())
             ->where('status', '!=', AppointmentSession::STATUS_CANCELLED)
             ->count();
+        $lowStockCount = InventoryProduct::where(function ($q) {
+            $q->whereColumn('quantity', '<=', 'low_stock_threshold')
+                ->orWhere('quantity', '<=', 0);
+        })->count();
+        $totalInventoryProducts = InventoryProduct::count();
 
         return response()->json([
             'stats' => [

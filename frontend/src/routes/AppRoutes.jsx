@@ -18,6 +18,15 @@ import SalesMemberCreationPage from '../superadmin/sales-management/SalesMemberC
 import SalesMemberDetailsPage from '../superadmin/sales-management/SalesMemberDetailsPage';
 import SuperAdminEditAdminPage from '../pages/superadmin/SuperAdminEditAdminPage';
 import SuperAdminProfilePage from '../pages/superadmin/SuperAdminProfilePage';
+import SuperAdminCategoriesPage from '../superadmin/categories/SuperAdminCategoriesPage';
+
+// Super Admin Inventory Module
+import SuperAdminInventoryOverviewPage from '../superadmin/inventory/SuperAdminInventoryOverviewPage';
+import SuperAdminProductsPage from '../superadmin/inventory/SuperAdminProductsPage';
+import SuperAdminInventoryCategoriesPage from '../superadmin/inventory/SuperAdminInventoryCategoriesPage';
+import SuperAdminInventoryBrandsPage from '../superadmin/inventory/SuperAdminInventoryBrandsPage';
+import SuperAdminInventoryStocksPage from '../superadmin/inventory/SuperAdminInventoryStocksPage';
+import SuperAdminLowInventoryPage from '../superadmin/inventory/SuperAdminLowInventoryPage';
 
 // Admin Module (Panel 2 - Separate Team Developer)
 import AdminLayout from '../layouts/AdminLayout';
@@ -37,6 +46,19 @@ import AdminMasterAppointmentEditPage from '../pages/admin/AdminMasterAppointmen
 import AdminMasterAppointmentDetailsPage from '../pages/admin/AdminMasterAppointmentDetailsPage';
 import AdminAppointmentCalendarPage from '../pages/admin/AdminAppointmentCalendarPage';
 import AdminServicesManagementPage from '../pages/admin/AdminServicesManagementPage';
+
+// Admin Inventory Management Module
+import AdminProductsPage from '../pages/admin/inventory/AdminProductsPage';
+import AdminProductCreatePage from '../pages/admin/inventory/AdminProductCreatePage';
+import AdminProductEditPage from '../pages/admin/inventory/AdminProductEditPage';
+import AdminInventoryCategoryListPage from '../pages/admin/inventory/AdminCategoryListPage';
+import AdminInventoryCategoryCreatePage from '../pages/admin/inventory/AdminCategoryCreatePage';
+import AdminInventoryCategoryEditPage from '../pages/admin/inventory/AdminCategoryEditPage';
+import AdminBrandsPage from '../pages/admin/inventory/AdminBrandsPage';
+import AdminBrandCreatePage from '../pages/admin/inventory/AdminBrandCreatePage';
+import AdminBrandEditPage from '../pages/admin/inventory/AdminBrandEditPage';
+import AdminInventoryStocksPage from '../pages/admin/inventory/AdminInventoryStocksPage';
+import AdminLowInventoryPage from '../pages/admin/inventory/AdminLowInventoryPage';
 
 // Portal Root
 import LandingPage from '../pages/LandingPage';
@@ -89,6 +111,18 @@ export default function AppRoutes() {
           <Route path="/superadmin/staff" element={<Navigate to="/superadmin/staff-management/details" replace />} />
           <Route path="/superadmin/staff/create" element={<Navigate to="/superadmin/staff-management/create" replace />} />
           
+          {/* Executive Category Oversight */}
+          <Route path="/superadmin/categories" element={<Navigate to="/superadmin/inventory/categories" replace />} />
+
+          {/* Super Admin Inventory Management Module */}
+          <Route path="/superadmin/inventory" element={<Navigate to="/superadmin/inventory/overview" replace />} />
+          <Route path="/superadmin/inventory/overview" element={<SuperAdminInventoryOverviewPage />} />
+          <Route path="/superadmin/inventory/products" element={<SuperAdminProductsPage />} />
+          <Route path="/superadmin/inventory/stocks" element={<SuperAdminInventoryStocksPage />} />
+          <Route path="/superadmin/inventory/low-stock" element={<SuperAdminLowInventoryPage />} />
+          <Route path="/superadmin/inventory/categories" element={<SuperAdminInventoryCategoriesPage />} />
+          <Route path="/superadmin/inventory/brands" element={<SuperAdminInventoryBrandsPage />} />
+
           <Route path="/superadmin/profile" element={<SuperAdminProfilePage />} />
         </Route>
       </Route>
@@ -116,6 +150,22 @@ export default function AppRoutes() {
           <Route path="/admin/customers" element={<AdminCustomersPage />} />
           <Route path="/admin/customers/create" element={<AdminCustomerCreatePage />} />
           <Route path="/admin/customers/:id/edit" element={<AdminCustomerEditPage />} />
+          <Route path="/admin/categories" element={<Navigate to="/admin/inventory/categories" replace />} />
+
+          {/* Admin Inventory Management Module */}
+          <Route path="/admin/inventory" element={<Navigate to="/admin/inventory/stocks" replace />} />
+          <Route path="/admin/inventory/stocks" element={<AdminInventoryStocksPage />} />
+          <Route path="/admin/inventory/low-stock" element={<AdminLowInventoryPage />} />
+          <Route path="/admin/inventory/products" element={<AdminProductsPage />} />
+          <Route path="/admin/inventory/products/create" element={<AdminProductCreatePage />} />
+          <Route path="/admin/inventory/products/:id/edit" element={<AdminProductEditPage />} />
+          <Route path="/admin/inventory/categories" element={<AdminInventoryCategoryListPage />} />
+          <Route path="/admin/inventory/categories/create" element={<AdminInventoryCategoryCreatePage />} />
+          <Route path="/admin/inventory/categories/:id/edit" element={<AdminInventoryCategoryEditPage />} />
+          <Route path="/admin/inventory/brands" element={<AdminBrandsPage />} />
+          <Route path="/admin/inventory/brands/create" element={<AdminBrandCreatePage />} />
+          <Route path="/admin/inventory/brands/:id/edit" element={<AdminBrandEditPage />} />
+
           <Route path="/admin/profile" element={<AdminProfilePage />} />
           <Route path="/admin/change-password" element={<AdminChangePasswordPage />} />
         </Route>

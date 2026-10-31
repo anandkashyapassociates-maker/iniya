@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Users,
   UserPlus,
@@ -14,19 +14,25 @@ import {
   AlertCircle,
   Clock,
   Pencil,
+  Eye,
+  LogIn,
 } from 'lucide-react';
 import AdminStatusBadge from './AdminStatusBadge';
 import AdminEditModal from './AdminEditModal';
 import adminManagementService from '../services/adminManagementService';
 import { useToast } from '../../context/ToastContext';
+import { useAdminAuth } from '../../features/auth/AdminAuthContext';
 
 export default function AdminDetailsPage() {
   const toast = useToast();
+  const navigate = useNavigate();
+  const { setSession } = useAdminAuth();
 
   const [admins, setAdmins] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [loggingInAdminId, setLoggingInAdminId] = useState(null);
 
   // Filters & search state
   const [searchInput, setSearchInput] = useState('');
@@ -54,6 +60,52 @@ export default function AdminDetailsPage() {
       prev.map((adm) => (adm.id === updatedAdmin.id ? { ...adm, ...updatedAdmin } : adm))
     );
     fetchAdmins();
+  };
+
+  const handleLoginAsAdmin = async (adm) => {
+    if (adm.status === 'blocked') {
+      toast.error(`Cannot login as '${adm.name}': Account is blocked.`);
+      return;
+    }
+    if (!adm.is_active || adm.status === 'inactive') {
+      toast.error(`Cannot login as '${adm.name}': Account is inactive.`);
+      return;
+    }
+
+    // Pre-open tab synchronously on user action to prevent browser popup blockers
+    const newTab = window.open('about:blank', '_blank');
+
+    setLoggingInAdminId(adm.id);
+    try {
+      const res = await adminManagementService.impersonateAdmin(adm.id);
+
+      // Store in localStorage
+      localStorage.setItem('admin_token', res.token);
+      localStorage.setItem('admin_user', JSON.stringify(res.user));
+      localStorage.setItem(
+        'admin_impersonated_by_superadmin',
+        JSON.stringify(res.impersonated_by || { active: true, admin_id: adm.id })
+      );
+
+      if (setSession) {
+        setSession(res.token, res.user);
+      }
+
+      toast.success(`Logged in as Admin '${adm.name}'! Admin Panel opened in next tab.`);
+
+      if (newTab) {
+        newTab.location.href = '/admin/dashboard';
+      } else {
+        window.open('/admin/dashboard', '_blank');
+      }
+    } catch (err) {
+      if (newTab) {
+        newTab.close();
+      }
+      toast.error(err.response?.data?.message || `Failed to log in as ${adm.name}.`);
+    } finally {
+      setLoggingInAdminId(null);
+    }
   };
 
   const fetchAdmins = useCallback(async () => {
@@ -326,7 +378,7 @@ export default function AdminDetailsPage() {
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="py-3.5 px-4 w-16">ID</th>
+                  <th className="py-3.5 px-4 w-16 text-center">Sr. No.</th>
                   <th className="py-3.5 px-4">Full Name</th>
                   <th className="py-3.5 px-4">Email Address</th>
                   <th className="py-3.5 px-4">Mobile Number</th>
@@ -337,11 +389,13 @@ export default function AdminDetailsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
-                {admins.map((adm) => (
+                {admins.map((adm, index) => (
                   <tr key={adm.id} className="hover:bg-slate-50/60 transition-colors">
-                    {/* ID */}
-                    <td className="py-3.5 px-4 font-mono text-slate-500 font-bold">
-                      #{adm.id}
+                    {/* Sr. No. */}
+                    <td className="py-3.5 px-4 text-center">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-600 font-mono text-[11px] font-medium">
+                        {(pagination?.from || 1) + index}
+                      </span>
                     </td>
 
                     {/* Full Name */}
@@ -397,17 +451,40 @@ export default function AdminDetailsPage() {
                       </div>
                     </td>
 
-                    {/* Actions: Edit button */}
+                    {/* Actions: Login & Edit buttons */}
                     <td className="py-3.5 px-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEditModal(adm)}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-300 text-slate-700 hover:text-blue-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
-                        title={`Edit Admin ${adm.name}`}
-                      >
-                        <Pencil className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600" />
-                        <span>Edit</span>
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleLoginAsAdmin(adm)}
+                          disabled={adm.status === 'blocked' || !adm.is_active || loggingInAdminId === adm.id}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-2xs transition-all cursor-pointer ${
+                            adm.status === 'blocked' || !adm.is_active
+                              ? 'border border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed opacity-60'
+                              : 'border border-blue-600 bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
+                          }`}
+                          title={
+                            adm.status === 'blocked'
+                              ? 'Account blocked - cannot view'
+                              : !adm.is_active
+                              ? 'Account inactive - cannot view'
+                              : `View Admin Panel as ${adm.name} (Opens in next tab)`
+                          }
+                        >
+                          <Eye className={`w-3.5 h-3.5 ${loggingInAdminId === adm.id ? 'animate-spin' : ''}`} />
+                          <span>{loggingInAdminId === adm.id ? 'Opening...' : 'View'}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditModal(adm)}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+                          title={`Edit Admin ${adm.name}`}
+                        >
+                          <Pencil className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Edit</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

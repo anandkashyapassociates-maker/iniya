@@ -69,6 +69,13 @@ export function AdminAuthProvider({ children }) {
     localStorage.setItem('admin_user', JSON.stringify(updatedUser));
   };
 
+  const setSession = (newToken, newUser) => {
+    setToken(newToken);
+    setUser(newUser);
+    localStorage.setItem('admin_token', newToken);
+    localStorage.setItem('admin_user', JSON.stringify(newUser));
+  };
+
   const value = {
     user,
     token,
@@ -78,6 +85,7 @@ export function AdminAuthProvider({ children }) {
     logout,
     checkAuth,
     updateUser,
+    setSession,
   };
 
   return (

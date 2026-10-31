@@ -12,7 +12,9 @@ use App\Http\Controllers\Api\SuperAdmin\AdminManagementController;
 use App\Http\Controllers\Api\SuperAdmin\SalesMemberManagementController;
 use App\Http\Controllers\Api\SuperAdmin\StaffManagementController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminAuthController;
+use App\Http\Controllers\Api\SuperAdmin\SuperAdminCategoryController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminDashboardController;
+use App\Http\Controllers\Api\SuperAdmin\SuperAdminInventoryController;
 use App\Http\Controllers\Api\SuperAdmin\VendorManagementController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -64,6 +66,7 @@ Route::prefix('superadmin')
         Route::put('/admins/{id}', [AdminManagementController::class, 'update']);
         Route::patch('/admins/{id}/status', [AdminManagementController::class, 'updateStatus']);
         Route::post('/admins/{id}/password-reset', [AdminManagementController::class, 'resetPassword']);
+        Route::post('/admins/{id}/impersonate', [AdminManagementController::class, 'impersonate']);
 
         // Staff Management
         Route::get('/staff/preview-code', [StaffManagementController::class, 'previewCode']);
@@ -92,6 +95,36 @@ Route::prefix('superadmin')
         Route::get('/sales-members/{id}', [SalesMemberManagementController::class, 'show']);
         Route::put('/sales-members/{id}', [SalesMemberManagementController::class, 'update']);
         Route::patch('/sales-members/{id}/status', [SalesMemberManagementController::class, 'updateStatus']);
+
+        // Category Oversight (SuperAdmin View and Delete Power)
+        Route::get('/categories/stats', [SuperAdminCategoryController::class, 'stats']);
+        Route::get('/categories', [SuperAdminCategoryController::class, 'index']);
+        Route::get('/categories/{id}', [SuperAdminCategoryController::class, 'show']);
+        Route::delete('/categories/{id}', [SuperAdminCategoryController::class, 'destroy']);
+
+        // Inventory Management (SuperAdmin Reporting, Products, Categories, Brands)
+        Route::prefix('inventory')->group(function () {
+            Route::get('/overview', [SuperAdminInventoryController::class, 'overview']);
+            Route::get('/stocks', [SuperAdminInventoryController::class, 'stocks']);
+            Route::get('/stocks/low-stock', [SuperAdminInventoryController::class, 'lowStock']);
+            Route::post('/stocks/{id}/add', [SuperAdminInventoryController::class, 'addStock']);
+            Route::match(['put', 'post'], '/stocks/{id}', [SuperAdminInventoryController::class, 'updateStock']);
+            Route::get('/products', [SuperAdminInventoryController::class, 'products']);
+            Route::get('/products/{id}', [SuperAdminInventoryController::class, 'showProduct']);
+            Route::match(['put', 'post'], '/products/{id}', [SuperAdminInventoryController::class, 'updateProduct']);
+            Route::delete('/products/{id}', [SuperAdminInventoryController::class, 'destroyProduct']);
+            Route::patch('/products/{id}/status', [SuperAdminInventoryController::class, 'updateProductStatus']);
+
+            Route::get('/categories', [SuperAdminInventoryController::class, 'categories']);
+            Route::match(['put', 'post'], '/categories/{id}', [SuperAdminInventoryController::class, 'updateCategory']);
+            Route::delete('/categories/{id}', [SuperAdminInventoryController::class, 'destroyCategory']);
+
+            Route::get('/brands', [SuperAdminInventoryController::class, 'brands']);
+            Route::match(['put', 'post'], '/brands/{id}', [SuperAdminInventoryController::class, 'updateBrand']);
+            Route::delete('/brands/{id}', [SuperAdminInventoryController::class, 'destroyBrand']);
+
+            Route::get('/admin-report', [SuperAdminInventoryController::class, 'adminReport']);
+        });
     });
 
 /*

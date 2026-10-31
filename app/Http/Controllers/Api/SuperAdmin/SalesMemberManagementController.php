@@ -23,13 +23,13 @@ class SalesMemberManagementController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('sales_code', 'like', "%{$search}%")
-                  ->orWhere('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('mobile', 'like', "%{$search}%")
-                  ->orWhere('designation', 'like', "%{$search}%")
-                  ->orWhere('department', 'like', "%{$search}%")
-                  ->orWhere('territory', 'like', "%{$search}%")
-                  ->orWhere('city', 'like', "%{$search}%");
+                    ->orWhere('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('mobile', 'like', "%{$search}%")
+                    ->orWhere('designation', 'like', "%{$search}%")
+                    ->orWhere('department', 'like', "%{$search}%")
+                    ->orWhere('territory', 'like', "%{$search}%")
+                    ->orWhere('city', 'like', "%{$search}%");
             });
         }
 
@@ -79,7 +79,7 @@ class SalesMemberManagementController extends Controller
             ? $request->input('sort_by')
             : 'created_at';
         $sortDirection = strtolower($request->input('sort_direction', 'desc')) === 'asc' ? 'asc' : 'desc';
-        $query->orderBy($sortBy, $sortDirection);
+        $query->orderBy($sortBy, $sortDirection)->orderBy('id', 'desc');
 
         $perPage = min((int) $request->input('per_page', 10), 50);
         $members = $query->paginate($perPage);
@@ -402,4 +402,3 @@ class SalesMemberManagementController extends Controller
         ]);
     }
 }
-

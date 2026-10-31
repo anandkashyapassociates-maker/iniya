@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft,
   User,
+  Users,
   Phone,
   Mail,
   Calendar,
@@ -21,11 +22,13 @@ import {
 import LoadingState from '../../components/LoadingState';
 import adminService from '../../services/adminService';
 import { useToast } from '../../context/ToastContext';
+import { useAdminAuth } from '../../features/auth/AdminAuthContext';
 
 export default function AdminCustomerEditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
+  const { user } = useAdminAuth();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -49,6 +52,13 @@ export default function AdminCustomerEditPage() {
     const fetchCustomer = async () => {
       try {
         const data = await adminService.getCustomer(id);
+
+        if (data.admin_id && user?.id && Number(data.admin_id) !== Number(user.id)) {
+          toast.error('Unauthorized: You can only edit customers registered by you.');
+          navigate('/admin/customers');
+          return;
+        }
+
         setFormData({
           name: data.name || '',
           mobile: data.mobile || '',
@@ -219,9 +229,10 @@ export default function AdminCustomerEditPage() {
         <div className="flex items-center gap-2">
           <Link
             to="/admin/customers"
-            className="w-full sm:w-auto text-center px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-all shadow-2xs font-display"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold transition-all shadow-sm shadow-blue-500/20 font-display"
           >
-            Cancel &amp; Return
+            <Users className="w-3.5 h-3.5" />
+            <span>View Directory</span>
           </Link>
         </div>
       </div>
