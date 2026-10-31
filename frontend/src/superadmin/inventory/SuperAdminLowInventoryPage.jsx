@@ -80,7 +80,7 @@ export default function SuperAdminLowInventoryPage() {
     },
     {
       header: 'PRODUCT DETAILS',
-      className: 'w-[30%]',
+      className: 'w-[28%]',
       render: (p) => (
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
@@ -113,8 +113,26 @@ export default function SuperAdminLowInventoryPage() {
       ),
     },
     {
+      header: 'UNIT SPEC',
+      className: 'w-[14%]',
+      render: (p) => {
+        const threshold = p.low_stock_threshold ?? 10;
+        return (
+          <div className="text-xs font-medium">
+            <span className="text-slate-800 font-semibold block">{p.business_unit || 'Piece'}</span>
+            <span
+              className="inline-flex items-center text-[10px] font-mono font-medium text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 mt-1"
+              title="Minimum stock threshold for alert"
+            >
+              Min: {threshold}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
       header: 'STOCK & ALERT STATUS',
-      className: 'w-[24%]',
+      className: 'w-[18%]',
       render: (p) => {
         const qty = p.quantity ?? 0;
         const threshold = p.low_stock_threshold ?? 10;
@@ -154,7 +172,7 @@ export default function SuperAdminLowInventoryPage() {
     },
     {
       header: 'AVG. PRICE',
-      className: 'w-[18%]',
+      className: 'w-[14%]',
       render: (p) => {
         const avgPrice = p.calculated_average_price ?? p.average_price ?? p.buy_price;
         return avgPrice && Number(avgPrice) > 0 ? (
@@ -168,7 +186,7 @@ export default function SuperAdminLowInventoryPage() {
     },
     {
       header: 'VENDOR',
-      className: 'w-[18%]',
+      className: 'w-[16%]',
       render: (p) => (
         <div>
           <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor?.vendor_name || 'No Vendor Assigned'}>
