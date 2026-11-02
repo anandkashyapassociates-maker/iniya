@@ -387,8 +387,9 @@ export default function AdminStockDetailsPage() {
             <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50/90 text-[10px] font-bold text-slate-600 uppercase tracking-widest">
-                  <th className="py-3 px-4 w-[16%]">Date &amp; Time</th>
-                  <th className="py-3 px-4 w-[34%]">Transaction / Performed By</th>
+                  <th className="py-3 px-3 w-14 text-center">SR. NO.</th>
+                  <th className="py-3 px-4 w-[15%]">Date &amp; Time</th>
+                  <th className="py-3 px-4 w-[33%]">Transaction / Performed By</th>
                   <th className="py-3 px-4 w-[12%]">Rate (₹)</th>
                   <th className="py-3 px-4 w-[12%] text-right text-emerald-800 bg-emerald-50/70 border-l border-emerald-100">
                     Credit (+ In)
@@ -400,24 +401,9 @@ export default function AdminStockDetailsPage() {
                     Balance
                   </th>
                 </tr>
-                {/* Top Summary Row inside table header */}
-                <tr className="border-b-2 border-slate-200 bg-slate-100/90 font-bold text-xs">
-                  <td colSpan={3} className="py-3 px-4 text-slate-700 uppercase tracking-wider text-[11px]">
-                    Current Net Stock Summary
-                  </td>
-                  <td className="py-3 px-4 text-right font-mono text-emerald-700 text-sm bg-emerald-100/50 border-l border-emerald-200">
-                    +{totalAdded || (product.last_added_quantity ?? currentStock)} {unit}
-                  </td>
-                  <td className="py-3 px-4 text-right font-mono text-rose-700 text-sm bg-rose-100/50 border-l border-rose-200">
-                    -{totalIssued || (product.last_issued_quantity ?? 0)} {unit}
-                  </td>
-                  <td className="py-3 px-4 text-right font-mono text-blue-700 text-sm bg-blue-100/50 border-l border-blue-200">
-                    {currentStock} {unit}
-                  </td>
-                </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs font-normal">
-                {displayLogs.map((log) => {
+                {displayLogs.map((log, index) => {
                   const isIssue = log.isIssue;
                   const adminName = log.admin?.name || 'Administrator';
                   const adminEmail = log.admin?.email || '';
@@ -426,6 +412,7 @@ export default function AdminStockDetailsPage() {
                     ? new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
                     : '';
                   const vendorName = log.vendor?.vendor_name || (log.vendor?.company_name ? `${log.vendor.vendor_name} (${log.vendor.company_name})` : null);
+                  const srNo = index + 1;
 
                   return (
                     <tr
@@ -434,6 +421,12 @@ export default function AdminStockDetailsPage() {
                         isIssue ? 'bg-amber-50/15' : 'bg-emerald-50/15'
                       }`}
                     >
+                      {/* SR. NO. */}
+                      <td className="py-3.5 px-3 text-center align-top">
+                        <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-500 font-mono text-[11px] font-semibold tabular-nums">
+                          {srNo < 10 ? `0${srNo}` : srNo}
+                        </span>
+                      </td>
                       {/* Date & Time */}
                       <td className="py-3.5 px-4 align-top">
                         <div className="font-mono text-slate-800 font-semibold">{dateStr}</div>
@@ -540,6 +533,11 @@ export default function AdminStockDetailsPage() {
                 {/* Initial Opening Stock row if present */}
                 {initialOpeningBalance > 0 && (
                   <tr className="bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-3 text-center">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-500 font-mono text-[11px] font-semibold tabular-nums">
+                        {displayLogs.length + 1 < 10 ? `0${displayLogs.length + 1}` : displayLogs.length + 1}
+                      </span>
+                    </td>
                     <td className="py-3 px-4 text-slate-500 font-mono text-[11px]">
                       {product.inventory_updated_at
                         ? new Date(product.inventory_updated_at).toLocaleDateString()
