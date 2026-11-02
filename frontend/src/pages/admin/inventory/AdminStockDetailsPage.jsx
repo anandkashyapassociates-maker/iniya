@@ -381,20 +381,20 @@ export default function AdminStockDetailsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto rounded-2xl border border-slate-200/90 shadow-2xs">
-            <table className="w-full text-left border-collapse min-w-[720px]">
+            <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
                 <tr className="border-b border-slate-200/90 bg-slate-50/70 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                  <th className="py-3.5 px-3 w-14 text-center font-bold text-slate-400">SR.</th>
-                  <th className="py-3.5 px-4 w-[16%]">Date &amp; Time</th>
-                  <th className="py-3.5 px-4 w-[36%]">Transaction &amp; Performer</th>
-                  <th className="py-3.5 px-4 w-[12%]">Rate (₹)</th>
-                  <th className="py-3.5 px-4 w-[12%] text-right font-bold text-emerald-700">
+                  <th className="py-3.5 px-3 w-12 text-center font-bold text-slate-400 whitespace-nowrap">SR.</th>
+                  <th className="py-3.5 px-4 w-[15%] whitespace-nowrap">Date &amp; Time</th>
+                  <th className="py-3.5 px-4 min-w-[220px]">Transaction &amp; Performer</th>
+                  <th className="py-3.5 px-4 w-[12%] whitespace-nowrap">Rate (₹)</th>
+                  <th className="py-3.5 px-4 w-[13%] text-right font-bold text-emerald-700 whitespace-nowrap">
                     Credit (+ In)
                   </th>
-                  <th className="py-3.5 px-4 w-[12%] text-right font-bold text-rose-600">
+                  <th className="py-3.5 px-4 w-[13%] text-right font-bold text-rose-600 whitespace-nowrap">
                     Debit (- Out)
                   </th>
-                  <th className="py-3.5 px-5 w-[14%] text-right font-bold text-slate-900">
+                  <th className="py-3.5 px-5 w-[14%] text-right font-bold text-slate-900 whitespace-nowrap">
                     Balance
                   </th>
                 </tr>
@@ -504,9 +504,9 @@ export default function AdminStockDetailsPage() {
                       </td>
 
                       {/* Credit (+ In) - Seamless & High Contrast */}
-                      <td className="py-4 px-4 text-right align-top font-mono">
+                      <td className="py-4 px-4 text-right align-top font-mono whitespace-nowrap">
                         {log.credit > 0 ? (
-                          <span className="inline-flex items-center justify-end font-mono font-bold text-emerald-700 text-sm">
+                          <span className="inline-flex items-center justify-end font-mono font-bold text-emerald-700 text-sm whitespace-nowrap">
                             +{log.credit}{' '}
                             <span className="text-xs font-semibold text-emerald-600 ml-1">{unit}</span>
                           </span>
@@ -516,9 +516,9 @@ export default function AdminStockDetailsPage() {
                       </td>
 
                       {/* Debit (- Out) - Seamless & High Contrast */}
-                      <td className="py-4 px-4 text-right align-top font-mono">
+                      <td className="py-4 px-4 text-right align-top font-mono whitespace-nowrap">
                         {log.debit > 0 ? (
-                          <span className="inline-flex items-center justify-end font-mono font-bold text-rose-600 text-sm">
+                          <span className="inline-flex items-center justify-end font-mono font-bold text-rose-600 text-sm whitespace-nowrap">
                             -{log.debit}{' '}
                             <span className="text-xs font-semibold text-rose-500 ml-1">{unit}</span>
                           </span>
@@ -528,8 +528,8 @@ export default function AdminStockDetailsPage() {
                       </td>
 
                       {/* Running Balance */}
-                      <td className="py-4 px-5 text-right align-top font-mono">
-                        <div className="font-mono font-extrabold text-slate-900 text-sm">
+                      <td className="py-4 px-5 text-right align-top font-mono whitespace-nowrap">
+                        <div className="font-mono font-extrabold text-slate-900 text-sm whitespace-nowrap">
                           {log.balance}{' '}
                           <span className="text-xs font-semibold text-slate-500 ml-0.5">{unit}</span>
                         </div>
