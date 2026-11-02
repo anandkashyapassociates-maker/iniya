@@ -89,8 +89,49 @@ export default function SuperAdminStockDetailsPage() {
     );
   }
 
-  const isOutOfStock = (product.quantity ?? 0) <= 0;
-  const isLowStock = !isOutOfStock && product.quantity <= (product.low_stock_threshold || 10);
+  const currentStock = product.quantity ?? 0;
+  const unit = product.business_unit || 'Units';
+  const isOutOfStock = currentStock <= 0;
+  const isLowStock = !isOutOfStock && currentStock <= (product.low_stock_threshold || 10);
+
+  // Compute running balance chronologically (oldest to newest)
+  const sortedChronological = [...logs].sort((a, b) => {
+    const timeA = new Date(a.created_at || 0).getTime();
+    const timeB = new Date(b.created_at || 0).getTime();
+    if (timeA !== timeB) {
+      return timeA - timeB;
+    }
+    return (a.id || 0) - (b.id || 0);
+  });
+
+  const netLogChange = sortedChronological.reduce((acc, curr) => {
+    const isIssue = curr.type === 'issue' || Number(curr.quantity) < 0;
+    const qty = Math.abs(Number(curr.quantity) || 0);
+    return isIssue ? acc - qty : acc + qty;
+  }, 0);
+
+  const initialOpeningBalance = Math.max(0, currentStock - netLogChange);
+
+  let running = initialOpeningBalance;
+  const enrichedLogs = sortedChronological.map((l) => {
+    const isIssue = l.type === 'issue' || Number(l.quantity) < 0;
+    const qty = Math.abs(Number(l.quantity) || 0);
+    if (isIssue) {
+      running -= qty;
+    } else {
+      running += qty;
+    }
+    return {
+      ...l,
+      isIssue,
+      credit: isIssue ? 0 : qty,
+      debit: isIssue ? qty : 0,
+      balance: Math.max(0, running),
+    };
+  });
+
+  // Display logs in descending order (newest on top)
+  const displayLogs = [...enrichedLogs].reverse();
 
   return (
     <div className="w-full space-y-6 pb-12">
@@ -170,7 +211,7 @@ export default function SuperAdminStockDetailsPage() {
             </div>
 
             <p className="text-xs text-slate-500">
-              Unit: <strong className="text-slate-700">{product.business_unit || 'Units'}</strong>
+              Unit: <strong className="text-slate-700">{unit}</strong>
               {product.vendor?.vendor_name && (
                 <>
                   <span className="mx-2 text-slate-300">•</span>
@@ -219,13 +260,13 @@ export default function SuperAdminStockDetailsPage() {
                   isOutOfStock ? 'text-rose-600' : isLowStock ? 'text-amber-600' : 'text-slate-900'
                 }`}
               >
-                {product.quantity ?? 0}
+                {currentStock}
               </span>
               <span className="text-xs text-slate-500 font-medium">
-                {product.business_unit || 'Units'}
+                {unit}
               </span>
             </div>
-            <span className="text-[10px] text-slate-400 mt-0.5 block">Ready for clinical dispense</span>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">Closing inventory balance</span>
           </div>
           <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
             <Boxes className="w-5 h-5" />
@@ -248,42 +289,42 @@ export default function SuperAdminStockDetailsPage() {
           </div>
         </div>
 
-        {/* Card 3: Total Stock Added */}
+        {/* Card 3: Total Stock Added (Credit) */}
         <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
           <div>
             <span className="text-[11px] font-semibold text-emerald-600 uppercase tracking-wider block">
-              Total Added
+              Total Credit (+ In)
             </span>
             <div className="flex items-baseline gap-1 mt-0.5">
               <span className="text-2xl font-bold font-mono text-emerald-700">
-                +{totalAdded || (product.last_added_quantity ?? product.quantity ?? 0)}
+                +{totalAdded || (product.last_added_quantity ?? currentStock)}
               </span>
               <span className="text-xs text-emerald-600 font-medium">
-                {product.business_unit || 'Units'}
+                {unit}
               </span>
             </div>
-            <span className="text-[10px] text-slate-400 mt-0.5 block">Lifetime procurement inflow</span>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">Cumulative stock additions</span>
           </div>
           <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
             <TrendingUp className="w-5 h-5" />
           </div>
         </div>
 
-        {/* Card 4: Total Stock Issued */}
+        {/* Card 4: Total Stock Issued (Debit) */}
         <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
           <div>
             <span className="text-[11px] font-semibold text-rose-600 uppercase tracking-wider block">
-              Total Issued / Lessed
+              Total Debit (- Out)
             </span>
             <div className="flex items-baseline gap-1 mt-0.5">
               <span className="text-2xl font-bold font-mono text-rose-700">
                 -{totalIssued || (product.last_issued_quantity ?? 0)}
               </span>
               <span className="text-xs text-rose-600 font-medium">
-                {product.business_unit || 'Units'}
+                {unit}
               </span>
             </div>
-            <span className="text-[10px] text-slate-400 mt-0.5 block">Clinical consumption outflow</span>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">Cumulative stock deductions</span>
           </div>
           <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
             <TrendingDown className="w-5 h-5" />
@@ -291,169 +332,227 @@ export default function SuperAdminStockDetailsPage() {
         </div>
       </div>
 
-      {/* Main Stock Audit Log History Section */}
+      {/* Main Stock Audit Ledger Table: Credit, Debit & Balance Format */}
       <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-7 shadow-xs space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-4 border-b border-slate-100">
           <div>
             <h2 className="text-base font-bold font-display text-slate-900 flex items-center gap-2">
               <FileText className="w-4 h-4 text-blue-600" />
-              <span>Stock Transactions Audit Trail</span>
+              <span>Stock Statement (Credit, Debit &amp; Balance Ledger)</span>
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Detailed chronological record of every addition and issuance with admin ownership and timestamps.
+              SuperAdmin oversight passbook of all stock additions (Credits), issuances (Debits), and running inventory balance.
             </p>
           </div>
 
           <span className="text-xs font-mono text-slate-500 bg-slate-50 px-3 py-1 rounded-xl border border-slate-200/60 self-start sm:self-auto">
-            {logs.length} Log Record{logs.length !== 1 ? 's' : ''}
+            {displayLogs.length} Transaction{displayLogs.length !== 1 ? 's' : ''}
           </span>
         </div>
 
-        {logs.length === 0 ? (
+        {displayLogs.length === 0 && initialOpeningBalance === 0 ? (
           <div className="py-12 px-4 rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-center space-y-3">
             <Package className="w-10 h-10 text-slate-400 mx-auto" />
-            <h3 className="text-sm font-bold text-slate-700">No Historical Stock Logs Found</h3>
+            <h3 className="text-sm font-bold text-slate-700">No Transaction Records Found</h3>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
-              Transactions performed through the Add Inventory or Issue Inventory actions will appear here with full audit details.
+              Transactions performed through the Add Inventory or Less Inventory actions will appear here with Credit, Debit, and Running Balance.
             </p>
-
-            <div className="inline-block text-left bg-white p-4 rounded-2xl border border-slate-200 text-xs text-slate-600 space-y-1.5 shadow-2xs mt-2">
-              {product.inventory_updated_at && (
-                <div className="flex items-center gap-2">
-                  <PlusCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span>
-                    Initial Addition: <strong>{product.last_added_quantity ?? product.quantity} {product.business_unit}</strong> on{' '}
-                    {new Date(product.inventory_updated_at).toLocaleDateString()}
-                    {product.inventory_updater?.name ? ` by ${product.inventory_updater.name}` : ''}
-                  </span>
-                </div>
-              )}
-              {product.last_issued_at && (
-                <div className="flex items-center gap-2 text-rose-600">
-                  <MinusCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                  <span>
-                    Last Issuance: <strong>-{product.last_issued_quantity} {product.business_unit}</strong> on{' '}
-                    {new Date(product.last_issued_at).toLocaleDateString()}
-                    {product.issue_issuer?.name ? ` by ${product.issue_issuer.name}` : ''}
-                  </span>
-                </div>
-              )}
-            </div>
           </div>
         ) : (
-          <div className="border border-slate-100 rounded-2xl overflow-hidden shadow-2xs divide-y divide-slate-100">
-            {logs.map((log) => {
-              const isIssue = log.type === 'issue' || Number(log.quantity) < 0;
-              const qtyVal = Math.abs(Number(log.quantity) || 0);
-              const unit = log.business_unit || product.business_unit || 'Units';
-              const adminName = log.admin?.name || 'Administrator';
-              const adminEmail = log.admin?.email || '';
-              const dateStr = log.created_at ? new Date(log.created_at).toLocaleString() : '—';
-              const vendorName = log.vendor?.vendor_name || (log.vendor?.company_name ? `${log.vendor.vendor_name} (${log.vendor.company_name})` : null);
+          <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-2xs">
+            <table className="w-full text-left border-collapse min-w-[700px]">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50/90 text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+                  <th className="py-3 px-4 w-[16%]">Date &amp; Time</th>
+                  <th className="py-3 px-4 w-[34%]">Transaction / Performed By</th>
+                  <th className="py-3 px-4 w-[12%]">Rate (₹)</th>
+                  <th className="py-3 px-4 w-[12%] text-right text-emerald-800 bg-emerald-50/70 border-l border-emerald-100">
+                    Credit (+ In)
+                  </th>
+                  <th className="py-3 px-4 w-[12%] text-right text-rose-800 bg-rose-50/70 border-l border-rose-100">
+                    Debit (- Out)
+                  </th>
+                  <th className="py-3 px-4 w-[14%] text-right text-blue-900 bg-blue-50/70 border-l border-blue-100">
+                    Balance
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs font-normal">
+                {displayLogs.map((log) => {
+                  const isIssue = log.isIssue;
+                  const adminName = log.admin?.name || 'Administrator';
+                  const adminEmail = log.admin?.email || '';
+                  const dateStr = log.created_at ? new Date(log.created_at).toLocaleDateString() : '—';
+                  const timeStr = log.created_at
+                    ? new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                    : '';
+                  const vendorName = log.vendor?.vendor_name || (log.vendor?.company_name ? `${log.vendor.vendor_name} (${log.vendor.company_name})` : null);
 
-              return (
-                <div
-                  key={log.id}
-                  className={`p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors ${
-                    isIssue ? 'hover:bg-amber-50/40 bg-white' : 'hover:bg-emerald-50/40 bg-white'
-                  }`}
-                >
-                  {/* Left: Action Icon, Type Badge, and Performed By */}
-                  <div className="flex items-start gap-3.5 min-w-0">
-                    <div
-                      className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-2xs mt-0.5 ${
-                        isIssue
-                          ? 'bg-amber-100 text-amber-700 border border-amber-200'
-                          : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                  return (
+                    <tr
+                      key={log.id}
+                      className={`transition-colors hover:bg-slate-50/90 ${
+                        isIssue ? 'bg-amber-50/15' : 'bg-emerald-50/15'
                       }`}
                     >
-                      {isIssue ? <MinusCircle className="w-5 h-5" /> : <PlusCircle className="w-5 h-5" />}
-                    </div>
+                      {/* Date & Time */}
+                      <td className="py-3.5 px-4 align-top">
+                        <div className="font-mono text-slate-800 font-semibold">{dateStr}</div>
+                        {timeStr && <div className="text-[11px] font-mono text-slate-400 mt-0.5">{timeStr}</div>}
+                      </td>
 
-                    <div className="space-y-1 min-w-0">
-                      <div className="flex items-center gap-2.5 flex-wrap">
-                        <span
-                          className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
-                            isIssue
-                              ? 'bg-amber-100 text-amber-800 border border-amber-200'
-                              : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                          }`}
-                        >
-                          {isIssue ? 'Stock Issued / Lessed' : 'Stock Added'}
-                        </span>
-
-                        <span className="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{adminName}</span>
-                          {adminEmail && (
-                            <span className="text-slate-400 font-normal text-[11px]">({adminEmail})</span>
-                          )}
-                        </span>
-                      </div>
-
-                      {/* Date & Vendor / Price */}
-                      <div className="flex items-center gap-2 text-xs text-slate-500 flex-wrap">
-                        <span className="flex items-center gap-1 font-mono text-slate-600">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                          {dateStr}
-                        </span>
-
-                        {vendorName && (
-                          <>
-                            <span className="text-slate-300">•</span>
-                            <span className="text-slate-700">
-                              Supplier: <strong>{vendorName}</strong>
+                      {/* Transaction Description & Performed By */}
+                      <td className="py-3.5 px-4 align-top">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span
+                              className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                                isIssue
+                                  ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                                  : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                              }`}
+                            >
+                              {isIssue ? (
+                                <>
+                                  <MinusCircle className="w-3 h-3 text-amber-600" />
+                                  <span>Stock Issued / Lessed</span>
+                                </>
+                              ) : (
+                                <>
+                                  <PlusCircle className="w-3 h-3 text-emerald-600" />
+                                  <span>Stock Added</span>
+                                </>
+                              )}
                             </span>
-                          </>
-                        )}
 
-                        {log.buy_price && Number(log.buy_price) > 0 && (
-                          <>
-                            <span className="text-slate-300">•</span>
-                            <span className="font-mono text-slate-700">
-                              Buy Price: ₹{Number(log.buy_price).toFixed(2)}
+                            <span className="text-xs font-semibold text-slate-800 flex items-center gap-1">
+                              <User className="w-3 h-3 text-slate-400" />
+                              <span>{adminName}</span>
+                              {adminEmail && (
+                                <span className="text-slate-400 font-normal text-[10px]">({adminEmail})</span>
+                              )}
                             </span>
-                          </>
-                        )}
+                          </div>
 
-                        {log.mrp && Number(log.mrp) > 0 && (
-                          <>
-                            <span className="text-slate-300">•</span>
-                            <span className="font-mono text-emerald-700 font-semibold">
-                              MRP: ₹{Number(log.mrp).toFixed(2)}
-                            </span>
-                          </>
-                        )}
-                      </div>
+                          {/* Supplier / Notes */}
+                          <div className="flex items-center gap-2 text-[11px] text-slate-500 flex-wrap">
+                            {vendorName && (
+                              <span>
+                                Supplier: <strong className="text-slate-700">{vendorName}</strong>
+                              </span>
+                            )}
+                            {log.notes && (
+                              <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600">
+                                Note: {log.notes}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
 
-                      {/* Notes / Batch Ref */}
-                      {log.notes && (
-                        <p className="text-xs text-slate-600 mt-1 bg-slate-50 px-2.5 py-1 rounded-xl border border-slate-100 inline-block">
-                          <strong className="text-slate-700">Note:</strong> {log.notes}
-                        </p>
+                      {/* Rate */}
+                      <td className="py-3.5 px-4 align-top">
+                        {log.buy_price && Number(log.buy_price) > 0 ? (
+                          <div className="font-mono text-slate-800 font-semibold">
+                            ₹{Number(log.buy_price).toFixed(2)}
+                            {log.mrp && Number(log.mrp) > 0 && (
+                              <div className="text-[10px] text-slate-400 font-normal">
+                                MRP: ₹{Number(log.mrp).toFixed(2)}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 italic text-[11px]">—</span>
+                        )}
+                      </td>
+
+                      {/* Credit (+ In) */}
+                      <td className="py-3.5 px-4 text-right align-top bg-emerald-50/25 border-l border-emerald-100 font-mono">
+                        {log.credit > 0 ? (
+                          <span className="text-emerald-700 font-bold text-sm">
+                            +{log.credit} <span className="text-xs font-normal text-emerald-600">{unit}</span>
+                          </span>
+                        ) : (
+                          <span className="text-slate-300 font-mono">—</span>
+                        )}
+                      </td>
+
+                      {/* Debit (- Out) */}
+                      <td className="py-3.5 px-4 text-right align-top bg-rose-50/25 border-l border-rose-100 font-mono">
+                        {log.debit > 0 ? (
+                          <span className="text-rose-700 font-bold text-sm">
+                            -{log.debit} <span className="text-xs font-normal text-rose-600">{unit}</span>
+                          </span>
+                        ) : (
+                          <span className="text-slate-300 font-mono">—</span>
+                        )}
+                      </td>
+
+                      {/* Running Balance */}
+                      <td className="py-3.5 px-4 text-right align-top bg-blue-50/25 border-l border-blue-100 font-mono">
+                        <span className="text-slate-900 font-bold text-sm">
+                          {log.balance} <span className="text-xs font-normal text-slate-500">{unit}</span>
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+
+                {/* Initial Opening Stock row if present */}
+                {initialOpeningBalance > 0 && (
+                  <tr className="bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4 text-slate-500 font-mono text-[11px]">
+                      {product.inventory_updated_at
+                        ? new Date(product.inventory_updated_at).toLocaleDateString()
+                        : 'Initial Record'}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                        Opening / Baseline Stock
+                      </span>
+                      {product.inventory_updater?.name && (
+                        <span className="text-[11px] text-slate-400 ml-2">
+                          recorded by {product.inventory_updater.name}
+                        </span>
                       )}
-                    </div>
-                  </div>
+                    </td>
+                    <td className="py-3 px-4 font-mono text-slate-700">
+                      {product.buy_price ? `₹${Number(product.buy_price).toFixed(2)}` : '—'}
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono text-emerald-700 font-bold bg-emerald-50/25 border-l border-emerald-100">
+                      +{initialOpeningBalance} <span className="text-xs font-normal">{unit}</span>
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono text-slate-300 bg-rose-50/25 border-l border-rose-100">
+                      —
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono text-slate-900 font-bold bg-blue-50/25 border-l border-blue-100">
+                      {initialOpeningBalance} <span className="text-xs font-normal">{unit}</span>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
 
-                  {/* Right: Quantity Badge */}
-                  <div className="text-right shrink-0 md:self-center">
-                    <span
-                      className={`text-base sm:text-lg font-bold font-mono px-3.5 py-1.5 rounded-2xl inline-block ${
-                        isIssue
-                          ? 'text-amber-800 bg-amber-50 border border-amber-200'
-                          : 'text-emerald-800 bg-emerald-50 border border-emerald-200'
-                      }`}
-                    >
-                      {isIssue ? `-${qtyVal}` : `+${qtyVal}`} {unit}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+              {/* Table Footer with Summary Totals */}
+              <tfoot>
+                <tr className="border-t-2 border-slate-200 bg-slate-100/90 font-bold text-xs">
+                  <td colSpan={3} className="py-3.5 px-4 text-slate-700 uppercase tracking-wider text-[11px]">
+                    Current Net Stock Summary
+                  </td>
+                  <td className="py-3.5 px-4 text-right font-mono text-emerald-700 text-sm bg-emerald-100/50 border-l border-emerald-200">
+                    +{totalAdded || (product.last_added_quantity ?? currentStock)} {unit}
+                  </td>
+                  <td className="py-3.5 px-4 text-right font-mono text-rose-700 text-sm bg-rose-100/50 border-l border-rose-200">
+                    -{totalIssued || (product.last_issued_quantity ?? 0)} {unit}
+                  </td>
+                  <td className="py-3.5 px-4 text-right font-mono text-blue-700 text-sm bg-blue-100/50 border-l border-blue-200">
+                    {currentStock} {unit}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
         )}
       </div>
     </div>
   );
 }
-
