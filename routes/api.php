@@ -3,16 +3,24 @@
 use App\Http\Controllers\Api\Admin\AdminAuthController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminProfileController;
+use App\Http\Controllers\Api\Admin\AppointmentController;
 use App\Http\Controllers\Api\Admin\AppointmentSessionController;
+use App\Http\Controllers\Api\Admin\CategoryController;
 use App\Http\Controllers\Api\Admin\CustomerController;
+use App\Http\Controllers\Api\Admin\InventoryBrandController;
+use App\Http\Controllers\Api\Admin\InventoryCategoryController;
+use App\Http\Controllers\Api\Admin\InventoryStockController;
 use App\Http\Controllers\Api\Admin\MasterAppointmentController;
+use App\Http\Controllers\Api\Admin\ProductController;
 use App\Http\Controllers\Api\Admin\ServiceManagementController;
 use App\Http\Controllers\Api\Admin\SessionRescheduleController;
 use App\Http\Controllers\Api\SuperAdmin\AdminManagementController;
 use App\Http\Controllers\Api\SuperAdmin\SalesMemberManagementController;
 use App\Http\Controllers\Api\SuperAdmin\StaffManagementController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminAuthController;
+use App\Http\Controllers\Api\SuperAdmin\SuperAdminCategoryController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminDashboardController;
+use App\Http\Controllers\Api\SuperAdmin\SuperAdminInventoryController;
 use App\Http\Controllers\Api\SuperAdmin\VendorManagementController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -64,6 +72,7 @@ Route::prefix('superadmin')
         Route::put('/admins/{id}', [AdminManagementController::class, 'update']);
         Route::patch('/admins/{id}/status', [AdminManagementController::class, 'updateStatus']);
         Route::post('/admins/{id}/password-reset', [AdminManagementController::class, 'resetPassword']);
+        Route::post('/admins/{id}/impersonate', [AdminManagementController::class, 'impersonate']);
 
         // Staff Management
         Route::get('/staff/preview-code', [StaffManagementController::class, 'previewCode']);
@@ -92,6 +101,37 @@ Route::prefix('superadmin')
         Route::get('/sales-members/{id}', [SalesMemberManagementController::class, 'show']);
         Route::put('/sales-members/{id}', [SalesMemberManagementController::class, 'update']);
         Route::patch('/sales-members/{id}/status', [SalesMemberManagementController::class, 'updateStatus']);
+
+        // Category Oversight (SuperAdmin View and Delete Power)
+        Route::get('/categories/stats', [SuperAdminCategoryController::class, 'stats']);
+        Route::get('/categories', [SuperAdminCategoryController::class, 'index']);
+        Route::get('/categories/{id}', [SuperAdminCategoryController::class, 'show']);
+        Route::delete('/categories/{id}', [SuperAdminCategoryController::class, 'destroy']);
+
+        // Inventory Management (SuperAdmin Reporting, Products, Categories, Brands)
+        Route::prefix('inventory')->group(function () {
+            Route::get('/overview', [SuperAdminInventoryController::class, 'overview']);
+            Route::get('/stocks', [SuperAdminInventoryController::class, 'stocks']);
+            Route::get('/stocks/low-stock', [SuperAdminInventoryController::class, 'lowStock']);
+            Route::post('/stocks/{id}/add', [SuperAdminInventoryController::class, 'addStock']);
+            Route::match(['put', 'post'], '/stocks/{id}', [SuperAdminInventoryController::class, 'updateStock']);
+            Route::get('/stocks/{id}/logs', [SuperAdminInventoryController::class, 'stockLogs']);
+            Route::get('/products', [SuperAdminInventoryController::class, 'products']);
+            Route::get('/products/{id}', [SuperAdminInventoryController::class, 'showProduct']);
+            Route::match(['put', 'post'], '/products/{id}', [SuperAdminInventoryController::class, 'updateProduct']);
+            Route::delete('/products/{id}', [SuperAdminInventoryController::class, 'destroyProduct']);
+            Route::patch('/products/{id}/status', [SuperAdminInventoryController::class, 'updateProductStatus']);
+
+            Route::get('/categories', [SuperAdminInventoryController::class, 'categories']);
+            Route::match(['put', 'post'], '/categories/{id}', [SuperAdminInventoryController::class, 'updateCategory']);
+            Route::delete('/categories/{id}', [SuperAdminInventoryController::class, 'destroyCategory']);
+
+            Route::get('/brands', [SuperAdminInventoryController::class, 'brands']);
+            Route::match(['put', 'post'], '/brands/{id}', [SuperAdminInventoryController::class, 'updateBrand']);
+            Route::delete('/brands/{id}', [SuperAdminInventoryController::class, 'destroyBrand']);
+
+            Route::get('/admin-report', [SuperAdminInventoryController::class, 'adminReport']);
+        });
     });
 
 /*
@@ -131,6 +171,65 @@ Route::prefix('admin')
         Route::get('/customers/{id}', [CustomerController::class, 'show']);
         Route::match(['put', 'post'], '/customers/{id}', [CustomerController::class, 'update']);
         Route::delete('/customers/{id}', [CustomerController::class, 'destroy']);
+
+        // Category Management (Admin Create, Edit, Update, Delete, List)
+        Route::get('/categories/stats', [CategoryController::class, 'stats']);
+        Route::get('/categories', [CategoryController::class, 'index']);
+        Route::post('/categories', [CategoryController::class, 'store']);
+        Route::get('/categories/{id}', [CategoryController::class, 'show']);
+        Route::match(['put', 'post'], '/categories/{id}', [CategoryController::class, 'update']);
+        Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+
+        // Appointment Management (Legacy compatibility)
+        Route::get('/appointments/stats', [AppointmentController::class, 'stats']);
+        Route::get('/appointments', [AppointmentController::class, 'index']);
+        Route::post('/appointments', [AppointmentController::class, 'store']);
+        Route::get('/appointments/{id}', [AppointmentController::class, 'show']);
+        Route::put('/appointments/{id}', [AppointmentController::class, 'update']);
+        Route::post('/appointments/{id}/reschedule', [AppointmentController::class, 'reschedule']);
+        Route::post('/appointments/{id}/cancel', [AppointmentController::class, 'cancel']);
+        Route::post('/appointments/{id}/assign-staff', [AppointmentController::class, 'assignStaff']);
+        Route::patch('/appointments/{id}/status', [AppointmentController::class, 'updateStatus']);
+
+        // Appointment Dropdown Options
+        Route::get('/staff-options', [AppointmentController::class, 'staffOptions']);
+        Route::get('/customer-options', [AppointmentController::class, 'customerOptions']);
+
+        // Inventory Management (Products, Categories, Brands)
+        Route::prefix('inventory')->group(function () {
+            // Stocks & Updates
+            Route::get('/stocks', [InventoryStockController::class, 'index']);
+            Route::get('/stocks/low-stock', [InventoryStockController::class, 'lowStock']);
+            Route::get('/stocks/stats', [InventoryStockController::class, 'stats']);
+            Route::get('/stocks/vendors', [InventoryStockController::class, 'vendors']);
+            Route::get('/stocks/{id}/logs', [InventoryStockController::class, 'logs']);
+            Route::post('/stocks/{id}/add', [InventoryStockController::class, 'addStock']);
+            Route::post('/stocks/{id}/issue', [InventoryStockController::class, 'issueStock']);
+            Route::match(['put', 'post'], '/stocks/{id}', [InventoryStockController::class, 'updateStock']);
+
+            // Products
+            Route::get('/products', [ProductController::class, 'index']);
+            Route::post('/products', [ProductController::class, 'store']);
+            Route::get('/products/{id}', [ProductController::class, 'show']);
+            Route::match(['put', 'post'], '/products/{id}', [ProductController::class, 'update']);
+            Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+
+            // Categories
+            Route::get('/categories/dropdown', [InventoryCategoryController::class, 'dropdown']);
+            Route::get('/categories', [InventoryCategoryController::class, 'index']);
+            Route::post('/categories', [InventoryCategoryController::class, 'store']);
+            Route::get('/categories/{id}', [InventoryCategoryController::class, 'show']);
+            Route::match(['put', 'post'], '/categories/{id}', [InventoryCategoryController::class, 'update']);
+            Route::delete('/categories/{id}', [InventoryCategoryController::class, 'destroy']);
+
+            // Brands
+            Route::get('/brands/dropdown', [InventoryBrandController::class, 'dropdown']);
+            Route::get('/brands', [InventoryBrandController::class, 'index']);
+            Route::post('/brands', [InventoryBrandController::class, 'store']);
+            Route::get('/brands/{id}', [InventoryBrandController::class, 'show']);
+            Route::match(['put', 'post'], '/brands/{id}', [InventoryBrandController::class, 'update']);
+            Route::delete('/brands/{id}', [InventoryBrandController::class, 'destroy']);
+        });
 
         // ==========================================
         // MASTER APPOINTMENT & MULTIPLE SESSIONS SYSTEM

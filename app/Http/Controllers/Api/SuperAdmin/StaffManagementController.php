@@ -22,9 +22,9 @@ class StaffManagementController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('staff_code', 'like', "%{$search}%")
-                  ->orWhere('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('mobile', 'like', "%{$search}%");
+                    ->orWhere('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('mobile', 'like', "%{$search}%");
             });
         }
 
@@ -58,13 +58,13 @@ class StaffManagementController extends Controller
         $allowedSorts = [
             'id', 'staff_code', 'name', 'email', 'mobile',
             'department', 'designation', 'employment_type',
-            'joining_date', 'status', 'is_active', 'created_at', 'updated_at'
+            'joining_date', 'status', 'is_active', 'created_at', 'updated_at',
         ];
         $sortBy = in_array($request->input('sort_by'), $allowedSorts)
             ? $request->input('sort_by')
             : 'created_at';
         $sortDirection = strtolower($request->input('sort_direction', 'desc')) === 'asc' ? 'asc' : 'desc';
-        $query->orderBy($sortBy, $sortDirection);
+        $query->orderBy($sortBy, $sortDirection)->orderBy('id', 'desc');
 
         $perPage = min((int) $request->input('per_page', 10), 50);
         $staff = $query->paginate($perPage);
@@ -291,4 +291,3 @@ class StaffManagementController extends Controller
         ]);
     }
 }
-

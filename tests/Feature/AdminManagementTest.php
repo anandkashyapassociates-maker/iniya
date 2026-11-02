@@ -15,6 +15,7 @@ class AdminManagementTest extends TestCase
     use RefreshDatabase;
 
     protected SuperAdmin $superAdmin;
+
     protected string $superAdminToken;
 
     protected function setUp(): void
@@ -45,7 +46,7 @@ class AdminManagementTest extends TestCase
             'is_active' => true,
         ];
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/admins', $payload);
 
         $response->assertStatus(201)
@@ -97,7 +98,7 @@ class AdminManagementTest extends TestCase
             'password' => 'Password123!',
         ];
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $userToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$userToken)
             ->postJson('/api/superadmin/admins', $payload);
 
         $response->assertStatus(403);
@@ -125,7 +126,7 @@ class AdminManagementTest extends TestCase
             'password_confirmation' => 'Password123!',
         ];
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/admins', $payload);
 
         $response->assertStatus(422)
@@ -138,7 +139,7 @@ class AdminManagementTest extends TestCase
     public function test_invalid_input_is_rejected(): void
     {
         // Missing fields & invalid formats
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/admins', [
                 'name' => '',
                 'email' => 'not-an-email',
@@ -166,7 +167,7 @@ class AdminManagementTest extends TestCase
             'password_confirmation' => $plainPassword,
         ];
 
-        $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/admins', $payload);
 
         $admin = Admin::where('email', 'hash@company.com')->first();
@@ -191,7 +192,7 @@ class AdminManagementTest extends TestCase
             'password_confirmation' => 'SecretPassword@123',
         ];
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/admins', $payload);
 
         $json = $response->json();
@@ -199,7 +200,7 @@ class AdminManagementTest extends TestCase
         $this->assertArrayNotHasKey('password_confirmation', $json['admin']);
 
         // Check index list as well
-        $listResponse = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $listResponse = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/admins');
 
         foreach ($listResponse->json('data') as $adminRecord) {
@@ -221,7 +222,7 @@ class AdminManagementTest extends TestCase
             'is_active' => true,
         ];
 
-        $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/admins', $payload);
 
         $this->assertDatabaseHas('admins', [
@@ -247,7 +248,7 @@ class AdminManagementTest extends TestCase
             'password_confirmation' => 'SecretPassword@123',
         ];
 
-        $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/admins', $payload);
 
         // Verify present in admins table
@@ -281,7 +282,7 @@ class AdminManagementTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/admins');
 
         $response->assertStatus(200)
@@ -322,13 +323,13 @@ class AdminManagementTest extends TestCase
         ]);
 
         // Search by keyword in name
-        $resName = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $resName = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/admins?search=Rajesh');
         $this->assertCount(1, $resName->json('data'));
         $this->assertEquals('rajesh@unique.com', $resName->json('data.0.email'));
 
         // Search by keyword in mobile
-        $resMobile = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $resMobile = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/admins?search=9222222222');
         $this->assertCount(1, $resMobile->json('data'));
         $this->assertEquals('suresh@domain.com', $resMobile->json('data.0.email'));
@@ -358,13 +359,13 @@ class AdminManagementTest extends TestCase
         ]);
 
         // Filter active only
-        $resActive = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $resActive = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/admins?status=true');
         $activeStatuses = collect($resActive->json('data'))->pluck('is_active')->unique()->toArray();
         $this->assertEquals([true], $activeStatuses);
 
         // Filter inactive only
-        $resInactive = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $resInactive = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/admins?status=false');
         $inactiveStatuses = collect($resInactive->json('data'))->pluck('is_active')->unique()->toArray();
         $this->assertEquals([false], $inactiveStatuses);
@@ -386,7 +387,7 @@ class AdminManagementTest extends TestCase
             ]);
         }
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/admins?per_page=5&page=1');
 
         $response->assertStatus(200);
@@ -421,7 +422,7 @@ class AdminManagementTest extends TestCase
         ]);
         $userToken = $user->createToken('token')->plainTextToken;
 
-        $userRes = $this->withHeader('Authorization', 'Bearer ' . $userToken)
+        $userRes = $this->withHeader('Authorization', 'Bearer '.$userToken)
             ->getJson("/api/superadmin/admins/{$admin->id}");
         $userRes->assertStatus(403);
     }
@@ -431,7 +432,7 @@ class AdminManagementTest extends TestCase
      */
     public function test_missing_admin_ids_return_the_correct_response(): void
     {
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/admins/999999');
 
         $response->assertStatus(404)
@@ -468,7 +469,7 @@ class AdminManagementTest extends TestCase
 
         $token = $user->createToken('client-token')->plainTextToken;
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/user');
 
         $response->assertStatus(200)
@@ -498,7 +499,7 @@ class AdminManagementTest extends TestCase
         $this->assertEquals(1, $admin->tokens()->count());
 
         // Update status to blocked via PATCH /status
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->patchJson("/api/superadmin/admins/{$admin->id}/status", [
                 'status' => 'blocked',
             ]);
@@ -590,7 +591,7 @@ class AdminManagementTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->putJson("/api/superadmin/admins/{$admin->id}", [
                 'name' => 'Updated Full Name',
                 'email' => 'updated_email@company.com',
@@ -636,12 +637,97 @@ class AdminManagementTest extends TestCase
             'is_active' => false,
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/admins?status=blocked');
 
         $response->assertStatus(200);
         $statuses = collect($response->json('data'))->pluck('status')->unique()->toArray();
         $this->assertEquals(['blocked'], $statuses);
     }
-}
 
+    /**
+     * 23. SuperAdmin can impersonate an active admin and use the token to access admin panel.
+     */
+    public function test_superadmin_can_impersonate_active_admin(): void
+    {
+        $admin = Admin::create([
+            'super_admin_id' => $this->superAdmin->id,
+            'name' => 'Dr. Robert Smith',
+            'email' => 'dr.robert@company.com',
+            'mobile' => '9888877777',
+            'password' => Hash::make('AdminPass123!'),
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->postJson("/api/superadmin/admins/{$admin->id}/impersonate");
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'message',
+                'token',
+                'user' => [
+                    'id',
+                    'name',
+                    'email',
+                    'status',
+                    'is_active',
+                ],
+                'impersonated_by' => [
+                    'superadmin_id',
+                    'superadmin_name',
+                ],
+            ]);
+
+        $token = $response->json('token');
+        $this->assertNotEmpty($token);
+
+        // Reset auth guard between requests in the test
+        auth('sanctum')->forgetUser();
+
+        // Verify the impersonation token can access admin routes
+        $adminMeResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/admin/me');
+
+        $adminMeResponse->assertStatus(200)
+            ->assertJsonPath('user.id', $admin->id)
+            ->assertJsonPath('user.email', 'dr.robert@company.com');
+    }
+
+    /**
+     * 24. SuperAdmin cannot impersonate a blocked or inactive admin.
+     */
+    public function test_superadmin_cannot_impersonate_blocked_or_inactive_admin(): void
+    {
+        $blockedAdmin = Admin::create([
+            'super_admin_id' => $this->superAdmin->id,
+            'name' => 'Blocked Admin',
+            'email' => 'blocked@company.com',
+            'mobile' => '9777788888',
+            'password' => Hash::make('AdminPass123!'),
+            'status' => 'blocked',
+            'is_active' => false,
+        ]);
+
+        $inactiveAdmin = Admin::create([
+            'super_admin_id' => $this->superAdmin->id,
+            'name' => 'Inactive Admin',
+            'email' => 'inactive@company.com',
+            'mobile' => '9666688888',
+            'password' => Hash::make('AdminPass123!'),
+            'status' => 'inactive',
+            'is_active' => false,
+        ]);
+
+        $resBlocked = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->postJson("/api/superadmin/admins/{$blockedAdmin->id}/impersonate");
+        $resBlocked->assertStatus(422)
+            ->assertJsonPath('message', 'Cannot log in as a blocked Admin account. Please unblock the admin first.');
+
+        $resInactive = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->postJson("/api/superadmin/admins/{$inactiveAdmin->id}/impersonate");
+        $resInactive->assertStatus(422)
+            ->assertJsonPath('message', 'Cannot log in as an inactive Admin account. Please activate the admin first.');
+    }
+}

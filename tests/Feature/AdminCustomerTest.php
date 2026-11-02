@@ -23,7 +23,7 @@ class AdminCustomerTest extends TestCase
 
         $this->admin = Admin::create([
             'name' => 'Test Admin',
-            'email' => 'testadmin_' . uniqid() . '@example.com',
+            'email' => 'testadmin_'.uniqid().'@example.com',
             'password' => Hash::make('password123'),
             'is_active' => true,
         ]);
@@ -225,6 +225,46 @@ class AdminCustomerTest extends TestCase
 
         $this->assertDatabaseMissing('customers', [
             'id' => $customer->id,
+        ]);
+    }
+
+    public function test_non_creator_admin_cannot_edit_or_delete_customer(): void
+    {
+        $otherAdmin = Admin::create([
+            'name' => 'Dr. Second Admin',
+            'email' => 'second_admin_'.uniqid().'@example.com',
+            'password' => Hash::make('password123'),
+            'is_active' => true,
+        ]);
+
+        $customer = Customer::create([
+            'admin_id' => $this->admin->id,
+            'name' => 'Original Customer',
+            'mobile' => '9111111111',
+            'gender' => 'male',
+            'age' => 45,
+            'address' => 'Delhi',
+        ]);
+
+        Sanctum::actingAs($otherAdmin, ['role:admin']);
+
+        // Attempt edit by other admin
+        $editRes = $this->putJson("/api/admin/customers/{$customer->id}", [
+            'name' => 'Hacked Customer',
+            'mobile' => '9111111111',
+            'gender' => 'male',
+            'age' => 46,
+            'address' => 'Delhi Updated',
+        ]);
+        $editRes->assertStatus(403);
+
+        // Attempt delete by other admin
+        $deleteRes = $this->deleteJson("/api/admin/customers/{$customer->id}");
+        $deleteRes->assertStatus(403);
+
+        $this->assertDatabaseHas('customers', [
+            'id' => $customer->id,
+            'name' => 'Original Customer',
         ]);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\AdminActivityLog;
+use App\Models\InventoryProduct;
 use App\Models\SalesMember;
 use App\Models\Staff;
 use App\Models\Vendor;
@@ -67,6 +68,12 @@ class SuperAdminDashboardController extends Controller
         $totalBlocked = $blockedAdmins + $blockedStaff + $blockedVendors + $blockedSales;
         $activeRate = $totalPersonnel > 0 ? round(($totalActive / $totalPersonnel) * 100, 1) : 100.0;
 
+        $lowStockProductsCount = InventoryProduct::where(function ($q) {
+            $q->whereColumn('quantity', '<=', 'low_stock_threshold')
+                ->orWhere('quantity', '<=', 0);
+        })->count();
+        $totalInventoryProducts = InventoryProduct::count();
+
         // Recent Records from Each Module (Compact)
         $recentAdmins = Admin::latest()
             ->take(4)
@@ -104,6 +111,8 @@ class SuperAdminDashboardController extends Controller
                 'total_inactive' => $totalInactive,
                 'total_blocked' => $totalBlocked,
                 'active_rate' => $activeRate,
+                'low_stock_products_count' => $lowStockProductsCount,
+                'total_inventory_products' => $totalInventoryProducts,
             ],
             'modules' => [
                 'admins' => [

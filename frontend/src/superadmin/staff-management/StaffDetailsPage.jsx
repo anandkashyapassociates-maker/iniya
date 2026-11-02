@@ -22,6 +22,38 @@ import StaffEditModal from './StaffEditModal';
 import staffManagementService from '../services/staffManagementService';
 import { useToast } from '../../context/ToastContext';
 
+const formatJoiningDate = (dateString) => {
+  if (!dateString) return '—';
+  try {
+    const raw = String(dateString).split('T')[0];
+    const parts = raw.split('-');
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      const date = new Date(year, month, day);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        });
+      }
+    }
+    const fallbackDate = new Date(dateString);
+    if (!isNaN(fallbackDate.getTime())) {
+      return fallbackDate.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+    }
+    return raw;
+  } catch {
+    return dateString;
+  }
+};
+
 export default function StaffDetailsPage() {
   const toast = useToast();
 
@@ -375,36 +407,39 @@ export default function StaffDetailsPage() {
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="py-3.5 px-4 w-14">ID</th>
-                  <th className="py-3.5 px-4">Staff Code</th>
-                  <th className="py-3.5 px-4">Full Name</th>
-                  <th className="py-3.5 px-4">Email</th>
-                  <th className="py-3.5 px-4">Mobile</th>
-                  <th className="py-3.5 px-4">Department</th>
-                  <th className="py-3.5 px-4">Designation</th>
-                  <th className="py-3.5 px-4">Employment</th>
-                  <th className="py-3.5 px-4">Joining Date</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
+                  <th className="py-3.5 px-4 w-14 text-center whitespace-nowrap">Sr. No.</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap min-w-[120px]">Staff Code</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap min-w-[160px]">Full Name</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap min-w-[180px]">Email</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap min-w-[130px]">Mobile</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap min-w-[130px]">Department</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap min-w-[140px]">Designation</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap min-w-[120px]">Employment</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap min-w-[140px]">Joining Date</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap min-w-[110px]">Status</th>
+                  <th className="py-3.5 px-4 text-right whitespace-nowrap min-w-[90px]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
-                {staffList.map((member) => (
+                {staffList.map((member, index) => (
                   <tr key={member.id} className="hover:bg-slate-50/60 transition-colors">
-                    {/* ID */}
-                    <td className="py-3.5 px-4 font-mono text-slate-400 font-bold">
-                      #{member.id}
+                    {/* Sr. No. */}
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-600 font-mono text-[11px] font-medium">
+                        {(pagination?.from || 1) + index}
+                      </span>
                     </td>
 
                     {/* Staff Code */}
-                    <td className="py-3.5 px-4">
-                      <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200/80 shadow-2xs">
-                        {member.staff_code}
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1.5 font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200/80 shadow-2xs whitespace-nowrap tracking-wide">
+                        <Hash className="w-3 h-3 text-blue-500 shrink-0" />
+                        <span>{member.staff_code}</span>
                       </span>
                     </td>
 
                     {/* Full Name */}
-                    <td className="py-3.5 px-4">
+                    <td className="py-3.5 px-4 whitespace-nowrap">
                       <div className="flex items-center gap-2.5">
                         <div className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center font-bold text-[11px] shrink-0">
                           {member.name ? member.name.charAt(0).toUpperCase() : 'S'}
@@ -414,7 +449,7 @@ export default function StaffDetailsPage() {
                     </td>
 
                     {/* Email */}
-                    <td className="py-3.5 px-4 text-slate-600 font-mono text-[11px]">
+                    <td className="py-3.5 px-4 text-slate-600 font-mono text-[11px] whitespace-nowrap">
                       <div className="flex items-center gap-1.5">
                         <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                         <span>{member.email}</span>
@@ -422,7 +457,7 @@ export default function StaffDetailsPage() {
                     </td>
 
                     {/* Mobile */}
-                    <td className="py-3.5 px-4 text-slate-600 font-mono text-[11px]">
+                    <td className="py-3.5 px-4 text-slate-600 font-mono text-[11px] whitespace-nowrap">
                       {member.mobile ? (
                         <div className="flex items-center gap-1.5">
                           <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -434,7 +469,7 @@ export default function StaffDetailsPage() {
                     </td>
 
                     {/* Department */}
-                    <td className="py-3.5 px-4">
+                    <td className="py-3.5 px-4 whitespace-nowrap">
                       {member.department ? (
                         <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-semibold">
                           {member.department}
@@ -445,31 +480,33 @@ export default function StaffDetailsPage() {
                     </td>
 
                     {/* Designation */}
-                    <td className="py-3.5 px-4 text-slate-700">
+                    <td className="py-3.5 px-4 text-slate-700 whitespace-nowrap">
                       {member.designation || <span className="text-slate-400">—</span>}
                     </td>
 
                     {/* Employment Type */}
-                    <td className="py-3.5 px-4 text-slate-600">
+                    <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap">
                       <span className="text-[11px] font-medium text-slate-600">
                         {member.employment_type || 'Full-Time'}
                       </span>
                     </td>
 
                     {/* Joining Date */}
-                    <td className="py-3.5 px-4 text-slate-500 font-mono text-[11px]">
+                    <td className="py-3.5 px-4 whitespace-nowrap">
                       {member.joining_date ? (
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
-                          <span>{member.joining_date.split('T')[0]}</span>
+                        <div className="inline-flex items-center gap-1.5 text-slate-600 font-medium text-xs">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <span className="font-mono text-[11px]">
+                            {formatJoiningDate(member.joining_date)}
+                          </span>
                         </div>
                       ) : (
-                        <span className="text-slate-400">—</span>
+                        <span className="text-slate-400 text-xs">—</span>
                       )}
                     </td>
 
                     {/* Status Badge */}
-                    <td className="py-3.5 px-4">
+                    <td className="py-3.5 px-4 whitespace-nowrap">
                       <StaffStatusBadge
                         status={member.status}
                         isActive={member.is_active}
@@ -478,7 +515,7 @@ export default function StaffDetailsPage() {
                     </td>
 
                     {/* Actions: Edit button */}
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => handleOpenEditModal(member)}

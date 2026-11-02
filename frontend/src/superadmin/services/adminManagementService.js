@@ -51,6 +51,14 @@ export const adminManagementService = {
     const response = await superAdminApiClient.post(`/superadmin/admins/${id}/password-reset`, payload);
     return response.data;
   },
+
+  /**
+   * Impersonate / Log in as an Admin directly from Superadmin.
+   */
+  async impersonateAdmin(id) {
+    const response = await superAdminApiClient.post(`/superadmin/admins/${id}/impersonate`);
+    return response.data;
+  },
 };
 
 export default adminManagementService;

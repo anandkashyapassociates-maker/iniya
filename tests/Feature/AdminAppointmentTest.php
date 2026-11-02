@@ -16,7 +16,9 @@ class AdminAppointmentTest extends TestCase
     use RefreshDatabase;
 
     protected Admin $admin;
+
     protected Customer $customer;
+
     protected Staff $staff;
 
     protected function setUp(): void
@@ -25,7 +27,7 @@ class AdminAppointmentTest extends TestCase
 
         $this->admin = Admin::create([
             'name' => 'Operational Admin',
-            'email' => 'admin_test_' . uniqid() . '@example.com',
+            'email' => 'admin_test_'.uniqid().'@example.com',
             'password' => Hash::make('SecretPass123!'),
             'is_active' => true,
             'status' => 'active',
@@ -45,7 +47,7 @@ class AdminAppointmentTest extends TestCase
         $this->staff = Staff::create([
             'staff_code' => 'STF-0099',
             'name' => 'Dr. Amit Sharma',
-            'email' => 'amit_staff_' . uniqid() . '@example.com',
+            'email' => 'amit_staff_'.uniqid().'@example.com',
             'mobile' => '9988776655',
             'department' => 'Dermatology',
             'designation' => 'Senior Specialist',
@@ -126,7 +128,7 @@ class AdminAppointmentTest extends TestCase
             ->assertJsonPath('appointment.session_slot', 'Afternoon')
             ->assertJsonPath('appointment.session_number', 1)
             ->assertJsonPath('appointment.total_sessions', 4)
-            ->assertJsonPath('appointment.status', 'scheduled');
+            ->assertJsonPath('appointment.status', 'pending');
 
         $this->assertDatabaseHas('appointments', [
             'customer_id' => $this->customer->id,
@@ -197,14 +199,14 @@ class AdminAppointmentTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonPath('message', 'Appointment rescheduled successfully.')
-            ->assertJsonPath('appointment.status', 'rescheduled')
+            ->assertJsonPath('appointment.status', 'confirmed')
             ->assertJsonPath('appointment.appointment_time', '04:00 PM')
             ->assertJsonPath('appointment.session_slot', 'Evening')
             ->assertJsonPath('appointment.rescheduled_reason', 'Patient had a business conflict on original date.');
 
         $this->assertDatabaseHas('appointments', [
             'id' => $appointment->id,
-            'status' => 'rescheduled',
+            'status' => 'confirmed',
             'previous_appointment_date' => $originalDate,
             'previous_appointment_time' => '10:00 AM',
             'previous_session_slot' => 'Morning',

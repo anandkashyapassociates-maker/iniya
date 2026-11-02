@@ -23,7 +23,7 @@ export default function AdminCreationPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="space-y-6 max-w-4xl animate-in fade-in duration-300">
       {/* Breadcrumb Navigation */}
       <nav className="flex items-center gap-2 text-xs text-slate-500 font-medium">
         <Link to="/superadmin/dashboard" className="hover:text-slate-900 transition-colors">

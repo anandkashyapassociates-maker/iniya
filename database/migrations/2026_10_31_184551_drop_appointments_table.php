@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -11,7 +9,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::dropIfExists('appointments');
+        // Preserving appointments table for legacy compatibility and data safety
     }
 
     /**

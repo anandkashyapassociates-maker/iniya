@@ -326,6 +326,7 @@ export default function SalesMemberDetailsPage() {
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200/90 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <th className="py-3 px-4 w-14 text-center">Sr. No.</th>
                 <th className="py-3 px-4">Sales Code</th>
                 <th className="py-3 px-4">Profile</th>
                 <th className="py-3 px-4">Name</th>
@@ -344,7 +345,7 @@ export default function SalesMemberDetailsPage() {
             <tbody className="divide-y divide-slate-100 font-normal">
               {isLoading ? (
                 <tr>
-                  <td colSpan="13" className="py-12 text-center text-slate-400">
+                  <td colSpan="14" className="py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                       <span className="text-xs font-semibold text-slate-500">
@@ -355,7 +356,7 @@ export default function SalesMemberDetailsPage() {
                 </tr>
               ) : salesList.length === 0 ? (
                 <tr>
-                  <td colSpan="13" className="py-12 text-center text-slate-400">
+                  <td colSpan="14" className="py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto">
                       <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
                         <TrendingUp className="w-6 h-6" />
@@ -386,14 +387,20 @@ export default function SalesMemberDetailsPage() {
                   </td>
                 </tr>
               ) : (
-                salesList.map((member) => (
+                salesList.map((member, index) => (
                   <tr
                     key={member.id}
                     className="hover:bg-slate-50/70 transition-colors group"
                   >
+                    {/* Sr. No. */}
+                    <td className="py-3 px-4 text-center">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-600 font-mono text-[11px] font-medium">
+                        {(pagination?.from || 1) + index}
+                      </span>
+                    </td>
                     {/* 1. Sales Code */}
-                    <td className="py-3 px-4 font-medium">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-mono text-[11px] font-bold border border-blue-200/70">
+                    <td className="py-3 px-4 font-medium whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-mono text-[11px] font-bold border border-blue-200/70 whitespace-nowrap">
                         <Hash className="w-3 h-3 text-blue-500" />
                         {member.sales_code}
                       </span>

@@ -231,10 +231,10 @@ export default function AdminAppointmentEditPage() {
         <div className="flex items-center gap-3 shrink-0">
           <Link
             to="/admin/appointments"
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-sm shadow-blue-500/20 transition-all shrink-0"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back</span>
+            <Calendar className="w-4 h-4 text-white" />
+            <span>View Appointments</span>
           </Link>
 
           {/* Quick Status Badges */}
