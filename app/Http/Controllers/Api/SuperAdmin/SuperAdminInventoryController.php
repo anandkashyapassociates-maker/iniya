@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Models\InventoryBrand;
 use App\Models\InventoryCategory;
 use App\Models\InventoryProduct;
+use App\Models\InventoryStockLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -440,5 +441,33 @@ class SuperAdminInventoryController extends Controller
         return response()->json([
             'message' => 'Super Admin has read-only oversight for inventory stocks. Editing stock is restricted to Admins.',
         ], 403);
+    }
+
+    /**
+     * Get stock audit logs for a product (Super Admin oversight).
+     */
+    public function stockLogs(int $id): JsonResponse
+    {
+        $product = InventoryProduct::with([
+            'category:id,name',
+            'brand:id,name',
+            'vendor:id,vendor_code,vendor_name,company_name',
+            'creator:id,name,email',
+            'inventoryUpdater:id,name,email',
+            'issueIssuer:id,name,email',
+        ])->findOrFail($id);
+
+        $logs = InventoryStockLog::with([
+            'vendor:id,vendor_name,company_name',
+            'admin:id,name,email',
+        ])
+            ->where('product_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'data' => $logs,
+            'product' => $product,
+        ]);
     }
 }

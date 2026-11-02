@@ -436,6 +436,15 @@ class InventoryStockController extends Controller
      */
     public function logs(int $id): JsonResponse
     {
+        $product = InventoryProduct::with([
+            'category:id,name',
+            'brand:id,name',
+            'vendor:id,vendor_code,vendor_name,company_name',
+            'creator:id,name,email',
+            'inventoryUpdater:id,name,email',
+            'issueIssuer:id,name,email',
+        ])->findOrFail($id);
+
         $logs = InventoryStockLog::with([
             'vendor:id,vendor_name,company_name',
             'admin:id,name,email',
@@ -446,6 +455,7 @@ class InventoryStockController extends Controller
 
         return response()->json([
             'data' => $logs,
+            'product' => $product,
         ]);
     }
 

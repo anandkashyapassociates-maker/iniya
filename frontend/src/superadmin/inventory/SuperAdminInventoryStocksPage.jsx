@@ -19,6 +19,7 @@ import {
   Clock,
   ExternalLink,
   ChevronRight,
+  FileText,
   X,
 } from 'lucide-react';
 import DataTable from '../../components/DataTable';
@@ -58,9 +59,6 @@ export default function SuperAdminInventoryStocksPage() {
       setPage(1);
     }
   }, [searchParams]);
-
-  // View Modal State
-  const [viewProduct, setViewProduct] = useState(null);
 
   const fetchFiltersData = useCallback(async () => {
     try {
@@ -248,16 +246,17 @@ export default function SuperAdminInventoryStocksPage() {
       },
     },
     {
-      header: 'OVERSIGHT',
-      className: 'w-[10%] text-center',
+      header: 'ACTIONS',
+      className: 'w-[12%] text-center',
       render: (p) => (
-        <button
-          onClick={() => setViewProduct(p)}
-          className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-          title="View Product Stock Details"
+        <Link
+          to={`/superadmin/inventory/stocks/${p.id}`}
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200/80 text-xs font-semibold shadow-2xs transition-all"
+          title="View Complete Stock History & Details"
         >
-          <Eye className="w-3.5 h-3.5" />
-        </button>
+          <FileText className="w-3.5 h-3.5" />
+          <span>Details</span>
+        </Link>
       ),
     },
   ];
@@ -451,132 +450,6 @@ export default function SuperAdminInventoryStocksPage() {
           emptyDescription="There are no inventory products matching your search or filters."
         />
       </div>
-
-      {/* ======================================================== */}
-      {/* MODAL: VIEW PRODUCT STOCK DETAILS (READ ONLY)            */}
-      {/* ======================================================== */}
-      {viewProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up">
-            <div className="px-6 py-4 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-400/30 text-blue-300 flex items-center justify-center font-bold">
-                  <Package className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold tracking-tight">Product Stock Ledger Details</h3>
-                  <p className="text-xs text-slate-300 truncate max-w-xs">
-                    {viewProduct.product_name}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setViewProduct(null)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4 text-xs">
-              <div className="grid grid-cols-3 gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-semibold block">Available Stock</span>
-                  <span className="text-base font-bold font-mono text-slate-900">
-                    {viewProduct.quantity ?? 0} {viewProduct.business_unit || 'Units'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-semibold block">Last Added Qty</span>
-                  <span className="text-base font-bold font-mono text-emerald-700">
-                    {viewProduct.last_added_quantity ?? viewProduct.quantity ?? 0} {viewProduct.business_unit || 'Units'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-semibold block">Low Stock Threshold</span>
-                  <span className="text-base font-bold font-mono text-amber-700">
-                    {viewProduct.low_stock_threshold ?? 10} Units
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-semibold block">Buy Price</span>
-                  <span className="text-sm font-bold font-mono text-slate-800">
-                    {viewProduct.buy_price ? `₹${parseFloat(viewProduct.buy_price).toFixed(2)}` : '—'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-semibold block">MRP</span>
-                  <span className="text-sm font-bold font-mono text-blue-600">
-                    {viewProduct.mrp ? `₹${parseFloat(viewProduct.mrp).toFixed(2)}` : '—'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-semibold block">Average Cost</span>
-                  <span className="text-sm font-bold font-mono text-slate-700">
-                    {viewProduct.average_price ? `₹${parseFloat(viewProduct.average_price).toFixed(2)}` : '—'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-2 p-3 rounded-xl bg-slate-50 border border-slate-200">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Allocated Vendor:</span>
-                  <span className="font-semibold text-slate-800">
-                    {viewProduct.vendor?.vendor_name || 'No Vendor Assigned'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Last Stocked By:</span>
-                  <span className="font-semibold text-slate-800">
-                    {viewProduct.inventory_updater?.name || 'Not yet recorded'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Last Updated At:</span>
-                  <span className="font-semibold text-slate-800">
-                    {viewProduct.inventory_updated_at ? new Date(viewProduct.inventory_updated_at).toLocaleString() : '—'}
-                  </span>
-                </div>
-                {viewProduct.last_issued_at && (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">Last Issued Quantity:</span>
-                      <span className="font-semibold text-amber-700">
-                        -{viewProduct.last_issued_quantity} {viewProduct.business_unit || 'Units'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">Issued At / By:</span>
-                      <span className="font-semibold text-slate-800">
-                        {new Date(viewProduct.last_issued_at).toLocaleString()} {viewProduct.issue_issuer?.name ? `(${viewProduct.issue_issuer.name})` : ''}
-                      </span>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
-                <span>SuperAdmin oversight: Read-only access enabled. Stock modification is restricted to branch Administrators.</span>
-              </div>
-
-              <div className="flex justify-end pt-2">
-                <button
-                  type="button"
-                  onClick={() => setViewProduct(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition-colors cursor-pointer"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
