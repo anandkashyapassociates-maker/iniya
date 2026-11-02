@@ -386,17 +386,17 @@ export default function SuperAdminStockDetailsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto rounded-2xl border border-slate-200/90 shadow-2xs">
-            <table className="w-full text-left border-collapse min-w-[800px]">
+            <table className="w-full text-left border-collapse min-w-[920px]">
               <thead>
                 <tr className="border-b border-slate-200/90 bg-slate-50/70 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                   <th className="py-3.5 px-3 w-12 text-center font-bold text-slate-400 whitespace-nowrap">SR.</th>
-                  <th className="py-3.5 px-4 w-[15%] whitespace-nowrap">Date &amp; Time</th>
-                  <th className="py-3.5 px-4 min-w-[220px]">Transaction &amp; Performer</th>
+                  <th className="py-3.5 px-4 w-[14%] whitespace-nowrap">Date &amp; Time</th>
+                  <th className="py-3.5 px-4 w-[32%] min-w-[300px]">Transaction &amp; Performer</th>
                   <th className="py-3.5 px-4 w-[12%] whitespace-nowrap">Rate (₹)</th>
-                  <th className="py-3.5 px-4 w-[13%] text-right font-bold text-emerald-700 whitespace-nowrap">
+                  <th className="py-3.5 px-4 w-[14%] text-right font-bold text-emerald-700 whitespace-nowrap">
                     Credit (+ In)
                   </th>
-                  <th className="py-3.5 px-4 w-[13%] text-right font-bold text-rose-600 whitespace-nowrap">
+                  <th className="py-3.5 px-4 w-[14%] text-right font-bold text-rose-600 whitespace-nowrap">
                     Debit (- Out)
                   </th>
                   <th className="py-3.5 px-5 w-[14%] text-right font-bold text-slate-900 whitespace-nowrap">
@@ -452,11 +452,11 @@ export default function SuperAdminStockDetailsPage() {
                             )}
                           </div>
 
-                          <div className="space-y-1 min-w-0">
-                            {/* Row 1: Badge + Supplier */}
-                            <div className="flex items-center gap-2 flex-wrap">
+                          <div className="space-y-1.5 min-w-0">
+                            {/* Row 1: Badge + Supplier (Single horizontal line) */}
+                            <div className="flex items-center gap-2 whitespace-nowrap">
                               <span
-                                className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-lg ${
+                                className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-lg whitespace-nowrap ${
                                   isIssue
                                     ? 'bg-rose-50 text-rose-700 border border-rose-200/80'
                                     : 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
@@ -466,25 +466,25 @@ export default function SuperAdminStockDetailsPage() {
                               </span>
 
                               {vendorName && (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 bg-slate-100/80 px-2 py-0.5 rounded-lg border border-slate-200/60">
-                                  <Building2 className="w-3 h-3 text-slate-400" />
-                                  <span>Supplier: <strong className="text-slate-900">{vendorName}</strong></span>
+                                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200/70 whitespace-nowrap">
+                                  <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
+                                  <span>Supplier: <strong className="text-slate-900 font-semibold">{vendorName}</strong></span>
                                 </span>
                               )}
                             </div>
 
-                            {/* Row 2: Performed By Admin */}
-                            <div className="flex items-center gap-1.5 text-xs text-slate-600 pt-0.5">
+                            {/* Row 2: Performed By Admin (Strictly single line, never wraps) */}
+                            <div className="flex items-center gap-1.5 text-xs text-slate-600 whitespace-nowrap">
                               <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                              <span className="font-semibold text-slate-800">{adminName}</span>
+                              <span className="font-semibold text-slate-800 whitespace-nowrap">{adminName}</span>
                               {adminEmail && (
-                                <span className="text-slate-400 font-normal text-[11px]">({adminEmail})</span>
+                                <span className="text-slate-400 font-normal text-[11px] whitespace-nowrap">({adminEmail})</span>
                               )}
                             </div>
 
                             {/* Row 3: Optional Notes */}
                             {log.notes && (
-                              <p className="text-[11px] text-slate-500 italic bg-slate-50 border border-slate-200/60 rounded-lg px-2.5 py-1 mt-1 max-w-md">
+                              <p className="text-[11px] text-slate-500 italic bg-slate-50 border border-slate-200/60 rounded-lg px-2.5 py-1 mt-1 max-w-sm">
                                 "{log.notes}"
                               </p>
                             )}
