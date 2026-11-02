@@ -85,6 +85,17 @@ export const superAdminInventoryService = {
     const response = await superAdminApi.get(`/superadmin/inventory/stocks/${id}/logs`);
     return response.data;
   },
+
+  // ================= INVENTORY REPORTS =================
+  async getReports(params = {}) {
+    const response = await superAdminApi.get('/superadmin/inventory/reports', { params });
+    return response.data;
+  },
+
+  async getReportFilterOptions() {
+    const response = await superAdminApi.get('/superadmin/inventory/reports/filter-options');
+    return response.data;
+  },
 };
 
 export default superAdminInventoryService;

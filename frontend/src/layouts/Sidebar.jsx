@@ -22,6 +22,7 @@ import {
   Package,
   FolderTree,
   Layers,
+  FileText,
 } from 'lucide-react';
 import { ClinicBrandIcon } from '../components/ClinicArtwork';
 
@@ -136,6 +137,11 @@ export default function Sidebar({
       to: '/admin/inventory/stocks',
       label: 'Stock Ledger',
       icon: Boxes,
+    },
+    {
+      to: '/admin/inventory/reports',
+      label: 'Inventory Reports',
+      icon: FileText,
     },
     {
       to: '/admin/inventory/products',
