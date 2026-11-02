@@ -16,6 +16,12 @@ import {
   ListFilter,
   Sparkles,
   ChevronDown,
+  Boxes,
+  PlusCircle,
+  AlertTriangle,
+  Package,
+  FolderTree,
+  Layers,
 } from 'lucide-react';
 import { ClinicBrandIcon } from '../components/ClinicArtwork';
 
@@ -32,11 +38,20 @@ export default function Sidebar({
   const isAppointmentsActive = location.pathname.startsWith('/admin/appointments');
   const [appointmentsOpen, setAppointmentsOpen] = useState(isAppointmentsActive);
 
+  const isInInventory = location.pathname.startsWith('/admin/inventory');
+  const [inventoryOpen, setInventoryOpen] = useState(isInInventory);
+
   useEffect(() => {
     if (isAppointmentsActive) {
       setAppointmentsOpen(true);
     }
   }, [isAppointmentsActive]);
+
+  useEffect(() => {
+    if (isInInventory) {
+      setInventoryOpen(true);
+    }
+  }, [isInInventory]);
 
   const superAdminNavItems = [
     {
@@ -113,6 +128,34 @@ export default function Sidebar({
           icon: CalendarDays,
         },
       ],
+    },
+  ];
+
+  const inventorySubItems = [
+    {
+      to: '/admin/inventory/stocks',
+      label: 'Stock Ledger',
+      icon: Boxes,
+    },
+    {
+      to: '/admin/inventory/low-stock',
+      label: 'Low Stock Alerts',
+      icon: AlertTriangle,
+    },
+    {
+      to: '/admin/inventory/products',
+      label: 'All Products',
+      icon: Package,
+    },
+    {
+      to: '/admin/inventory/products/create',
+      label: 'Create Product',
+      icon: PlusCircle,
+    },
+    {
+      to: '/admin/inventory/categories',
+      label: 'Categories',
+      icon: FolderTree,
     },
     {
       to: '/admin/inventory/brands',
