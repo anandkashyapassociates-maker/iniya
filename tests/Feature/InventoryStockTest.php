@@ -317,22 +317,25 @@ class InventoryStockTest extends TestCase
     }
 
     /**
-     * 8. Adding inventory stock with past date is rejected.
+     * 8. Adding inventory stock with past date is accepted.
      */
-    public function test_admin_cannot_add_stock_with_past_date(): void
+    public function test_admin_can_add_stock_with_past_date(): void
     {
+        $pastDate = now()->subDays(2)->toDateString();
         $payload = [
             'quantity' => 20,
             'buy_price' => 100.00,
             'mrp' => 150.00,
-            'inventory_date' => now()->subDays(2)->toDateString(),
+            'inventory_date' => $pastDate,
         ];
 
         $response = $this->withHeader('Authorization', 'Bearer '.$this->admin1Token)
             ->postJson("/api/admin/inventory/stocks/{$this->product->id}/add", $payload);
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['inventory_date']);
+        $response->assertStatus(200);
+
+        $this->product->refresh();
+        $this->assertEquals($pastDate, $this->product->inventory_updated_at->toDateString());
     }
 
     /**

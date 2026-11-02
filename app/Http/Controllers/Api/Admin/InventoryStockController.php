@@ -167,10 +167,8 @@ class InventoryStockController extends Controller
             'vendor_id' => ['nullable', 'exists:vendors,id'],
             'business_unit' => ['nullable', 'string', 'max:50'],
             'low_stock_threshold' => ['nullable', 'integer', 'min:1'],
-            'inventory_date' => ['nullable', 'date', 'after_or_equal:today'],
+            'inventory_date' => ['nullable', 'date'],
             'notes' => ['nullable', 'string', 'max:500'],
-        ], [
-            'inventory_date.after_or_equal' => 'Inventory date cannot be in the past. Please select today or a future date.',
         ]);
 
         $admin = $request->user();
@@ -256,12 +254,11 @@ class InventoryStockController extends Controller
 
         $validated = $request->validate([
             'quantity' => ['required', 'integer', 'min:1'],
-            'inventory_date' => ['nullable', 'date', 'after_or_equal:today'],
+            'inventory_date' => ['nullable', 'date'],
             'notes' => ['nullable', 'string', 'max:500'],
         ], [
             'quantity.required' => 'Please enter the quantity to issue.',
             'quantity.min' => 'Quantity to issue must be at least 1.',
-            'inventory_date.after_or_equal' => 'Issue date cannot be in the past. Please select today or a future date.',
         ]);
 
         $quantityToIssue = (int) $validated['quantity'];
@@ -349,10 +346,8 @@ class InventoryStockController extends Controller
             'vendor_id' => ['nullable', 'exists:vendors,id'],
             'business_unit' => ['nullable', 'string', 'max:50'],
             'low_stock_threshold' => ['nullable', 'integer', 'min:1'],
-            'inventory_date' => ['nullable', 'date', 'after_or_equal:today'],
+            'inventory_date' => ['nullable', 'date'],
             'notes' => ['nullable', 'string', 'max:500'],
-        ], [
-            'inventory_date.after_or_equal' => 'Inventory date cannot be in the past. Please select today or a future date.',
         ]);
 
         $admin = $request->user();
