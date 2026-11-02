@@ -8,6 +8,8 @@ use App\Models\InventoryBrand;
 use App\Models\InventoryCategory;
 use App\Models\InventoryProduct;
 use App\Models\InventoryStockLog;
+use App\Models\Vendor;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -468,6 +470,219 @@ class SuperAdminInventoryController extends Controller
         return response()->json([
             'data' => $logs,
             'product' => $product,
+        ]);
+    }
+
+    /**
+     * Get inventory reports with product, date, vendor, admin, category, and type filters (SuperAdmin oversight).
+     * Supports both 'products' (inventory_products table) and 'transactions' (inventory_stock_logs table).
+     */
+    public function reports(Request $request): JsonResponse
+    {
+        $reportType = $request->input('report_type');
+
+        // ================= 1. PRODUCTS VALUATION REPORT (inventory_products table) =================
+        if ($reportType === 'products') {
+            $query = InventoryProduct::with([
+                'category:id,name',
+                'brand:id,name',
+                'vendor:id,vendor_code,vendor_name,company_name,mobile',
+                'creator:id,name,email',
+                'inventoryUpdater:id,name,email',
+                'issueIssuer:id,name,email',
+            ]);
+
+            if ($search = $request->input('search')) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('product_name', 'like', "%{$search}%")
+                        ->orWhere('business_unit', 'like', "%{$search}%")
+                        ->orWhere('product_type', 'like', "%{$search}%")
+                        ->orWhereHas('category', fn ($cq) => $cq->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('brand', fn ($bq) => $bq->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('vendor', fn ($vq) => $vq->where('vendor_name', 'like', "%{$search}%")->orWhere('company_name', 'like', "%{$search}%"));
+                });
+            }
+
+            if ($productId = $request->input('product_id')) {
+                $query->where('id', $productId);
+            }
+
+            if ($vendorId = $request->input('vendor_id')) {
+                $query->where('vendor_id', $vendorId);
+            }
+
+            if ($adminId = $request->input('admin_id')) {
+                $query->where(function ($q) use ($adminId) {
+                    $q->where('created_by_admin_id', $adminId)
+                        ->orWhere('inventory_updated_by', $adminId)
+                        ->orWhere('last_issued_by', $adminId);
+                });
+            }
+
+            if ($categoryId = $request->input('category_id')) {
+                $query->where('category_id', $categoryId);
+            }
+
+            if ($status = $request->input('stock_status')) {
+                if ($status === 'in_stock') {
+                    $query->whereColumn('quantity', '>', 'low_stock_threshold');
+                } elseif ($status === 'low_stock') {
+                    $query->whereColumn('quantity', '<=', 'low_stock_threshold')->where('quantity', '>', 0);
+                } elseif ($status === 'out_of_stock') {
+                    $query->where('quantity', '<=', 0);
+                }
+            }
+
+            if ($startDate = $request->input('start_date')) {
+                $query->whereDate('created_at', '>=', Carbon::parse($startDate)->toDateString());
+            }
+
+            if ($endDate = $request->input('end_date')) {
+                $query->whereDate('created_at', '<=', Carbon::parse($endDate)->toDateString());
+            }
+
+            $baseMetrics = clone $query;
+            $totalProducts = (clone $baseMetrics)->count();
+            $totalStockUnits = (int) (clone $baseMetrics)->sum('quantity');
+            $totalValuation = (float) (clone $baseMetrics)->selectRaw('COALESCE(SUM(quantity * COALESCE(buy_price, 0)), 0) as val')->value('val');
+            $totalRetailValue = (float) (clone $baseMetrics)->selectRaw('COALESCE(SUM(quantity * COALESCE(mrp, 0)), 0) as val')->value('val');
+            $lowStockCount = (clone $baseMetrics)->whereColumn('quantity', '<=', 'low_stock_threshold')->where('quantity', '>', 0)->count();
+            $outOfStockCount = (clone $baseMetrics)->where('quantity', '<=', 0)->count();
+
+            $perPage = min((int) $request->input('per_page', 15), 100);
+            $products = $query->orderBy('product_name', 'asc')->paginate($perPage);
+
+            return response()->json([
+                'report_type' => 'products',
+                'data' => $products->items(),
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                    'from' => $products->firstItem(),
+                    'to' => $products->lastItem(),
+                ],
+                'metrics' => [
+                    'total_products' => $totalProducts,
+                    'total_stock_units' => $totalStockUnits,
+                    'total_valuation' => $totalValuation,
+                    'total_retail_value' => $totalRetailValue,
+                    'low_stock_count' => $lowStockCount,
+                    'out_of_stock_count' => $outOfStockCount,
+                ],
+            ]);
+        }
+
+        // ================= 2. TRANSACTIONS AUDIT REPORT (inventory_stock_logs table) =================
+        $query = InventoryStockLog::with([
+            'product:id,product_name,category_id,brand_id,business_unit,quantity,buy_price,average_price',
+            'product.category:id,name',
+            'product.brand:id,name',
+            'vendor:id,vendor_code,vendor_name,company_name,mobile',
+            'admin:id,name,email',
+        ]);
+
+        if ($productId = $request->input('product_id')) {
+            $query->where('product_id', $productId);
+        }
+
+        if ($vendorId = $request->input('vendor_id')) {
+            $query->where('vendor_id', $vendorId);
+        }
+
+        if ($adminId = $request->input('admin_id')) {
+            $query->where('admin_id', $adminId);
+        }
+
+        if ($type = $request->input('type')) {
+            if ($type === 'added' || $type === 'purchase' || $type === 'credit') {
+                $query->whereIn('type', ['purchase', 'added']);
+            } elseif ($type === 'issued' || $type === 'issue' || $type === 'debit') {
+                $query->whereIn('type', ['issue', 'issued']);
+            } elseif ($type === 'adjustment') {
+                $query->where('type', 'adjustment');
+            }
+        }
+
+        if ($startDate = $request->input('start_date')) {
+            $query->whereDate('created_at', '>=', Carbon::parse($startDate)->toDateString());
+        }
+
+        if ($endDate = $request->input('end_date')) {
+            $query->whereDate('created_at', '<=', Carbon::parse($endDate)->toDateString());
+        }
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('notes', 'like', "%{$search}%")
+                    ->orWhereHas('product', fn ($pq) => $pq->where('product_name', 'like', "%{$search}%"))
+                    ->orWhereHas('vendor', fn ($vq) => $vq->where('vendor_name', 'like', "%{$search}%")->orWhere('company_name', 'like', "%{$search}%"))
+                    ->orWhereHas('admin', fn ($aq) => $aq->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"));
+            });
+        }
+
+        $baseMetrics = clone $query;
+        $totalRecords = (clone $baseMetrics)->count();
+
+        $creditQuery = (clone $baseMetrics)->whereIn('type', ['purchase', 'added']);
+        $totalCreditQty = (int) (clone $creditQuery)->sum('quantity');
+        $totalCreditValue = (float) (clone $creditQuery)->selectRaw('COALESCE(SUM(ABS(quantity) * COALESCE(buy_price, 0)), 0) as total_val')->value('total_val');
+
+        $debitQuery = (clone $baseMetrics)->whereIn('type', ['issue', 'issued']);
+        $totalDebitQty = abs((int) (clone $debitQuery)->sum('quantity'));
+        $totalDebitValue = (float) (clone $debitQuery)->selectRaw('COALESCE(SUM(ABS(quantity) * COALESCE(buy_price, 0)), 0) as total_val')->value('total_val');
+
+        $perPage = min((int) $request->input('per_page', 15), 100);
+        $logs = $query->orderBy('created_at', 'desc')->orderBy('id', 'desc')->paginate($perPage);
+
+        return response()->json([
+            'report_type' => 'transactions',
+            'data' => $logs->items(),
+            'pagination' => [
+                'current_page' => $logs->currentPage(),
+                'last_page' => $logs->lastPage(),
+                'per_page' => $logs->perPage(),
+                'total' => $logs->total(),
+                'from' => $logs->firstItem(),
+                'to' => $logs->lastItem(),
+            ],
+            'metrics' => [
+                'total_records' => $totalRecords,
+                'total_credit_qty' => $totalCreditQty,
+                'total_credit_value' => $totalCreditValue,
+                'total_debit_qty' => $totalDebitQty,
+                'total_debit_value' => $totalDebitValue,
+                'net_qty' => $totalCreditQty - $totalDebitQty,
+                'net_value' => $totalCreditValue - $totalDebitValue,
+            ],
+        ]);
+    }
+
+    /**
+     * Get filter dropdown options for inventory reports (SuperAdmin oversight).
+     */
+    public function reportFilterOptions(): JsonResponse
+    {
+        $products = InventoryProduct::orderBy('product_name', 'asc')
+            ->get(['id', 'product_name', 'business_unit', 'quantity']);
+
+        $categories = InventoryCategory::where('status', 'active')
+            ->orderBy('name', 'asc')
+            ->get(['id', 'name']);
+
+        $vendors = Vendor::where('status', 'active')
+            ->orderBy('vendor_name', 'asc')
+            ->get(['id', 'vendor_code', 'vendor_name', 'company_name']);
+
+        $admins = Admin::orderBy('name', 'asc')
+            ->get(['id', 'name', 'email']);
+
+        return response()->json([
+            'products' => $products,
+            'categories' => $categories,
+            'vendors' => $vendors,
+            'admins' => $admins,
         ]);
     }
 }

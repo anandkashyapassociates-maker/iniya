@@ -111,6 +111,8 @@ Route::prefix('superadmin')
         // Inventory Management (SuperAdmin Reporting, Products, Categories, Brands)
         Route::prefix('inventory')->group(function () {
             Route::get('/overview', [SuperAdminInventoryController::class, 'overview']);
+            Route::get('/reports', [SuperAdminInventoryController::class, 'reports']);
+            Route::get('/reports/filter-options', [SuperAdminInventoryController::class, 'reportFilterOptions']);
             Route::get('/stocks', [SuperAdminInventoryController::class, 'stocks']);
             Route::get('/stocks/low-stock', [SuperAdminInventoryController::class, 'lowStock']);
             Route::post('/stocks/{id}/add', [SuperAdminInventoryController::class, 'addStock']);
@@ -206,6 +208,10 @@ Route::prefix('admin')
             Route::post('/stocks/{id}/add', [InventoryStockController::class, 'addStock']);
             Route::post('/stocks/{id}/issue', [InventoryStockController::class, 'issueStock']);
             Route::match(['put', 'post'], '/stocks/{id}', [InventoryStockController::class, 'updateStock']);
+
+            // Reports
+            Route::get('/reports', [InventoryStockController::class, 'reports']);
+            Route::get('/reports/filter-options', [InventoryStockController::class, 'reportFilterOptions']);
 
             // Products
             Route::get('/products', [ProductController::class, 'index']);

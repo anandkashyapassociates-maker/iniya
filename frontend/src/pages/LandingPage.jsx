@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Shield, Layers, ArrowRight, Lock, CheckCircle2 } from 'lucide-react';
 import { useSuperAdminAuth } from '../superadmin/auth/SuperAdminAuthContext';
 import { useAdminAuth } from '../features/auth/AdminAuthContext';
@@ -8,15 +8,8 @@ export default function LandingPage() {
   const { isAuthenticated: isSuperAdminAuth, isLoading: isSuperAdminLoading } = useSuperAdminAuth();
   const { isAuthenticated: isAdminAuth, isLoading: isAdminLoading, user: adminUser } = useAdminAuth();
 
-  // If already authenticated as SuperAdmin, redirect directly to dashboard
-  if (!isSuperAdminLoading && isSuperAdminAuth) {
-    return <Navigate to="/superadmin/dashboard" replace />;
-  }
-
-  // If already authenticated as Admin, redirect directly to dashboard
-  if (!isAdminLoading && isAdminAuth && adminUser?.is_active) {
-    return <Navigate to="/admin/dashboard" replace />;
-  }
+  const isSuperAdminActive = !isSuperAdminLoading && isSuperAdminAuth;
+  const isAdminActive = !isAdminLoading && isAdminAuth && adminUser?.is_active;
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-6 relative overflow-hidden">
@@ -31,7 +24,9 @@ export default function LandingPage() {
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-300 text-xs font-semibold mb-4">
             <Lock className="w-3.5 h-3.5 text-blue-400" />
-            <span className="micro-label text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Dual-Tier Enterprise Management Portal</span>
+            <span className="micro-label text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
+              Dual-Tier Enterprise Management Portal
+            </span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-bold font-display text-white tracking-tight">
             INIYA ENTERPRISE SYSTEMS
@@ -68,16 +63,16 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0" />
-                  <span>Strictly isolated authentication table</span>
+                  <span>Strictly isolated authentication session</span>
                 </li>
               </ul>
             </div>
 
             <Link
-              to="/superadmin"
+              to={isSuperAdminActive ? '/superadmin/dashboard' : '/superadmin'}
               className="inline-flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-lg shadow-purple-950/50 transition-all font-display cursor-pointer"
             >
-              <span>Access Super Admin Portal</span>
+              <span>{isSuperAdminActive ? 'Open Super Admin Dashboard' : 'Access Super Admin Portal'}</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -93,37 +88,39 @@ export default function LandingPage() {
               </span>
               <h2 className="text-xl font-bold font-display text-white mb-2 tracking-tight">Admin Portal</h2>
               <p className="text-xs text-slate-400 leading-relaxed mb-6 font-normal">
-                Standard administrator interface to monitor assigned dashboards, review personal access activity, update credentials, and manage profile settings.
+                Standard administrator interface to manage patients, schedule appointments, coordinate clinical sessions, and handle day-to-day operations.
               </p>
 
               <ul className="text-xs text-slate-300 space-y-2 mb-6 font-medium">
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
-                  <span>Personal operations dashboard</span>
+                  <span>Patient &amp; clinical appointments</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
-                  <span>Secure credential management</span>
+                  <span>Service catalog &amp; inventory management</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
-                  <span>Zero privilege escalation to Super Admin</span>
+                  <span>Independent session in parallel tabs</span>
                 </li>
               </ul>
             </div>
 
             <Link
-              to="/admin"
+              to={isAdminActive ? '/admin/dashboard' : '/admin'}
               className="inline-flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-950/50 transition-all font-display cursor-pointer"
             >
-              <span>Access Admin Portal</span>
+              <span>{isAdminActive ? 'Open Admin Dashboard' : 'Access Admin Portal'}</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
 
-        <div className="text-xs text-slate-600 font-mono">
-          Powered by Laravel 13 Sanctum &amp; React. Protected by Cloudflare Turnstile.
+        <div className="pt-4 text-center">
+          <p className="text-[11px] text-slate-400 font-medium tracking-wide">
+            INIYA ERP SYSTEMS &copy; {new Date().getFullYear()} &bull; ALL RIGHTS RESERVED
+          </p>
         </div>
       </div>
     </div>

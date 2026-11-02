@@ -72,7 +72,7 @@ export default function AdminMasterAppointmentDetailsPage() {
     } finally {
       setLoading(false);
     }
-  }, [id, toast]);
+  }, [id]);
 
   // Load options for staff and products
   useEffect(() => {

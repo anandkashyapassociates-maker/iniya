@@ -55,6 +55,7 @@ class CreateSuperAdminCommand extends Command
             foreach ($validator->errors()->all() as $error) {
                 $this->error($error);
             }
+
             return self::FAILURE;
         }
 
@@ -79,4 +80,3 @@ class CreateSuperAdminCommand extends Command
         return self::SUCCESS;
     }
 }
-

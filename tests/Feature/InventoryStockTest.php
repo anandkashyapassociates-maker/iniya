@@ -421,4 +421,129 @@ class InventoryStockTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['quantity']);
     }
+
+    /**
+     * 12. Admin can fetch inventory reports with filters and metrics.
+     */
+    public function test_admin_can_view_inventory_reports_with_filters(): void
+    {
+        // Add a stock entry
+        $this->withHeader('Authorization', 'Bearer '.$this->admin1Token)
+            ->postJson("/api/admin/inventory/stocks/{$this->product->id}/add", [
+                'quantity' => 50,
+                'buy_price' => 120.00,
+                'mrp' => 180.00,
+                'average_price' => 120.00,
+                'vendor_id' => $this->vendor->id,
+                'inventory_date' => now()->toDateString(),
+                'notes' => 'Bulk procurement batch 101',
+            ]);
+
+        // Issue a stock entry
+        $this->withHeader('Authorization', 'Bearer '.$this->admin1Token)
+            ->postJson("/api/admin/inventory/stocks/{$this->product->id}/issue", [
+                'quantity' => 10,
+                'inventory_date' => now()->toDateString(),
+                'notes' => 'Clinical issuance ward 3',
+            ]);
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->admin1Token)
+            ->getJson('/api/admin/inventory/reports?product_id='.$this->product->id);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data',
+                'pagination',
+                'metrics' => [
+                    'total_records',
+                    'total_credit_qty',
+                    'total_credit_value',
+                    'total_debit_qty',
+                    'total_debit_value',
+                    'net_qty',
+                    'net_value',
+                ],
+            ]);
+
+        $this->assertGreaterThanOrEqual(2, $response->json('metrics.total_records'));
+        $this->assertGreaterThanOrEqual(50, $response->json('metrics.total_credit_qty'));
+        $this->assertGreaterThanOrEqual(10, $response->json('metrics.total_debit_qty'));
+    }
+
+    /**
+     * 13. SuperAdmin can view inventory reports and filter options.
+     */
+    public function test_superadmin_can_view_inventory_reports_and_filters(): void
+    {
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->getJson('/api/superadmin/inventory/reports');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data',
+                'pagination',
+                'metrics',
+            ]);
+
+        $filterResponse = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->getJson('/api/superadmin/inventory/reports/filter-options');
+
+        $filterResponse->assertStatus(200)
+            ->assertJsonStructure([
+                'products',
+                'categories',
+                'vendors',
+                'admins',
+            ]);
+    }
+
+    /**
+     * 14. Admin can view official products valuation reports from inventory_products table.
+     */
+    public function test_admin_can_view_inventory_products_report(): void
+    {
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->admin1Token)
+            ->getJson('/api/admin/inventory/reports?report_type=products');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('report_type', 'products')
+            ->assertJsonStructure([
+                'report_type',
+                'data',
+                'pagination',
+                'metrics' => [
+                    'total_products',
+                    'total_stock_units',
+                    'total_valuation',
+                    'total_retail_value',
+                    'low_stock_count',
+                    'out_of_stock_count',
+                ],
+            ]);
+    }
+
+    /**
+     * 15. SuperAdmin can view official products valuation reports from inventory_products table.
+     */
+    public function test_superadmin_can_view_inventory_products_report(): void
+    {
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->getJson('/api/superadmin/inventory/reports?report_type=products');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('report_type', 'products')
+            ->assertJsonStructure([
+                'report_type',
+                'data',
+                'pagination',
+                'metrics' => [
+                    'total_products',
+                    'total_stock_units',
+                    'total_valuation',
+                    'total_retail_value',
+                    'low_stock_count',
+                    'out_of_stock_count',
+                ],
+            ]);
+    }
 }
