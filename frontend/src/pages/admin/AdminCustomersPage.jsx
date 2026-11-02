@@ -60,7 +60,7 @@ function CustomerAvatar({ customer, size = 'sm' }) {
 
   return (
     <div
-      className={`${sizeClass} flex items-center justify-center font-medium text-white shadow-xs uppercase shrink-0 ${genderBg} border-2 border-white ring-1 ring-slate-200/80`}
+      className={`${sizeClass} flex items-center justify-center font-bold text-white shadow-xs uppercase shrink-0 ${genderBg} border-2 border-white ring-1 ring-slate-200/80`}
     >
       {customer?.name ? customer.name.charAt(0) : 'P'}
     </div>
@@ -153,36 +153,38 @@ export default function AdminCustomersPage() {
 
   const columns = [
     {
-      header: 'SR. NO.',
-      className: 'w-[75px] text-center',
+      header: '#',
+      className: 'w-14 text-center px-2',
       render: (c, index) => {
         const srNo = (pagination?.from || 1) + index;
         return (
-          <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-600 font-mono text-[11px] font-medium">
-            {srNo}
+          <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-slate-100 text-slate-500 font-mono text-xs font-bold tabular-nums border border-slate-200/80 shadow-2xs">
+            {srNo < 10 ? `0${srNo}` : srNo}
           </span>
         );
       },
     },
     {
-      header: 'PATIENT / RECORD',
+      header: 'PATIENT DETAILS',
       accessor: 'name',
+      className: 'min-w-[260px]',
       render: (c) => (
-        <div className="flex items-center gap-3 py-0.5">
+        <div className="flex items-center gap-3.5 py-1">
           <CustomerAvatar customer={c} size="sm" />
           <div className="min-w-0">
             <button
               type="button"
               onClick={() => setSelectedCustomer(c)}
-              className="text-left font-semibold text-slate-800 text-xs sm:text-sm hover:text-blue-600 transition-colors truncate block cursor-pointer"
+              className="text-left font-bold text-slate-900 text-xs sm:text-[13px] hover:text-blue-600 transition-colors block truncate w-full cursor-pointer leading-snug tracking-tight"
+              title={c.name}
             >
               {c.name}
             </button>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="font-mono text-[10px] font-semibold text-blue-700 bg-blue-50 border border-blue-200/60 px-1.5 py-0.5 rounded">
-                {formatRecordId(c.id)}
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-mono text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/70 shadow-2xs">
+                <FileText className="w-3 h-3 text-blue-500 shrink-0" />
+                <span>{formatRecordId(c.id)}</span>
               </span>
-              <span className="text-[10px] text-slate-400 font-normal">ID #{c.id}</span>
             </div>
           </div>
         </div>
@@ -191,25 +193,32 @@ export default function AdminCustomersPage() {
     {
       header: 'CONTACT CHANNELS',
       accessor: 'mobile',
+      className: 'min-w-[210px]',
       render: (c) => (
-        <div className="space-y-1">
+        <div className="space-y-1.5 py-1">
           <a
             href={`tel:${c.mobile}`}
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 hover:text-blue-600 transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-bold font-mono text-slate-800 hover:text-blue-600 transition-colors group/phone"
+            title="Click to Call"
           >
-            <Phone className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-            <span className="font-mono">{c.mobile}</span>
+            <div className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-200/60 group-hover/phone:bg-blue-600 group-hover/phone:text-white transition-colors shrink-0 shadow-2xs">
+              <Phone className="w-3 h-3" />
+            </div>
+            <span className="tracking-wide">{c.mobile}</span>
           </a>
           {c.email ? (
             <a
               href={`mailto:${c.email}`}
-              className="flex items-center gap-1.5 text-[11px] text-slate-500 font-normal hover:text-slate-800 transition-colors truncate max-w-[190px]"
+              className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-800 transition-colors truncate max-w-[200px] group/mail"
+              title={c.email}
             >
-              <Mail className="w-3 h-3 text-slate-400 shrink-0" />
+              <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0 group-hover/mail:text-slate-600" />
               <span className="truncate">{c.email}</span>
             </a>
           ) : (
-            <div className="text-[10px] text-slate-400 font-normal italic">No email on record</div>
+            <span className="text-[11px] text-slate-400 italic block pl-0.5">
+              No email recorded
+            </span>
           )}
         </div>
       ),
@@ -217,77 +226,98 @@ export default function AdminCustomersPage() {
     {
       header: 'DEMOGRAPHICS',
       accessor: 'gender',
+      className: 'min-w-[170px]',
       render: (c) => (
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span
-            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-medium capitalize border shadow-2xs ${
-              c.gender === 'female'
-                ? 'bg-rose-50 text-rose-700 border-rose-200/80'
-                : c.gender === 'male'
-                ? 'bg-sky-50 text-sky-700 border-sky-200/80'
-                : 'bg-purple-50 text-purple-700 border-purple-200/80'
-            }`}
-          >
-            <span>{c.gender === 'female' ? '👩' : c.gender === 'male' ? '👨' : '🧑'}</span>
-            <span>{c.gender}</span>
-          </span>
-          <span className="inline-flex items-center px-2 py-1 rounded-xl text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
-            {c.age ? `${c.age} Yrs` : 'N/A'}
-          </span>
+        <div className="space-y-1.5 py-1">
+          <div>
+            <span
+              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border capitalize shadow-2xs ${
+                c.gender === 'female'
+                  ? 'bg-rose-50 text-rose-700 border-rose-200/80'
+                  : c.gender === 'male'
+                  ? 'bg-sky-50 text-sky-700 border-sky-200/80'
+                  : 'bg-purple-50 text-purple-700 border-purple-200/80'
+              }`}
+            >
+              <span className="text-xs">
+                {c.gender === 'female' ? '👩' : c.gender === 'male' ? '👨' : '🧑'}
+              </span>
+              <span>{c.gender || 'Unspecified'}</span>
+            </span>
+          </div>
+          <div className="text-xs font-semibold text-slate-600 font-mono flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span>{c.age ? `${c.age} Years Old` : 'Age Not Recorded'}</span>
+          </div>
         </div>
       ),
     },
     {
-      header: 'LOCATION / ADDRESS',
+      header: 'ADDRESS & LOCATION',
       accessor: 'address',
+      className: 'min-w-[260px]',
       render: (c) => (
-        <div className="max-w-xs text-xs text-slate-600 font-normal flex items-start gap-1.5">
-          <MapPin className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
-          <span className="line-clamp-2 leading-relaxed" title={c.address}>
-            {c.address || '—'}
-          </span>
+        <div className="py-1">
+          {c.address ? (
+            <div className="flex items-start gap-2 max-w-xs text-xs text-slate-700 leading-relaxed font-normal">
+              <div className="w-6 h-6 rounded-lg bg-rose-50 border border-rose-100 text-rose-500 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                <MapPin className="w-3.5 h-3.5" />
+              </div>
+              <span className="line-clamp-2" title={c.address}>
+                {c.address}
+              </span>
+            </div>
+          ) : (
+            <span className="text-xs text-slate-400 italic">
+              No residential address
+            </span>
+          )}
         </div>
       ),
     },
     {
       header: 'OPD STATUS',
       accessor: 'is_active',
+      className: 'min-w-[140px]',
       render: (c) => (
-        <span
-          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium border ${
-            c.is_active
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-200/90 shadow-2xs'
-              : 'bg-slate-100 text-slate-600 border-slate-200'
-          }`}
-        >
-          <span
-            className={`w-2 h-2 rounded-full ${
-              c.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
-            }`}
-          />
-          {c.is_active ? 'Active OPD' : 'Inactive'}
-        </span>
+        <div className="py-1">
+          {c.is_active ? (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/90 shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span>Active OPD</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
+              <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0" />
+              <span>Inactive</span>
+            </span>
+          )}
+        </div>
       ),
     },
     {
       header: 'REGISTERED ON',
       accessor: 'created_at',
+      className: 'min-w-[150px]',
       render: (c) => {
         const dateObj = new Date(c.created_at);
         return (
-          <div className="space-y-0.5">
-            <div className="text-[11px] font-semibold text-slate-800">
+          <div className="space-y-0.5 py-1">
+            <div className="text-xs font-bold text-slate-800">
               {dateObj.toLocaleDateString('en-US', {
                 month: 'short',
                 day: 'numeric',
                 year: 'numeric',
               })}
             </div>
-            <div className="text-[10px] text-slate-400 font-mono font-normal">
-              {dateObj.toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
+            <div className="text-[11px] text-slate-400 font-mono font-medium flex items-center gap-1">
+              <Clock className="w-3 h-3 text-slate-400 shrink-0" />
+              <span>
+                {dateObj.toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </span>
             </div>
           </div>
         );
@@ -296,27 +326,28 @@ export default function AdminCustomersPage() {
     {
       header: 'ACTIONS',
       accessor: 'actions',
+      className: 'w-[140px] text-right',
       render: (c) => {
         const isOwner = Number(c.admin_id) === Number(user?.id);
 
         return (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center justify-end gap-1.5 py-1">
             <button
               type="button"
               onClick={() => setSelectedCustomer(c)}
-              className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all cursor-pointer shadow-2xs"
+              className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-200 text-slate-600 hover:text-blue-600 transition-all shadow-2xs hover:shadow-xs cursor-pointer group/btn"
               title="View Patient Medical Chart"
             >
-              <Eye className="w-4 h-4" />
+              <Eye className="w-4 h-4 text-slate-500 group-hover/btn:text-blue-600 transition-colors" />
             </button>
             {isOwner ? (
               <>
                 <Link
                   to={`/admin/customers/${c.id}/edit`}
-                  className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all shadow-2xs"
+                  className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-indigo-50 hover:border-indigo-200 text-slate-600 hover:text-indigo-600 transition-all shadow-2xs hover:shadow-xs cursor-pointer group/btn"
                   title="Edit Patient Record"
                 >
-                  <Edit className="w-4 h-4" />
+                  <Edit className="w-4 h-4 text-slate-500 group-hover/btn:text-indigo-600 transition-colors" />
                 </Link>
                 <button
                   type="button"
@@ -327,15 +358,15 @@ export default function AdminCustomersPage() {
                       isLoading: false,
                     })
                   }
-                  className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer shadow-2xs"
+                  className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-rose-50 hover:border-rose-200 text-slate-400 hover:text-rose-600 transition-all shadow-2xs hover:shadow-xs cursor-pointer group/btn"
                   title="Delete Patient Record"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-4 h-4 text-slate-400 group-hover/btn:text-rose-600 transition-colors" />
                 </button>
               </>
             ) : (
               <span
-                className="p-2 text-slate-400 inline-flex items-center cursor-not-allowed"
+                className="p-2 rounded-xl border border-slate-100 bg-slate-50 text-slate-400 inline-flex items-center cursor-not-allowed shadow-2xs"
                 title={`Registered by ${c.admin?.name || 'another admin'} (Read-only)`}
               >
                 <Lock className="w-4 h-4 text-slate-400" />

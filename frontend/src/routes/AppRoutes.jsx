@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 // Super Admin Module (Dedicated, Isolated Architecture)
 import SuperAdminLayout from '../superadmin/layouts/SuperAdminLayout';
 import SuperAdminProtectedRoute from '../superadmin/auth/SuperAdminProtectedRoute';
+import SuperAdminGuestRoute from './SuperAdminGuestRoute';
 import SuperAdminLoginPage from '../superadmin/pages/SuperAdminLoginPage';
 import SuperAdminForgotPasswordPage from '../superadmin/pages/SuperAdminForgotPasswordPage';
 import SuperAdminResetPasswordPage from '../superadmin/pages/SuperAdminResetPasswordPage';
@@ -30,6 +31,7 @@ import SuperAdminInventoryStocksPage from '../superadmin/inventory/SuperAdminInv
 // Admin Module (Panel 2 - Separate Team Developer)
 import AdminLayout from '../layouts/AdminLayout';
 import AdminProtectedRoute from './AdminProtectedRoute';
+import AdminGuestRoute from './AdminGuestRoute';
 import AdminLoginPage from '../pages/admin/AdminLoginPage';
 import AdminForgotPasswordPage from '../pages/admin/AdminForgotPasswordPage';
 import AdminResetPasswordPage from '../pages/admin/AdminResetPasswordPage';
@@ -64,15 +66,18 @@ import LandingPage from '../pages/LandingPage';
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Root Portal Switcher */}
+      {/* Root Portal Switcher (Redirects to dashboard if logged in) */}
       <Route path="/" element={<LandingPage />} />
 
       {/* ======================================================== */}
-      {/* 1. Super Admin Public Routes (Dedicated Auth)             */}
+      {/* 1. Super Admin Public / Guest Routes (Dedicated Auth)    */}
       {/* ======================================================== */}
-      <Route path="/superadmin" element={<SuperAdminLoginPage />} />
-      <Route path="/superadmin/forgot-password" element={<SuperAdminForgotPasswordPage />} />
-      <Route path="/superadmin/reset-password" element={<SuperAdminResetPasswordPage />} />
+      <Route element={<SuperAdminGuestRoute />}>
+        <Route path="/superadmin" element={<SuperAdminLoginPage />} />
+        <Route path="/superadmin/login" element={<SuperAdminLoginPage />} />
+        <Route path="/superadmin/forgot-password" element={<SuperAdminForgotPasswordPage />} />
+        <Route path="/superadmin/reset-password" element={<SuperAdminResetPasswordPage />} />
+      </Route>
 
       {/* ======================================================== */}
       {/* 2. Super Admin Protected Routes                          */}
@@ -126,11 +131,14 @@ export default function AppRoutes() {
       </Route>
 
       {/* ======================================================== */}
-      {/* 3. Admin Public Routes (Panel 2 - Isolated)              */}
+      {/* 3. Admin Public / Guest Routes (Panel 2 - Isolated)      */}
       {/* ======================================================== */}
-      <Route path="/admin" element={<AdminLoginPage />} />
-      <Route path="/admin/forgot-password" element={<AdminForgotPasswordPage />} />
-      <Route path="/admin/reset-password" element={<AdminResetPasswordPage />} />
+      <Route element={<AdminGuestRoute />}>
+        <Route path="/admin" element={<AdminLoginPage />} />
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin/forgot-password" element={<AdminForgotPasswordPage />} />
+        <Route path="/admin/reset-password" element={<AdminResetPasswordPage />} />
+      </Route>
 
       {/* ======================================================== */}
       {/* 4. Admin Protected Routes (Panel 2 - Isolated)           */}
@@ -169,7 +177,7 @@ export default function AppRoutes() {
         </Route>
       </Route>
 
-      {/* Fallback to root */}
+      {/* Fallback to root (LandingPage will redirect if logged in) */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
