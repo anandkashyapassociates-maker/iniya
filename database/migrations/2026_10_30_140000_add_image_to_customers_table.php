@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('customers', 'image')) {
+        if (! Schema::hasColumn('customers', 'image')) {
             Schema::table('customers', function (Blueprint $table) {
                 $table->string('image', 255)->nullable()->after('address');
             });
@@ -28,4 +28,3 @@ return new class extends Migration
         });
     }
 };
-

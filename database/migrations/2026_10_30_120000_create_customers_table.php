@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('customers')) {
+        if (! Schema::hasTable('customers')) {
             Schema::create('customers', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('admin_id')
@@ -38,4 +38,3 @@ return new class extends Migration
         Schema::dropIfExists('customers');
     }
 };
-

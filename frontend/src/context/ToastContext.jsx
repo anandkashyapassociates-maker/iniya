@@ -26,6 +26,8 @@ export function ToastProvider({ children }) {
     info: (msg, duration) => addToast('info', msg, duration),
     warning: (msg, duration) => addToast('warning', msg, duration),
   };
+  // Self-reference so both `const toast = useToast()` and `const { toast } = useToast()` work reliably
+  toast.toast = toast;
 
   return (
     <ToastContext.Provider value={{ toasts, toast, removeToast }}>

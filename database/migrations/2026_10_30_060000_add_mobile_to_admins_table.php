@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('admins', 'mobile')) {
+        if (! Schema::hasColumn('admins', 'mobile')) {
             Schema::table('admins', function (Blueprint $table) {
                 $table->string('mobile', 25)->nullable()->after('email')->index();
             });
@@ -29,4 +29,3 @@ return new class extends Migration
         });
     }
 };
-

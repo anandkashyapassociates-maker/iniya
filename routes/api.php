@@ -4,12 +4,16 @@ use App\Http\Controllers\Api\Admin\AdminAuthController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminProfileController;
 use App\Http\Controllers\Api\Admin\AppointmentController;
+use App\Http\Controllers\Api\Admin\AppointmentSessionController;
 use App\Http\Controllers\Api\Admin\CategoryController;
 use App\Http\Controllers\Api\Admin\CustomerController;
 use App\Http\Controllers\Api\Admin\InventoryBrandController;
 use App\Http\Controllers\Api\Admin\InventoryCategoryController;
 use App\Http\Controllers\Api\Admin\InventoryStockController;
+use App\Http\Controllers\Api\Admin\MasterAppointmentController;
 use App\Http\Controllers\Api\Admin\ProductController;
+use App\Http\Controllers\Api\Admin\ServiceManagementController;
+use App\Http\Controllers\Api\Admin\SessionRescheduleController;
 use App\Http\Controllers\Api\SuperAdmin\AdminManagementController;
 use App\Http\Controllers\Api\SuperAdmin\SalesMemberManagementController;
 use App\Http\Controllers\Api\SuperAdmin\StaffManagementController;
@@ -175,7 +179,7 @@ Route::prefix('admin')
         Route::match(['put', 'post'], '/categories/{id}', [CategoryController::class, 'update']);
         Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
-        // Appointment Management (Session-wise, Staff assignment, Reschedule & Cancel)
+        // Appointment Management (Legacy compatibility)
         Route::get('/appointments/stats', [AppointmentController::class, 'stats']);
         Route::get('/appointments', [AppointmentController::class, 'index']);
         Route::post('/appointments', [AppointmentController::class, 'store']);
@@ -224,5 +228,52 @@ Route::prefix('admin')
             Route::get('/brands/{id}', [InventoryBrandController::class, 'show']);
             Route::match(['put', 'post'], '/brands/{id}', [InventoryBrandController::class, 'update']);
             Route::delete('/brands/{id}', [InventoryBrandController::class, 'destroy']);
+        });
+
+        // ==========================================
+        // MASTER APPOINTMENT & MULTIPLE SESSIONS SYSTEM
+        // ==========================================
+        Route::get('/master-appointments/stats', [MasterAppointmentController::class, 'stats']);
+        Route::get('/master-appointments/options', [MasterAppointmentController::class, 'options']);
+        Route::get('/master-appointments', [MasterAppointmentController::class, 'index']);
+        Route::post('/master-appointments', [MasterAppointmentController::class, 'store']);
+        Route::get('/master-appointments/{id}', [MasterAppointmentController::class, 'show']);
+        Route::put('/master-appointments/{id}', [MasterAppointmentController::class, 'update']);
+        Route::delete('/master-appointments/{id}', [MasterAppointmentController::class, 'destroy']);
+
+        // Individual Session Management
+        Route::post('/master-appointments/{id}/sessions', [AppointmentSessionController::class, 'store']);
+        Route::put('/sessions/{id}', [AppointmentSessionController::class, 'update']);
+        Route::patch('/sessions/{id}/status', [AppointmentSessionController::class, 'updateStatus']);
+        Route::delete('/sessions/{id}', [AppointmentSessionController::class, 'destroy']);
+        Route::get('/calendar/sessions', [AppointmentSessionController::class, 'calendar']);
+
+        // Session Reschedule & History (Strict Pending Validation & Concurrency Locked)
+        Route::post('/sessions/{id}/reschedule', [SessionRescheduleController::class, 'reschedule']);
+        Route::get('/sessions/{id}/reschedule-history', [SessionRescheduleController::class, 'history']);
+
+        // ==========================================
+        // CATEGORY, SUB-CATEGORY & SERVICE MANAGEMENT
+        // ==========================================
+        Route::prefix('services-management')->group(function () {
+            Route::get('/tree', [ServiceManagementController::class, 'getTree']);
+
+            // Categories
+            Route::get('/categories', [ServiceManagementController::class, 'getCategories']);
+            Route::post('/categories', [ServiceManagementController::class, 'storeCategory']);
+            Route::put('/categories/{id}', [ServiceManagementController::class, 'updateCategory']);
+            Route::delete('/categories/{id}', [ServiceManagementController::class, 'deleteCategory']);
+
+            // Sub-Categories
+            Route::get('/sub-categories', [ServiceManagementController::class, 'getSubCategories']);
+            Route::post('/sub-categories', [ServiceManagementController::class, 'storeSubCategory']);
+            Route::put('/sub-categories/{id}', [ServiceManagementController::class, 'updateSubCategory']);
+            Route::delete('/sub-categories/{id}', [ServiceManagementController::class, 'deleteSubCategory']);
+
+            // Services
+            Route::get('/services', [ServiceManagementController::class, 'getServices']);
+            Route::post('/services', [ServiceManagementController::class, 'storeService']);
+            Route::put('/services/{id}', [ServiceManagementController::class, 'updateService']);
+            Route::delete('/services/{id}', [ServiceManagementController::class, 'deleteService']);
         });
     });

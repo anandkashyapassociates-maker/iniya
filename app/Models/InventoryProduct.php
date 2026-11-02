@@ -226,4 +226,12 @@ class InventoryProduct extends Model
                 ->orWhere('quantity', 0);
         });
     }
+
+    /**
+     * Appointment sessions that use this product.
+     */
+    public function appointmentSessions(): HasMany
+    {
+        return $this->hasMany(AppointmentSession::class, 'inventory_product_id');
+    }
 }
