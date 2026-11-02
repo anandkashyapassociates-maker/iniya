@@ -116,19 +116,17 @@ export default function SuperAdminInventoryStocksPage() {
       className: 'min-w-[240px] w-[26%]',
       render: (p) => (
         <div className="flex items-center gap-3 py-1">
-          <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
-            {p.product_image || p.image_url ? (
+          <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs relative">
+            <Package className="w-4 h-4 text-slate-400" />
+            {(p.product_image || p.image_url) && (
               <img
                 src={p.image_url || p.product_image}
                 alt={p.product_name}
-                className="w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover rounded-xl"
                 onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.style.display = 'none';
+                  e.currentTarget.style.display = 'none';
                 }}
               />
-            ) : (
-              <Package className="w-4 h-4 text-slate-400" />
             )}
           </div>
           <div className="min-w-0">

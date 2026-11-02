@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminActivityLog;
 use App\Models\AppointmentSession;
 use App\Models\Customer;
+use App\Models\InventoryProduct;
 use App\Models\MasterAppointment;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
