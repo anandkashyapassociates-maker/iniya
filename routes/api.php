@@ -115,6 +115,7 @@ Route::prefix('superadmin')
             Route::get('/stocks/low-stock', [SuperAdminInventoryController::class, 'lowStock']);
             Route::post('/stocks/{id}/add', [SuperAdminInventoryController::class, 'addStock']);
             Route::match(['put', 'post'], '/stocks/{id}', [SuperAdminInventoryController::class, 'updateStock']);
+            Route::get('/stocks/{id}/logs', [SuperAdminInventoryController::class, 'stockLogs']);
             Route::get('/products', [SuperAdminInventoryController::class, 'products']);
             Route::get('/products/{id}', [SuperAdminInventoryController::class, 'showProduct']);
             Route::match(['put', 'post'], '/products/{id}', [SuperAdminInventoryController::class, 'updateProduct']);

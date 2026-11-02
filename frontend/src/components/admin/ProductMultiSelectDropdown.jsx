@@ -6,10 +6,47 @@ export default function ProductMultiSelectDropdown({
   selectedIds = [],
   onChange,
   placeholder = '-- Select Inventory Products --',
+  placement = 'auto',
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
   const [search, setSearch] = useState('');
   const dropdownRef = useRef(null);
+
+  // Auto detect whether to open upwards or downwards
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (placement === 'top') {
+      setOpenUpward(true);
+      return;
+    }
+    if (placement === 'bottom') {
+      setOpenUpward(false);
+      return;
+    }
+
+    const checkPlacement = () => {
+      if (dropdownRef.current) {
+        const rect = dropdownRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        if (spaceBelow < 290 && spaceAbove > spaceBelow) {
+          setOpenUpward(true);
+        } else {
+          setOpenUpward(false);
+        }
+      }
+    };
+
+    checkPlacement();
+    window.addEventListener('resize', checkPlacement);
+    window.addEventListener('scroll', checkPlacement, true);
+    return () => {
+      window.removeEventListener('resize', checkPlacement);
+      window.removeEventListener('scroll', checkPlacement, true);
+    };
+  }, [isOpen, placement]);
 
   // Close when clicking outside
   useEffect(() => {
@@ -101,7 +138,11 @@ export default function ProductMultiSelectDropdown({
 
       {/* Popover Dropdown with Checkboxes */}
       {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden animate-fadeIn">
+        <div
+          className={`absolute z-50 left-0 right-0 ${
+            openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+          } bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden animate-fadeIn`}
+        >
           {/* Search Bar & Quick Actions */}
           <div className="p-2.5 border-b border-slate-100 bg-slate-50/80 space-y-2">
             <div className="relative">

@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Eye,
   ShieldCheck,
+  Lock,
 } from 'lucide-react';
 import adminMasterAppointmentService from '../../services/adminMasterAppointmentService';
 import { useToast } from '../../context/ToastContext';
@@ -223,7 +224,7 @@ export default function AdminMasterAppointmentEditPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {/* Customer Dropdown */}
-            <div className="lg:col-span-2">
+            <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                 Patient / Customer <span className="text-rose-500">*</span>
               </label>
@@ -276,40 +277,23 @@ export default function AdminMasterAppointmentEditPage() {
               </select>
             </div>
 
-            {/* Total Appointment Fees */}
+            {/* Total Appointment Fees (Read-Only) */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                 Appointment Fees (₹) <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-bold text-sm">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 font-bold text-sm pointer-events-none">
                   ₹
                 </span>
                 <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={appointmentFees}
-                  onChange={(e) => setAppointmentFees(e.target.value)}
-                  placeholder="0.00"
-                  required
-                  className="w-full pl-8 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-colors"
+                  type="text"
+                  readOnly
+                  disabled
+                  value={Number(appointmentFees || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  className="w-full pl-8 pr-4 py-2.5 bg-slate-100/90 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 cursor-not-allowed select-none focus:outline-none shadow-xs"
                 />
               </div>
-            </div>
-
-            {/* Notes */}
-            <div className="lg:col-span-3">
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                Clinical Notes / Remarks (Optional)
-              </label>
-              <input
-                type="text"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Special medical requirements, patient notes, consultation tags..."
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-colors"
-              />
             </div>
           </div>
         </div>

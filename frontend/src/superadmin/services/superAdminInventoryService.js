@@ -80,6 +80,11 @@ export const superAdminInventoryService = {
     const response = await superAdminApi.get('/superadmin/inventory/stocks/low-stock', { params });
     return response.data;
   },
+
+  async getStockLogs(id) {
+    const response = await superAdminApi.get(`/superadmin/inventory/stocks/${id}/logs`);
+    return response.data;
+  },
 };
 
 export default superAdminInventoryService;

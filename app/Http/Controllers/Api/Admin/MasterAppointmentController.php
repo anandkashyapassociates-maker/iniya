@@ -201,7 +201,7 @@ class MasterAppointmentController extends Controller
             'appointment_fees' => ['required', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'sessions' => ['required', 'array', 'min:1'],
-            'sessions.*.service_id' => ['nullable', 'exists:services,id'],
+            'sessions.*.service_id' => ['required', 'exists:services,id'],
             'sessions.*.treatment_details' => ['nullable', 'string', 'max:5000'],
             'sessions.*.session_date' => ['required', 'date', 'after_or_equal:today'],
             'sessions.*.session_time' => ['required', 'string', 'max:20'],

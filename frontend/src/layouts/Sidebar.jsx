@@ -119,7 +119,7 @@ export default function Sidebar({
         },
         {
           to: '/admin/appointments/services',
-          label: 'Services',
+          label: 'Create Services',
           icon: Sparkles,
         },
         {

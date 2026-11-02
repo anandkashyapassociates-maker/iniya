@@ -21,10 +21,10 @@ import {
   CheckCircle2,
   Clock,
   ExternalLink,
-  Eye,
-  SlidersHorizontal,
-  RotateCcw,
-  ChevronRight,
+  FileText,
+  PlusCircle,
+  User,
+  Calendar,
 } from 'lucide-react';
 import DataTable from '../../../components/DataTable';
 import adminInventoryService from '../../../services/adminInventoryService';
@@ -81,9 +81,6 @@ export default function AdminInventoryStocksPage() {
       setPage(1);
     }
   }, [searchParams]);
-
-  // Inspect View Modal State
-  const [viewProduct, setViewProduct] = useState(null);
 
   // Modal State
   const [stockModal, setStockModal] = useState({
@@ -251,11 +248,6 @@ export default function AdminInventoryStocksPage() {
       errs.mrp = 'Please enter a valid MRP.';
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
-    if (formData.inventory_date && formData.inventory_date < todayStr) {
-      errs.inventory_date = 'Inventory date cannot be in the past. Please select today or a future date.';
-    }
-
     if (Object.keys(errs).length > 0) {
       setFormErrors(errs);
       return;
@@ -351,52 +343,43 @@ export default function AdminInventoryStocksPage() {
 
   const columns = [
     {
-      header: '#',
-      className: 'w-14 text-center',
+      header: 'SR. NO.',
+      className: 'w-[70px] text-center',
       render: (_, index) => {
         const srNo = (pagination?.from || 1) + index;
         return (
-          <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-500 font-mono text-[11px] font-semibold tabular-nums">
-            {srNo < 10 ? `0${srNo}` : srNo}
+          <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-600 font-mono text-[11px] font-medium">
+            {srNo}
           </span>
         );
       },
     },
     {
-      header: 'PRODUCT',
-      className: 'min-w-[260px]',
+      header: 'PRODUCT DETAILS',
+      className: 'w-[24%]',
       render: (p) => (
-        <div className="flex items-center gap-3 py-1">
-          <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
-            {p.product_image || p.image_url ? (
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+            {p.product_image ? (
               <img
                 src={p.image_url || p.product_image}
                 alt={p.product_name}
                 className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.style.display = 'none';
-                }}
               />
             ) : (
-              <Package className="w-4 h-4 text-slate-400" />
+              <Package className="w-5 h-5 text-slate-400" />
             )}
           </div>
           <div className="min-w-0">
-            <button
-              type="button"
-              onClick={() => setViewProduct(p)}
-              className="text-left font-bold text-xs sm:text-[13px] text-slate-900 hover:text-blue-600 transition-colors block truncate w-full cursor-pointer leading-snug"
-              title={p.product_name}
-            >
+            <span className="text-xs font-bold text-slate-900 block truncate" title={p.product_name}>
               {p.product_name}
-            </button>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200/60 truncate max-w-[130px]">
+            </span>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200/60 truncate max-w-[120px]">
                 {p.category?.name || 'General'}
               </span>
               {p.brand?.name && (
-                <span className="text-[10px] text-slate-500 font-normal truncate max-w-[110px]">
+                <span className="text-[10px] text-slate-500 font-normal truncate max-w-[100px]">
                   • {p.brand.name}
                 </span>
               )}
@@ -407,7 +390,7 @@ export default function AdminInventoryStocksPage() {
     },
     {
       header: 'AVAILABLE STOCK',
-      className: 'min-w-[210px] w-[220px]',
+      className: 'min-w-[210px] w-[18%]',
       render: (p) => {
         const qty = p.quantity ?? 0;
         const threshold = p.low_stock_threshold ?? 10;
@@ -473,100 +456,84 @@ export default function AdminInventoryStocksPage() {
     },
     {
       header: 'AVG. PRICE',
-      className: 'w-[130px]',
+      className: 'w-[10%]',
       render: (p) => {
         const avgPrice = p.calculated_average_price ?? p.average_price ?? p.buy_price;
-        const hasPrice = avgPrice && Number(avgPrice) > 0;
-
-        return hasPrice ? (
-          <span className="text-xs sm:text-sm font-bold font-mono text-slate-800 tabular-numbers">
+        return avgPrice && Number(avgPrice) > 0 ? (
+          <span className="text-xs font-bold font-mono text-slate-800">
             ₹{parseFloat(avgPrice).toFixed(2)}
           </span>
         ) : (
-          <span className="text-slate-400 font-mono text-xs">—</span>
+          <span className="text-slate-400 italic text-[11px]">—</span>
         );
       },
     },
     {
-      header: 'VENDOR',
-      className: 'w-[160px]',
-      render: (p) => (
-        <span
-          className={`text-xs truncate block max-w-[150px] ${
-            p.vendor ? 'font-semibold text-slate-800' : 'text-slate-400 italic'
-          }`}
-          title={p.vendor?.vendor_name || 'No Vendor Assigned'}
-        >
-          {p.vendor ? p.vendor.vendor_name : '—'}
-        </span>
-      ),
-    },
-    {
-      header: 'ACTIONS',
-      className: 'min-w-[210px] text-right',
+      header: 'STOCK VALUE',
+      className: 'w-[13%]',
       render: (p) => {
-        const isStockOwner = p.inventory_updated_by && Number(p.inventory_updated_by) === Number(user?.id);
-        const hasStock = (p.quantity ?? 0) > 0 || p.inventory_updated_by;
+        const qty = Number(p.quantity) || 0;
+        const avgPrice = Number(p.calculated_average_price ?? p.average_price ?? p.buy_price ?? 0);
+        const stockValue = qty * avgPrice;
 
         return (
-          <div className="flex items-center justify-end gap-1.5">
-            {/* Add Inventory Button */}
-            <button
-              onClick={() => openAddStockModal(p)}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200/80 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
-              title="Add Inventory Stock"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>+ Stock</span>
-            </button>
-
-            {/* Issue Inventory Button */}
-            <button
-              onClick={() => openIssueStockModal(p)}
-              disabled={(p.quantity ?? 0) <= 0}
-              className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold shadow-2xs transition-all cursor-pointer ${
-                (p.quantity ?? 0) <= 0
-                  ? 'bg-slate-50 text-slate-300 border border-slate-200 cursor-not-allowed opacity-50'
-                  : 'bg-amber-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-amber-200/80 hover:shadow-xs'
-              }`}
-              title={(p.quantity ?? 0) <= 0 ? 'No stock available to issue' : 'Issue / Deduct Inventory Stock'}
-            >
-              <Minus className="w-3.5 h-3.5" />
-              <span>Issue</span>
-            </button>
-
-            {/* Inspect Details Button */}
-            <button
-              type="button"
-              onClick={() => setViewProduct(p)}
-              className="p-1.5 rounded-xl border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-              title="Inspect Details"
-            >
-              <Eye className="w-3.5 h-3.5" />
-            </button>
-
-            {/* Edit Stock Button (strictly owner only) */}
-            {hasStock && (
-              isStockOwner ? (
-                <button
-                  onClick={() => openEditStockModal(p)}
-                  className="p-1.5 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors cursor-pointer"
-                  title="Edit Inventory Details"
-                >
-                  <Edit className="w-3.5 h-3.5" />
-                </button>
-              ) : (
-                <span
-                  className="p-1.5 rounded-xl text-slate-400 inline-flex items-center cursor-not-allowed"
-                  title={`Inventory added by ${p.inventory_updater?.name || 'another admin'} (Read-only)`}
-                >
-                  <Lock className="w-3.5 h-3.5 text-slate-400" />
-                </span>
-              )
-            )}
+          <div>
+            <span className="text-xs font-bold font-mono text-slate-900 block">
+              ₹{stockValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+            <span className="text-[10px] text-slate-400 font-mono">
+              {qty} × ₹{avgPrice.toFixed(2)}
+            </span>
           </div>
         );
       },
+    },
+    {
+      header: 'ADD INVENTORY',
+      className: 'w-[13%] text-center',
+      render: (p) => (
+        <button
+          onClick={() => openAddStockModal(p)}
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200/80 text-xs font-semibold shadow-2xs transition-all cursor-pointer whitespace-nowrap"
+          title="Add Inventory Stock"
+        >
+          <Plus className="w-3.5 h-3.5 shrink-0" />
+          <span>Add Inventory</span>
+        </button>
+      ),
+    },
+    {
+      header: 'LESS INVENTORY',
+      className: 'w-[13%] text-center',
+      render: (p) => (
+        <button
+          onClick={() => openIssueStockModal(p)}
+          disabled={(p.quantity ?? 0) <= 0}
+          className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-2xs transition-all whitespace-nowrap ${
+            (p.quantity ?? 0) <= 0
+              ? 'bg-slate-50 text-slate-400 border border-slate-200 cursor-not-allowed opacity-60'
+              : 'bg-amber-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-amber-200/80 cursor-pointer'
+          }`}
+          title={(p.quantity ?? 0) <= 0 ? 'No stock available to less' : 'Less / Deduct Inventory Stock'}
+        >
+          <Minus className="w-3.5 h-3.5 shrink-0" />
+          <span>Less Inventory</span>
+        </button>
+      ),
+    },
+    {
+      header: 'DETAILS',
+      className: 'w-[10%] text-center',
+      render: (p) => (
+        <Link
+          to={`/admin/inventory/stocks/${p.id}`}
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200/80 text-xs font-semibold shadow-2xs transition-all whitespace-nowrap"
+          title="View Complete Stock History & Details"
+        >
+          <FileText className="w-3.5 h-3.5 shrink-0" />
+          <span>Details</span>
+        </Link>
+      ),
     },
   ];
 
@@ -590,31 +557,6 @@ export default function AdminInventoryStocksPage() {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Low Stock Alerts Quick Filter Button */}
-          <button
-            type="button"
-            onClick={() => {
-              setStockStatus(stockStatus === 'low_stock' ? 'all' : 'low_stock');
-              setPage(1);
-            }}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
-              stockStatus === 'low_stock'
-                ? 'bg-amber-600 text-white ring-2 ring-amber-400'
-                : metrics.total_alerts > 0
-                  ? 'bg-amber-500 hover:bg-amber-600 text-white animate-pulse'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-            }`}
-            title="Filter products requiring immediate replenishment"
-          >
-            <AlertTriangle className="w-4 h-4" />
-            <span>Low Inventory</span>
-            {metrics.total_alerts > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full bg-white text-amber-700 font-mono text-[11px] font-bold">
-                {metrics.total_alerts}
-              </span>
-            )}
-          </button>
-
           <button
             onClick={fetchStocks}
             disabled={isLoading}
@@ -627,259 +569,109 @@ export default function AdminInventoryStocksPage() {
         </div>
       </div>
 
-      {/* Prominent Alert Banner if low inventory exists */}
-      {metrics.total_alerts > 0 && (
-        <div className="bg-amber-50 border border-amber-200/90 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-amber-900">
-                Critical Stock Replenishment Notice
-              </h4>
-              <p className="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
-                <strong>{metrics.total_alerts} product(s)</strong> have reached critical or low stock threshold ({metrics.out_of_stock_count} completely depleted). Procure stock to avoid clinical interruptions.
-              </p>
-            </div>
+      {/* Filter and Search Bar */}
+      <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex-1 flex flex-col sm:flex-row items-center gap-2.5">
+          {/* Search */}
+          <div className="relative w-full sm:w-72">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search product, category, vendor..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:outline-hidden transition-all"
+            />
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setStockStatus('low_stock');
+
+          {/* Stock Status Filter */}
+          <select
+            value={stockStatus}
+            onChange={(e) => {
+              setStockStatus(e.target.value);
               setPage(1);
             }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-2xs self-start sm:self-auto shrink-0 transition-colors cursor-pointer"
+            className="w-full sm:w-44 px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:outline-hidden transition-all text-slate-700"
           >
-            <span>Filter Low Stock</span>
-            <Filter className="w-3.5 h-3.5" />
+            <option value="all">All Stock Statuses</option>
+            <option value="in_stock">In Stock (Healthy)</option>
+            <option value="low_stock">Low Stock (Threshold Warning)</option>
+            <option value="out_of_stock">Out of Stock (Depleted)</option>
+          </select>
+
+          {/* Category Filter */}
+          {categories.length > 0 && (
+            <select
+              value={selectedCategory}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setPage(1);
+              }}
+              className="w-full sm:w-40 px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:outline-hidden transition-all text-slate-700"
+            >
+              <option value="">All Categories</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {/* Brand Filter */}
+          {brands.length > 0 && (
+            <select
+              value={selectedBrand}
+              onChange={(e) => {
+                setSelectedBrand(e.target.value);
+                setPage(1);
+              }}
+              className="w-full sm:w-36 px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:outline-hidden transition-all text-slate-700"
+            >
+              <option value="">All Brands</option>
+              {brands.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {(search || selectedCategory || selectedBrand || stockStatus !== 'all') && (
+          <button
+            onClick={() => {
+              setSearch('');
+              setSelectedCategory('');
+              setSelectedBrand('');
+              setStockStatus('all');
+              setPage(1);
+            }}
+            className="text-xs font-semibold text-rose-600 hover:text-rose-700 self-end sm:self-auto cursor-pointer"
+          >
+            Reset Filters
           </button>
-        </div>
-      )}
-
-      {/* Main Unified Stock Table Card */}
-      <div className="w-full bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
-        {/* Top Control Bar: Quick Segment Status Tabs */}
-        <div className="px-5 sm:px-7 pt-5 sm:pt-6 pb-4 border-b border-slate-200/80 bg-slate-50/40">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-            <div className="flex items-center gap-2">
-              <SlidersHorizontal className="w-4 h-4 text-blue-600" />
-              <h3 className="text-xs font-bold text-slate-800 tracking-wide uppercase micro-label">
-                Stock Ledger Records
-              </h3>
-              {pagination?.total !== undefined && (
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-mono font-bold bg-blue-100 text-blue-700">
-                  {pagination.total} items
-                </span>
-              )}
-            </div>
-
-            {/* Quick Segment Filter Tabs */}
-            <div className="flex items-center gap-1.5 p-1 bg-slate-100/90 rounded-2xl border border-slate-200/70 overflow-x-auto">
-              <button
-                type="button"
-                onClick={() => {
-                  setStockStatus('all');
-                  setPage(1);
-                }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-                  stockStatus === 'all'
-                    ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <span>All Stocks</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                  stockStatus === 'all' ? 'bg-slate-100 text-slate-800' : 'bg-white text-slate-500'
-                }`}>
-                  {metrics.total_products}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setStockStatus('in_stock');
-                  setPage(1);
-                }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-                  stockStatus === 'in_stock'
-                    ? 'bg-white text-emerald-700 shadow-2xs font-bold'
-                    : 'text-slate-600 hover:text-emerald-700'
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>In Stock</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                  stockStatus === 'in_stock' ? 'bg-emerald-100 text-emerald-800' : 'bg-white text-slate-500'
-                }`}>
-                  {metrics.in_stock_count}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setStockStatus('low_stock');
-                  setPage(1);
-                }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-                  stockStatus === 'low_stock'
-                    ? 'bg-white text-amber-700 shadow-2xs font-bold'
-                    : 'text-slate-600 hover:text-amber-700'
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                <span>Low Stock</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                  stockStatus === 'low_stock' ? 'bg-amber-100 text-amber-800' : 'bg-white text-slate-500'
-                }`}>
-                  {metrics.low_stock_count}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setStockStatus('out_of_stock');
-                  setPage(1);
-                }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-                  stockStatus === 'out_of_stock'
-                    ? 'bg-white text-rose-700 shadow-2xs font-bold'
-                    : 'text-slate-600 hover:text-rose-700'
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                <span>Depleted</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                  stockStatus === 'out_of_stock' ? 'bg-rose-100 text-rose-800' : 'bg-white text-slate-500'
-                }`}>
-                  {metrics.out_of_stock_count}
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* Search & Dropdown Filters Bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-center">
-            {/* Search */}
-            <div className="lg:col-span-5 relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Search product, category, vendor..."
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                className="w-full pl-10 pr-9 py-2.5 bg-white border border-slate-200/90 rounded-xl text-xs text-slate-800 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs"
-              />
-              {search && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearch('');
-                    setPage(1);
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
-                  title="Clear Search"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-
-            {/* Category Filter */}
-            <div className="lg:col-span-3">
-              <div className="relative">
-                <Layers className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => {
-                    setSelectedCategory(e.target.value);
-                    setPage(1);
-                  }}
-                  className="w-full pl-8 pr-4 py-2.5 bg-white border border-slate-200/90 rounded-xl text-xs text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs cursor-pointer font-medium"
-                >
-                  <option value="">All Categories</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Brand Filter */}
-            <div className="lg:col-span-3">
-              <div className="relative">
-                <Building2 className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <select
-                  value={selectedBrand}
-                  onChange={(e) => {
-                    setSelectedBrand(e.target.value);
-                    setPage(1);
-                  }}
-                  className="w-full pl-8 pr-4 py-2.5 bg-white border border-slate-200/90 rounded-xl text-xs text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-2xs cursor-pointer font-medium"
-                >
-                  <option value="">All Brands</option>
-                  {brands.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Reset Filters Button */}
-            <div className="lg:col-span-1 flex items-center justify-end">
-              {(search || selectedCategory || selectedBrand || stockStatus !== 'all') ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearch('');
-                    setSelectedCategory('');
-                    setSelectedBrand('');
-                    setStockStatus('all');
-                    setPage(1);
-                  }}
-                  className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold transition-all shadow-2xs cursor-pointer"
-                  title="Clear all filters"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span className="lg:hidden">Reset</span>
-                </button>
-              ) : (
-                <div className="w-full text-center text-[10px] text-slate-400 font-mono hidden lg:block">
-                  Live
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Main Stock Table */}
-        <DataTable
-          containerClassName="w-full overflow-hidden"
-          columns={columns}
-          data={products}
-          isLoading={isLoading}
-          emptyTitle="No Stock Records Found"
-          emptyDescription="There are no inventory products matching your search or filters."
-          pagination={{
-            current_page: page,
-            last_page: pagination?.last_page || 1,
-            total: pagination?.total || 0,
-            from: pagination?.from || 0,
-            to: pagination?.to || 0,
-          }}
-          onPageChange={setPage}
-        />
+        )}
       </div>
+
+      {/* Main Stock Table */}
+      <DataTable
+        columns={columns}
+        data={products}
+        isLoading={isLoading}
+        emptyMessage="No inventory products found matching your criteria."
+        pagination={{
+          page,
+          totalPages: pagination?.last_page || 1,
+          total: pagination?.total || 0,
+          from: pagination?.from || 0,
+          to: pagination?.to || 0,
+          onPageChange: (newPage) => setPage(newPage),
+        }}
+      />
 
       {/* Add / Edit Inventory Modal */}
       {stockModal.isOpen && stockModal.product && (
@@ -1059,7 +851,6 @@ export default function AdminInventoryStocksPage() {
                 <input
                   type="date"
                   name="inventory_date"
-                  min={new Date().toISOString().split('T')[0]}
                   value={formData.inventory_date}
                   onChange={handleModalChange}
                   className={`w-full px-3 py-2 text-xs rounded-xl border ${
@@ -1070,7 +861,7 @@ export default function AdminInventoryStocksPage() {
                 {formErrors.inventory_date && (
                   <p className="text-[11px] text-rose-500 mt-1">{formErrors.inventory_date}</p>
                 )}
-                <p className="text-[10px] text-slate-400 mt-1">Date must be today or a future date (past dates not allowed).</p>
+                <p className="text-[10px] text-slate-400 mt-1">Date of stock procurement / addition (past or current date allowed).</p>
               </div>
 
               {/* Notes */}
@@ -1135,7 +926,7 @@ export default function AdminInventoryStocksPage() {
                 </div>
                 <div>
                   <h3 className="text-base font-bold font-display text-slate-900">
-                    Issue Inventory Stock
+                    Less / Issue Inventory Stock
                   </h3>
                   <p className="text-xs text-slate-500 font-normal mt-0.5">
                     Deduct / less stock quantity for clinical use, dispensary, or department.
@@ -1214,7 +1005,6 @@ export default function AdminInventoryStocksPage() {
                   </label>
                   <input
                     type="date"
-                    min={new Date().toISOString().split('T')[0]}
                     value={issueFormData.inventory_date}
                     onChange={(e) => setIssueFormData({ ...issueFormData, inventory_date: e.target.value })}
                     className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-100 font-mono"
@@ -1283,129 +1073,6 @@ export default function AdminInventoryStocksPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-      {/* ======================================================== */}
-      {/* MODAL: VIEW PRODUCT STOCK DETAILS (INSPECT)              */}
-      {/* ======================================================== */}
-      {viewProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden animate-scale-up">
-            <div className="px-6 py-4 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 text-blue-300 flex items-center justify-center font-bold">
-                  <Package className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold tracking-tight">Product Stock Ledger Details</h3>
-                  <p className="text-xs text-slate-300 truncate max-w-xs font-medium">
-                    {viewProduct.product_name}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setViewProduct(null)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4 text-xs">
-              <div className="grid grid-cols-3 gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/90 shadow-2xs">
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider block">Available Stock</span>
-                  <span className="text-lg font-black font-mono text-slate-900 mt-0.5 block">
-                    {viewProduct.quantity ?? 0}{' '}
-                    <span className="text-xs font-medium text-slate-500">{viewProduct.business_unit || 'Units'}</span>
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider block">Last Added Qty</span>
-                  <span className="text-lg font-black font-mono text-emerald-700 mt-0.5 block">
-                    {viewProduct.last_added_quantity ?? viewProduct.quantity ?? 0}{' '}
-                    <span className="text-xs font-medium text-slate-500">{viewProduct.business_unit || 'Units'}</span>
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider block">Low Threshold</span>
-                  <span className="text-lg font-black font-mono text-amber-700 mt-0.5 block">
-                    {viewProduct.low_stock_threshold ?? 10}{' '}
-                    <span className="text-xs font-medium text-slate-500">Units</span>
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/90 shadow-2xs">
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider block">Buy Price</span>
-                  <span className="text-sm font-bold font-mono text-slate-800 mt-0.5 block">
-                    {viewProduct.buy_price ? `₹${parseFloat(viewProduct.buy_price).toFixed(2)}` : '—'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider block">MRP</span>
-                  <span className="text-sm font-bold font-mono text-blue-600 mt-0.5 block">
-                    {viewProduct.mrp ? `₹${parseFloat(viewProduct.mrp).toFixed(2)}` : '—'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider block">Average Cost</span>
-                  <span className="text-sm font-bold font-mono text-slate-800 mt-0.5 block">
-                    {viewProduct.average_price ? `₹${parseFloat(viewProduct.average_price).toFixed(2)}` : '—'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-2.5 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/90 shadow-2xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500 font-medium">Allocated Vendor:</span>
-                  <span className="font-semibold text-slate-800">
-                    {viewProduct.vendor?.vendor_name || 'No Vendor Assigned'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500 font-medium">Last Stocked By:</span>
-                  <span className="font-semibold text-slate-800">
-                    {viewProduct.inventory_updater?.name || 'Not yet recorded'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500 font-medium">Last Updated At:</span>
-                  <span className="font-semibold text-slate-800 font-mono">
-                    {viewProduct.inventory_updated_at ? new Date(viewProduct.inventory_updated_at).toLocaleString() : '—'}
-                  </span>
-                </div>
-                {viewProduct.last_issued_at && (
-                  <>
-                    <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
-                      <span className="text-slate-500 font-medium">Last Issued Quantity:</span>
-                      <span className="font-bold text-amber-700 font-mono">
-                        -{viewProduct.last_issued_quantity} {viewProduct.business_unit || 'Units'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500 font-medium">Issued At / By:</span>
-                      <span className="font-semibold text-slate-800 font-mono">
-                        {new Date(viewProduct.last_issued_at).toLocaleString()} {viewProduct.issue_issuer?.name ? `(${viewProduct.issue_issuer.name})` : ''}
-                      </span>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="flex justify-end pt-2">
-                <button
-                  type="button"
-                  onClick={() => setViewProduct(null)}
-                  className="px-5 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition-colors cursor-pointer shadow-xs"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       )}
