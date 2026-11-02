@@ -411,15 +411,6 @@ export default function SuperAdminInventoryReportsPage() {
         >
           <Package className={`w-4 h-4 ${activeTab === 'products' ? 'text-purple-600' : 'text-slate-400'}`} />
           <span>Product Stock &amp; Valuation Report</span>
-          <span
-            className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono ${
-              activeTab === 'products'
-                ? 'bg-purple-100 text-purple-700'
-                : 'bg-slate-200 text-slate-600'
-            }`}
-          >
-            inventory_products
-          </span>
         </button>
 
         <button
@@ -438,15 +429,6 @@ export default function SuperAdminInventoryReportsPage() {
         >
           <RotateCcw className={`w-4 h-4 ${activeTab === 'transactions' ? 'text-purple-600' : 'text-slate-400'}`} />
           <span>Stock Transactions &amp; Audit Ledger</span>
-          <span
-            className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono ${
-              activeTab === 'transactions'
-                ? 'bg-purple-100 text-purple-700'
-                : 'bg-slate-200 text-slate-600'
-            }`}
-          >
-            inventory_stock_logs
-          </span>
         </button>
       </div>
 
@@ -863,8 +845,8 @@ export default function SuperAdminInventoryReportsPage() {
             <span className="w-2.5 h-2.5 rounded-full bg-purple-600 animate-pulse" />
             <h2 className="text-sm font-bold font-display text-slate-900 tracking-tight">
               {activeTab === 'products'
-                ? 'SuperAdmin Product Inventory & Valuation Statement (inventory_products)'
-                : 'Stock Transactions & Movement Audit Trail (inventory_stock_logs)'}
+                ? 'SuperAdmin Product Inventory & Valuation Statement'
+                : 'Stock Transactions & Movement Audit Trail'}
             </h2>
             {pagination && (
               <span className="text-[11px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full font-mono">
