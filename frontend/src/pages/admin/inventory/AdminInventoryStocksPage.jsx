@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   Boxes,
   Plus,
@@ -60,12 +60,23 @@ export default function AdminInventoryStocksPage() {
   });
   const [isLoading, setIsLoading] = useState(true);
 
+  const [searchParams] = useSearchParams();
+
   // Filters
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('');
-  const [stockStatus, setStockStatus] = useState('all');
+  const [stockStatus, setStockStatus] = useState(() => searchParams.get('status') || 'all');
   const [page, setPage] = useState(1);
+
+  // Sync stockStatus if URL parameter changes
+  useEffect(() => {
+    const paramStatus = searchParams.get('status');
+    if (paramStatus && paramStatus !== stockStatus) {
+      setStockStatus(paramStatus);
+      setPage(1);
+    }
+  }, [searchParams]);
 
   // Modal State
   const [stockModal, setStockModal] = useState({
@@ -592,15 +603,21 @@ export default function AdminInventoryStocksPage() {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Low Stock Alerts Button */}
-          <Link
-            to="/admin/inventory/low-stock"
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs ${
-              metrics.total_alerts > 0
-                ? 'bg-amber-500 hover:bg-amber-600 text-white animate-pulse'
-                : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+          {/* Low Stock Alerts Quick Filter Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setStockStatus(stockStatus === 'low_stock' ? 'all' : 'low_stock');
+              setPage(1);
+            }}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
+              stockStatus === 'low_stock'
+                ? 'bg-amber-600 text-white ring-2 ring-amber-400'
+                : metrics.total_alerts > 0
+                  ? 'bg-amber-500 hover:bg-amber-600 text-white animate-pulse'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
             }`}
-            title="View products requiring immediate replenishment"
+            title="Filter products requiring immediate replenishment"
           >
             <AlertTriangle className="w-4 h-4" />
             <span>Low Inventory</span>
@@ -609,7 +626,7 @@ export default function AdminInventoryStocksPage() {
                 {metrics.total_alerts}
               </span>
             )}
-          </Link>
+          </button>
 
           <button
             onClick={fetchStocks}
@@ -639,13 +656,17 @@ export default function AdminInventoryStocksPage() {
               </p>
             </div>
           </div>
-          <Link
-            to="/admin/inventory/low-stock"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-2xs self-start sm:self-auto shrink-0 transition-colors"
+          <button
+            type="button"
+            onClick={() => {
+              setStockStatus('low_stock');
+              setPage(1);
+            }}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-2xs self-start sm:self-auto shrink-0 transition-colors cursor-pointer"
           >
-            <span>Review Low Stock</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </Link>
+            <span>Filter Low Stock</span>
+            <Filter className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   Boxes,
   Search,
@@ -41,12 +41,23 @@ export default function SuperAdminInventoryStocksPage() {
   });
   const [isLoading, setIsLoading] = useState(true);
 
+  const [searchParams] = useSearchParams();
+
   // Filters
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('');
-  const [stockStatus, setStockStatus] = useState('all');
+  const [stockStatus, setStockStatus] = useState(() => searchParams.get('status') || 'all');
   const [page, setPage] = useState(1);
+
+  // Sync stockStatus if URL parameter changes
+  useEffect(() => {
+    const paramStatus = searchParams.get('status');
+    if (paramStatus && paramStatus !== stockStatus) {
+      setStockStatus(paramStatus);
+      setPage(1);
+    }
+  }, [searchParams]);
 
   // View Modal State
   const [viewProduct, setViewProduct] = useState(null);
@@ -327,10 +338,18 @@ export default function SuperAdminInventoryStocksPage() {
             <span>Refresh</span>
           </button>
 
-          {/* Low Stock Alerts Link Button */}
-          <Link
-            to="/superadmin/inventory/low-stock"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-600 hover:to-rose-700 text-white text-xs font-bold transition-all shadow-xs"
+          {/* Low Stock Alerts Filter Toggle Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setStockStatus(stockStatus === 'low_stock' ? 'all' : 'low_stock');
+              setPage(1);
+            }}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
+              stockStatus === 'low_stock'
+                ? 'bg-amber-600 text-white ring-2 ring-amber-400'
+                : 'bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-600 hover:to-rose-700 text-white'
+            }`}
           >
             <AlertTriangle className="w-4 h-4 animate-pulse" />
             <span>Low Inventory Alerts</span>
@@ -339,7 +358,7 @@ export default function SuperAdminInventoryStocksPage() {
                 {metrics.total_alerts}
               </span>
             )}
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -429,13 +448,17 @@ export default function SuperAdminInventoryStocksPage() {
               </p>
             </div>
           </div>
-          <Link
-            to="/superadmin/inventory/low-stock"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-xs transition-colors shrink-0"
+          <button
+            type="button"
+            onClick={() => {
+              setStockStatus('low_stock');
+              setPage(1);
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-xs transition-colors shrink-0 cursor-pointer"
           >
-            <span>Review Low Stock List</span>
+            <span>Filter Low Stock List</span>
             <ChevronRight className="w-4 h-4" />
-          </Link>
+          </button>
         </div>
       )}
 

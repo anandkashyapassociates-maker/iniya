@@ -138,11 +138,6 @@ export default function Sidebar({
       icon: Boxes,
     },
     {
-      to: '/admin/inventory/low-stock',
-      label: 'Low Stock Alerts',
-      icon: AlertTriangle,
-    },
-    {
       to: '/admin/inventory/products',
       label: 'All Products',
       icon: Package,

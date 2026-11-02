@@ -314,7 +314,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           <Link
-            to="/admin/inventory/low-stock"
+            to="/admin/inventory/stocks?status=low_stock"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-xs transition-colors shrink-0"
           >
             <span>Review Low Stock List</span>
@@ -420,7 +420,7 @@ export default function AdminDashboardPage() {
         </Link>
 
         {/* ROW 2 - CARD 8: Low Stock Alerts */}
-        <Link to="/admin/inventory/low-stock" className="block group">
+        <Link to="/admin/inventory/stocks?status=low_stock" className="block group">
           <StatCard
             title="Low Inventory Alerts"
             value={lowStockCount}
