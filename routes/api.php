@@ -164,6 +164,7 @@ Route::prefix('admin')
         Route::post('/logout', [AdminAuthController::class, 'logout']);
         Route::get('/dashboard', [AdminDashboardController::class, 'index']);
         Route::put('/profile', [AdminProfileController::class, 'update']);
+        Route::post('/profile/avatar', [AdminProfileController::class, 'uploadAvatar']);
         Route::post('/change-password', [AdminProfileController::class, 'changePassword']);
 
         // Customer Management
