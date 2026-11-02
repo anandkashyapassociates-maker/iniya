@@ -15,7 +15,10 @@ import {
   IndianRupee,
   Loader2,
   RefreshCw,
-  SlidersHorizontal,
+  X,
+  Check,
+  Calendar,
+  ArrowRight,
 } from 'lucide-react';
 import adminServiceManagementService from '../../services/adminServiceManagementService';
 import CategoryModal from '../../components/admin/CategoryModal';
@@ -116,7 +119,7 @@ export default function AdminServicesManagementPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedCategoryId, toast]);
+  }, [selectedCategoryId]);
 
   useEffect(() => {
     loadData(false);
@@ -206,7 +209,7 @@ export default function AdminServicesManagementPage() {
     return list;
   }, [services, selectedSubCategoryId, serviceSearch]);
 
-  // Selected object references for headers
+  // Selected object references for headers & breadcrumb
   const activeCategoryObj = useMemo(
     () => categories.find((c) => c.id === selectedCategoryId) || null,
     [categories, selectedCategoryId]
@@ -217,9 +220,12 @@ export default function AdminServicesManagementPage() {
     [subCategories, selectedSubCategoryId]
   );
 
-  // ==========================================
-  // Form A: Category Submit (Create / Update)
-  // ==========================================
+  const activeServiceObj = useMemo(
+    () => services.find((svc) => svc.id === selectedServiceId) || null,
+    [services, selectedServiceId]
+  );
+
+  // Form Submits
   const handleCategorySubmit = async (formData) => {
     setModalLoading(true);
     try {
@@ -246,9 +252,6 @@ export default function AdminServicesManagementPage() {
     }
   };
 
-  // ==========================================
-  // Form B: Sub-Category Submit (Create / Update)
-  // ==========================================
   const handleSubCategorySubmit = async (formData) => {
     setModalLoading(true);
     try {
@@ -274,9 +277,6 @@ export default function AdminServicesManagementPage() {
     }
   };
 
-  // ==========================================
-  // Form C: Service Submit (Create / Update)
-  // ==========================================
   const handleServiceSubmit = async (formData) => {
     setModalLoading(true);
     try {
@@ -301,9 +301,7 @@ export default function AdminServicesManagementPage() {
     }
   };
 
-  // ==========================================
-  // Delete Confirmation Handlers
-  // ==========================================
+  // Delete Handlers
   const handleConfirmDelete = async () => {
     const { type, item } = deleteDialog;
     if (!item) return;
@@ -343,73 +341,147 @@ export default function AdminServicesManagementPage() {
   };
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Top Header Card */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center space-x-2">
-            <span>Services & Categories Management</span>
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-              3-Tier Clinical Catalog
-            </span>
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Configure clinic categories, sub-categories, billable clinical services, and pricing for appointments.
-          </p>
+    <div className="max-w-7xl mx-auto space-y-6 pb-16 animate-in fade-in duration-300">
+      {/* Top Header with 3D Icon */}
+      <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-200/80 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+        <div className="flex items-center gap-4">
+          {/* 3D Folder / Catalog Icon Badge */}
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 shadow-xl shadow-indigo-500/25 ring-4 ring-indigo-50/60 flex items-center justify-center text-white shrink-0 transform -rotate-1 hover:rotate-0 transition-transform">
+            <FolderTree className="w-7 h-7 drop-shadow-md" />
+          </div>
+
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight font-display">
+                Services &amp; Categories
+              </h1>
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                <span>3-Tier Architecture</span>
+              </span>
+            </div>
+            <p className="text-sm text-slate-500 mt-0.5">
+              Configure medical categories, specialty sub-categories, and billable procedures
+            </p>
+          </div>
         </div>
 
-        {/* Stats Badges & Actions */}
+        {/* Action Buttons & Statistics */}
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center space-x-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-600 font-medium">
-            <span className="w-2 h-2 rounded-full bg-blue-500" />
-            <span>{categories.length} Categories</span>
-          </div>
-
-          <div className="flex items-center space-x-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-600 font-medium">
-            <span className="w-2 h-2 rounded-full bg-indigo-500" />
-            <span>{subCategories.length} Sub-Categories</span>
-          </div>
-
-          <div className="flex items-center space-x-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-600 font-medium">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span>{services.length} Services</span>
+          <div className="flex items-center gap-2 bg-slate-50/90 border border-slate-200/80 rounded-2xl px-3.5 py-2 text-xs font-medium text-slate-600">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-blue-500" />
+              <span>{categories.length} Categories</span>
+            </span>
+            <span className="text-slate-300">•</span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-indigo-500" />
+              <span>{subCategories.length} Sub-Categories</span>
+            </span>
+            <span className="text-slate-300">•</span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>{services.length} Services</span>
+            </span>
           </div>
 
           <button
             onClick={() => loadData(true)}
             disabled={loading}
-            className="p-2 text-slate-500 hover:text-slate-800 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl transition-all cursor-pointer"
-            title="Refresh Data"
+            className="p-2.5 text-slate-500 hover:text-slate-800 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl transition-all cursor-pointer shadow-xs"
+            title="Refresh Catalog"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-indigo-600' : ''}`} />
           </button>
 
           <button
             onClick={() => navigate('/admin/appointments')}
-            className="inline-flex items-center space-x-1.5 px-4 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition-all shadow-xs"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl transition-all shadow-xs cursor-pointer"
           >
-            <ArrowLeft className="w-3.5 h-3.5 text-slate-600" />
-            <span>Back to Appointments</span>
+            <ArrowLeft className="w-4 h-4 text-slate-500" />
+            <span>Appointments</span>
           </button>
         </div>
       </div>
 
-      {/* 3-Column Studio Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      {/* Interactive Active Path Navigator Ribbon */}
+      <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center flex-wrap gap-2 text-sm">
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">
+            Active Path:
+          </span>
+
+          {/* 1. Category Pill */}
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-900 border border-blue-200 font-semibold text-xs shadow-2xs">
+            <Layers className="w-3.5 h-3.5 text-blue-600" />
+            <span>{activeCategoryObj?.name || 'Select Category'}</span>
+          </span>
+
+          <ChevronRight className="w-4 h-4 text-slate-300" />
+
+          {/* 2. Sub-Category Pill */}
+          <span
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-2xs transition-all ${
+              activeSubCategoryObj
+                ? 'bg-indigo-50 text-indigo-900 border border-indigo-200'
+                : 'bg-slate-50 text-slate-400 border border-slate-200/60'
+            }`}
+          >
+            <FolderTree className="w-3.5 h-3.5 text-indigo-600" />
+            <span>{activeSubCategoryObj?.name || 'Select Sub-Category'}</span>
+          </span>
+
+          <ChevronRight className="w-4 h-4 text-slate-300" />
+
+          {/* 3. Service Pill */}
+          <span
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-2xs transition-all ${
+              activeServiceObj
+                ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
+                : 'bg-slate-50 text-slate-400 border border-slate-200/60'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+            <span>
+              {activeServiceObj
+                ? `${activeServiceObj.name} — ₹${Number(activeServiceObj.price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+                : 'Select Service'}
+            </span>
+          </span>
+        </div>
+
+        {/* Quick Booking Button if Service is Selected */}
+        {activeServiceObj && (
+          <button
+            type="button"
+            onClick={() => navigate(`/admin/appointments/create?service_id=${activeServiceObj.id}`)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-md shadow-blue-500/20 transition-all cursor-pointer transform hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Book with this Service</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+
+      {/* 3-Column Studio Board */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         {/* ========================================================= */}
         {/* COLUMN 1: CATEGORIES                                      */}
         {/* ========================================================= */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[480px] overflow-hidden">
-          {/* Column Header */}
-          <div className="p-4 border-b border-slate-100 bg-gradient-to-r from-blue-50/50 to-white">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
-                  <Layers className="w-4 h-4" />
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)] flex flex-col h-[540px] overflow-hidden transition-all duration-200 hover:shadow-md">
+          {/* Column Header with 3D Badge */}
+          <div className="p-5 border-b border-slate-100 space-y-3.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md shadow-blue-500/25 flex items-center justify-center text-white font-bold text-xs shrink-0">
+                  01
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold text-slate-900 font-display">1. Categories</h2>
-                  <p className="text-[11px] text-slate-500">Tier 1 • Department Level</p>
+                  <h2 className="text-base font-bold text-slate-900 font-display">
+                    Categories
+                  </h2>
+                  <p className="text-xs text-slate-400">Department Level</p>
                 </div>
               </div>
 
@@ -418,38 +490,49 @@ export default function AdminServicesManagementPage() {
                   setEditingCategory(null);
                   setCategoryModalOpen(true);
                 }}
-                className="inline-flex items-center space-x-1 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition-all"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-xs transition-all cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Category</span>
               </button>
             </div>
 
-            {/* Search Input */}
+            {/* Clean Minimal Search Input */}
             <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5 pointer-events-none" />
               <input
                 type="text"
                 value={categorySearch}
                 onChange={(e) => setCategorySearch(e.target.value)}
                 placeholder="Search categories..."
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                className="w-full pl-9 pr-8 py-2 bg-slate-50/80 hover:bg-slate-50 border border-slate-200/80 rounded-xl text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
+              {categorySearch && (
+                <button
+                  type="button"
+                  onClick={() => setCategorySearch('')}
+                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Column List */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          {/* Categories List */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
             {loading ? (
               <div className="h-48 flex flex-col items-center justify-center text-slate-400">
-                <Loader2 className="w-6 h-6 animate-spin mb-1 text-blue-500" />
-                <span className="text-xs">Loading categories...</span>
+                <Loader2 className="w-6 h-6 animate-spin mb-2 text-blue-600" />
+                <span className="text-xs font-medium">Loading categories...</span>
               </div>
             ) : filteredCategories.length === 0 ? (
               <div className="h-48 flex flex-col items-center justify-center text-center p-6 text-slate-400">
-                <Layers className="w-8 h-8 text-slate-300 mb-2 stroke-[1.5]" />
-                <p className="text-xs font-medium text-slate-600">No categories found</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Click "+ Add Category" to create one.</p>
+                <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
+                  <Layers className="w-6 h-6" />
+                </div>
+                <p className="text-xs font-semibold text-slate-700">No categories found</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Click "+ Add Category" to create one</p>
               </div>
             ) : (
               filteredCategories.map((cat) => {
@@ -462,58 +545,45 @@ export default function AdminServicesManagementPage() {
                   <div
                     key={cat.id}
                     onClick={() => handleSelectCategory(cat.id)}
-                    className={`group relative p-3.5 rounded-xl border transition-all cursor-pointer select-none ${
+                    className={`group relative p-4 rounded-2xl border transition-all duration-200 cursor-pointer ${
                       isSelected
-                        ? 'bg-blue-50/70 border-blue-400 shadow-sm ring-2 ring-blue-500/20'
-                        : 'bg-white border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/60'
+                        ? 'bg-gradient-to-r from-blue-50/90 to-indigo-50/40 border-blue-400 shadow-sm ring-1 ring-blue-400/40 -translate-y-0.5'
+                        : 'bg-white hover:bg-slate-50/80 border-slate-200/80 hover:border-slate-300'
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-start space-x-2.5 min-w-0">
-                        {/* Radio selection indicator */}
-                        <div
-                          className={`mt-0.5 w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-all ${
-                            isSelected
-                              ? 'border-blue-600 bg-blue-600'
-                              : 'border-slate-300 bg-white group-hover:border-slate-400'
-                          }`}
-                        >
-                          {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                        </div>
-
-                        <div className="min-w-0">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
                           <h4
-                            className={`text-xs font-bold leading-tight truncate ${
-                              isSelected ? 'text-blue-950 font-display' : 'text-slate-800'
+                            className={`text-sm font-bold truncate font-display ${
+                              isSelected ? 'text-blue-950' : 'text-slate-800'
                             }`}
                           >
                             {cat.name}
                           </h4>
-                          {cat.description && (
-                            <p className="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                              {cat.description}
-                            </p>
-                          )}
+                          <span
+                            className={`w-2 h-2 rounded-full shrink-0 ${
+                              cat.status === 'active' ? 'bg-emerald-500' : 'bg-slate-300'
+                            }`}
+                            title={cat.status === 'active' ? 'Active' : 'Inactive'}
+                          />
+                        </div>
 
-                          <div className="flex items-center space-x-2 mt-2">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-100/70 text-blue-700 text-[10px] font-semibold">
-                              {subCount} {subCount === 1 ? 'Sub-Category' : 'Sub-Categories'}
-                            </span>
-                            <span
-                              className={`inline-flex items-center px-1.5 py-0.2 text-[10px] rounded font-medium ${
-                                cat.status === 'active'
-                                  ? 'bg-emerald-50 text-emerald-700'
-                                  : 'bg-rose-50 text-rose-700'
-                              }`}
-                            >
-                              {cat.status === 'active' ? 'Active' : 'Inactive'}
-                            </span>
-                          </div>
+                        {cat.description && (
+                          <p className="text-xs text-slate-500 mt-1 line-clamp-1 font-normal">
+                            {cat.description}
+                          </p>
+                        )}
+
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-[11px] font-semibold text-slate-500 bg-slate-100/90 px-2 py-0.5 rounded-lg">
+                            {subCount} {subCount === 1 ? 'sub-category' : 'sub-categories'}
+                          </span>
                         </div>
                       </div>
 
-                      {/* Edit & Delete Actions */}
-                      <div className="flex items-center space-x-1 shrink-0 opacity-80 group-hover:opacity-100">
+                      {/* Right: Actions + Active Arrow */}
+                      <div className="flex items-center gap-1 shrink-0">
                         <button
                           type="button"
                           onClick={(e) => {
@@ -521,7 +591,7 @@ export default function AdminServicesManagementPage() {
                             setEditingCategory(cat);
                             setCategoryModalOpen(true);
                           }}
-                          className="p-1 text-slate-400 hover:text-blue-600 hover:bg-white rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-white rounded-lg transition-colors opacity-0 group-hover:opacity-100 cursor-pointer shadow-2xs"
                           title="Edit Category"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
@@ -537,11 +607,17 @@ export default function AdminServicesManagementPage() {
                               loading: false,
                             });
                           }}
-                          className="p-1 text-slate-400 hover:text-rose-600 hover:bg-white rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-white rounded-lg transition-colors opacity-0 group-hover:opacity-100 cursor-pointer shadow-2xs"
                           title="Delete Category"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
+
+                        {isSelected && (
+                          <div className="w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs animate-in zoom-in-75 duration-200">
+                            <ChevronRight className="w-4 h-4" />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -554,18 +630,20 @@ export default function AdminServicesManagementPage() {
         {/* ========================================================= */}
         {/* COLUMN 2: SUB-CATEGORIES                                  */}
         {/* ========================================================= */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[480px] overflow-hidden">
-          {/* Column Header */}
-          <div className="p-4 border-b border-slate-100 bg-gradient-to-r from-indigo-50/50 to-white">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
-                  <FolderTree className="w-4 h-4" />
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)] flex flex-col h-[540px] overflow-hidden transition-all duration-200 hover:shadow-md">
+          {/* Column Header with 3D Badge */}
+          <div className="p-5 border-b border-slate-100 space-y-3.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-md shadow-indigo-500/25 flex items-center justify-center text-white font-bold text-xs shrink-0">
+                  02
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold text-slate-900 font-display">2. Sub-Categories</h2>
-                  <p className="text-[11px] text-slate-500 truncate max-w-[180px]">
-                    {activeCategoryObj ? `Under: ${activeCategoryObj.name}` : 'Select a Category'}
+                  <h2 className="text-base font-bold text-slate-900 font-display">
+                    Sub-Categories
+                  </h2>
+                  <p className="text-xs text-slate-400 truncate max-w-[150px]">
+                    {activeCategoryObj ? `In ${activeCategoryObj.name}` : 'Select Category'}
                   </p>
                 </div>
               </div>
@@ -576,42 +654,57 @@ export default function AdminServicesManagementPage() {
                   setSubCategoryModalOpen(true);
                 }}
                 disabled={!selectedCategoryId}
-                className="inline-flex items-center space-x-1 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Sub-Category</span>
               </button>
             </div>
 
-            {/* Search Input */}
+            {/* Clean Minimal Search Input */}
             <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5 pointer-events-none" />
               <input
                 type="text"
                 value={subCategorySearch}
                 onChange={(e) => setSubCategorySearch(e.target.value)}
                 placeholder="Search sub-categories..."
                 disabled={!selectedCategoryId}
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all disabled:opacity-50"
+                className="w-full pl-9 pr-8 py-2 bg-slate-50/80 hover:bg-slate-50 border border-slate-200/80 rounded-xl text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all disabled:opacity-50"
               />
+              {subCategorySearch && (
+                <button
+                  type="button"
+                  onClick={() => setSubCategorySearch('')}
+                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Column List */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          {/* Sub-Categories List */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
             {!selectedCategoryId ? (
               <div className="h-48 flex flex-col items-center justify-center text-center p-6 text-slate-400">
-                <Layers className="w-8 h-8 text-slate-300 mb-2 stroke-[1.5]" />
-                <p className="text-xs font-medium text-slate-600">No Category Selected</p>
+                <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
+                  <FolderTree className="w-6 h-6" />
+                </div>
+                <p className="text-xs font-semibold text-slate-700">No Category Selected</p>
                 <p className="text-[11px] text-slate-400 mt-0.5">
-                  Select a category from Column 1 to view its sub-categories.
+                  Choose a category from Column 1 to view sub-categories
                 </p>
               </div>
             ) : filteredSubCategories.length === 0 ? (
               <div className="h-48 flex flex-col items-center justify-center text-center p-6 text-slate-400">
-                <FolderTree className="w-8 h-8 text-slate-300 mb-2 stroke-[1.5]" />
-                <p className="text-xs font-medium text-slate-600">No sub-categories in this category</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Click "+ Add Sub-Category" to create one.</p>
+                <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
+                  <FolderTree className="w-6 h-6" />
+                </div>
+                <p className="text-xs font-semibold text-slate-700">No sub-categories here</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Click "+ Add Sub-Category" to create one
+                </p>
               </div>
             ) : (
               filteredSubCategories.map((sub) => {
@@ -624,58 +717,45 @@ export default function AdminServicesManagementPage() {
                   <div
                     key={sub.id}
                     onClick={() => handleSelectSubCategory(sub.id)}
-                    className={`group relative p-3.5 rounded-xl border transition-all cursor-pointer select-none ${
+                    className={`group relative p-4 rounded-2xl border transition-all duration-200 cursor-pointer ${
                       isSelected
-                        ? 'bg-indigo-50/70 border-indigo-400 shadow-sm ring-2 ring-indigo-500/20'
-                        : 'bg-white border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/60'
+                        ? 'bg-gradient-to-r from-indigo-50/90 to-purple-50/40 border-indigo-400 shadow-sm ring-1 ring-indigo-400/40 -translate-y-0.5'
+                        : 'bg-white hover:bg-slate-50/80 border-slate-200/80 hover:border-slate-300'
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-start space-x-2.5 min-w-0">
-                        {/* Radio selection indicator */}
-                        <div
-                          className={`mt-0.5 w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-all ${
-                            isSelected
-                              ? 'border-indigo-600 bg-indigo-600'
-                              : 'border-slate-300 bg-white group-hover:border-slate-400'
-                          }`}
-                        >
-                          {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                        </div>
-
-                        <div className="min-w-0">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
                           <h4
-                            className={`text-xs font-bold leading-tight truncate ${
-                              isSelected ? 'text-indigo-950 font-display' : 'text-slate-800'
+                            className={`text-sm font-bold truncate font-display ${
+                              isSelected ? 'text-indigo-950' : 'text-slate-800'
                             }`}
                           >
                             {sub.name}
                           </h4>
-                          {sub.description && (
-                            <p className="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                              {sub.description}
-                            </p>
-                          )}
+                          <span
+                            className={`w-2 h-2 rounded-full shrink-0 ${
+                              sub.status === 'active' ? 'bg-emerald-500' : 'bg-slate-300'
+                            }`}
+                            title={sub.status === 'active' ? 'Active' : 'Inactive'}
+                          />
+                        </div>
 
-                          <div className="flex items-center space-x-2 mt-2">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-indigo-100/70 text-indigo-700 text-[10px] font-semibold">
-                              {svcCount} {svcCount === 1 ? 'Service' : 'Services'}
-                            </span>
-                            <span
-                              className={`inline-flex items-center px-1.5 py-0.2 text-[10px] rounded font-medium ${
-                                sub.status === 'active'
-                                  ? 'bg-emerald-50 text-emerald-700'
-                                  : 'bg-rose-50 text-rose-700'
-                              }`}
-                            >
-                              {sub.status === 'active' ? 'Active' : 'Inactive'}
-                            </span>
-                          </div>
+                        {sub.description && (
+                          <p className="text-xs text-slate-500 mt-1 line-clamp-1 font-normal">
+                            {sub.description}
+                          </p>
+                        )}
+
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-[11px] font-semibold text-slate-500 bg-slate-100/90 px-2 py-0.5 rounded-lg">
+                            {svcCount} {svcCount === 1 ? 'service' : 'services'}
+                          </span>
                         </div>
                       </div>
 
-                      {/* Edit & Delete Actions */}
-                      <div className="flex items-center space-x-1 shrink-0 opacity-80 group-hover:opacity-100">
+                      {/* Right: Actions + Active Arrow */}
+                      <div className="flex items-center gap-1 shrink-0">
                         <button
                           type="button"
                           onClick={(e) => {
@@ -683,7 +763,7 @@ export default function AdminServicesManagementPage() {
                             setEditingSubCategory(sub);
                             setSubCategoryModalOpen(true);
                           }}
-                          className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-white rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-white rounded-lg transition-colors opacity-0 group-hover:opacity-100 cursor-pointer shadow-2xs"
                           title="Edit Sub-Category"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
@@ -699,11 +779,17 @@ export default function AdminServicesManagementPage() {
                               loading: false,
                             });
                           }}
-                          className="p-1 text-slate-400 hover:text-rose-600 hover:bg-white rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-white rounded-lg transition-colors opacity-0 group-hover:opacity-100 cursor-pointer shadow-2xs"
                           title="Delete Sub-Category"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
+
+                        {isSelected && (
+                          <div className="w-7 h-7 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs animate-in zoom-in-75 duration-200">
+                            <ChevronRight className="w-4 h-4" />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -716,18 +802,20 @@ export default function AdminServicesManagementPage() {
         {/* ========================================================= */}
         {/* COLUMN 3: CLINICAL SERVICES                               */}
         {/* ========================================================= */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[480px] overflow-hidden">
-          {/* Column Header */}
-          <div className="p-4 border-b border-slate-100 bg-gradient-to-r from-emerald-50/50 to-white">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                  <Sparkles className="w-4 h-4" />
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)] flex flex-col h-[540px] overflow-hidden transition-all duration-200 hover:shadow-md">
+          {/* Column Header with 3D Badge */}
+          <div className="p-5 border-b border-slate-100 space-y-3.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md shadow-emerald-500/25 flex items-center justify-center text-white font-bold text-xs shrink-0">
+                  03
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold text-slate-900 font-display">3. Clinical Services</h2>
-                  <p className="text-[11px] text-slate-500 truncate max-w-[180px]">
-                    {activeSubCategoryObj ? `Under: ${activeSubCategoryObj.name}` : 'Select Sub-Category'}
+                  <h2 className="text-base font-bold text-slate-900 font-display">
+                    Clinical Services
+                  </h2>
+                  <p className="text-xs text-slate-400 truncate max-w-[150px]">
+                    {activeSubCategoryObj ? `In ${activeSubCategoryObj.name}` : 'Select Sub-Category'}
                   </p>
                 </div>
               </div>
@@ -738,42 +826,57 @@ export default function AdminServicesManagementPage() {
                   setServiceModalOpen(true);
                 }}
                 disabled={!selectedSubCategoryId}
-                className="inline-flex items-center space-x-1 px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Service</span>
               </button>
             </div>
 
-            {/* Search Input */}
+            {/* Clean Minimal Search Input */}
             <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5 pointer-events-none" />
               <input
                 type="text"
                 value={serviceSearch}
                 onChange={(e) => setServiceSearch(e.target.value)}
-                placeholder="Search services or pricing..."
+                placeholder="Search services or fees..."
                 disabled={!selectedSubCategoryId}
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all disabled:opacity-50"
+                className="w-full pl-9 pr-8 py-2 bg-slate-50/80 hover:bg-slate-50 border border-slate-200/80 rounded-xl text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50"
               />
+              {serviceSearch && (
+                <button
+                  type="button"
+                  onClick={() => setServiceSearch('')}
+                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Column List */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          {/* Services List */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
             {!selectedSubCategoryId ? (
               <div className="h-48 flex flex-col items-center justify-center text-center p-6 text-slate-400">
-                <FolderTree className="w-8 h-8 text-slate-300 mb-2 stroke-[1.5]" />
-                <p className="text-xs font-medium text-slate-600">No Sub-Category Selected</p>
+                <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <p className="text-xs font-semibold text-slate-700">No Sub-Category Selected</p>
                 <p className="text-[11px] text-slate-400 mt-0.5">
-                  Select a sub-category from Column 2 to view its services.
+                  Select a sub-category from Column 2 to manage services
                 </p>
               </div>
             ) : filteredServices.length === 0 ? (
               <div className="h-48 flex flex-col items-center justify-center text-center p-6 text-slate-400">
-                <Sparkles className="w-8 h-8 text-slate-300 mb-2 stroke-[1.5]" />
-                <p className="text-xs font-medium text-slate-600">No services in this sub-category</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Click "+ Add Service" to add one.</p>
+                <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <p className="text-xs font-semibold text-slate-700">No services yet</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Click "+ Add Service" to add a billable procedure
+                </p>
               </div>
             ) : (
               filteredServices.map((svc) => {
@@ -783,62 +886,49 @@ export default function AdminServicesManagementPage() {
                   <div
                     key={svc.id}
                     onClick={() => handleSelectService(svc.id)}
-                    className={`group relative p-3.5 rounded-xl border transition-all cursor-pointer select-none ${
+                    className={`group relative p-4 rounded-2xl border transition-all duration-200 cursor-pointer ${
                       isSelected
-                        ? 'bg-emerald-50/70 border-emerald-400 shadow-sm ring-2 ring-emerald-500/20'
-                        : 'bg-white border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/60'
+                        ? 'bg-gradient-to-r from-emerald-50/90 to-teal-50/40 border-emerald-400 shadow-sm ring-1 ring-emerald-400/40 -translate-y-0.5'
+                        : 'bg-white hover:bg-slate-50/80 border-slate-200/80 hover:border-slate-300'
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-start space-x-2.5 min-w-0">
-                        {/* Radio selection indicator */}
-                        <div
-                          className={`mt-0.5 w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-all ${
-                            isSelected
-                              ? 'border-emerald-600 bg-emerald-600'
-                              : 'border-slate-300 bg-white group-hover:border-slate-400'
-                          }`}
-                        >
-                          {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                        </div>
-
-                        <div className="min-w-0">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
                           <h4
-                            className={`text-xs font-bold leading-tight truncate ${
-                              isSelected ? 'text-emerald-950 font-display' : 'text-slate-800'
+                            className={`text-sm font-bold truncate font-display ${
+                              isSelected ? 'text-emerald-950' : 'text-slate-800'
                             }`}
                           >
                             {svc.name}
                           </h4>
-
-                          {/* Price Tag in Bold Green */}
-                          <div className="mt-1 flex items-center space-x-1 text-emerald-700 font-bold text-sm">
-                            <IndianRupee className="w-3.5 h-3.5" />
-                            <span>{Number(svc.price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                          </div>
-
-                          {svc.description && (
-                            <p className="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                              {svc.description}
-                            </p>
-                          )}
-
-                          <div className="flex items-center space-x-2 mt-2">
-                            <span
-                              className={`inline-flex items-center px-1.5 py-0.2 text-[10px] rounded font-medium ${
-                                svc.status === 'active'
-                                  ? 'bg-emerald-50 text-emerald-700'
-                                  : 'bg-rose-50 text-rose-700'
-                              }`}
-                            >
-                              {svc.status === 'active' ? 'Active' : 'Inactive'}
-                            </span>
-                          </div>
+                          <span
+                            className={`w-2 h-2 rounded-full shrink-0 ${
+                              svc.status === 'active' ? 'bg-emerald-500' : 'bg-slate-300'
+                            }`}
+                            title={svc.status === 'active' ? 'Active' : 'Inactive'}
+                          />
                         </div>
+
+                        {/* Consultation Fee Display */}
+                        <div className="mt-1.5 flex items-baseline gap-1 text-emerald-700 font-bold">
+                          <span className="text-xs">₹</span>
+                          <span className="text-base font-extrabold font-mono tracking-tight">
+                            {Number(svc.price || 0).toLocaleString('en-IN', {
+                              minimumFractionDigits: 2,
+                            })}
+                          </span>
+                        </div>
+
+                        {svc.description && (
+                          <p className="text-xs text-slate-500 mt-1 line-clamp-1 font-normal">
+                            {svc.description}
+                          </p>
+                        )}
                       </div>
 
-                      {/* Edit & Delete Actions */}
-                      <div className="flex items-center space-x-1 shrink-0 opacity-80 group-hover:opacity-100">
+                      {/* Right: Actions + Active Checkmark */}
+                      <div className="flex items-center gap-1 shrink-0">
                         <button
                           type="button"
                           onClick={(e) => {
@@ -846,7 +936,7 @@ export default function AdminServicesManagementPage() {
                             setEditingService(svc);
                             setServiceModalOpen(true);
                           }}
-                          className="p-1 text-slate-400 hover:text-emerald-600 hover:bg-white rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-white rounded-lg transition-colors opacity-0 group-hover:opacity-100 cursor-pointer shadow-2xs"
                           title="Edit Service"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
@@ -862,11 +952,17 @@ export default function AdminServicesManagementPage() {
                               loading: false,
                             });
                           }}
-                          className="p-1 text-slate-400 hover:text-rose-600 hover:bg-white rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-white rounded-lg transition-colors opacity-0 group-hover:opacity-100 cursor-pointer shadow-2xs"
                           title="Delete Service"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
+
+                        {isSelected && (
+                          <div className="w-7 h-7 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs animate-in zoom-in-75 duration-200">
+                            <Check className="w-4 h-4 stroke-[2.5]" />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -925,10 +1021,13 @@ export default function AdminServicesManagementPage() {
         onClose={() =>
           setDeleteDialog({ isOpen: false, type: null, item: null, loading: false })
         }
+        onCancel={() =>
+          setDeleteDialog({ isOpen: false, type: null, item: null, loading: false })
+        }
         onConfirm={handleConfirmDelete}
         title={
           deleteDialog.type === 'category'
-            ? 'Delete Main Category'
+            ? 'Delete Category'
             : deleteDialog.type === 'sub_category'
             ? 'Delete Sub-Category'
             : 'Delete Clinical Service'
@@ -947,4 +1046,3 @@ export default function AdminServicesManagementPage() {
     </div>
   );
 }
-
