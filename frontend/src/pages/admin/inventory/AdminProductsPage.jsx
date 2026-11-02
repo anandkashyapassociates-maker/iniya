@@ -532,6 +532,15 @@ export default function AdminProductsPage() {
 
                 <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/70">
                   <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider micro-label">
+                    Alert Threshold
+                  </div>
+                  <div className="text-xs font-bold text-amber-700 mt-1 font-mono">
+                    &le; {viewProduct.low_stock_threshold ?? 10} {viewProduct.business_unit}
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/70 sm:col-span-2">
+                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider micro-label">
                     Product Type
                   </div>
                   <div className="text-xs font-bold text-slate-800 mt-1">

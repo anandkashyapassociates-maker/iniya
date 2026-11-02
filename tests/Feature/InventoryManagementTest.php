@@ -339,4 +339,55 @@ class InventoryManagementTest extends TestCase
             'deleted_at' => null,
         ]);
     }
+
+    public function test_admin_can_create_and_update_product_with_low_stock_threshold(): void
+    {
+        Sanctum::actingAs($this->admin, ['role:admin']);
+
+        $category = InventoryCategory::create([
+            'name' => 'Dental Care',
+            'slug' => 'dental-care',
+            'status' => 'active',
+            'created_by' => $this->admin->id,
+        ]);
+
+        // Create product with custom low stock threshold (e.g. 25)
+        $createRes = $this->postJson('/api/admin/inventory/products', [
+            'category_id' => $category->id,
+            'product_name' => 'Orthodontic Braces Kit',
+            'business_unit' => 'Box',
+            'product_unit' => 10,
+            'low_stock_threshold' => 25,
+            'product_type' => 'Consumable',
+            'status' => 'active',
+        ]);
+
+        $createRes->assertStatus(201);
+        $productId = $createRes->json('product.id');
+
+        $this->assertDatabaseHas('inventory_products', [
+            'id' => $productId,
+            'product_name' => 'Orthodontic Braces Kit',
+            'low_stock_threshold' => 25,
+        ]);
+
+        // Update product with updated threshold (e.g. 30)
+        $updateRes = $this->putJson("/api/admin/inventory/products/{$productId}", [
+            'category_id' => $category->id,
+            'product_name' => 'Orthodontic Braces Kit Pro',
+            'business_unit' => 'Box',
+            'product_unit' => 10,
+            'low_stock_threshold' => 30,
+            'product_type' => 'Consumable',
+            'status' => 'active',
+        ]);
+
+        $updateRes->assertStatus(200);
+
+        $this->assertDatabaseHas('inventory_products', [
+            'id' => $productId,
+            'product_name' => 'Orthodontic Braces Kit Pro',
+            'low_stock_threshold' => 30,
+        ]);
+    }
 }

@@ -423,12 +423,21 @@ export default function SuperAdminProductsPage() {
                 </div>
                 <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/70">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1 micro-label">
-                    Product Type
+                    Alert Threshold
                   </span>
-                  <p className="font-bold text-slate-900">
-                    {selectedProduct.display_product_type || selectedProduct.product_type}
+                  <p className="font-bold text-amber-700 font-mono">
+                    &le; {selectedProduct.low_stock_threshold ?? 10} {selectedProduct.business_unit}
                   </p>
                 </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1 micro-label">
+                  Product Type
+                </span>
+                <p className="font-bold text-slate-900">
+                  {selectedProduct.display_product_type || selectedProduct.product_type}
+                </p>
               </div>
 
               {selectedProduct.creator && (
