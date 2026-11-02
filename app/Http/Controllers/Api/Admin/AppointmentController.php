@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminActivityLog;
 use App\Models\Appointment;
+use App\Models\AppointmentSession;
 use App\Models\Customer;
+use App\Models\MasterAppointment;
 use App\Models\Staff;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -99,13 +101,15 @@ class AppointmentController extends Controller
         $today = Carbon::today()->toDateString();
 
         $stats = [
-            'total' => Appointment::count(),
-            'today' => Appointment::whereDate('appointment_date', $today)->where('status', '!=', 'cancelled')->count(),
-            'scheduled' => Appointment::whereIn('status', ['pending', 'confirmed', 'scheduled'])->count(),
-            'pending' => Appointment::where('status', 'pending')->count(),
-            'confirmed' => Appointment::where('status', 'confirmed')->count(),
-            'completed' => Appointment::where('status', 'completed')->count(),
-            'cancelled' => Appointment::where('status', 'cancelled')->count(),
+            'total' => MasterAppointment::count(),
+            'total_sessions' => AppointmentSession::count(),
+            'today' => AppointmentSession::whereDate('session_date', $today)->where('status', '!=', AppointmentSession::STATUS_CANCELLED)->count(),
+            'scheduled' => AppointmentSession::where('session_date', '>=', $today)->whereIn('status', [AppointmentSession::STATUS_PENDING, AppointmentSession::STATUS_IN_PROGRESS])->count(),
+            'pending' => AppointmentSession::where('status', AppointmentSession::STATUS_PENDING)->count(),
+            'in_progress' => AppointmentSession::where('status', AppointmentSession::STATUS_IN_PROGRESS)->count(),
+            'confirmed' => AppointmentSession::where('status', AppointmentSession::STATUS_IN_PROGRESS)->count(),
+            'completed' => AppointmentSession::where('status', AppointmentSession::STATUS_COMPLETED)->count(),
+            'cancelled' => AppointmentSession::where('status', AppointmentSession::STATUS_CANCELLED)->count(),
         ];
 
         return response()->json($stats);
