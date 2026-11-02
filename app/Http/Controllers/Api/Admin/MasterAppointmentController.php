@@ -117,22 +117,37 @@ class MasterAppointmentController extends Controller
      */
     public function stats(): JsonResponse
     {
+        $todayStr = Carbon::today()->toDateString();
         $totalMasterAppointments = MasterAppointment::count();
+        $todayMasterAppointments = MasterAppointment::whereDate('appointment_date', $todayStr)->count();
         $totalSessions = AppointmentSession::count();
+        $todaySessions = AppointmentSession::whereDate('session_date', $todayStr)
+            ->where('status', '!=', AppointmentSession::STATUS_CANCELLED)
+            ->count();
+        $upcomingSessions = AppointmentSession::where('session_date', '>=', $todayStr)
+            ->whereIn('status', [AppointmentSession::STATUS_PENDING, AppointmentSession::STATUS_IN_PROGRESS])
+            ->count();
         $pendingSessions = AppointmentSession::where('status', AppointmentSession::STATUS_PENDING)->count();
         $inProgressSessions = AppointmentSession::where('status', AppointmentSession::STATUS_IN_PROGRESS)->count();
         $completedSessions = AppointmentSession::where('status', AppointmentSession::STATUS_COMPLETED)->count();
         $cancelledSessions = AppointmentSession::where('status', AppointmentSession::STATUS_CANCELLED)->count();
+        $todayRevenue = (float) MasterAppointment::whereDate('appointment_date', $todayStr)->sum('appointment_fees');
+        $totalRevenue = (float) MasterAppointment::sum('appointment_fees');
 
         return response()->json([
             'success' => true,
             'data' => [
                 'total_master' => $totalMasterAppointments,
+                'today_master' => $todayMasterAppointments,
                 'total_sessions' => $totalSessions,
+                'today_sessions' => $todaySessions,
+                'upcoming_sessions' => $upcomingSessions,
                 'pending_sessions' => $pendingSessions,
                 'in_progress_sessions' => $inProgressSessions,
                 'completed_sessions' => $completedSessions,
                 'cancelled_sessions' => $cancelledSessions,
+                'today_revenue' => $todayRevenue,
+                'total_revenue' => $totalRevenue,
             ],
         ]);
     }

@@ -101,12 +101,6 @@ export default function Sidebar({
       color: 'from-teal-500 to-emerald-600',
     },
     {
-      to: '/admin/customers/create',
-      label: 'Register New Patient',
-      icon: UserPlus,
-      color: 'from-violet-500 to-purple-600',
-    },
-    {
       label: 'Appointments',
       icon: Calendar,
       color: 'from-blue-600 to-indigo-600',
@@ -169,7 +163,7 @@ export default function Sidebar({
   const adminFooterNavItems = [
     {
       to: '/admin/profile',
-      label: 'Doctor / Admin Profile',
+      label: 'Admin Profile',
       icon: User,
       color: 'from-rose-500 to-pink-600',
     },
