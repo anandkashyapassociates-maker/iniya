@@ -356,7 +356,7 @@ export default function AdminInventoryStocksPage() {
     },
     {
       header: 'PRODUCT DETAILS',
-      className: 'w-[22%]',
+      className: 'w-[24%]',
       render: (p) => (
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
@@ -389,24 +389,13 @@ export default function AdminInventoryStocksPage() {
       ),
     },
     {
-      header: 'UNIT SPEC',
-      className: 'w-[8%]',
-      render: (p) => (
-        <div className="text-xs text-slate-700 font-medium">
-          <span>{p.business_unit || 'Piece'}</span>
-        </div>
-      ),
-    },
-    {
       header: 'AVAILABLE STOCK',
-      className: 'w-[18%]',
+      className: 'w-[14%]',
       render: (p) => {
         const qty = p.quantity ?? 0;
         const threshold = p.low_stock_threshold ?? 10;
         const isOutOfStock = qty <= 0;
         const isLow = qty > 0 && qty <= threshold;
-        const addedQty = p.last_added_quantity ?? qty;
-        const issuedQty = p.last_issued_quantity;
 
         return (
           <div>
@@ -451,7 +440,7 @@ export default function AdminInventoryStocksPage() {
     },
     {
       header: 'AVG. PRICE',
-      className: 'w-[12%]',
+      className: 'w-[10%]',
       render: (p) => {
         const avgPrice = p.calculated_average_price ?? p.average_price ?? p.buy_price;
         return avgPrice && Number(avgPrice) > 0 ? (
@@ -464,66 +453,71 @@ export default function AdminInventoryStocksPage() {
       },
     },
     {
-      header: 'VENDOR',
-      className: 'w-[18%]',
+      header: 'STOCK VALUE',
+      className: 'w-[13%]',
       render: (p) => {
+        const qty = Number(p.quantity) || 0;
+        const avgPrice = Number(p.calculated_average_price ?? p.average_price ?? p.buy_price ?? 0);
+        const stockValue = qty * avgPrice;
+
         return (
           <div>
-            <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor?.vendor_name || 'No Vendor Assigned'}>
-              {p.vendor ? p.vendor.vendor_name : <span className="text-slate-400 italic text-[11px]">No Vendor Assigned</span>}
+            <span className="text-xs font-bold font-mono text-slate-900 block">
+              ₹{stockValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
-            {p.vendor?.company_name && (
-              <span className="text-[11px] text-slate-400 block truncate" title={p.vendor.company_name}>
-                {p.vendor.company_name}
-              </span>
-            )}
+            <span className="text-[10px] text-slate-400 font-mono">
+              {qty} × ₹{avgPrice.toFixed(2)}
+            </span>
           </div>
         );
       },
     },
     {
-      header: 'ACTIONS',
-      className: 'w-[24%] text-right',
-      render: (p) => {
-        return (
-          <div className="flex items-center justify-end gap-1.5 flex-wrap">
-            {/* Add Inventory Button */}
-            <button
-              onClick={() => openAddStockModal(p)}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200/80 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
-              title="Add Inventory"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add Inventory</span>
-            </button>
-
-            {/* Issue Inventory Button */}
-            <button
-              onClick={() => openIssueStockModal(p)}
-              disabled={(p.quantity ?? 0) <= 0}
-              className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow-2xs transition-all cursor-pointer ${
-                (p.quantity ?? 0) <= 0
-                  ? 'bg-slate-50 text-slate-400 border border-slate-200 cursor-not-allowed opacity-60'
-                  : 'bg-amber-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-amber-200/80'
-              }`}
-              title={(p.quantity ?? 0) <= 0 ? 'No stock available to issue' : 'Issue / Deduct Inventory Stock'}
-            >
-              <Minus className="w-3.5 h-3.5" />
-              <span>Issue Inventory</span>
-            </button>
-
-            {/* Details Button - Navigates to dedicated stock details page */}
-            <Link
-              to={`/admin/inventory/stocks/${p.id}`}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200/80 text-xs font-semibold shadow-2xs transition-all"
-              title="View Complete Stock History & Details"
-            >
-              <FileText className="w-3.5 h-3.5" />
-              <span>Details</span>
-            </Link>
-          </div>
-        );
-      },
+      header: 'ADD INVENTORY',
+      className: 'w-[13%] text-center',
+      render: (p) => (
+        <button
+          onClick={() => openAddStockModal(p)}
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200/80 text-xs font-semibold shadow-2xs transition-all cursor-pointer whitespace-nowrap"
+          title="Add Inventory Stock"
+        >
+          <Plus className="w-3.5 h-3.5 shrink-0" />
+          <span>Add Inventory</span>
+        </button>
+      ),
+    },
+    {
+      header: 'LESS INVENTORY',
+      className: 'w-[13%] text-center',
+      render: (p) => (
+        <button
+          onClick={() => openIssueStockModal(p)}
+          disabled={(p.quantity ?? 0) <= 0}
+          className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-2xs transition-all whitespace-nowrap ${
+            (p.quantity ?? 0) <= 0
+              ? 'bg-slate-50 text-slate-400 border border-slate-200 cursor-not-allowed opacity-60'
+              : 'bg-amber-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-amber-200/80 cursor-pointer'
+          }`}
+          title={(p.quantity ?? 0) <= 0 ? 'No stock available to less' : 'Less / Deduct Inventory Stock'}
+        >
+          <Minus className="w-3.5 h-3.5 shrink-0" />
+          <span>Less Inventory</span>
+        </button>
+      ),
+    },
+    {
+      header: 'DETAILS',
+      className: 'w-[10%] text-center',
+      render: (p) => (
+        <Link
+          to={`/admin/inventory/stocks/${p.id}`}
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200/80 text-xs font-semibold shadow-2xs transition-all whitespace-nowrap"
+          title="View Complete Stock History & Details"
+        >
+          <FileText className="w-3.5 h-3.5 shrink-0" />
+          <span>Details</span>
+        </Link>
+      ),
     },
   ];
 
@@ -916,7 +910,7 @@ export default function AdminInventoryStocksPage() {
                 </div>
                 <div>
                   <h3 className="text-base font-bold font-display text-slate-900">
-                    Issue Inventory Stock
+                    Less / Issue Inventory Stock
                   </h3>
                   <p className="text-xs text-slate-500 font-normal mt-0.5">
                     Deduct / less stock quantity for clinical use, dispensary, or department.
