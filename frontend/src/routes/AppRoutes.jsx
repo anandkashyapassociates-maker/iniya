@@ -28,6 +28,7 @@ import SuperAdminInventoryCategoriesPage from '../superadmin/inventory/SuperAdmi
 import SuperAdminInventoryBrandsPage from '../superadmin/inventory/SuperAdminInventoryBrandsPage';
 import SuperAdminInventoryStocksPage from '../superadmin/inventory/SuperAdminInventoryStocksPage';
 import SuperAdminStockDetailsPage from '../superadmin/inventory/SuperAdminStockDetailsPage';
+import SuperAdminInventoryReportsPage from '../superadmin/inventory/SuperAdminInventoryReportsPage';
 
 // Admin Module (Panel 2 - Separate Team Developer)
 import AdminLayout from '../layouts/AdminLayout';
@@ -61,6 +62,7 @@ import AdminBrandCreatePage from '../pages/admin/inventory/AdminBrandCreatePage'
 import AdminBrandEditPage from '../pages/admin/inventory/AdminBrandEditPage';
 import AdminInventoryStocksPage from '../pages/admin/inventory/AdminInventoryStocksPage';
 import AdminStockDetailsPage from '../pages/admin/inventory/AdminStockDetailsPage';
+import AdminInventoryReportsPage from '../pages/admin/inventory/AdminInventoryReportsPage';
 
 // Portal Root
 import LandingPage from '../pages/LandingPage';
@@ -125,6 +127,7 @@ export default function AppRoutes() {
           <Route path="/superadmin/inventory/products" element={<SuperAdminProductsPage />} />
           <Route path="/superadmin/inventory/stocks" element={<SuperAdminInventoryStocksPage />} />
           <Route path="/superadmin/inventory/stocks/:id" element={<SuperAdminStockDetailsPage />} />
+          <Route path="/superadmin/inventory/reports" element={<SuperAdminInventoryReportsPage />} />
           <Route path="/superadmin/inventory/low-stock" element={<Navigate to="/superadmin/inventory/stocks" replace />} />
           <Route path="/superadmin/inventory/categories" element={<SuperAdminInventoryCategoriesPage />} />
           <Route path="/superadmin/inventory/brands" element={<SuperAdminInventoryBrandsPage />} />
@@ -165,6 +168,7 @@ export default function AppRoutes() {
           <Route path="/admin/inventory" element={<Navigate to="/admin/inventory/stocks" replace />} />
           <Route path="/admin/inventory/stocks" element={<AdminInventoryStocksPage />} />
           <Route path="/admin/inventory/stocks/:id" element={<AdminStockDetailsPage />} />
+          <Route path="/admin/inventory/reports" element={<AdminInventoryReportsPage />} />
           <Route path="/admin/inventory/low-stock" element={<Navigate to="/admin/inventory/stocks" replace />} />
           <Route path="/admin/inventory/products" element={<AdminProductsPage />} />
           <Route path="/admin/inventory/products/create" element={<AdminProductCreatePage />} />

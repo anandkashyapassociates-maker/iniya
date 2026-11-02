@@ -129,6 +129,17 @@ export const adminInventoryService = {
     const response = await adminApi.get(`/admin/inventory/stocks/${id}/logs`);
     return response.data;
   },
+
+  // ================= INVENTORY REPORTS =================
+  async getReports(params = {}) {
+    const response = await adminApi.get('/admin/inventory/reports', { params });
+    return response.data;
+  },
+
+  async getReportFilterOptions() {
+    const response = await adminApi.get('/admin/inventory/reports/filter-options');
+    return response.data;
+  },
 };
 
 export default adminInventoryService;
