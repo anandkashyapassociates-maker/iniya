@@ -167,7 +167,7 @@ export default function AdminMasterAppointmentCreatePage() {
       .finally(() => {
         setOptionsLoading(false);
       });
-  }, [toast, preServiceId, preCategoryId, preSubCategoryId]);
+  }, [preServiceId, preCategoryId, preSubCategoryId]);
 
   // Session handler methods
   const handleAddSession = () => {
