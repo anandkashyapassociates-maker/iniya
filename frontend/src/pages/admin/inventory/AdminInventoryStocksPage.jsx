@@ -603,31 +603,6 @@ export default function AdminInventoryStocksPage() {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Low Stock Alerts Quick Filter Button */}
-          <button
-            type="button"
-            onClick={() => {
-              setStockStatus(stockStatus === 'low_stock' ? 'all' : 'low_stock');
-              setPage(1);
-            }}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
-              stockStatus === 'low_stock'
-                ? 'bg-amber-600 text-white ring-2 ring-amber-400'
-                : metrics.total_alerts > 0
-                  ? 'bg-amber-500 hover:bg-amber-600 text-white animate-pulse'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-            }`}
-            title="Filter products requiring immediate replenishment"
-          >
-            <AlertTriangle className="w-4 h-4" />
-            <span>Low Inventory</span>
-            {metrics.total_alerts > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full bg-white text-amber-700 font-mono text-[11px] font-bold">
-                {metrics.total_alerts}
-              </span>
-            )}
-          </button>
-
           <button
             onClick={fetchStocks}
             disabled={isLoading}
@@ -639,36 +614,6 @@ export default function AdminInventoryStocksPage() {
           </button>
         </div>
       </div>
-
-      {/* Prominent Alert Banner if low inventory exists */}
-      {metrics.total_alerts > 0 && (
-        <div className="bg-amber-50 border border-amber-200/90 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-amber-900">
-                Critical Stock Replenishment Notice
-              </h4>
-              <p className="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
-                <strong>{metrics.total_alerts} product(s)</strong> have reached critical or low stock threshold ({metrics.out_of_stock_count} completely depleted). Procure stock to avoid clinical interruptions.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setStockStatus('low_stock');
-              setPage(1);
-            }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-2xs self-start sm:self-auto shrink-0 transition-colors cursor-pointer"
-          >
-            <span>Filter Low Stock</span>
-            <Filter className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      )}
 
       {/* Filter and Search Bar */}
       <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">

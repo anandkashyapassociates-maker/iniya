@@ -337,28 +337,6 @@ export default function SuperAdminInventoryStocksPage() {
             <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${isLoading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </button>
-
-          {/* Low Stock Alerts Filter Toggle Button */}
-          <button
-            type="button"
-            onClick={() => {
-              setStockStatus(stockStatus === 'low_stock' ? 'all' : 'low_stock');
-              setPage(1);
-            }}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
-              stockStatus === 'low_stock'
-                ? 'bg-amber-600 text-white ring-2 ring-amber-400'
-                : 'bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-600 hover:to-rose-700 text-white'
-            }`}
-          >
-            <AlertTriangle className="w-4 h-4 animate-pulse" />
-            <span>Low Inventory Alerts</span>
-            {metrics.total_alerts > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full bg-white text-rose-700 text-[10px] font-extrabold">
-                {metrics.total_alerts}
-              </span>
-            )}
-          </button>
         </div>
       </div>
 
@@ -428,39 +406,6 @@ export default function SuperAdminInventoryStocksPage() {
           </div>
         </div>
       </div>
-
-      {/* Prominent Alert Banner if low stock items exist */}
-      {metrics.total_alerts > 0 && (
-        <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-amber-500/10 border border-amber-300 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm">
-              <AlertTriangle className="w-5 h-5 animate-pulse" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <span>Low Inventory Alert Oversight</span>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700">
-                  {metrics.total_alerts} item{metrics.total_alerts > 1 ? 's' : ''} depleted
-                </span>
-              </h4>
-              <p className="text-xs text-slate-600 mt-0.5">
-                Hospital supplies require replenishment. Notify branch administrators to restock depleting medical items.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setStockStatus('low_stock');
-              setPage(1);
-            }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-xs transition-colors shrink-0 cursor-pointer"
-          >
-            <span>Filter Low Stock List</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      )}
 
       {/* Main Table Card */}
       <div className="w-full bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-7 shadow-xs space-y-5">
