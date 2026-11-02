@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Admin;
+use App\Models\Staff;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,9 +23,9 @@ class EnsureAdmin
             ], 401);
         }
 
-        if (! ($user instanceof Admin)) {
+        if (! ($user instanceof Admin || $user instanceof Staff)) {
             return response()->json([
-                'message' => 'Access denied. Admin privileges required.',
+                'message' => 'Access denied. Admin or Staff privileges required.',
             ], 403);
         }
 
@@ -33,8 +34,10 @@ class EnsureAdmin
                 $user->currentAccessToken()->delete();
             }
 
+            $userType = ($user instanceof Staff) ? 'Staff' : 'Admin';
+
             return response()->json([
-                'message' => 'Your Admin account has been blocked by the Super Administrator. Access denied.',
+                'message' => "Your {$userType} account has been blocked by the Super Administrator. Access denied.",
             ], 403);
         }
 
@@ -43,12 +46,14 @@ class EnsureAdmin
                 $user->currentAccessToken()->delete();
             }
 
+            $contactTarget = ($user instanceof Staff) ? 'administrator' : 'Super Admin';
+            $userType = ($user instanceof Staff) ? 'Staff' : 'Admin';
+
             return response()->json([
-                'message' => 'Your Admin account has been deactivated. Please contact the Super Admin.',
+                'message' => "Your {$userType} account has been deactivated. Please contact the {$contactTarget}.",
             ], 403);
         }
 
         return $next($request);
     }
 }
-

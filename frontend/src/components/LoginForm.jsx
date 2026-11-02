@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TurnstileCaptcha from './TurnstileCaptcha';
 
@@ -10,6 +10,7 @@ export default function LoginForm({
   forgotPasswordPath = '/admin/forgot-password',
 }) {
   const isSuperAdmin = role === 'superadmin';
+  const [accountType, setAccountType] = useState('admin'); // 'admin' | 'staff'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -47,6 +48,7 @@ export default function LoginForm({
       await onSubmit({
         email,
         password,
+        account_type: isSuperAdmin ? undefined : accountType,
         turnstile_token: captchaToken,
         remember: rememberMe,
       });
@@ -71,30 +73,59 @@ export default function LoginForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Demo Credentials Quick Fill Banner */}
-      <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-between text-xs text-slate-300">
-        <div>
+      <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2 text-xs text-slate-300">
+        <div className="flex items-center justify-between">
           <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block micro-label">
-            Demo Credentials
+            {isSuperAdmin
+              ? 'Demo Credentials'
+              : accountType === 'staff'
+              ? 'Staff Demo Credentials'
+              : 'Admin Demo Credentials'}
           </span>
-          <span className="font-mono text-[11px] text-slate-200">
-            {isSuperAdmin ? 'superadmin@gmail.com' : 'admin@gmail.com'} / 123456
+          <span className="text-[10px] text-emerald-400 font-medium">
+            Password: 123456
           </span>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            setEmail(isSuperAdmin ? 'superadmin@gmail.com' : 'admin@gmail.com');
-            setPassword('123456');
-            setErrors({});
-          }}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-xl text-white transition-all cursor-pointer shadow-xs font-display ${
-            isSuperAdmin
-              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500'
-              : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500'
-          }`}
-        >
-          Auto-fill
-        </button>
+
+        {isSuperAdmin ? (
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[11px] text-slate-200">
+              superadmin@gmail.com / 123456
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('superadmin@gmail.com');
+                setPassword('123456');
+                setErrors({});
+              }}
+              className="px-3 py-1.5 text-xs font-semibold rounded-xl text-white transition-all cursor-pointer shadow-xs font-display bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500"
+            >
+              Auto-fill
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[11px] text-slate-200">
+              {accountType === 'staff' ? 'ramesh@iniya.com / 123456' : 'admin@gmail.com / 123456'}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail(accountType === 'staff' ? 'ramesh@iniya.com' : 'admin@gmail.com');
+                setPassword('123456');
+                setErrors({});
+              }}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-xl text-white transition-all cursor-pointer shadow-xs font-display ${
+                accountType === 'staff'
+                  ? 'bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500'
+                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500'
+              }`}
+            >
+              Auto-fill
+            </button>
+          </div>
+        )}
       </div>
 
       {/* General error message banner */}
@@ -104,10 +135,67 @@ export default function LoginForm({
         </div>
       )}
 
+      {/* Role Selection (Admin vs Staff) */}
+      {!isSuperAdmin && (
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider font-display">
+              Select Role to Login
+            </label>
+            <span className="text-[10px] text-slate-400">
+              Active:{' '}
+              <strong className={accountType === 'staff' ? 'text-teal-400 font-semibold' : 'text-blue-400 font-semibold'}>
+                {accountType === 'staff' ? 'Staff Member' : 'Admin'}
+              </strong>
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-2xl border border-slate-800">
+            <button
+              type="button"
+              onClick={() => {
+                setAccountType('admin');
+                if (email === 'ramesh@iniya.com') setEmail('');
+                setErrors({});
+              }}
+              className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer font-display ${
+                accountType === 'admin'
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-900/40 border border-blue-400/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent'
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              <span>Admin</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setAccountType('staff');
+                if (email === 'admin@gmail.com') setEmail('');
+                setErrors({});
+              }}
+              className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer font-display ${
+                accountType === 'staff'
+                  ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-900/40 border border-teal-400/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent'
+              }`}
+            >
+              <Users className="w-4 h-4 shrink-0" />
+              <span>Staff</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Email input */}
       <div>
         <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider font-display mb-1.5">
-          Email Address
+          {isSuperAdmin
+            ? 'Email Address'
+            : accountType === 'staff'
+            ? 'Staff Email Address'
+            : 'Admin Email Address'}
         </label>
         <div className="relative">
           <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -118,7 +206,13 @@ export default function LoginForm({
               setEmail(e.target.value);
               if (errors.email) setErrors((prev) => ({ ...prev, email: null }));
             }}
-            placeholder={isSuperAdmin ? 'superadmin@example.com' : 'admin@example.com'}
+            placeholder={
+              isSuperAdmin
+                ? 'superadmin@example.com'
+                : accountType === 'staff'
+                ? 'ramesh@iniya.com or staff email'
+                : 'admin@example.com'
+            }
             disabled={isLoading}
             autoComplete="email"
             className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-950 text-white border rounded-xl focus:outline-none focus:ring-2 transition-all font-mono ${
@@ -126,6 +220,8 @@ export default function LoginForm({
                 ? 'border-rose-500 focus:ring-rose-500/20'
                 : isSuperAdmin
                 ? 'border-slate-800 focus:border-purple-500 focus:ring-purple-500/20'
+                : accountType === 'staff'
+                ? 'border-slate-800 focus:border-teal-500 focus:ring-teal-500/20'
                 : 'border-slate-800 focus:border-blue-500 focus:ring-blue-500/20'
             }`}
           />
@@ -165,6 +261,8 @@ export default function LoginForm({
                 ? 'border-rose-500 focus:ring-rose-500/20'
                 : isSuperAdmin
                 ? 'border-slate-800 focus:border-purple-500 focus:ring-purple-500/20'
+                : accountType === 'staff'
+                ? 'border-slate-800 focus:border-teal-500 focus:ring-teal-500/20'
                 : 'border-slate-800 focus:border-blue-500 focus:ring-blue-500/20'
             }`}
           />
@@ -227,6 +325,8 @@ export default function LoginForm({
         className={`w-full py-3 px-4 rounded-xl text-xs font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed font-display ${
           isSuperAdmin
             ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 shadow-purple-900/40 disabled:opacity-50'
+            : accountType === 'staff'
+            ? 'bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 shadow-teal-900/40 disabled:opacity-50'
             : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-blue-900/40 disabled:opacity-50'
         }`}
       >
@@ -237,7 +337,13 @@ export default function LoginForm({
           </>
         ) : (
           <>
-            <span>Authenticate Securely</span>
+            <span>
+              {isSuperAdmin
+                ? 'Authenticate Super Admin'
+                : accountType === 'staff'
+                ? 'Sign In as Staff'
+                : 'Sign In as Admin'}
+            </span>
             <ArrowRight className="w-4 h-4" />
           </>
         )}
