@@ -99,11 +99,14 @@ class AdminAuthController extends Controller
                 'id' => $admin->id,
                 'name' => $admin->name,
                 'email' => $admin->email,
+                'mobile' => $admin->mobile,
+                'image' => $admin->image,
+                'image_url' => $admin->image_url,
                 'status' => $admin->status,
                 'is_active' => $admin->is_active,
                 'last_login_at' => $admin->last_login_at,
                 'created_at' => $admin->created_at,
-                'role' => 'admin',
+                'role' => 'Administrator',
             ],
         ]);
     }
@@ -120,11 +123,14 @@ class AdminAuthController extends Controller
                 'id' => $admin->id,
                 'name' => $admin->name,
                 'email' => $admin->email,
+                'mobile' => $admin->mobile,
+                'image' => $admin->image,
+                'image_url' => $admin->image_url,
                 'status' => $admin->status,
                 'is_active' => $admin->is_active,
                 'last_login_at' => $admin->last_login_at,
                 'created_at' => $admin->created_at,
-                'role' => 'admin',
+                'role' => 'Administrator',
             ],
         ]);
     }

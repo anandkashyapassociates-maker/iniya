@@ -386,8 +386,12 @@ export default function Sidebar({
         {/* Bottom Section: User Info & Sign Out */}
         <div className="p-4 border-t border-slate-800/80 bg-slate-950/40 space-y-3 shrink-0">
           <div className="flex items-center gap-3 px-1 pt-1">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0 font-display">
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0 font-display overflow-hidden">
+              {user?.image_url ? (
+                <img src={user.image_url} alt={user.name || 'User'} className="w-full h-full object-cover" />
+              ) : (
+                user?.name ? user.name.charAt(0).toUpperCase() : 'U'
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-slate-200 truncate font-display tracking-tight">

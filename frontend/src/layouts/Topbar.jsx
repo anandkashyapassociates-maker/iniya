@@ -64,13 +64,17 @@ export default function Topbar({
             className="flex items-center gap-2.5 p-1.5 rounded-2xl hover:bg-slate-100 transition-colors focus:outline-none cursor-pointer"
           >
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white shadow-xs font-display ${
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white shadow-xs font-display overflow-hidden ${
                 isSuperAdmin
                   ? 'bg-gradient-to-tr from-purple-600 to-indigo-600'
                   : 'bg-gradient-to-tr from-blue-600 to-cyan-500'
               }`}
             >
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+              {user?.image_url ? (
+                <img src={user.image_url} alt={user.name || 'User'} className="w-full h-full object-cover" />
+              ) : (
+                user?.name ? user.name.charAt(0).toUpperCase() : 'U'
+              )}
             </div>
             <div className="hidden sm:block text-left">
               <span className="text-xs font-semibold text-slate-800 block leading-tight font-display tracking-tight">
