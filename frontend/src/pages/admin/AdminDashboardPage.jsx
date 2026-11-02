@@ -9,6 +9,14 @@ import {
   DollarSign,
   TrendingUp,
   UserPlus,
+  Zap,
+  Layers,
+  CalendarPlus,
+  Boxes,
+  Eye,
+  AlertTriangle,
+  Activity,
+  ChevronRight,
 } from 'lucide-react';
 import StatCard from '../../components/StatCard';
 import DashboardSkeleton from '../../components/DashboardSkeleton';

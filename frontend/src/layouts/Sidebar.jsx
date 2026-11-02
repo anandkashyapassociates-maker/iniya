@@ -179,6 +179,8 @@ export default function Sidebar({
     },
   ];
 
+  const navItems = isSuperAdmin ? superAdminNavItems : adminNavItems;
+
   return (
     <>
       {/* Mobile Backdrop */}
@@ -308,57 +310,59 @@ export default function Sidebar({
               );
             })}
 
-            {/* INVENTORY MANAGEMENT ACCORDION SECTION */}
-            <div className="pt-1.5 pb-1">
-              <button
-                type="button"
-                onClick={() => setInventoryOpen((prev) => !prev)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer group ${
-                  isInInventory
-                    ? 'bg-blue-600/15 text-blue-300 border border-blue-500/30'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-500 to-blue-600 text-white flex items-center justify-center shrink-0 icon-3d shadow-md group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-300">
-                    <Boxes className="w-4 h-4 drop-shadow-sm" />
-                  </div>
-                  <span className="truncate group-hover:translate-x-0.5 transition-transform">Inventory Management</span>
-                </div>
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-200 ${
-                    inventoryOpen ? 'rotate-0' : '-rotate-90'
-                  }`}
-                />
-              </button>
+            {!isSuperAdmin && (
+              <>
+                {/* INVENTORY MANAGEMENT ACCORDION SECTION */}
+                <div className="pt-1.5 pb-1">
+                  <button
+                    type="button"
+                    onClick={() => setInventoryOpen((prev) => !prev)}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer group ${
+                      isInInventory
+                        ? 'bg-blue-600/15 text-blue-300 border border-blue-500/30'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-500 to-blue-600 text-white flex items-center justify-center shrink-0 icon-3d shadow-md group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-300">
+                        <Boxes className="w-4 h-4 drop-shadow-sm" />
+                      </div>
+                      <span className="truncate group-hover:translate-x-0.5 transition-transform">Inventory Management</span>
+                    </div>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        inventoryOpen ? 'rotate-0' : '-rotate-90'
+                      }`}
+                    />
+                  </button>
 
-              {/* Collapsible Submenu */}
-              {inventoryOpen && (
-                <div className="pl-4 pr-1 pt-1.5 space-y-1">
-                  {inventorySubItems.map((sub) => {
-                    const SubIcon = sub.icon;
-                    return (
-                      <NavLink
-                        key={sub.to}
-                        to={sub.to}
-                        end
-                        onClick={onClose}
-                        className={({ isActive }) =>
-                          `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                            isActive
-                              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs'
-                              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                          }`
-                        }
-                      >
-                        <SubIcon className="w-3.5 h-3.5 shrink-0" />
-                        <span className="truncate">{sub.label}</span>
-                      </NavLink>
-                    );
-                  })}
+                  {/* Collapsible Submenu */}
+                  {inventoryOpen && (
+                    <div className="pl-4 pr-1 pt-1.5 space-y-1">
+                      {inventorySubItems.map((sub) => {
+                        const SubIcon = sub.icon;
+                        return (
+                          <NavLink
+                            key={sub.to}
+                            to={sub.to}
+                            end
+                            onClick={onClose}
+                            className={({ isActive }) =>
+                              `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                                isActive
+                                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs'
+                                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                              }`
+                            }
+                          >
+                            <SubIcon className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate">{sub.label}</span>
+                          </NavLink>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
                 {/* Profile & Security Footer Items */}
                 {adminFooterNavItems.map((item) => {
@@ -385,6 +389,8 @@ export default function Sidebar({
                     </NavLink>
                   );
                 })}
+              </>
+            )}
           </div>
         </div>
 
