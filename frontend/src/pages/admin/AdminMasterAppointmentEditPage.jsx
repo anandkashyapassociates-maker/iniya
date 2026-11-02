@@ -72,7 +72,7 @@ export default function AdminMasterAppointmentEditPage() {
       .finally(() => {
         setLoading(false);
       });
-  }, [id, toast]);
+  }, [id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
