@@ -121,7 +121,7 @@ export default function SuperAdminInventoryStocksPage() {
     },
     {
       header: 'PRODUCT DETAILS',
-      className: 'w-[24%]',
+      className: 'w-[28%]',
       render: (p) => (
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
@@ -150,15 +150,6 @@ export default function SuperAdminInventoryStocksPage() {
               )}
             </div>
           </div>
-        </div>
-      ),
-    },
-    {
-      header: 'UNIT SPEC',
-      className: 'w-[10%]',
-      render: (p) => (
-        <div className="text-xs text-slate-700 font-medium">
-          <span>{p.business_unit || 'Piece'}</span>
         </div>
       ),
     },
@@ -228,30 +219,32 @@ export default function SuperAdminInventoryStocksPage() {
       },
     },
     {
-      header: 'VENDOR',
-      className: 'w-[18%]',
+      header: 'STOCK VALUE',
+      className: 'w-[16%]',
       render: (p) => {
+        const qty = Number(p.quantity) || 0;
+        const avgPrice = Number(p.calculated_average_price ?? p.average_price ?? p.buy_price ?? 0);
+        const stockValue = qty * avgPrice;
+
         return (
           <div>
-            <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor?.vendor_name || 'No Vendor Assigned'}>
-              {p.vendor ? p.vendor.vendor_name : <span className="text-slate-400 italic text-[11px]">No Vendor Assigned</span>}
+            <span className="text-xs font-bold font-mono text-slate-900 block">
+              ₹{stockValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
-            {p.vendor?.company_name && (
-              <span className="text-[11px] text-slate-400 block truncate" title={p.vendor.company_name}>
-                {p.vendor.company_name}
-              </span>
-            )}
+            <span className="text-[10px] text-slate-400 font-mono">
+              {qty} × ₹{avgPrice.toFixed(2)}
+            </span>
           </div>
         );
       },
     },
     {
-      header: 'ACTIONS',
-      className: 'w-[12%] text-center',
+      header: 'DETAILS',
+      className: 'w-[14%] text-center',
       render: (p) => (
         <Link
           to={`/superadmin/inventory/stocks/${p.id}`}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200/80 text-xs font-semibold shadow-2xs transition-all"
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200/80 text-xs font-semibold shadow-2xs transition-all"
           title="View Complete Stock History & Details"
         >
           <FileText className="w-3.5 h-3.5" />
