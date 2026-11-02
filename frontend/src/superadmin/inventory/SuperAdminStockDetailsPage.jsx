@@ -349,7 +349,7 @@ export default function SuperAdminStockDetailsPage() {
         </div>
       </div>
 
-      {/* Main Stock Audit Ledger Table: Passbook Format */}
+      {/* Main Stock Audit Ledger Table: Clean & Unified Passbook Format */}
       <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-7 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] space-y-5">
         {/* Table Title and Entry Counter */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-slate-100">
@@ -388,18 +388,18 @@ export default function SuperAdminStockDetailsPage() {
           <div className="overflow-x-auto rounded-2xl border border-slate-200/90 shadow-2xs">
             <table className="w-full text-left border-collapse min-w-[720px]">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-                  <th className="py-3.5 px-3 w-14 text-center">SR.</th>
+                <tr className="border-b border-slate-200/90 bg-slate-50/70 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  <th className="py-3.5 px-3 w-14 text-center font-bold text-slate-400">SR.</th>
                   <th className="py-3.5 px-4 w-[16%]">Date &amp; Time</th>
-                  <th className="py-3.5 px-4 w-[34%]">Transaction &amp; Performed By</th>
+                  <th className="py-3.5 px-4 w-[36%]">Transaction &amp; Performer</th>
                   <th className="py-3.5 px-4 w-[12%]">Rate (₹)</th>
-                  <th className="py-3.5 px-4 w-[12%] text-right text-emerald-800 bg-emerald-50/60 border-l border-emerald-100/80">
+                  <th className="py-3.5 px-4 w-[12%] text-right font-bold text-emerald-700">
                     Credit (+ In)
                   </th>
-                  <th className="py-3.5 px-4 w-[12%] text-right text-rose-800 bg-rose-50/60 border-l border-rose-100/80">
+                  <th className="py-3.5 px-4 w-[12%] text-right font-bold text-rose-600">
                     Debit (- Out)
                   </th>
-                  <th className="py-3.5 px-4 w-[14%] text-right text-blue-900 bg-blue-50/60 border-l border-blue-100/80">
+                  <th className="py-3.5 px-5 w-[14%] text-right font-bold text-slate-900">
                     Balance
                   </th>
                 </tr>
@@ -419,7 +419,7 @@ export default function SuperAdminStockDetailsPage() {
                   return (
                     <tr
                       key={log.id}
-                      className="transition-colors hover:bg-slate-50/80"
+                      className="transition-colors hover:bg-slate-50/70"
                     >
                       {/* SR. NO. */}
                       <td className="py-4 px-3 text-center align-top">
@@ -434,50 +434,59 @@ export default function SuperAdminStockDetailsPage() {
                         {timeStr && <div className="text-[11px] font-mono text-slate-400 mt-0.5">{timeStr}</div>}
                       </td>
 
-                      {/* Transaction Description & Performed By */}
+                      {/* Transaction Description & Performed By (Clean, Structured & Beautiful) */}
                       <td className="py-4 px-4 align-top">
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span
-                              className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
-                                isIssue
-                                  ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              }`}
-                            >
-                              {isIssue ? (
-                                <>
-                                  <MinusCircle className="w-3.5 h-3.5 text-rose-600" />
-                                  <span>Stock Deducted / Issued</span>
-                                </>
-                              ) : (
-                                <>
-                                  <PlusCircle className="w-3.5 h-3.5 text-emerald-600" />
-                                  <span>Stock Added</span>
-                                </>
-                              )}
-                            </span>
+                        <div className="flex items-start gap-3">
+                          {/* 3D-styled indicator icon */}
+                          <div
+                            className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-xs mt-0.5 ${
+                              isIssue
+                                ? 'bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-rose-500/20'
+                                : 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-emerald-500/20'
+                            }`}
+                          >
+                            {isIssue ? (
+                              <MinusCircle className="w-4 h-4 drop-shadow" />
+                            ) : (
+                              <PlusCircle className="w-4 h-4 drop-shadow" />
+                            )}
+                          </div>
 
-                            <span className="text-xs font-semibold text-slate-800 flex items-center gap-1">
-                              <User className="w-3.5 h-3.5 text-slate-400" />
-                              <span>{adminName}</span>
+                          <div className="space-y-1 min-w-0">
+                            {/* Row 1: Badge + Supplier */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span
+                                className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-lg ${
+                                  isIssue
+                                    ? 'bg-rose-50 text-rose-700 border border-rose-200/80'
+                                    : 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
+                                }`}
+                              >
+                                {isIssue ? 'Stock Deducted' : 'Stock Added'}
+                              </span>
+
+                              {vendorName && (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 bg-slate-100/80 px-2 py-0.5 rounded-lg border border-slate-200/60">
+                                  <Building2 className="w-3 h-3 text-slate-400" />
+                                  <span>Supplier: <strong className="text-slate-900">{vendorName}</strong></span>
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Row 2: Performed By Admin */}
+                            <div className="flex items-center gap-1.5 text-xs text-slate-600 pt-0.5">
+                              <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              <span className="font-semibold text-slate-800">{adminName}</span>
                               {adminEmail && (
                                 <span className="text-slate-400 font-normal text-[11px]">({adminEmail})</span>
                               )}
-                            </span>
-                          </div>
+                            </div>
 
-                          {/* Supplier / Notes */}
-                          <div className="flex items-center gap-2 text-[11px] text-slate-500 flex-wrap">
-                            {vendorName && (
-                              <span>
-                                Supplier: <strong className="text-slate-700">{vendorName}</strong>
-                              </span>
-                            )}
+                            {/* Row 3: Optional Notes */}
                             {log.notes && (
-                              <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600">
-                                Note: {log.notes}
-                              </span>
+                              <p className="text-[11px] text-slate-500 italic bg-slate-50 border border-slate-200/60 rounded-lg px-2.5 py-1 mt-1 max-w-md">
+                                "{log.notes}"
+                              </p>
                             )}
                           </div>
                         </div>
@@ -499,33 +508,36 @@ export default function SuperAdminStockDetailsPage() {
                         )}
                       </td>
 
-                      {/* Credit (+ In) */}
-                      <td className="py-4 px-4 text-right align-top bg-emerald-50/20 border-l border-emerald-100 font-mono">
+                      {/* Credit (+ In) - Seamless & High Contrast */}
+                      <td className="py-4 px-4 text-right align-top font-mono">
                         {log.credit > 0 ? (
-                          <span className="text-emerald-700 font-bold text-sm">
-                            +{log.credit} <span className="text-xs font-normal text-emerald-600">{unit}</span>
+                          <span className="inline-flex items-center justify-end font-mono font-bold text-emerald-700 text-sm">
+                            +{log.credit}{' '}
+                            <span className="text-xs font-semibold text-emerald-600 ml-1">{unit}</span>
                           </span>
                         ) : (
-                          <span className="text-slate-300 font-mono">—</span>
+                          <span className="text-slate-300 font-mono text-xs">—</span>
                         )}
                       </td>
 
-                      {/* Debit (- Out) */}
-                      <td className="py-4 px-4 text-right align-top bg-rose-50/20 border-l border-rose-100 font-mono">
+                      {/* Debit (- Out) - Seamless & High Contrast */}
+                      <td className="py-4 px-4 text-right align-top font-mono">
                         {log.debit > 0 ? (
-                          <span className="text-rose-700 font-bold text-sm">
-                            -{log.debit} <span className="text-xs font-normal text-rose-600">{unit}</span>
+                          <span className="inline-flex items-center justify-end font-mono font-bold text-rose-600 text-sm">
+                            -{log.debit}{' '}
+                            <span className="text-xs font-semibold text-rose-500 ml-1">{unit}</span>
                           </span>
                         ) : (
-                          <span className="text-slate-300 font-mono">—</span>
+                          <span className="text-slate-300 font-mono text-xs">—</span>
                         )}
                       </td>
 
                       {/* Running Balance */}
-                      <td className="py-4 px-4 text-right align-top bg-blue-50/20 border-l border-blue-100 font-mono">
-                        <span className="text-slate-900 font-bold text-sm">
-                          {log.balance} <span className="text-xs font-normal text-slate-500">{unit}</span>
-                        </span>
+                      <td className="py-4 px-5 text-right align-top font-mono">
+                        <div className="font-mono font-extrabold text-slate-900 text-sm">
+                          {log.balance}{' '}
+                          <span className="text-xs font-semibold text-slate-500 ml-0.5">{unit}</span>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -533,7 +545,7 @@ export default function SuperAdminStockDetailsPage() {
 
                 {/* Initial Opening Stock row if present */}
                 {initialOpeningBalance > 0 && (
-                  <tr className="bg-slate-50/60 transition-colors">
+                  <tr className="bg-slate-50/50 transition-colors">
                     <td className="py-3.5 px-3 text-center">
                       <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-600 font-mono text-[11px] font-bold tabular-nums">
                         {displayLogs.length + 1 < 10 ? `0${displayLogs.length + 1}` : displayLogs.length + 1}
@@ -545,26 +557,28 @@ export default function SuperAdminStockDetailsPage() {
                         : 'Initial Record'}
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                        Opening / Baseline Stock
-                      </span>
-                      {product.inventory_updater?.name && (
-                        <span className="text-[11px] text-slate-400 ml-2">
-                          recorded by {product.inventory_updater.name}
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
+                          Opening / Baseline Stock
                         </span>
-                      )}
+                        {product.inventory_updater?.name && (
+                          <span className="text-[11px] text-slate-400">
+                            recorded by {product.inventory_updater.name}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3.5 px-4 font-mono text-slate-700">
                       {product.buy_price ? `₹${Number(product.buy_price).toFixed(2)}` : '—'}
                     </td>
-                    <td className="py-3.5 px-4 text-right font-mono text-emerald-700 font-bold bg-emerald-50/20 border-l border-emerald-100">
-                      +{initialOpeningBalance} <span className="text-xs font-normal">{unit}</span>
+                    <td className="py-3.5 px-4 text-right font-mono text-emerald-700 font-bold">
+                      +{initialOpeningBalance} <span className="text-xs font-normal text-emerald-600 ml-1">{unit}</span>
                     </td>
-                    <td className="py-3.5 px-4 text-right font-mono text-slate-300 bg-rose-50/20 border-l border-rose-100">
+                    <td className="py-3.5 px-4 text-right font-mono text-slate-300 text-xs">
                       —
                     </td>
-                    <td className="py-3.5 px-4 text-right font-mono text-slate-900 font-bold bg-blue-50/20 border-l border-blue-100">
-                      {initialOpeningBalance} <span className="text-xs font-normal">{unit}</span>
+                    <td className="py-3.5 px-5 text-right font-mono text-slate-900 font-extrabold text-sm">
+                      {initialOpeningBalance} <span className="text-xs font-normal text-slate-500 ml-0.5">{unit}</span>
                     </td>
                   </tr>
                 )}
