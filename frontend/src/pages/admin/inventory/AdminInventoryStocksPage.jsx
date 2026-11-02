@@ -359,15 +359,17 @@ export default function AdminInventoryStocksPage() {
       className: 'w-[24%]',
       render: (p) => (
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
-            {p.product_image ? (
+          <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs relative">
+            <Package className="w-5 h-5 text-slate-400" />
+            {(p.product_image || p.image_url) && (
               <img
                 src={p.image_url || p.product_image}
                 alt={p.product_name}
-                className="w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover rounded-xl"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
               />
-            ) : (
-              <Package className="w-5 h-5 text-slate-400" />
             )}
           </div>
           <div className="min-w-0">
@@ -705,15 +707,17 @@ export default function AdminInventoryStocksPage() {
 
             {/* Product Summary Box */}
             <div className="my-4 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden">
-                {stockModal.product.product_image ? (
+              <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden relative">
+                <Package className="w-5 h-5 text-slate-400" />
+                {(stockModal.product.product_image || stockModal.product.image_url) && (
                   <img
                     src={stockModal.product.image_url || stockModal.product.product_image}
                     alt={stockModal.product.product_name}
-                    className="w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover rounded-xl"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
-                ) : (
-                  <Package className="w-5 h-5 text-slate-400" />
                 )}
               </div>
               <div className="min-w-0 flex-1">
@@ -944,15 +948,17 @@ export default function AdminInventoryStocksPage() {
 
             {/* Product Summary Box */}
             <div className="m-5 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden">
-                {issueModal.product.product_image ? (
+              <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden relative">
+                <Package className="w-5 h-5 text-slate-400" />
+                {(issueModal.product.product_image || issueModal.product.image_url) && (
                   <img
                     src={issueModal.product.image_url || issueModal.product.product_image}
                     alt={issueModal.product.product_name}
-                    className="w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover rounded-xl"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
-                ) : (
-                  <Package className="w-5 h-5 text-slate-400" />
                 )}
               </div>
               <div className="min-w-0 flex-1">

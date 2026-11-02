@@ -3,20 +3,13 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import AuthLayout from '../../layouts/AuthLayout';
 import LoginForm from '../../components/LoginForm';
 import { useAdminAuth } from '../../features/auth/AdminAuthContext';
-import { useSuperAdminAuth } from '../../superadmin/auth/SuperAdminAuthContext';
 import { useToast } from '../../context/ToastContext';
 
 export default function AdminLoginPage() {
   const { login, isAuthenticated, user, isLoading: isAdminLoading } = useAdminAuth();
-  const { isAuthenticated: isSuperAdminAuth, isLoading: isSuperAdminLoading } = useSuperAdminAuth();
   const navigate = useNavigate();
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
-
-  // If already authenticated as SuperAdmin, redirect to SuperAdmin dashboard
-  if (!isSuperAdminLoading && isSuperAdminAuth) {
-    return <Navigate to="/superadmin/dashboard" replace />;
-  }
 
   // If already authenticated as active Admin, redirect to Admin dashboard
   if (!isAdminLoading && isAuthenticated && user?.is_active) {
@@ -26,8 +19,12 @@ export default function AdminLoginPage() {
   const handleLogin = async (credentials) => {
     setIsLoading(true);
     try {
-      await login(credentials);
-      toast.success('Authenticated successfully. Welcome to the Admin Portal!');
+      const res = await login(credentials);
+      const isStaff = res?.user?.role === 'staff' || res?.user?.user_type === 'staff';
+      const welcomeMsg = isStaff
+        ? `Authenticated successfully. Welcome, ${res?.user?.name || 'Staff Member'}!`
+        : 'Authenticated successfully. Welcome to the Admin Portal!';
+      toast.success(welcomeMsg);
       navigate('/admin/dashboard');
     } finally {
       setIsLoading(false);
@@ -37,8 +34,8 @@ export default function AdminLoginPage() {
   return (
     <AuthLayout
       role="admin"
-      title="Admin Portal"
-      subtitle="Sign in with your administrative credentials and security verification."
+      title="Admin & Staff Portal"
+      subtitle="Sign in with your Admin or Staff credentials to access the clinic workspace."
     >
       <LoginForm
         role="admin"

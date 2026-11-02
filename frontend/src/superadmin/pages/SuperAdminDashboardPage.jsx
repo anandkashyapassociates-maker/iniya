@@ -90,7 +90,7 @@ export default function SuperAdminDashboardPage() {
         setRefreshing(false);
       }
     },
-    [toast]
+    []
   );
 
   useEffect(() => {

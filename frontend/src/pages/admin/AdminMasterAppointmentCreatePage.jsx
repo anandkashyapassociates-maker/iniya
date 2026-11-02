@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
 import {
   Calendar,
   Clock,
   User,
   Plus,
   Trash2,
-  Save,
   ArrowLeft,
   DollarSign,
   Package,
@@ -15,7 +14,13 @@ import {
   AlertCircle,
   Loader2,
   CheckCircle2,
-  Sparkles,
+  Stethoscope,
+  Phone,
+  Coins,
+  HeartPulse,
+  UserPlus,
+  Save,
+  Check,
 } from 'lucide-react';
 import adminMasterAppointmentService from '../../services/adminMasterAppointmentService';
 import ProductMultiSelectDropdown from '../../components/admin/ProductMultiSelectDropdown';
@@ -57,24 +62,10 @@ export default function AdminMasterAppointmentCreatePage() {
   const [salesTeamId, setSalesTeamId] = useState('');
   const [notes, setNotes] = useState('');
 
-  // Flattened list of all services for easy lookup
-  const allServicesList = useMemo(() => {
-    const list = [];
-    for (const cat of servicesTree) {
-      for (const sub of cat.children || []) {
-        for (const svc of sub.services || []) {
-          list.push({
-            ...svc,
-            category_name: cat.name,
-            category_id: cat.id,
-            sub_category_name: sub.name,
-            sub_category_id: sub.id,
-          });
-        }
-      }
-    }
-    return list;
-  }, [servicesTree]);
+  // Selected customer preview
+  const selectedCustomer = useMemo(() => {
+    return customers.find((c) => String(c.id) === String(customerId)) || null;
+  }, [customers, customerId]);
 
   // Dynamic Sessions state
   const [sessions, setSessions] = useState([
@@ -126,7 +117,7 @@ export default function AdminMasterAppointmentCreatePage() {
             );
           }
 
-          // If pre-selected service was passed from Services Management Page, prefill master service, fee & session #1
+          // If pre-selected service was passed from Services Management Page, prefill
           if (preServiceId && tree.length > 0) {
             let foundSvc = null;
             for (const cat of tree) {
@@ -167,7 +158,7 @@ export default function AdminMasterAppointmentCreatePage() {
       .finally(() => {
         setOptionsLoading(false);
       });
-  }, [toast, preServiceId, preCategoryId, preSubCategoryId]);
+  }, [preServiceId, preCategoryId, preSubCategoryId]);
 
   // Session handler methods
   const handleAddSession = () => {
@@ -189,7 +180,7 @@ export default function AdminMasterAppointmentCreatePage() {
         service_id: '',
         service_price: '0',
         treatment_details: lastSession?.treatment_details || '',
-        session_date: lastSession?.session_date || todayStr,
+        session_date: lastSession?.session_date || appointmentDate || todayStr,
         session_time: nextTime,
         staff_id: staffList[0]?.id ? String(staffList[0].id) : '',
         staff_commission: '0',
@@ -253,7 +244,7 @@ export default function AdminMasterAppointmentCreatePage() {
 
   const handleRemoveSession = (index) => {
     if (sessions.length <= 1) {
-      toast.warning('A master appointment must have at least one session.');
+      toast.warning('At least one session is required.');
       return;
     }
     setSessions((prev) => prev.filter((_, idx) => idx !== index));
@@ -267,6 +258,11 @@ export default function AdminMasterAppointmentCreatePage() {
     });
   };
 
+  // Aggregated live financial calculations
+  const totalAppointmentFees = useMemo(() => {
+    return sessions.reduce((sum, s) => sum + Number(s.service_price || 0), 0);
+  }, [sessions]);
+
   // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -274,12 +270,12 @@ export default function AdminMasterAppointmentCreatePage() {
 
     // Validations
     if (!customerId) {
-      setError('Please select a customer.');
+      setError('Please select a patient.');
       return;
     }
 
     if (!appointmentDate) {
-      setError('Please select the Master Appointment Date.');
+      setError('Please select the Consultation Date.');
       return;
     }
 
@@ -298,7 +294,7 @@ export default function AdminMasterAppointmentCreatePage() {
     for (let i = 0; i < sessions.length; i++) {
       const s = sessions[i];
       if (!s.category_id || !s.sub_category_id || !s.service_id) {
-        setError(`Session #${i + 1}: Please select a Clinical Service (Category → Sub-Category → Service).`);
+        setError(`Session #${i + 1}: Please select Category, Sub-Category, and Service.`);
         return;
       }
       if (!s.treatment_details?.trim()) {
@@ -306,19 +302,19 @@ export default function AdminMasterAppointmentCreatePage() {
         return;
       }
       if (!s.session_date) {
-        setError(`Session #${i + 1}: Please choose a session date.`);
+        setError(`Session #${i + 1}: Please choose a date.`);
         return;
       }
       if (!s.session_time) {
-        setError(`Session #${i + 1}: Please choose a session time.`);
+        setError(`Session #${i + 1}: Please choose a time.`);
         return;
       }
       if (!s.staff_id) {
-        setError(`Session #${i + 1}: Please assign a staff member.`);
+        setError(`Session #${i + 1}: Please assign a doctor or staff member.`);
         return;
       }
       if (s.staff_commission === '' || Number(s.staff_commission) < 0) {
-        setError(`Session #${i + 1}: Staff commission must be 0 or a positive fixed amount.`);
+        setError(`Session #${i + 1}: Commission must be 0 or a positive amount.`);
         return;
       }
 
@@ -337,8 +333,6 @@ export default function AdminMasterAppointmentCreatePage() {
     setSaving(true);
 
     try {
-      const totalAppointmentFees = sessions.reduce((sum, s) => sum + Number(s.service_price || 0), 0);
-
       const payload = {
         customer_id: Number(customerId),
         appointment_date: appointmentDate,
@@ -361,7 +355,7 @@ export default function AdminMasterAppointmentCreatePage() {
 
       const res = await adminMasterAppointmentService.create(payload);
 
-      toast.success(res.message || 'Master Appointment and sessions booked successfully!');
+      toast.success(res.message || 'Appointment created successfully!');
       navigate('/admin/appointments');
     } catch (err) {
       console.error('Master appointment booking error:', err);
@@ -387,137 +381,186 @@ export default function AdminMasterAppointmentCreatePage() {
 
   if (optionsLoading) {
     return (
-      <div className="min-h-[500px] flex flex-col items-center justify-center text-slate-500">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
-        <p className="text-sm font-medium">Loading form options...</p>
+      <div className="min-h-[400px] sm:min-h-[500px] flex flex-col items-center justify-center text-slate-500 px-4">
+        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-600 to-violet-600 shadow-lg sm:shadow-xl shadow-indigo-500/25 flex items-center justify-center text-white animate-pulse">
+          <HeartPulse className="w-6 h-6 sm:w-7 sm:h-7 drop-shadow" />
+        </div>
+        <p className="text-sm sm:text-base font-bold text-slate-800 mt-4 font-display">Loading Appointment Form...</p>
+        <p className="text-xs text-slate-400 mt-1 text-center">Fetching patients, doctors, and clinic services</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Header Banner */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center space-x-2">
-            <span>Book Master Appointment</span>
-            <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-              Multi-Session Architecture
-            </span>
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Create a parent booking with multiple independent clinical sessions, assigned staff, fixed commissions, and products.
-          </p>
+    <div className="max-w-6xl mx-auto space-y-5 sm:space-y-8 pb-32 sm:pb-28">
+      {/* Page Header with 3D Icon (Responsive Stack on Mobile) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pt-1">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-600 to-violet-600 shadow-md sm:shadow-xl shadow-indigo-500/25 ring-2 sm:ring-4 ring-indigo-50 flex items-center justify-center text-white shrink-0">
+            <Calendar className="w-5 h-5 sm:w-7 sm:h-7 drop-shadow-md" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight font-display">
+              Book Appointment
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5 truncate sm:whitespace-normal">
+              Schedule clinical consultation and treatment sessions
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center w-full sm:w-auto">
-          <button
-            type="button"
-            onClick={() => navigate('/admin/appointments')}
-            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-2.5 text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl transition-all shadow-xs"
-          >
-            <ArrowLeft className="w-4 h-4 text-slate-600" />
-            <span>Back</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => navigate('/admin/appointments')}
+          className="inline-flex items-center justify-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold shadow-xs hover:shadow transition-all cursor-pointer w-full sm:w-auto"
+        >
+          <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500" />
+          <span>Back to Appointments</span>
+        </button>
       </div>
 
-      {/* Top Error Alert */}
+      {/* Error Alert */}
       {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start space-x-3 text-rose-800 animate-in fade-in">
-          <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
-          <div className="text-sm">
-            <span className="font-semibold">Booking Error: </span>
-            <span>{error}</span>
-          </div>
+        <div className="p-3.5 sm:p-4 bg-rose-50 border border-rose-200/90 rounded-2xl flex items-start gap-2.5 sm:gap-3 text-rose-800 shadow-xs">
+          <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-rose-600 shrink-0 mt-0.5" />
+          <div className="text-xs sm:text-sm font-medium leading-relaxed">{error}</div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-8">
         {/* SECTION 1: MASTER APPOINTMENT DETAILS */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <div className="flex items-center space-x-2.5 pb-4 mb-6 border-b border-slate-100">
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
-              <Calendar className="w-5 h-5" />
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-7 lg:p-8 border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-6">
+          {/* Card Header (Responsive wrap on mobile so "+ New Patient" never clips) */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 sm:pb-5 border-b border-slate-100 gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 shadow-md shadow-blue-500/25 ring-2 ring-blue-50 flex items-center justify-center text-white shrink-0">
+                <User className="w-4 h-4 sm:w-5 sm:h-5 drop-shadow-sm" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900 font-display">
+                  1. Patient &amp; Consultation Details
+                </h2>
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+                  Select patient, date and sales partner
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-base font-bold text-slate-900">1. Master Appointment Information</h2>
-              <p className="text-xs text-slate-500">Core parent details, patient identity, sales attribution, and total consultation fees</p>
-            </div>
+
+            <Link
+              to="/admin/customers/create"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-200/80 rounded-xl transition-all cursor-pointer self-start sm:self-center"
+            >
+              <UserPlus className="w-3.5 h-3.5 text-blue-600" />
+              <span>+ New Patient</span>
+            </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* Form Fields: Patient, Date, Sales Team */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {/* Customer Dropdown */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                Patient / Customer <span className="text-rose-500">*</span>
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
+                Patient <span className="text-rose-500">*</span>
               </label>
               <select
                 value={customerId}
                 onChange={(e) => setCustomerId(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-colors"
+                className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-xs"
               >
                 <option value="">-- Select Patient --</option>
                 {customers.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name} ({c.mobile}) {c.gender ? `- ${c.gender}` : ''}
+                    {c.name} ({c.mobile}) {c.gender ? `• ${c.gender}` : ''}
                   </option>
                 ))}
               </select>
-              {customers.length === 0 && (
-                <p className="text-xs text-amber-600 mt-1">No active customers found. Please add a customer first.</p>
+
+              {/* Selected Patient Compact Info */}
+              {selectedCustomer && (
+                <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-slate-600 bg-blue-50/60 border border-blue-100 rounded-xl px-2.5 py-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                  <span className="font-semibold text-blue-950 truncate max-w-[140px] sm:max-w-none">{selectedCustomer.name}</span>
+                  {selectedCustomer.mobile && <span className="text-slate-500">• {selectedCustomer.mobile}</span>}
+                  {selectedCustomer.gender && <span className="text-slate-500 capitalize">• {selectedCustomer.gender}</span>}
+                </div>
               )}
             </div>
 
             {/* Master Appointment Date */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                Master Date <span className="text-rose-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                <label className="block text-xs sm:text-sm font-semibold text-slate-700">
+                  Consultation Date <span className="text-rose-500">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setAppointmentDate(todayStr)}
+                  className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
+                >
+                  Set Today
+                </button>
+              </div>
               <input
                 type="date"
                 min={todayStr}
                 value={appointmentDate}
                 onChange={(e) => setAppointmentDate(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-colors"
+                className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-xs"
               />
             </div>
 
             {/* Sales Team Member */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                Sales Team / Lead <span className="text-rose-500">*</span>
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
+                Sales Partner <span className="text-rose-500">*</span>
               </label>
               <select
                 value={salesTeamId}
                 onChange={(e) => setSalesTeamId(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-colors"
+                className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-xs"
               >
-                <option value="">-- Select Sales Member --</option>
+                <option value="">-- Select Sales Partner --</option>
                 {salesTeams.map((st) => (
                   <option key={st.id} value={st.id}>
-                    {st.name} ({st.sales_code}) {st.department ? `- ${st.department}` : ''}
+                    {st.name} ({st.sales_code})
                   </option>
                 ))}
               </select>
             </div>
           </div>
+
+          {/* Optional Notes */}
+          <div>
+            <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
+              Notes (Optional)
+            </label>
+            <textarea
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Clinical remarks, patient instructions, or special notes..."
+              className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-y shadow-xs"
+            />
+          </div>
         </div>
 
-        {/* SECTION 2: DYNAMIC MULTIPLE SESSIONS BUILDER */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
-            <div className="flex items-center space-x-2.5">
-              <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
-                <Layers className="w-5 h-5" />
+        {/* SECTION 2: INDIVIDUAL CLINICAL SESSIONS */}
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-7 lg:p-8 border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-6">
+          {/* Section Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 sm:pb-5 border-b border-slate-100 gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-br from-violet-500 via-purple-600 to-indigo-600 shadow-md shadow-purple-500/25 ring-2 ring-purple-50 flex items-center justify-center text-white shrink-0">
+                <Layers className="w-4 h-4 sm:w-5 sm:h-5 drop-shadow-sm" />
               </div>
-              <div>
-                <h2 className="text-base font-bold text-slate-900">2. Individual Clinical Sessions</h2>
-                <p className="text-xs text-slate-500">
-                  Add unlimited sessions. Each session has its own date, time, assigned staff member, fixed commission, and product.
+              <div className="min-w-0 flex-1">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900 font-display">
+                  2. Clinical Sessions
+                </h2>
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+                  Procedures, doctor assignment, and schedules
                 </p>
               </div>
             </div>
@@ -525,72 +568,72 @@ export default function AdminMasterAppointmentCreatePage() {
             <button
               type="button"
               onClick={handleAddSession}
-              className="inline-flex items-center space-x-1.5 px-4 py-2 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition-all shadow-xs"
+              className="inline-flex items-center justify-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-xs sm:text-sm font-semibold shadow-md shadow-indigo-500/20 transition-all cursor-pointer w-full sm:w-auto"
             >
               <Plus className="w-4 h-4" />
-              <span>Add Another Session</span>
+              <span>Add Session</span>
             </button>
           </div>
 
-          {/* List of Dynamic Session Cards */}
-          <div className="space-y-4">
+          {/* List of Session Cards */}
+          <div className="space-y-4 sm:space-y-6">
             {sessions.map((session, index) => (
               <div
                 key={index}
-                className="relative p-5 rounded-2xl border-2 border-slate-200/90 bg-gradient-to-b from-white to-slate-50/50 hover:border-indigo-300 transition-colors shadow-xs"
+                className="p-3.5 sm:p-6 lg:p-7 rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white hover:border-indigo-300 shadow-xs sm:shadow-sm transition-all duration-200 space-y-4 sm:space-y-6"
               >
-                {/* Session Card Header */}
-                <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-200/70">
-                  <div className="flex items-center space-x-2.5">
-                    <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-600 text-white font-bold text-xs shadow-xs">
-                      {index + 1}
-                    </span>
-                    <h3 className="font-semibold text-sm text-slate-800">
-                      Session #{index + 1} Configuration
-                    </h3>
-                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-                      Default: Pending
-                    </span>
+                {/* Session Card Header Bar */}
+                <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 sm:pb-4 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5 sm:gap-3">
+                    {/* 3D Session Number Badge */}
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-500 via-blue-600 to-cyan-500 shadow-md shadow-indigo-500/25 ring-2 ring-indigo-50 flex items-center justify-center text-white font-bold text-xs sm:text-sm shrink-0">
+                      #{index + 1}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-sm sm:text-base text-slate-900 font-display">
+                        Session {index + 1}
+                      </h3>
+                      <span className="text-[11px] sm:text-xs text-amber-600 font-medium">Pending Confirmation</span>
+                    </div>
                   </div>
 
-                  {sessions.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveSession(index)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                      title="Remove this session"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    {/* Standard Fee Pill */}
+                    <div className="px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-bold font-mono">
+                      ₹{Number(session.service_price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </div>
+
+                    {/* Remove button */}
+                    {sessions.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSession(index)}
+                        className="p-1.5 sm:p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"
+                        title="Remove session"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                {/* 3-Tier Clinical Service Selection: Category -> Sub-Category -> Service */}
-                <div className="p-3.5 bg-slate-100/70 border border-slate-200/90 rounded-xl mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5 font-display">
-                      <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-                      <span>
-                        Select Clinical Service (Category → Sub-Category → Service) <span className="text-rose-500">*</span>
-                      </span>
-                    </span>
-                    <span className="text-[11px] font-semibold text-rose-600 bg-rose-50 border border-rose-200/80 px-2 py-0.5 rounded-full">
-                      Required
-                    </span>
+                {/* Service Selection Grid: 4 Clean Columns */}
+                <div>
+                  <div className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 sm:mb-3">
+                    Service Procedure
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     {/* 1. Category */}
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
-                        1. Category <span className="text-rose-500">*</span>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Category <span className="text-rose-500">*</span>
                       </label>
                       <select
                         value={session.category_id || ''}
                         onChange={(e) => handleSessionCategoryChange(index, e.target.value)}
-                        className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium"
+                        className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
                       >
-                        <option value="">-- Choose Category --</option>
+                        <option value="">-- Select Category --</option>
                         {servicesTree.map((c) => (
                           <option key={c.id} value={c.id}>
                             {c.name}
@@ -601,16 +644,16 @@ export default function AdminMasterAppointmentCreatePage() {
 
                     {/* 2. Sub-Category */}
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
-                        2. Sub-Category <span className="text-rose-500">*</span>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Sub-Category <span className="text-rose-500">*</span>
                       </label>
                       <select
                         value={session.sub_category_id || ''}
                         onChange={(e) => handleSessionSubCategoryChange(index, e.target.value)}
                         disabled={!session.category_id}
-                        className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 font-medium"
+                        className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:opacity-50 disabled:bg-slate-100 transition-all cursor-pointer"
                       >
-                        <option value="">-- Choose Sub-Category --</option>
+                        <option value="">-- Select Sub-Category --</option>
                         {servicesTree
                           .find((c) => String(c.id) === String(session.category_id))
                           ?.children?.map((sub) => (
@@ -623,16 +666,16 @@ export default function AdminMasterAppointmentCreatePage() {
 
                     {/* 3. Service */}
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
-                        3. Clinical Service <span className="text-rose-500">*</span>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Service <span className="text-rose-500">*</span>
                       </label>
                       <select
                         value={session.service_id || ''}
                         onChange={(e) => handleSessionServiceChange(index, e.target.value)}
                         disabled={!session.sub_category_id}
-                        className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-semibold text-emerald-800 disabled:opacity-50"
+                        className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-emerald-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 disabled:opacity-50 disabled:bg-slate-100 transition-all cursor-pointer"
                       >
-                        <option value="">-- Choose Service --</option>
+                        <option value="">-- Select Service --</option>
                         {servicesTree
                           .find((c) => String(c.id) === String(session.category_id))
                           ?.children?.find((sub) => String(sub.id) === String(session.sub_category_id))
@@ -644,13 +687,13 @@ export default function AdminMasterAppointmentCreatePage() {
                       </select>
                     </div>
 
-                    {/* 4. Appointment Fees (₹) [Auto Pre-filled from Service] */}
+                    {/* 4. Consultation Fee */}
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
-                        Appointment Fees (₹) <span className="text-rose-500">*</span>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Consultation Fee (₹)
                       </label>
                       <div className="relative">
-                        <span className="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-500 font-bold text-xs pointer-events-none">
+                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-xs sm:text-sm pointer-events-none">
                           ₹
                         </span>
                         <input
@@ -662,182 +705,198 @@ export default function AdminMasterAppointmentCreatePage() {
                               ? Number(session.service_price).toLocaleString('en-IN', { minimumFractionDigits: 2 })
                               : '0.00'
                           }
-                          className="w-full pl-7 pr-3 py-1.5 bg-slate-200/70 border border-slate-300 rounded-lg text-xs font-bold text-slate-800 cursor-not-allowed select-none focus:outline-none"
+                          className="w-full pl-7 pr-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 cursor-not-allowed select-none font-mono"
                         />
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Session Fields Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {/* Treatment Details */}
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Treatment Details / Procedure <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={session.treatment_details}
-                      onChange={(e) => handleSessionChange(index, 'treatment_details', e.target.value)}
-                      placeholder="e.g. Physiotherapy Cervical Spine Traction, OPD Checkup..."
-                      required
-                      className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-colors"
-                    />
+                {/* Treatment Details & Doctor Assignment Grid */}
+                <div>
+                  <div className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 sm:mb-3">
+                    Doctor &amp; Procedure
                   </div>
-
-                  {/* Session Date */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Session Date <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      min={todayStr}
-                      value={session.session_date}
-                      onChange={(e) => handleSessionChange(index, 'session_date', e.target.value)}
-                      required
-                      className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-colors"
-                    />
-                  </div>
-
-                  {/* Session Time */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Session Time <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="time"
-                      value={session.session_time}
-                      onChange={(e) => handleSessionChange(index, 'session_time', e.target.value)}
-                      required
-                      className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-colors"
-                    />
-                  </div>
-
-                  {/* Assigned Staff Member */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Assign Staff Member <span className="text-rose-500">*</span>
-                    </label>
-                    <select
-                      value={session.staff_id}
-                      onChange={(e) => handleSessionChange(index, 'staff_id', e.target.value)}
-                      required
-                      className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-colors"
-                    >
-                      <option value="">-- Select Staff Member --</option>
-                      {staffList.map((st) => (
-                        <option key={st.id} value={st.id}>
-                          {st.name} {st.department ? `(${st.department})` : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Fixed Staff Commission */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Fixed Staff Commission (₹) <span className="text-rose-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-xs">
-                        ₹
-                      </span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    {/* Treatment Details */}
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Procedure / Details <span className="text-rose-500">*</span>
+                      </label>
                       <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={session.staff_commission}
-                        onChange={(e) => handleSessionChange(index, 'staff_commission', e.target.value)}
-                        placeholder="0.00"
+                        type="text"
+                        value={session.treatment_details}
+                        onChange={(e) => handleSessionChange(index, 'treatment_details', e.target.value)}
+                        placeholder="e.g. Physiotherapy Cervical Spine Traction..."
                         required
-                        className="w-full pl-7 pr-3 py-2 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-colors"
+                        className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium"
                       />
                     </div>
-                  </div>
 
-                  {/* Inventory Products Used (Multi-Select with Checkboxes) */}
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 font-bold">
-                        <Package className="w-3.5 h-3.5 text-indigo-600" />
-                        <span>Inventory Products Used</span>
-                      </span>
-                      <span className="text-[11px] text-slate-500 font-normal">
-                        Multiple Allowed • Optional
-                      </span>
-                    </label>
-                    <ProductMultiSelectDropdown
-                      products={inventoryProducts}
-                      selectedIds={
-                        session.inventory_product_ids && session.inventory_product_ids.length > 0
-                          ? session.inventory_product_ids
-                          : (session.inventory_product_id ? [Number(session.inventory_product_id)] : [])
-                      }
-                      onChange={(newIds) => {
-                        handleSessionChange(index, 'inventory_product_ids', newIds);
-                        handleSessionChange(index, 'inventory_product_id', newIds[0] ? String(newIds[0]) : '');
-                      }}
-                      placeholder="-- Select Inventory Products (Check all that apply) --"
-                    />
+                    {/* Assigned Doctor / Staff */}
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Doctor / Staff <span className="text-rose-500">*</span>
+                      </label>
+                      <select
+                        value={session.staff_id}
+                        onChange={(e) => handleSessionChange(index, 'staff_id', e.target.value)}
+                        required
+                        className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
+                      >
+                        <option value="">-- Assign Doctor --</option>
+                        {staffList.map((st) => (
+                          <option key={st.id} value={st.id}>
+                            {st.name} {st.department ? `(${st.department})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Doctor Commission */}
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Commission (₹) <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-xs sm:text-sm pointer-events-none">
+                          ₹
+                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={session.staff_commission}
+                          onChange={(e) => handleSessionChange(index, 'staff_commission', e.target.value)}
+                          placeholder="0.00"
+                          required
+                          className="w-full pl-7 pr-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-mono font-bold focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Date, Time & Supplies */}
+                <div>
+                  <div className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 sm:mb-3">
+                    Schedule &amp; Medical Supplies
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    {/* Session Date */}
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Date <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="date"
+                        min={todayStr}
+                        value={session.session_date}
+                        onChange={(e) => handleSessionChange(index, 'session_date', e.target.value)}
+                        required
+                        className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
+                      />
+                    </div>
+
+                    {/* Session Time */}
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Time <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="time"
+                        value={session.session_time}
+                        onChange={(e) => handleSessionChange(index, 'session_time', e.target.value)}
+                        required
+                        className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
+                      />
+                    </div>
+
+                    {/* Inventory Products Used */}
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Consumables / Supplies (Optional)
+                      </label>
+                      <ProductMultiSelectDropdown
+                        products={inventoryProducts}
+                        selectedIds={
+                          session.inventory_product_ids && session.inventory_product_ids.length > 0
+                            ? session.inventory_product_ids
+                            : (session.inventory_product_id ? [Number(session.inventory_product_id)] : [])
+                        }
+                        onChange={(newIds) => {
+                          handleSessionChange(index, 'inventory_product_ids', newIds);
+                          handleSessionChange(index, 'inventory_product_id', newIds[0] ? String(newIds[0]) : '');
+                        }}
+                        placeholder="-- Allocate Supplies / Consumables --"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Add Session Bottom Button */}
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
+          {/* Add Another Session Link */}
+          <div className="pt-2 flex justify-center">
             <button
               type="button"
               onClick={handleAddSession}
-              className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-2.5 text-sm font-semibold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/80 rounded-xl transition-all"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-100 text-indigo-700 text-xs sm:text-sm font-semibold transition-all cursor-pointer w-full sm:w-auto"
             >
               <Plus className="w-4 h-4" />
-              <span>Add Another Session</span>
+              <span>+ Add Another Session</span>
             </button>
-
-            <div className="flex flex-wrap items-center gap-3 text-xs">
-              <span className="text-slate-500 font-medium">
-                Total {sessions.length} {sessions.length === 1 ? 'session' : 'sessions'} queued
-              </span>
-              <span className="px-3 py-1 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold shadow-xs">
-                Total Fees: ₹{sessions.reduce((sum, s) => sum + Number(s.service_price || 0), 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
           </div>
         </div>
 
-        {/* Bottom Action Footer */}
-        <div className="flex items-center justify-end space-x-4 pt-4">
-          <button
-            type="button"
-            onClick={() => navigate('/admin/appointments')}
-            className="px-5 py-2.5 text-sm font-medium text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={saving}
-            className="inline-flex items-center space-x-2 px-8 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50"
-          >
-            {saving ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Creating Master Appointment...</span>
-              </>
-            ) : (
-              <>
-                <CheckCircle2 className="w-5 h-5" />
-                <span>Book Appointment & Sessions</span>
-              </>
-            )}
-          </button>
+        {/* Sticky Bottom Action Bar (Fully Responsive on Mobile) */}
+        <div className="sticky bottom-3 sm:bottom-6 z-20 bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-slate-200/90 shadow-xl shadow-slate-900/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-400 via-teal-500 to-emerald-600 shadow-md sm:shadow-lg shadow-emerald-500/25 ring-2 ring-emerald-50 flex items-center justify-center text-white shrink-0">
+                <Coins className="w-5 h-5 sm:w-6 sm:h-6 drop-shadow" />
+              </div>
+              <div>
+                <div className="text-[11px] sm:text-xs text-slate-500 font-medium">Total Consultation Fee</div>
+                <div className="text-base sm:text-xl font-bold text-slate-900 font-mono">
+                  ₹{totalAppointmentFees.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  <span className="text-[11px] sm:text-xs font-normal text-slate-500 ml-1.5">
+                    ({sessions.length} {sessions.length === 1 ? 'session' : 'sessions'})
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 sm:flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={() => navigate('/admin/appointments')}
+              className="col-span-1 px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-xl sm:rounded-2xl border border-slate-200/80 transition-all cursor-pointer text-center"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="col-span-2 inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-7 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50 cursor-pointer text-center"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                  <span className="truncate">Booking...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 shrink-0" />
+                  <span className="truncate">Confirm Booking</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </form>
     </div>
   );
 }
-

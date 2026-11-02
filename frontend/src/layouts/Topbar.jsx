@@ -67,6 +67,8 @@ export default function Topbar({
               className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white shadow-xs font-display overflow-hidden ${
                 isSuperAdmin
                   ? 'bg-gradient-to-tr from-purple-600 to-indigo-600'
+                  : user?.role === 'staff'
+                  ? 'bg-gradient-to-tr from-teal-500 to-emerald-600'
                   : 'bg-gradient-to-tr from-blue-600 to-cyan-500'
               }`}
             >
@@ -77,11 +79,18 @@ export default function Topbar({
               )}
             </div>
             <div className="hidden sm:block text-left">
-              <span className="text-xs font-semibold text-slate-800 block leading-tight font-display tracking-tight">
-                {user?.name || 'Administrator'}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-semibold text-slate-800 block leading-tight font-display tracking-tight">
+                  {user?.name || (isSuperAdmin ? 'Super Administrator' : 'Administrator')}
+                </span>
+                {user?.role === 'staff' && (
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-50 text-teal-700 border border-teal-200">
+                    Staff
+                  </span>
+                )}
+              </div>
               <span className="text-[10px] text-slate-500 block font-mono">
-                {user?.email || 'admin@example.com'}
+                {user?.email || (isSuperAdmin ? 'superadmin@example.com' : 'admin@example.com')}
               </span>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
@@ -90,8 +99,22 @@ export default function Topbar({
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 z-50 animate-in fade-in duration-150">
               <div className="px-4 py-2.5 border-b border-slate-100">
-                <p className="text-xs font-semibold text-slate-800 font-display tracking-tight">{user?.name}</p>
+                <div className="flex items-center justify-between gap-1">
+                  <p className="text-xs font-semibold text-slate-800 font-display tracking-tight truncate">{user?.name}</p>
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase shrink-0 ${
+                    user?.role === 'staff'
+                      ? 'bg-teal-50 text-teal-700 border border-teal-200'
+                      : isSuperAdmin
+                      ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                      : 'bg-blue-50 text-blue-700 border border-blue-200'
+                  }`}>
+                    {user?.role === 'staff' ? 'Staff' : isSuperAdmin ? 'Super Admin' : 'Admin'}
+                  </span>
+                </div>
                 <p className="text-[11px] text-slate-500 truncate font-mono">{user?.email}</p>
+                {user?.department && (
+                  <p className="text-[10px] text-slate-500 mt-0.5">{user.department} {user.staff_code ? `• ${user.staff_code}` : ''}</p>
+                )}
                 <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-emerald-600 font-semibold">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span>Authenticated Clinic Session</span>

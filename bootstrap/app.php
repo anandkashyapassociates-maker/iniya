@@ -17,7 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(function (Request $request) {
-            if ($request->is('superadmin/*')) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return null;
+            }
+
+            if ($request->is('superadmin', 'superadmin/*')) {
                 return '/superadmin';
             }
 

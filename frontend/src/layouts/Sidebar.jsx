@@ -22,6 +22,7 @@ import {
   Package,
   FolderTree,
   Layers,
+  FileText,
 } from 'lucide-react';
 import { ClinicBrandIcon } from '../components/ClinicArtwork';
 
@@ -38,8 +39,10 @@ export default function Sidebar({
   const isAppointmentsActive = location.pathname.startsWith('/admin/appointments');
   const [appointmentsOpen, setAppointmentsOpen] = useState(isAppointmentsActive);
 
-  const isInInventory = location.pathname.startsWith('/admin/inventory');
+  const isInReports = location.pathname.startsWith('/admin/inventory/reports') || location.pathname.startsWith('/admin/reports');
+  const isInInventory = location.pathname.startsWith('/admin/inventory') && !isInReports;
   const [inventoryOpen, setInventoryOpen] = useState(isInInventory);
+  const [reportsOpen, setReportsOpen] = useState(isInReports);
 
   useEffect(() => {
     if (isAppointmentsActive) {
@@ -48,10 +51,14 @@ export default function Sidebar({
   }, [isAppointmentsActive]);
 
   useEffect(() => {
-    if (isInInventory) {
+    if (isInReports) {
+      setReportsOpen(true);
+      setInventoryOpen(false);
+    } else if (isInInventory) {
       setInventoryOpen(true);
+      setReportsOpen(false);
     }
-  }, [isInInventory]);
+  }, [isInReports, isInInventory]);
 
   const superAdminNavItems = [
     {
@@ -353,6 +360,52 @@ export default function Sidebar({
                   )}
                 </div>
 
+                {/* DEDICATED REPORTS SECTION BELOW INVENTORY MANAGEMENT */}
+                <div className="pt-1 pb-1">
+                  <button
+                    type="button"
+                    onClick={() => setReportsOpen((prev) => !prev)}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer group ${
+                      isInReports
+                        ? 'bg-purple-600/15 text-purple-300 border border-purple-500/30'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-500 via-indigo-500 to-blue-600 text-white flex items-center justify-center shrink-0 icon-3d shadow-md group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-300">
+                        <FileText className="w-4 h-4 drop-shadow-sm" />
+                      </div>
+                      <span className="truncate group-hover:translate-x-0.5 transition-transform">Reports</span>
+                    </div>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        reportsOpen ? 'rotate-0' : '-rotate-90'
+                      }`}
+                    />
+                  </button>
+
+                  {/* Collapsible Submenu */}
+                  {reportsOpen && (
+                    <div className="pl-4 pr-1 pt-1.5 space-y-1">
+                      <NavLink
+                        to="/admin/inventory/reports"
+                        end
+                        onClick={onClose}
+                        className={({ isActive }) =>
+                          `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                            isActive
+                              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs font-semibold'
+                              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                          }`
+                        }
+                      >
+                        <FileText className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">Inventory Reports</span>
+                      </NavLink>
+                    </div>
+                  )}
+                </div>
+
                 {/* Profile & Security Footer Items */}
                 {adminFooterNavItems.map((item) => {
                   const Icon = item.icon;
@@ -394,12 +447,24 @@ export default function Sidebar({
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-slate-200 truncate font-display tracking-tight">
-                {user?.name || 'Administrator'}
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs font-semibold text-slate-200 truncate font-display tracking-tight">
+                  {user?.name || (isSuperAdmin ? 'Super Administrator' : 'Administrator')}
+                </p>
+                {user?.role === 'staff' && (
+                  <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30 uppercase">
+                    Staff
+                  </span>
+                )}
+              </div>
               <p className="text-[10px] text-slate-400 truncate font-mono">
-                {user?.email || 'admin@example.com'}
+                {user?.email || (isSuperAdmin ? 'superadmin@example.com' : 'admin@example.com')}
               </p>
+              {user?.department && (
+                <p className="text-[9px] text-slate-400 truncate font-sans">
+                  {user.department} {user.staff_code ? `(${user.staff_code})` : ''}
+                </p>
+              )}
             </div>
           </div>
 
