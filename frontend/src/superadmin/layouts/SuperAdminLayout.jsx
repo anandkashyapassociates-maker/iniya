@@ -65,7 +65,11 @@ export default function SuperAdminLayout() {
     location.pathname.startsWith('/superadmin/sales-members') ||
     location.pathname.startsWith('/superadmin/sales-team');
 
-  const isInInventory = location.pathname.startsWith('/superadmin/inventory');
+  const isInReports =
+    location.pathname.startsWith('/superadmin/inventory/reports') ||
+    location.pathname.startsWith('/superadmin/reports');
+
+  const isInInventory = location.pathname.startsWith('/superadmin/inventory') && !isInReports;
 
   // Initialize only the currently active section as open on page load / reload
   const [adminMenuOpen, setAdminMenuOpen] = useState(isInAdminManagement);
@@ -73,6 +77,7 @@ export default function SuperAdminLayout() {
   const [vendorMenuOpen, setVendorMenuOpen] = useState(isInVendorManagement);
   const [salesMenuOpen, setSalesMenuOpen] = useState(isInSalesManagement);
   const [inventoryMenuOpen, setInventoryMenuOpen] = useState(isInInventory);
+  const [reportsMenuOpen, setReportsMenuOpen] = useState(isInReports);
 
   // When route changes, automatically ensure only the active section is open
   useEffect(() => {
@@ -82,32 +87,44 @@ export default function SuperAdminLayout() {
       setVendorMenuOpen(false);
       setSalesMenuOpen(false);
       setInventoryMenuOpen(false);
+      setReportsMenuOpen(false);
     } else if (isInStaffManagement) {
       setStaffMenuOpen(true);
       setAdminMenuOpen(false);
       setVendorMenuOpen(false);
       setSalesMenuOpen(false);
       setInventoryMenuOpen(false);
+      setReportsMenuOpen(false);
     } else if (isInVendorManagement) {
       setVendorMenuOpen(true);
       setAdminMenuOpen(false);
       setStaffMenuOpen(false);
       setSalesMenuOpen(false);
       setInventoryMenuOpen(false);
+      setReportsMenuOpen(false);
     } else if (isInSalesManagement) {
       setSalesMenuOpen(true);
       setAdminMenuOpen(false);
       setStaffMenuOpen(false);
       setVendorMenuOpen(false);
       setInventoryMenuOpen(false);
+      setReportsMenuOpen(false);
+    } else if (isInReports) {
+      setReportsMenuOpen(true);
+      setAdminMenuOpen(false);
+      setStaffMenuOpen(false);
+      setVendorMenuOpen(false);
+      setSalesMenuOpen(false);
+      setInventoryMenuOpen(false);
     } else if (isInInventory) {
       setInventoryMenuOpen(true);
+      setReportsMenuOpen(false);
       setAdminMenuOpen(false);
       setStaffMenuOpen(false);
       setVendorMenuOpen(false);
       setSalesMenuOpen(false);
     }
-  }, [location.pathname, isInAdminManagement, isInStaffManagement, isInVendorManagement, isInSalesManagement, isInInventory]);
+  }, [location.pathname, isInAdminManagement, isInStaffManagement, isInVendorManagement, isInSalesManagement, isInInventory, isInReports]);
 
   const handleLogout = async () => {
     try {
@@ -558,22 +575,6 @@ export default function SuperAdminLayout() {
                     <span>Stock Ledger</span>
                   </NavLink>
 
-                  {/* 4. Inventory Reports */}
-                  <NavLink
-                    to="/superadmin/inventory/reports"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={({ isActive }) =>
-                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                        isActive
-                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
-                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
-                      }`
-                    }
-                  >
-                    <FileText className="w-3.5 h-3.5 shrink-0" />
-                    <span>Inventory Reports</span>
-                  </NavLink>
-
                   {/* 4. Categories */}
                   <NavLink
                     to="/superadmin/inventory/categories"
@@ -604,6 +605,55 @@ export default function SuperAdminLayout() {
                   >
                     <Award className="w-3.5 h-3.5 shrink-0" />
                     <span>Brands</span>
+                  </NavLink>
+                </div>
+              )}
+            </div>
+
+            {/* ======================================================== */}
+            {/* REPORTS SECTION (Dedicated section below Inventory)      */}
+            {/* ======================================================== */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setReportsMenuOpen(!reportsMenuOpen)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold tracking-normal transition-all cursor-pointer group text-left ${
+                  isInReports
+                    ? 'text-purple-400 bg-slate-900/90'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                }`}
+              >
+                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-500 via-indigo-500 to-blue-600 text-white flex items-center justify-center shrink-0 icon-3d shadow-md group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-300">
+                    <FileText className="w-4 h-4 drop-shadow-sm" />
+                  </div>
+                  <span className="text-left truncate group-hover:translate-x-0.5 transition-transform" title="Reports & Analytics">
+                    Reports &amp; Analytics
+                  </span>
+                </div>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ml-1 ${
+                    reportsMenuOpen ? 'rotate-0' : '-rotate-90'
+                  }`}
+                />
+              </button>
+
+              {/* Collapsible Reports Submenu */}
+              {reportsMenuOpen && (
+                <div className="pl-6 pr-1 pt-1.5 pb-1 space-y-1">
+                  <NavLink
+                    to="/superadmin/inventory/reports"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-purple-600/20 text-purple-300 font-medium border border-purple-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <FileText className="w-3.5 h-3.5 shrink-0" />
+                    <span>Inventory Reports</span>
                   </NavLink>
                 </div>
               )}

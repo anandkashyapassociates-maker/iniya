@@ -21,6 +21,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import superAdminInventoryService from '../services/superAdminInventoryService';
+import SearchableProductSelect from '../../components/SearchableProductSelect';
 
 export default function SuperAdminInventoryReportsPage() {
   const [logs, setLogs] = useState([]);
@@ -420,26 +421,20 @@ export default function SuperAdminInventoryReportsPage() {
             </div>
           </div>
 
-          {/* 2. Product Filter */}
+          {/* 2. Product Filter (Searchable) */}
           <div>
             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-              Product
+              Product (Search)
             </label>
-            <select
-              value={selectedProduct}
-              onChange={(e) => {
-                setSelectedProduct(e.target.value);
+            <SearchableProductSelect
+              products={filterOptions.products}
+              selectedProductId={selectedProduct}
+              onSelectProduct={(id) => {
+                setSelectedProduct(id);
                 setPage(1);
               }}
-              className="w-full px-2.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:outline-hidden transition-all text-slate-800 truncate"
-            >
-              <option value="">All Products</option>
-              {filterOptions.products.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.product_name}
-                </option>
-              ))}
-            </select>
+              placeholder="Search or select product..."
+            />
           </div>
 
           {/* 3. Vendor Filter */}
