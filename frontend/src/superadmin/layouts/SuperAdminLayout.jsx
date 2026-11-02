@@ -21,6 +21,7 @@ import {
   Award,
   BarChart3,
   AlertTriangle,
+  FileText,
 } from 'lucide-react';
 import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import ToastNotifications from '../../components/ToastNotifications';
@@ -555,6 +556,22 @@ export default function SuperAdminLayout() {
                   >
                     <Boxes className="w-3.5 h-3.5 shrink-0" />
                     <span>Stock Ledger</span>
+                  </NavLink>
+
+                  {/* 4. Inventory Reports */}
+                  <NavLink
+                    to="/superadmin/inventory/reports"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <FileText className="w-3.5 h-3.5 shrink-0" />
+                    <span>Inventory Reports</span>
                   </NavLink>
 
                   {/* 4. Categories */}
