@@ -211,35 +211,6 @@ export default function SuperAdminInventoryStocksPage() {
                 </span>
               )}
             </div>
-            {p.inventory_updated_at && (
-              <div
-                className="text-[10px] text-slate-500 font-mono mt-1 flex items-center gap-1 flex-wrap"
-                title={`Inventory Added: ${addedQty} ${p.business_unit || 'Units'} on ${new Date(p.inventory_updated_at).toLocaleDateString()}`}
-              >
-                <span className="text-slate-400">Added:</span>
-                <span className="font-semibold text-slate-700">
-                  {addedQty} {p.business_unit || 'Units'}
-                </span>
-                <span className="text-slate-400 font-sans">•</span>
-                <span>{new Date(p.inventory_updated_at).toLocaleDateString()}</span>
-              </div>
-            )}
-            {p.last_issued_at && (
-              <div
-                className="text-[10px] text-slate-500 font-mono mt-0.5 flex items-center gap-1 flex-wrap"
-                title={`Inventory Issued: ${p.last_issued_quantity} ${p.business_unit || 'Units'} on ${new Date(p.last_issued_at).toLocaleDateString()}${p.issue_issuer?.name ? ` by ${p.issue_issuer.name}` : ''}`}
-              >
-                <span className="text-amber-600 font-semibold">Issued:</span>
-                <span className="font-semibold text-amber-800">
-                  -{p.last_issued_quantity} {p.business_unit || 'Units'}
-                </span>
-                <span className="text-slate-400 font-sans">•</span>
-                <span>{new Date(p.last_issued_at).toLocaleDateString()}</span>
-                {p.issue_issuer?.name && (
-                  <span className="text-slate-400 font-sans text-[9px]">({p.issue_issuer.name})</span>
-                )}
-              </div>
-            )}
           </div>
         );
       },
@@ -262,27 +233,14 @@ export default function SuperAdminInventoryStocksPage() {
       header: 'VENDOR',
       className: 'w-[18%]',
       render: (p) => {
-        const addedQty = p.last_added_quantity ?? p.quantity ?? 0;
-        const issuedQty = p.last_issued_quantity;
         return (
           <div>
             <span className="text-xs font-semibold text-slate-800 block truncate" title={p.vendor?.vendor_name || 'No Vendor Assigned'}>
               {p.vendor ? p.vendor.vendor_name : <span className="text-slate-400 italic text-[11px]">No Vendor Assigned</span>}
             </span>
-            {p.inventory_updated_at && (
-              <span
-                className="text-[10px] text-slate-500 font-mono block mt-0.5"
-                title={`Inventory Added: ${addedQty} ${p.business_unit || 'Units'} on ${new Date(p.inventory_updated_at).toLocaleString()}`}
-              >
-                Added: {addedQty} {p.business_unit || 'Units'} on {new Date(p.inventory_updated_at).toLocaleDateString()}
-              </span>
-            )}
-            {p.last_issued_at && (
-              <span
-                className="text-[10px] text-amber-700 font-mono block mt-0.5"
-                title={`Inventory Issued: ${issuedQty} ${p.business_unit || 'Units'} on ${new Date(p.last_issued_at).toLocaleString()}${p.issue_issuer?.name ? ` by ${p.issue_issuer.name}` : ''}`}
-              >
-                Issued: -{issuedQty} {p.business_unit || 'Units'} on {new Date(p.last_issued_at).toLocaleDateString()}
+            {p.vendor?.company_name && (
+              <span className="text-[11px] text-slate-400 block truncate" title={p.vendor.company_name}>
+                {p.vendor.company_name}
               </span>
             )}
           </div>
