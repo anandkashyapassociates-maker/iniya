@@ -350,6 +350,42 @@ export default function SuperAdminStockDetailsPage() {
           </span>
         </div>
 
+        {/* CURRENT NET STOCK SUMMARY (Positioned at the blue line) */}
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/90 p-3.5 sm:p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
+            <span className="text-xs font-bold text-slate-800 uppercase tracking-wider font-display">
+              Current Net Stock Summary
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+            {/* Total Credit (+ In) */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs">
+              <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">Credit (+ In):</span>
+              <span className="font-mono font-bold text-emerald-800 text-sm">
+                +{totalAdded || (product.last_added_quantity ?? currentStock)} {unit}
+              </span>
+            </div>
+
+            {/* Total Debit (- Out) */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200 text-xs">
+              <span className="text-[10px] font-bold text-rose-700 uppercase tracking-wider">Debit (- Out):</span>
+              <span className="font-mono font-bold text-rose-800 text-sm">
+                -{totalIssued || (product.last_issued_quantity ?? 0)} {unit}
+              </span>
+            </div>
+
+            {/* Current Balance */}
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-blue-100/70 border border-blue-300 text-xs">
+              <span className="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Balance:</span>
+              <span className="font-mono font-bold text-blue-900 text-sm">
+                {currentStock} {unit}
+              </span>
+            </div>
+          </div>
+        </div>
+
         {displayLogs.length === 0 && initialOpeningBalance === 0 ? (
           <div className="py-12 px-4 rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-center space-y-3">
             <Package className="w-10 h-10 text-slate-400 mx-auto" />
@@ -375,6 +411,21 @@ export default function SuperAdminStockDetailsPage() {
                   <th className="py-3 px-4 w-[14%] text-right text-blue-900 bg-blue-50/70 border-l border-blue-100">
                     Balance
                   </th>
+                </tr>
+                {/* Top Summary Row inside table header */}
+                <tr className="border-b-2 border-slate-200 bg-slate-100/90 font-bold text-xs">
+                  <td colSpan={3} className="py-3 px-4 text-slate-700 uppercase tracking-wider text-[11px]">
+                    Current Net Stock Summary
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono text-emerald-700 text-sm bg-emerald-100/50 border-l border-emerald-200">
+                    +{totalAdded || (product.last_added_quantity ?? currentStock)} {unit}
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono text-rose-700 text-sm bg-rose-100/50 border-l border-rose-200">
+                    -{totalIssued || (product.last_issued_quantity ?? 0)} {unit}
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono text-blue-700 text-sm bg-blue-100/50 border-l border-blue-200">
+                    {currentStock} {unit}
+                  </td>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs font-normal">
