@@ -17,7 +17,6 @@ import {
   XCircle,
   AlertCircle,
   Loader2,
-  FileText,
   ShieldCheck,
   ChevronRight,
   Sparkles,
@@ -237,7 +236,7 @@ export default function AdminMasterAppointmentDetailsPage() {
       </div>
 
       {/* Master Info Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Customer Card */}
         <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-xs">
           <div className="flex items-center justify-between mb-2">
@@ -276,19 +275,6 @@ export default function AdminMasterAppointmentDetailsPage() {
             ₹{Number(appointment.appointment_fees || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </div>
           <p className="text-[11px] text-slate-500 mt-1">Charged once at Master level</p>
-        </div>
-
-        {/* Notes Card */}
-        <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-xs">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Clinical Notes</span>
-            <div className="p-1.5 bg-purple-50 text-purple-600 rounded-lg">
-              <FileText className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="text-xs text-slate-700 italic line-clamp-3">
-            {appointment.notes || 'No additional notes provided for this booking.'}
-          </p>
         </div>
       </div>
 
