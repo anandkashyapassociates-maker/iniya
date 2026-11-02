@@ -26,6 +26,16 @@ class SuperAdminAuthController extends Controller
      */
     public function login(Request $request): JsonResponse
     {
+        if ($request->bearerToken() && $tokenUser = auth('sanctum')->user()) {
+            if ($tokenUser instanceof SuperAdmin && $tokenUser->is_active) {
+                return response()->json([
+                    'message' => 'Already authenticated as Super Administrator.',
+                    'token' => $request->bearerToken(),
+                    'user' => $tokenUser,
+                ], 200);
+            }
+        }
+
         $validated = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
@@ -160,7 +170,7 @@ class SuperAdminAuthController extends Controller
             );
 
             // In local/development, we log the reset link for easy testing
-            $resetUrl = url("/superadmin/reset-password?token={$plainToken}&email=" . urlencode($superAdmin->email));
+            $resetUrl = url("/superadmin/reset-password?token={$plainToken}&email=".urlencode($superAdmin->email));
             Log::info("Super Admin Password Reset Token for {$superAdmin->email}: {$plainToken} | URL: {$resetUrl}");
 
             AdminActivityLog::record(
@@ -206,6 +216,7 @@ class SuperAdminAuthController extends Controller
         // Token expires after 60 minutes
         if (Carbon::parse($record->created_at)->addMinutes(60)->isPast()) {
             DB::table('super_admin_password_reset_tokens')->where('email', $validated['email'])->delete();
+
             return response()->json([
                 'message' => 'This password reset token has expired. Please request a new one.',
                 'errors' => [
@@ -263,7 +274,7 @@ class SuperAdminAuthController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:super_admins,email,' . $superAdmin->id],
+            'email' => ['required', 'email', 'max:255', 'unique:super_admins,email,'.$superAdmin->id],
         ]);
 
         $superAdmin->update($validated);
@@ -272,7 +283,7 @@ class SuperAdminAuthController extends Controller
             'super_admin',
             $superAdmin->id,
             'profile_updated',
-            "Super Admin updated profile details.",
+            'Super Admin updated profile details.',
             $request
         );
 
@@ -319,7 +330,7 @@ class SuperAdminAuthController extends Controller
             'super_admin',
             $superAdmin->id,
             'password_changed',
-            "Super Admin changed their password.",
+            'Super Admin changed their password.',
             $request
         );
 
@@ -328,4 +339,3 @@ class SuperAdminAuthController extends Controller
         ]);
     }
 }
-

@@ -390,7 +390,7 @@ export default function AdminInventoryStocksPage() {
     },
     {
       header: 'AVAILABLE STOCK',
-      className: 'w-[14%]',
+      className: 'min-w-[210px] w-[18%]',
       render: (p) => {
         const qty = p.quantity ?? 0;
         const threshold = p.low_stock_threshold ?? 10;
@@ -398,42 +398,58 @@ export default function AdminInventoryStocksPage() {
         const isLow = qty > 0 && qty <= threshold;
 
         return (
-          <div>
-            <div className="flex items-baseline gap-1.5">
+          <div className="flex items-center gap-2.5">
+            {/* Styled Quantity Metric Chip */}
+            <div
+              className={`inline-flex items-center justify-between gap-2 px-2.5 py-1 rounded-lg border font-mono min-w-[86px] shadow-2xs ${
+                isOutOfStock
+                  ? 'bg-rose-50/60 border-rose-200/90 text-rose-700'
+                  : isLow
+                  ? 'bg-amber-50/60 border-amber-200/90 text-amber-700'
+                  : 'bg-slate-50 border-slate-200/90 text-slate-800'
+              }`}
+            >
               <span
-                className={`text-base font-bold font-mono ${
+                className={`text-[13px] font-black tabular-numbers tracking-tight ${
                   isOutOfStock
                     ? 'text-rose-600'
                     : isLow
                     ? 'text-amber-600'
-                    : 'text-slate-800'
+                    : 'text-slate-900'
                 }`}
               >
-                {qty}
+                {qty.toLocaleString()}
               </span>
-              <span className="text-[11px] text-slate-500 font-medium">
+              <span
+                className={`text-[10px] font-bold uppercase tracking-wider ${
+                  isOutOfStock
+                    ? 'text-rose-400'
+                    : isLow
+                    ? 'text-amber-500'
+                    : 'text-slate-400'
+                }`}
+              >
                 {p.business_unit || 'Units'}
               </span>
-              <span className="text-[10px] text-slate-400 font-normal">Available</span>
             </div>
-            <div className="mt-1 flex items-center gap-1.5 flex-wrap">
-              {isOutOfStock ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                  Out of Stock
-                </span>
-              ) : isLow ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                  Low Stock
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  In Stock
-                </span>
-              )}
-            </div>
+
+            {/* Semantic Status Badge */}
+            {isOutOfStock ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200/90 shadow-2xs shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                <span>Out of Stock</span>
+              </span>
+            ) : isLow ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200/90 shadow-2xs shrink-0">
+                <AlertTriangle className="w-3 h-3 text-amber-600 animate-pulse" />
+                <span>Low Stock</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/90 shadow-2xs shrink-0">
+                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                <span>In Stock</span>
+              </span>
+            )}
           </div>
         );
       },

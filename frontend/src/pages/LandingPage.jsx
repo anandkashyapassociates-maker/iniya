@@ -1,8 +1,23 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Shield, Layers, ArrowRight, Lock, CheckCircle2 } from 'lucide-react';
+import { useSuperAdminAuth } from '../superadmin/auth/SuperAdminAuthContext';
+import { useAdminAuth } from '../features/auth/AdminAuthContext';
 
 export default function LandingPage() {
+  const { isAuthenticated: isSuperAdminAuth, isLoading: isSuperAdminLoading } = useSuperAdminAuth();
+  const { isAuthenticated: isAdminAuth, isLoading: isAdminLoading, user: adminUser } = useAdminAuth();
+
+  // If already authenticated as SuperAdmin, redirect directly to dashboard
+  if (!isSuperAdminLoading && isSuperAdminAuth) {
+    return <Navigate to="/superadmin/dashboard" replace />;
+  }
+
+  // If already authenticated as Admin, redirect directly to dashboard
+  if (!isAdminLoading && isAdminAuth && adminUser?.is_active) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-6 relative overflow-hidden">
       {/* Background glow effects */}

@@ -26,6 +26,16 @@ class AdminAuthController extends Controller
      */
     public function login(Request $request): JsonResponse
     {
+        if ($request->bearerToken() && $tokenUser = auth('sanctum')->user()) {
+            if ($tokenUser instanceof Admin && $tokenUser->is_active && $tokenUser->status !== 'blocked' && $tokenUser->status !== 'inactive') {
+                return response()->json([
+                    'message' => 'Already authenticated as Admin.',
+                    'token' => $request->bearerToken(),
+                    'user' => $tokenUser,
+                ], 200);
+            }
+        }
+
         $validated = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
@@ -166,7 +176,7 @@ class AdminAuthController extends Controller
                 ]
             );
 
-            $resetUrl = url("/admin/reset-password?token={$plainToken}&email=" . urlencode($admin->email));
+            $resetUrl = url("/admin/reset-password?token={$plainToken}&email=".urlencode($admin->email));
             Log::info("Admin Password Reset Token for {$admin->email}: {$plainToken} | URL: {$resetUrl}");
 
             AdminActivityLog::record(
@@ -210,6 +220,7 @@ class AdminAuthController extends Controller
 
         if (Carbon::parse($record->created_at)->addMinutes(60)->isPast()) {
             DB::table('admin_password_reset_tokens')->where('email', $validated['email'])->delete();
+
             return response()->json([
                 'message' => 'This password reset token has expired. Please request a new one.',
                 'errors' => [
@@ -255,4 +266,3 @@ class AdminAuthController extends Controller
         ]);
     }
 }
-

@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\EnsureSuperAdmin;
+use App\Models\SuperAdmin;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,12 +20,22 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->is('superadmin/*')) {
                 return '/superadmin';
             }
+
             return '/admin';
         });
 
+        $middleware->redirectUsersTo(function (Request $request) {
+            $user = $request->user();
+            if ($user instanceof SuperAdmin) {
+                return '/superadmin/dashboard';
+            }
+
+            return '/admin/dashboard';
+        });
+
         $middleware->alias([
-            'auth.superadmin' => \App\Http\Middleware\EnsureSuperAdmin::class,
-            'auth.admin' => \App\Http\Middleware\EnsureAdmin::class,
+            'auth.superadmin' => EnsureSuperAdmin::class,
+            'auth.admin' => EnsureAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

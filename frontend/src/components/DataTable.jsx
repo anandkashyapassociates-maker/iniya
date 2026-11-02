@@ -15,9 +15,10 @@ export default function DataTable({
   pagination,
   onPageChange,
   extraHeaderActions,
+  containerClassName,
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+    <div className={containerClassName || "bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden"}>
       {/* Header controls bar */}
       {(onSearchChange || extraHeaderActions) && (
         <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
@@ -54,9 +55,9 @@ export default function DataTable({
         ) : (
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-200/80 bg-slate-50/90 text-[10px] font-semibold text-slate-500 uppercase tracking-widest micro-label">
+              <tr className="border-b border-slate-200/80 bg-slate-50/80 text-[10px] font-bold text-slate-500 uppercase tracking-widest micro-label">
                 {columns.map((col, idx) => (
-                  <th key={idx} className={`py-3.5 px-4 font-semibold ${col.className || ''}`}>
+                  <th key={idx} className={`py-4 px-4 sm:px-5 font-semibold whitespace-nowrap ${col.className || ''}`}>
                     {col.header}
                   </th>
                 ))}
@@ -66,12 +67,12 @@ export default function DataTable({
               {data.map((row, rowIndex) => (
                 <tr
                   key={row.id || rowIndex}
-                  className="hover:bg-blue-50/40 transition-colors group"
+                  className="hover:bg-blue-50/30 transition-colors group"
                 >
                   {columns.map((col, colIndex) => (
                     <td
                       key={colIndex}
-                      className={`py-3 px-4 text-slate-700 align-middle ${col.className || ''}`}
+                      className={`py-4 px-4 sm:px-5 text-slate-700 align-middle ${col.className || ''}`}
                     >
                       {col.render ? col.render(row, rowIndex) : row[col.accessor]}
                     </td>
