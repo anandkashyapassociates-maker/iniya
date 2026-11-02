@@ -381,30 +381,30 @@ export default function AdminMasterAppointmentCreatePage() {
 
   if (optionsLoading) {
     return (
-      <div className="min-h-[500px] flex flex-col items-center justify-center text-slate-500">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-600 to-violet-600 shadow-xl shadow-indigo-500/25 flex items-center justify-center text-white animate-pulse">
-          <HeartPulse className="w-7 h-7 drop-shadow" />
+      <div className="min-h-[400px] sm:min-h-[500px] flex flex-col items-center justify-center text-slate-500 px-4">
+        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-600 to-violet-600 shadow-lg sm:shadow-xl shadow-indigo-500/25 flex items-center justify-center text-white animate-pulse">
+          <HeartPulse className="w-6 h-6 sm:w-7 sm:h-7 drop-shadow" />
         </div>
-        <p className="text-base font-bold text-slate-800 mt-4 font-display">Loading Appointment Form...</p>
-        <p className="text-xs text-slate-400 mt-1">Fetching patients, doctors, and clinic services</p>
+        <p className="text-sm sm:text-base font-bold text-slate-800 mt-4 font-display">Loading Appointment Form...</p>
+        <p className="text-xs text-slate-400 mt-1 text-center">Fetching patients, doctors, and clinic services</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-28">
-      {/* Page Header with 3D Icon */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-600 to-violet-600 shadow-xl shadow-indigo-500/25 ring-4 ring-indigo-50 flex items-center justify-center text-white shrink-0 transform -rotate-1 hover:rotate-0 transition-transform">
-            <Calendar className="w-7 h-7 drop-shadow-md" />
+    <div className="max-w-6xl mx-auto space-y-5 sm:space-y-8 pb-32 sm:pb-28">
+      {/* Page Header with 3D Icon (Responsive Stack on Mobile) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pt-1">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-600 to-violet-600 shadow-md sm:shadow-xl shadow-indigo-500/25 ring-2 sm:ring-4 ring-indigo-50 flex items-center justify-center text-white shrink-0">
+            <Calendar className="w-5 h-5 sm:w-7 sm:h-7 drop-shadow-md" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight font-display">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight font-display">
               Book Appointment
             </h1>
-            <p className="text-sm text-slate-500 mt-0.5">
-              Create consultation booking with sessions and doctor assignments
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5 truncate sm:whitespace-normal">
+              Schedule clinical consultation and treatment sessions
             </p>
           </div>
         </div>
@@ -412,43 +412,43 @@ export default function AdminMasterAppointmentCreatePage() {
         <button
           type="button"
           onClick={() => navigate('/admin/appointments')}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold shadow-xs hover:shadow transition-all cursor-pointer self-start sm:self-center"
+          className="inline-flex items-center justify-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold shadow-xs hover:shadow transition-all cursor-pointer w-full sm:w-auto"
         >
-          <ArrowLeft className="w-4 h-4 text-slate-500" />
+          <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500" />
           <span>Back to Appointments</span>
         </button>
       </div>
 
       {/* Error Alert */}
       {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200/90 rounded-2xl flex items-start gap-3 text-rose-800 shadow-xs">
-          <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
-          <div className="text-sm font-medium">{error}</div>
+        <div className="p-3.5 sm:p-4 bg-rose-50 border border-rose-200/90 rounded-2xl flex items-start gap-2.5 sm:gap-3 text-rose-800 shadow-xs">
+          <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-rose-600 shrink-0 mt-0.5" />
+          <div className="text-xs sm:text-sm font-medium leading-relaxed">{error}</div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-8">
         {/* SECTION 1: MASTER APPOINTMENT DETAILS */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] space-y-6">
-          {/* Card Header with 3D Icon */}
-          <div className="flex items-center justify-between pb-5 border-b border-slate-100">
-            <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 shadow-lg shadow-blue-500/25 ring-2 ring-blue-50 flex items-center justify-center text-white shrink-0">
-                <User className="w-5 h-5 drop-shadow-sm" />
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-7 lg:p-8 border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-6">
+          {/* Card Header (Responsive wrap on mobile so "+ New Patient" never clips) */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 sm:pb-5 border-b border-slate-100 gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 shadow-md shadow-blue-500/25 ring-2 ring-blue-50 flex items-center justify-center text-white shrink-0">
+                <User className="w-4 h-4 sm:w-5 sm:h-5 drop-shadow-sm" />
               </div>
-              <div>
-                <h2 className="text-base font-bold text-slate-900 font-display">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900 font-display">
                   1. Patient &amp; Consultation Details
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Select the patient, date and sales partner attribution
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+                  Select patient, date and sales partner
                 </p>
               </div>
             </div>
 
             <Link
               to="/admin/customers/create"
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-200/80 rounded-xl transition-all cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-200/80 rounded-xl transition-all cursor-pointer self-start sm:self-center"
             >
               <UserPlus className="w-3.5 h-3.5 text-blue-600" />
               <span>+ New Patient</span>
@@ -456,17 +456,17 @@ export default function AdminMasterAppointmentCreatePage() {
           </div>
 
           {/* Form Fields: Patient, Date, Sales Team */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {/* Customer Dropdown */}
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                 Patient <span className="text-rose-500">*</span>
               </label>
               <select
                 value={customerId}
                 onChange={(e) => setCustomerId(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-2xl text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-xs"
+                className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-xs"
               >
                 <option value="">-- Select Patient --</option>
                 {customers.map((c) => (
@@ -478,9 +478,9 @@ export default function AdminMasterAppointmentCreatePage() {
 
               {/* Selected Patient Compact Info */}
               {selectedCustomer && (
-                <div className="mt-2.5 flex items-center gap-2 text-xs text-slate-600 bg-blue-50/60 border border-blue-100 rounded-xl px-3 py-1.5">
-                  <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
-                  <span className="font-semibold text-blue-950 truncate">{selectedCustomer.name}</span>
+                <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-slate-600 bg-blue-50/60 border border-blue-100 rounded-xl px-2.5 py-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                  <span className="font-semibold text-blue-950 truncate max-w-[140px] sm:max-w-none">{selectedCustomer.name}</span>
                   {selectedCustomer.mobile && <span className="text-slate-500">• {selectedCustomer.mobile}</span>}
                   {selectedCustomer.gender && <span className="text-slate-500 capitalize">• {selectedCustomer.gender}</span>}
                 </div>
@@ -489,8 +489,8 @@ export default function AdminMasterAppointmentCreatePage() {
 
             {/* Master Appointment Date */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-semibold text-slate-700">
+              <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                <label className="block text-xs sm:text-sm font-semibold text-slate-700">
                   Consultation Date <span className="text-rose-500">*</span>
                 </label>
                 <button
@@ -507,20 +507,20 @@ export default function AdminMasterAppointmentCreatePage() {
                 value={appointmentDate}
                 onChange={(e) => setAppointmentDate(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-2xl text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-xs"
+                className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-xs"
               />
             </div>
 
             {/* Sales Team Member */}
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
                 Sales Partner <span className="text-rose-500">*</span>
               </label>
               <select
                 value={salesTeamId}
                 onChange={(e) => setSalesTeamId(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-2xl text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-xs"
+                className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-xs"
               >
                 <option value="">-- Select Sales Partner --</option>
                 {salesTeams.map((st) => (
@@ -534,7 +534,7 @@ export default function AdminMasterAppointmentCreatePage() {
 
           {/* Optional Notes */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
+            <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
               Notes (Optional)
             </label>
             <textarea
@@ -542,25 +542,25 @@ export default function AdminMasterAppointmentCreatePage() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Clinical remarks, patient instructions, or special notes..."
-              className="w-full px-4 py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-2xl text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-y shadow-xs"
+              className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-y shadow-xs"
             />
           </div>
         </div>
 
         {/* SECTION 2: INDIVIDUAL CLINICAL SESSIONS */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] space-y-6">
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-7 lg:p-8 border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-6">
           {/* Section Header */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-5 border-b border-slate-100 gap-3">
-            <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-500 via-purple-600 to-indigo-600 shadow-lg shadow-purple-500/25 ring-2 ring-purple-50 flex items-center justify-center text-white shrink-0">
-                <Layers className="w-5 h-5 drop-shadow-sm" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 sm:pb-5 border-b border-slate-100 gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-br from-violet-500 via-purple-600 to-indigo-600 shadow-md shadow-purple-500/25 ring-2 ring-purple-50 flex items-center justify-center text-white shrink-0">
+                <Layers className="w-4 h-4 sm:w-5 sm:h-5 drop-shadow-sm" />
               </div>
-              <div>
-                <h2 className="text-base font-bold text-slate-900 font-display">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900 font-display">
                   2. Clinical Sessions
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Select service procedures, assign doctors, and schedule appointment times
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+                  Procedures, doctor assignment, and schedules
                 </p>
               </div>
             </div>
@@ -568,7 +568,7 @@ export default function AdminMasterAppointmentCreatePage() {
             <button
               type="button"
               onClick={handleAddSession}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm font-semibold shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 transition-all cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-xs sm:text-sm font-semibold shadow-md shadow-indigo-500/20 transition-all cursor-pointer w-full sm:w-auto"
             >
               <Plus className="w-4 h-4" />
               <span>Add Session</span>
@@ -576,30 +576,30 @@ export default function AdminMasterAppointmentCreatePage() {
           </div>
 
           {/* List of Session Cards */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {sessions.map((session, index) => (
               <div
                 key={index}
-                className="p-6 sm:p-7 rounded-3xl border border-slate-200/90 bg-white hover:border-indigo-300 shadow-sm transition-all duration-200 space-y-6"
+                className="p-3.5 sm:p-6 lg:p-7 rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white hover:border-indigo-300 shadow-xs sm:shadow-sm transition-all duration-200 space-y-4 sm:space-y-6"
               >
                 {/* Session Card Header Bar */}
-                <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 sm:pb-4 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5 sm:gap-3">
                     {/* 3D Session Number Badge */}
-                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 via-blue-600 to-cyan-500 shadow-md shadow-indigo-500/25 ring-2 ring-indigo-50 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-500 via-blue-600 to-cyan-500 shadow-md shadow-indigo-500/25 ring-2 ring-indigo-50 flex items-center justify-center text-white font-bold text-xs sm:text-sm shrink-0">
                       #{index + 1}
                     </div>
                     <div>
-                      <h3 className="font-bold text-base text-slate-900 font-display">
+                      <h3 className="font-bold text-sm sm:text-base text-slate-900 font-display">
                         Session {index + 1}
                       </h3>
-                      <span className="text-xs text-amber-600 font-medium">Pending Confirmation</span>
+                      <span className="text-[11px] sm:text-xs text-amber-600 font-medium">Pending Confirmation</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     {/* Standard Fee Pill */}
-                    <div className="px-3.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-bold font-mono">
+                    <div className="px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-bold font-mono">
                       ₹{Number(session.service_price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </div>
 
@@ -608,7 +608,7 @@ export default function AdminMasterAppointmentCreatePage() {
                       <button
                         type="button"
                         onClick={() => handleRemoveSession(index)}
-                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"
+                        className="p-1.5 sm:p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"
                         title="Remove session"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -619,10 +619,10 @@ export default function AdminMasterAppointmentCreatePage() {
 
                 {/* Service Selection Grid: 4 Clean Columns */}
                 <div>
-                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+                  <div className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 sm:mb-3">
                     Service Procedure
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     {/* 1. Category */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1.5">
@@ -631,7 +631,7 @@ export default function AdminMasterAppointmentCreatePage() {
                       <select
                         value={session.category_id || ''}
                         onChange={(e) => handleSessionCategoryChange(index, e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
+                        className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
                       >
                         <option value="">-- Select Category --</option>
                         {servicesTree.map((c) => (
@@ -651,7 +651,7 @@ export default function AdminMasterAppointmentCreatePage() {
                         value={session.sub_category_id || ''}
                         onChange={(e) => handleSessionSubCategoryChange(index, e.target.value)}
                         disabled={!session.category_id}
-                        className="w-full px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:opacity-50 disabled:bg-slate-100 transition-all cursor-pointer"
+                        className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:opacity-50 disabled:bg-slate-100 transition-all cursor-pointer"
                       >
                         <option value="">-- Select Sub-Category --</option>
                         {servicesTree
@@ -673,7 +673,7 @@ export default function AdminMasterAppointmentCreatePage() {
                         value={session.service_id || ''}
                         onChange={(e) => handleSessionServiceChange(index, e.target.value)}
                         disabled={!session.sub_category_id}
-                        className="w-full px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-emerald-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 disabled:opacity-50 disabled:bg-slate-100 transition-all cursor-pointer"
+                        className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-emerald-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 disabled:opacity-50 disabled:bg-slate-100 transition-all cursor-pointer"
                       >
                         <option value="">-- Select Service --</option>
                         {servicesTree
@@ -693,7 +693,7 @@ export default function AdminMasterAppointmentCreatePage() {
                         Consultation Fee (₹)
                       </label>
                       <div className="relative">
-                        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-bold text-sm pointer-events-none">
+                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-xs sm:text-sm pointer-events-none">
                           ₹
                         </span>
                         <input
@@ -705,7 +705,7 @@ export default function AdminMasterAppointmentCreatePage() {
                               ? Number(session.service_price).toLocaleString('en-IN', { minimumFractionDigits: 2 })
                               : '0.00'
                           }
-                          className="w-full pl-8 pr-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 cursor-not-allowed select-none font-mono"
+                          className="w-full pl-7 pr-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 cursor-not-allowed select-none font-mono"
                         />
                       </div>
                     </div>
@@ -714,35 +714,35 @@ export default function AdminMasterAppointmentCreatePage() {
 
                 {/* Treatment Details & Doctor Assignment Grid */}
                 <div>
-                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+                  <div className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 sm:mb-3">
                     Doctor &amp; Procedure
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     {/* Treatment Details */}
                     <div className="md:col-span-2">
                       <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        Procedure / Treatment Details <span className="text-rose-500">*</span>
+                        Procedure / Details <span className="text-rose-500">*</span>
                       </label>
                       <input
                         type="text"
                         value={session.treatment_details}
                         onChange={(e) => handleSessionChange(index, 'treatment_details', e.target.value)}
-                        placeholder="e.g. Physiotherapy Cervical Spine Traction, Dental Scaling..."
+                        placeholder="e.g. Physiotherapy Cervical Spine Traction..."
                         required
-                        className="w-full px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium"
+                        className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium"
                       />
                     </div>
 
                     {/* Assigned Doctor / Staff */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        Doctor / Specialist <span className="text-rose-500">*</span>
+                        Doctor / Staff <span className="text-rose-500">*</span>
                       </label>
                       <select
                         value={session.staff_id}
                         onChange={(e) => handleSessionChange(index, 'staff_id', e.target.value)}
                         required
-                        className="w-full px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
+                        className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
                       >
                         <option value="">-- Assign Doctor --</option>
                         {staffList.map((st) => (
@@ -756,10 +756,10 @@ export default function AdminMasterAppointmentCreatePage() {
                     {/* Doctor Commission */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        Doctor Commission (₹) <span className="text-rose-500">*</span>
+                        Commission (₹) <span className="text-rose-500">*</span>
                       </label>
                       <div className="relative">
-                        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-bold text-sm pointer-events-none">
+                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-xs sm:text-sm pointer-events-none">
                           ₹
                         </span>
                         <input
@@ -770,7 +770,7 @@ export default function AdminMasterAppointmentCreatePage() {
                           onChange={(e) => handleSessionChange(index, 'staff_commission', e.target.value)}
                           placeholder="0.00"
                           required
-                          className="w-full pl-8 pr-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 font-mono font-bold focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                          className="w-full pl-7 pr-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-mono font-bold focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                         />
                       </div>
                     </div>
@@ -779,10 +779,10 @@ export default function AdminMasterAppointmentCreatePage() {
 
                 {/* Date, Time & Supplies */}
                 <div>
-                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+                  <div className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 sm:mb-3">
                     Schedule &amp; Medical Supplies
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     {/* Session Date */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1.5">
@@ -794,7 +794,7 @@ export default function AdminMasterAppointmentCreatePage() {
                         value={session.session_date}
                         onChange={(e) => handleSessionChange(index, 'session_date', e.target.value)}
                         required
-                        className="w-full px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
+                        className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
                       />
                     </div>
 
@@ -808,7 +808,7 @@ export default function AdminMasterAppointmentCreatePage() {
                         value={session.session_time}
                         onChange={(e) => handleSessionChange(index, 'session_time', e.target.value)}
                         required
-                        className="w-full px-3.5 py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
+                        className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
                       />
                     </div>
 
@@ -842,7 +842,7 @@ export default function AdminMasterAppointmentCreatePage() {
             <button
               type="button"
               onClick={handleAddSession}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-100 text-indigo-700 text-sm font-semibold transition-all cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-100 text-indigo-700 text-xs sm:text-sm font-semibold transition-all cursor-pointer w-full sm:w-auto"
             >
               <Plus className="w-4 h-4" />
               <span>+ Add Another Session</span>
@@ -850,45 +850,47 @@ export default function AdminMasterAppointmentCreatePage() {
           </div>
         </div>
 
-        {/* Sticky Bottom Action Bar */}
-        <div className="sticky bottom-6 z-20 bg-white/95 backdrop-blur-md rounded-3xl p-5 border border-slate-200/90 shadow-xl shadow-slate-900/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 via-teal-500 to-emerald-600 shadow-lg shadow-emerald-500/25 ring-2 ring-emerald-50 flex items-center justify-center text-white shrink-0">
-              <Coins className="w-6 h-6 drop-shadow" />
-            </div>
-            <div>
-              <div className="text-xs text-slate-500 font-medium">Total Consultation Fee</div>
-              <div className="text-xl font-bold text-slate-900 font-mono">
-                ₹{totalAppointmentFees.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                <span className="text-xs font-normal text-slate-500 ml-2">
-                  ({sessions.length} {sessions.length === 1 ? 'session' : 'sessions'})
-                </span>
+        {/* Sticky Bottom Action Bar (Fully Responsive on Mobile) */}
+        <div className="sticky bottom-3 sm:bottom-6 z-20 bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-slate-200/90 shadow-xl shadow-slate-900/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-400 via-teal-500 to-emerald-600 shadow-md sm:shadow-lg shadow-emerald-500/25 ring-2 ring-emerald-50 flex items-center justify-center text-white shrink-0">
+                <Coins className="w-5 h-5 sm:w-6 sm:h-6 drop-shadow" />
+              </div>
+              <div>
+                <div className="text-[11px] sm:text-xs text-slate-500 font-medium">Total Consultation Fee</div>
+                <div className="text-base sm:text-xl font-bold text-slate-900 font-mono">
+                  ₹{totalAppointmentFees.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  <span className="text-[11px] sm:text-xs font-normal text-slate-500 ml-1.5">
+                    ({sessions.length} {sessions.length === 1 ? 'session' : 'sessions'})
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+          <div className="grid grid-cols-3 sm:flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <button
               type="button"
               onClick={() => navigate('/admin/appointments')}
-              className="px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 rounded-2xl transition-all cursor-pointer"
+              className="col-span-1 px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-xl sm:rounded-2xl border border-slate-200/80 transition-all cursor-pointer text-center"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center justify-center gap-2 px-7 py-3 text-sm font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-2xl shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/35 transition-all disabled:opacity-50 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+              className="col-span-2 inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-7 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50 cursor-pointer text-center"
             >
               {saving ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Booking Appointment...</span>
+                  <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                  <span className="truncate">Booking...</span>
                 </>
               ) : (
                 <>
-                  <Save className="w-4 h-4" />
-                  <span>Confirm &amp; Book Appointment</span>
+                  <Save className="w-4 h-4 shrink-0" />
+                  <span className="truncate">Confirm Booking</span>
                 </>
               )}
             </button>
