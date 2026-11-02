@@ -21,7 +21,7 @@ import {
 import StatCard from '../../components/StatCard';
 import DashboardSkeleton from '../../components/DashboardSkeleton';
 import adminService from '../../services/adminService';
-import adminAppointmentService from '../../services/adminAppointmentService';
+import adminMasterAppointmentService from '../../services/adminMasterAppointmentService';
 import adminInventoryService from '../../services/adminInventoryService';
 import { useAdminAuth } from '../../features/auth/AdminAuthContext';
 import {
@@ -56,21 +56,16 @@ export default function AdminDashboardPage() {
     }
 
     try {
-      const [dashRes, aptStatsRes, todayAptRes, patientsRes, catStatsRes, stockStatsRes] = await Promise.allSettled([
+      const [dashRes, masterAptStatsRes, patientsRes, catStatsRes, stockStatsRes] = await Promise.allSettled([
         adminService.getDashboard(),
-        adminAppointmentService.getStats(),
-        adminAppointmentService.getAppointments({ date: 'today', per_page: 5 }),
+        adminMasterAppointmentService.getStats(),
         adminService.getCustomers({ per_page: 5 }),
         adminService.getCategoryStats(),
         adminInventoryService.getStockStats(),
       ]);
 
       if (dashRes.status === 'fulfilled') setDashboardData(dashRes.value);
-      if (aptStatsRes.status === 'fulfilled') setAppointmentStats(aptStatsRes.value);
-      if (todayAptRes.status === 'fulfilled') {
-        const aptData = todayAptRes.value?.data || todayAptRes.value || [];
-        setTodayAppointments(Array.isArray(aptData) ? aptData : []);
-      }
+      if (masterAptStatsRes.status === 'fulfilled') setAppointmentStats(masterAptStatsRes.value);
       if (patientsRes.status === 'fulfilled') {
         const pData = patientsRes.value?.data || patientsRes.value || [];
         setRecentPatients(Array.isArray(pData) ? pData : []);
@@ -93,28 +88,37 @@ export default function AdminDashboardPage() {
     return <DashboardSkeleton title="Loading Clinic Dashboard..." />;
   }
 
-  const { stats, account } = dashboardData || {};
+  const { stats, account, schedule_sessions } = dashboardData || {};
+  const masterStats = appointmentStats?.data || appointmentStats || {};
 
-  // Computed metrics with safe fallbacks matching visual reference
-  const totalPatients = stats?.total_customers ?? recentPatients.length ?? 2847;
-  const todayCount = appointmentStats?.today ?? stats?.today_appointments ?? 128;
-  const pendingCount = appointmentStats?.pending ?? 15;
-  const confirmedCount = appointmentStats?.confirmed ?? 81;
-  const completedCount = appointmentStats?.completed ?? 102;
-  const scheduledCount = appointmentStats?.scheduled ?? (pendingCount + confirmedCount) ?? 96;
-  const activePackages = categoryStats?.active ?? categoryStats?.total ?? 275;
+  // Computed metrics with real database values
+  const totalPatients = stats?.total_customers ?? recentPatients.length ?? 0;
+  const todayCount = stats?.today_sessions ?? masterStats?.today_sessions ?? 0;
+  const pendingCount = stats?.pending_sessions ?? masterStats?.pending_sessions ?? 0;
+  const inProgressCount = stats?.in_progress_sessions ?? masterStats?.in_progress_sessions ?? 0;
+  const completedCount = stats?.completed_sessions ?? masterStats?.completed_sessions ?? 0;
+  const cancelledCount = stats?.cancelled_sessions ?? masterStats?.cancelled_sessions ?? 0;
+  const upcomingCount = stats?.upcoming_appointments ?? masterStats?.upcoming_sessions ?? (pendingCount + inProgressCount) ?? 0;
+  const activePackages = stats?.active_packages ?? categoryStats?.active ?? categoryStats?.total ?? 0;
   const lowStockCount = inventoryStats?.total_low_stock_alerts ?? inventoryStats?.low_stock_count ?? stats?.low_stock_count ?? 0;
   const totalInventory = inventoryStats?.total_products ?? stats?.total_inventory_products ?? 0;
 
-  // Revenue calculation from appointments
-  const liveRevenueSum = todayAppointments.reduce((acc, apt) => acc + (parseFloat(apt.fee) || 0), 0);
-  const todayRevenue = liveRevenueSum > 0 ? liveRevenueSum : 48500;
-  const overallRevenueFormatted = '₹2,84,500';
+  // Real Master Appointment counts
+  const totalMasterCount = stats?.total_appointments ?? masterStats?.total_master ?? 0;
+  const todayMasterCount = stats?.today_appointments ?? masterStats?.today_master ?? 0;
+  const totalSessionsCount = stats?.total_sessions ?? masterStats?.total_sessions ?? 0;
+  const todaySessionsCount = stats?.today_sessions ?? masterStats?.today_sessions ?? 0;
 
+  // Real revenue values
+  const todayRevenue = stats?.today_revenue ?? masterStats?.today_revenue ?? 0;
+  const totalRevenue = stats?.total_revenue ?? masterStats?.total_revenue ?? 0;
+  const overallRevenueFormatted = totalRevenue > 0 ? `₹${totalRevenue.toLocaleString('en-IN')}` : '₹0';
+
+  const totalActionable = completedCount + upcomingCount;
   const sessionCompletionRate =
-    scheduledCount + completedCount > 0
-      ? Math.round((completedCount / (scheduledCount + completedCount)) * 100)
-      : 75;
+    totalActionable > 0
+      ? Math.round((completedCount / totalActionable) * 100)
+      : 0;
 
   const revenueDataByPeriod = {
     'Last 6 Months': [
@@ -139,71 +143,37 @@ export default function AdminDashboardPage() {
     ],
   };
 
-  // Appointment schedule table rows (merges live data with reference items if empty)
-  const displayAppointments = todayAppointments.length > 0
-    ? todayAppointments.map((apt) => ({
-        id: apt.id,
-        time: apt.appointment_time || '10:00 AM',
-        patientName: apt.customer?.name || 'Walk-in Patient',
-        patientInitial: apt.customer?.name ? apt.customer.name.charAt(0).toUpperCase() : 'P',
-        doctorName: apt.staff?.name || 'Dr. Amit Singh',
-        status: apt.status || 'Confirmed',
+  // Appointment schedule table rows (live data from backend)
+  const displayAppointments = Array.isArray(schedule_sessions)
+    ? schedule_sessions.map((ses) => ({
+        id: ses.id,
+        masterAppointmentId: ses.master_appointment_id,
+        time: ses.time || '10:00 AM',
+        date: ses.date || '',
+        treatmentName: ses.treatment_name || 'Clinical Session',
+        patientName: ses.patient_name || 'Patient',
+        patientInitial: ses.patient_initial || 'P',
+        doctorName: ses.doctor_name || 'Staff on Duty',
+        status: ses.status || 'pending',
         statusColor:
-          apt.status === 'completed'
+          ses.status === 'completed'
             ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
-            : apt.status === 'in_progress'
+            : ses.status === 'in_progress'
             ? 'bg-blue-50 text-blue-700 border-blue-200/80'
-            : apt.status === 'pending'
+            : ses.status === 'pending'
             ? 'bg-amber-50 text-amber-700 border-amber-200/80'
-            : 'bg-sky-50 text-sky-700 border-sky-200/80',
+            : 'bg-rose-50 text-rose-700 border-rose-200/80',
       }))
-    : [
-        {
-          id: 1,
-          time: '09:00 AM',
-          patientName: 'Priya Sharma',
-          patientInitial: 'PS',
-          doctorName: 'Dr. Amit Singh',
-          status: 'Completed',
-          statusColor: 'bg-emerald-50 text-emerald-700 border-emerald-200/80',
-        },
-        {
-          id: 2,
-          time: '09:30 AM',
-          patientName: 'Rahul Verma',
-          patientInitial: 'RV',
-          doctorName: 'Dr. Neha Kapoor',
-          status: 'In Progress',
-          statusColor: 'bg-blue-50 text-blue-700 border-blue-200/80',
-        },
-        {
-          id: 3,
-          time: '10:00 AM',
-          patientName: 'Sneha Patel',
-          patientInitial: 'SP',
-          doctorName: 'Dr. Amit Singh',
-          status: 'Pending',
-          statusColor: 'bg-amber-50 text-amber-700 border-amber-200/80',
-        },
-        {
-          id: 4,
-          time: '10:30 AM',
-          patientName: 'Amit Kumar',
-          patientInitial: 'AK',
-          doctorName: 'Dr. Neha Kapoor',
-          status: 'Confirmed',
-          statusColor: 'bg-sky-50 text-sky-700 border-sky-200/80',
-        },
-      ];
+    : [];
 
-  // Recent patients list
+  // Recent patients list (live data from backend)
   const displayPatients = recentPatients.length > 0
     ? recentPatients.map((p, idx) => ({
         id: p.id || idx,
         name: p.name || 'Patient',
         initial: p.name ? p.name.substring(0, 2).toUpperCase() : 'PT',
-        details: `${p.gender || 'Patient'} • ${p.age ? `${p.age} years` : 'OPD'} • ${p.city || p.mobile || 'Registered'}`,
-        timeAgo: `${idx * 3 + 2} min ago`,
+        details: `${p.gender ? (p.gender.charAt(0).toUpperCase() + p.gender.slice(1)) : 'Patient'} • ${p.age ? `${p.age} years` : 'OPD'} • ${p.city || p.mobile || 'Registered'}`,
+        timeAgo: p.created_at ? new Date(p.created_at).toLocaleDateString('en-IN') : 'Registered',
         avatarColor:
           idx % 3 === 0
             ? 'bg-blue-100 text-blue-700'
@@ -211,32 +181,7 @@ export default function AdminDashboardPage() {
             ? 'bg-rose-100 text-rose-700'
             : 'bg-purple-100 text-purple-700',
       }))
-    : [
-        {
-          id: 1,
-          name: 'Rohit Sharma',
-          initial: 'RS',
-          details: 'Male • 32 years • Delhi',
-          timeAgo: '2 min ago',
-          avatarColor: 'bg-blue-100 text-blue-700',
-        },
-        {
-          id: 2,
-          name: 'Neha Gupta',
-          initial: 'NG',
-          details: 'Female • 28 years • Noida',
-          timeAgo: '5 min ago',
-          avatarColor: 'bg-rose-100 text-rose-700',
-        },
-        {
-          id: 3,
-          name: 'Amit Verma',
-          initial: 'AV',
-          details: 'Male • 45 years • Gurgaon',
-          timeAgo: '8 min ago',
-          avatarColor: 'bg-purple-100 text-purple-700',
-        },
-      ];
+    : [];
 
   const adminDisplayName = user?.name || account?.name || 'Dr. Rajesh Kumar';
   const greeting = getIndianGreeting();
@@ -357,12 +302,12 @@ export default function AdminDashboardPage() {
         <Link to="/admin/appointments" className="block group">
           <StatCard
             title="Upcoming Appointments"
-            value={scheduledCount}
+            value={upcomingCount}
             subtitle="Active Consultation Queue"
             icon={Clock}
             colorScheme="purple"
-            trend="5% Active"
-            sparklineData={[8, 14, 12, 20, 16, 22, 26]}
+            trend="Live Queue"
+            sparklineData={[8, 14, 12, 20, 16, 22, upcomingCount > 0 ? 26 : 0]}
           />
         </Link>
 
@@ -374,21 +319,21 @@ export default function AdminDashboardPage() {
             subtitle={`${sessionCompletionRate}% Success Rate`}
             icon={CheckCircle2}
             colorScheme="amber"
-            trend="10% Cleared"
-            sparklineData={[10, 15, 14, 22, 20, 26, 30]}
+            trend="Cleared"
+            sparklineData={[10, 15, 14, 22, 20, 26, completedCount > 0 ? 30 : 0]}
           />
         </Link>
 
         {/* ROW 2 - CARD 5: Active Treatment Packages */}
-        <Link to="/admin/categories" className="block group">
+        <Link to="/admin/appointments/services" className="block group">
           <StatCard
             title="Active Treatment Packages"
             value={activePackages}
             subtitle="Clinic Services Catalog"
             icon={FolderTree}
             colorScheme="cyan"
-            trend="7% Catalog"
-            sparklineData={[5, 9, 8, 14, 12, 16, 18]}
+            trend="Catalog"
+            sparklineData={[5, 9, 8, 14, 12, 16, activePackages > 0 ? 18 : 0]}
           />
         </Link>
 
@@ -396,13 +341,13 @@ export default function AdminDashboardPage() {
         <div className="block">
           <StatCard
             title="Today's Estimated Fees"
-            value={todayRevenue > 0 ? `₹${todayRevenue.toLocaleString()}` : '₹48,500'}
+            value={todayRevenue > 0 ? `₹${todayRevenue.toLocaleString('en-IN')}` : '₹0'}
             subtitle="OPD Billing Generated"
             icon={DollarSign}
             colorScheme="rose"
             animateCount={false}
-            trend="14% Billed"
-            sparklineData={[12, 18, 16, 26, 22, 30, 36]}
+            trend="Live"
+            sparklineData={[12, 18, 16, 26, 22, 30, todayRevenue > 0 ? 36 : 0]}
           />
         </div>
 
@@ -434,8 +379,8 @@ export default function AdminDashboardPage() {
         <Link to="/admin/appointments" className="block group">
           <StatCard
             title="Master Appointments"
-            value={stats?.total_appointments ?? 0}
-            subtitle={`${stats?.today_appointments ?? 0} booked today`}
+            value={totalMasterCount}
+            subtitle={`${todayMasterCount} booked today`}
             icon={Calendar}
             colorScheme="indigo"
           />
@@ -443,8 +388,8 @@ export default function AdminDashboardPage() {
         <Link to="/admin/appointments/calendar" className="block group">
           <StatCard
             title="Clinical Sessions"
-            value={stats?.total_sessions ?? 0}
-            subtitle={`${stats?.today_sessions ?? 0} scheduled today`}
+            value={totalSessionsCount}
+            subtitle={`${todaySessionsCount} scheduled today`}
             icon={Activity}
             colorScheme="violet"
           />
@@ -481,9 +426,10 @@ export default function AdminDashboardPage() {
             title="Session Status Overview"
             icon={Clock}
             segments={[
-              { label: 'Completed', value: completedCount ?? 102, color: '#10b981', dotClass: 'bg-emerald-500' },
-              { label: 'Pending', value: pendingCount ?? 15, color: '#3b82f6', dotClass: 'bg-blue-500' },
-              { label: 'Cancelled', value: appointmentStats?.cancelled ?? 10, color: '#f59e0b', dotClass: 'bg-amber-500' },
+              { label: 'Completed', value: completedCount, color: '#10b981', dotClass: 'bg-emerald-500' },
+              { label: 'Pending', value: pendingCount, color: '#f59e0b', dotClass: 'bg-amber-500' },
+              { label: 'In Progress', value: inProgressCount, color: '#3b82f6', dotClass: 'bg-blue-500' },
+              { label: 'Cancelled', value: cancelledCount, color: '#ef4444', dotClass: 'bg-rose-500' },
             ]}
             centerValue={`${sessionCompletionRate}%`}
             centerLabel="Completed"
@@ -496,7 +442,7 @@ export default function AdminDashboardPage() {
       {/* 4. Section 2: Schedule Table + Quick Actions (7 : 5 Grid) */}
       {/* ======================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
-        {/* Left (Col 1-7): Today's Appointment Schedule Table */}
+        {/* Left (Col 1-7): Today's / Upcoming Appointment Schedule Table */}
         <div className="lg:col-span-7 xl:col-span-7 bg-white rounded-2xl border border-slate-100 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-slate-50 gap-2">
@@ -505,7 +451,7 @@ export default function AdminDashboardPage() {
                   <Calendar className="w-4 h-4 drop-shadow-sm" />
                 </div>
                 <h2 className="text-sm font-bold font-display tracking-tight text-slate-800">
-                  Today&apos;s Appointment Schedule
+                  Appointment Schedule &amp; Sessions
                 </h2>
               </div>
               <Link
@@ -518,57 +464,80 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Schedule Table */}
-            <div className="overflow-x-auto mt-2">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-100 text-[11px] font-semibold text-slate-400">
-                    <th className="py-3 px-3">Time</th>
-                    <th className="py-3 px-3">Patient</th>
-                    <th className="py-3 px-3">Doctor</th>
-                    <th className="py-3 px-3">Status</th>
-                    <th className="py-3 px-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {displayAppointments.map((apt) => (
-                    <tr key={apt.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-3 px-3 font-mono font-medium text-slate-600 whitespace-nowrap">
-                        {apt.time}
-                      </td>
-                      <td className="py-3 px-3">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0 font-display icon-3d shadow-2xs">
-                            {apt.patientInitial}
-                          </div>
-                          <span className="font-semibold text-slate-800" title={apt.patientName}>
-                            {apt.patientName}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-3 text-slate-600 font-medium whitespace-nowrap">
-                        {apt.doctorName}
-                      </td>
-                      <td className="py-3 px-3 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${apt.statusColor}`}
-                        >
-                          {apt.status}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 text-right whitespace-nowrap">
-                        <Link
-                          to="/admin/appointments"
-                          className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors inline-flex items-center justify-center"
-                          title="View appointment"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Link>
-                      </td>
+            {displayAppointments.length === 0 ? (
+              <div className="py-12 text-center">
+                <Calendar className="w-8 h-8 mx-auto text-slate-300 mb-2" />
+                <p className="text-xs font-semibold text-slate-600">No appointments scheduled for today</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Book an appointment or view the appointments directory</p>
+                <Link
+                  to="/admin/appointments/create"
+                  className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700"
+                >
+                  <CalendarPlus className="w-3.5 h-3.5" />
+                  <span>+ Book Appointment</span>
+                </Link>
+              </div>
+            ) : (
+              <div className="overflow-x-auto mt-2">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-100 text-[11px] font-semibold text-slate-400">
+                      <th className="py-3 px-3">Time / Date</th>
+                      <th className="py-3 px-3">Patient</th>
+                      <th className="py-3 px-3">Doctor</th>
+                      <th className="py-3 px-3">Status</th>
+                      <th className="py-3 px-3 text-right">Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {displayAppointments.map((apt) => (
+                      <tr key={apt.id} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="py-3 px-3 font-mono font-medium text-slate-600 whitespace-nowrap">
+                          <div>{apt.time}</div>
+                          {apt.date && <div className="text-[10px] text-slate-400 font-sans">{apt.date}</div>}
+                        </td>
+                        <td className="py-3 px-3">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0 font-display icon-3d shadow-2xs">
+                              {apt.patientInitial}
+                            </div>
+                            <div className="min-w-0">
+                              <span className="font-semibold text-slate-800 block truncate" title={apt.patientName}>
+                                {apt.patientName}
+                              </span>
+                              {apt.treatmentName && (
+                                <span className="text-[10px] text-slate-400 block truncate" title={apt.treatmentName}>
+                                  {apt.treatmentName}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 text-slate-600 font-medium whitespace-nowrap">
+                          {apt.doctorName}
+                        </td>
+                        <td className="py-3 px-3 whitespace-nowrap">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${apt.statusColor}`}
+                          >
+                            {apt.status === 'in_progress' ? 'In Progress' : (apt.status?.charAt(0).toUpperCase() + apt.status?.slice(1))}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-right whitespace-nowrap">
+                          <Link
+                            to={`/admin/appointments/${apt.masterAppointmentId || apt.id}`}
+                            className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors inline-flex items-center justify-center"
+                            title="View appointment details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
 
@@ -671,31 +640,38 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Patients List */}
-            <div className="divide-y divide-slate-50 mt-2">
-              {displayPatients.map((patient) => (
-                <div key={patient.id} className="py-3 flex items-center justify-between gap-3 hover:bg-slate-50/50 px-2 rounded-xl transition-colors">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className={`w-9 h-9 rounded-xl ${patient.avatarColor} font-bold flex items-center justify-center text-xs shrink-0 font-display icon-3d shadow-2xs`}
-                    >
-                      {patient.initial}
+            {displayPatients.length === 0 ? (
+              <div className="py-10 text-center text-slate-400 text-xs">
+                <Users className="w-8 h-8 mx-auto text-slate-300 mb-2" />
+                <span>No patients registered yet.</span>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-50 mt-2">
+                {displayPatients.map((patient) => (
+                  <div key={patient.id} className="py-3 flex items-center justify-between gap-3 hover:bg-slate-50/50 px-2 rounded-xl transition-colors">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className={`w-9 h-9 rounded-xl ${patient.avatarColor} font-bold flex items-center justify-center text-xs shrink-0 font-display icon-3d shadow-2xs`}
+                      >
+                        {patient.initial}
+                      </div>
+                      <div className="min-w-0">
+                        <span className="font-bold text-xs sm:text-sm text-slate-800 block truncate">
+                          {patient.name}
+                        </span>
+                        <span className="text-[11px] text-slate-400 block truncate">
+                          {patient.details}
+                        </span>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <span className="font-bold text-xs sm:text-sm text-slate-800 block truncate">
-                        {patient.name}
-                      </span>
-                      <span className="text-[11px] text-slate-400 block truncate">
-                        {patient.details}
-                      </span>
-                    </div>
-                  </div>
 
-                  <span className="text-[10px] font-medium text-slate-400 shrink-0 font-mono">
-                    {patient.timeAgo}
-                  </span>
-                </div>
-              ))}
-            </div>
+                    <span className="text-[10px] font-medium text-slate-400 shrink-0 font-mono">
+                      {patient.timeAgo}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
