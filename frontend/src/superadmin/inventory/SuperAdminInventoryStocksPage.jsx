@@ -100,7 +100,7 @@ export default function SuperAdminInventoryStocksPage() {
 
   const columns = [
     {
-      header: '#',
+      header: 'SR. NO.',
       className: 'w-14 text-center',
       render: (_, index) => {
         const srNo = (pagination?.from || 1) + index;
