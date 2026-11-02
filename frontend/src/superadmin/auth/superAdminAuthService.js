@@ -29,9 +29,12 @@ superAdminApiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('superadmin_token');
       localStorage.removeItem('superadmin_user');
-      const publicPaths = ['/superadmin', '/superadmin/forgot-password', '/superadmin/reset-password'];
-      if (!publicPaths.some((p) => window.location.pathname.startsWith(p))) {
-        window.location.href = '/superadmin';
+      // Only redirect if the current active tab is viewing a superadmin route
+      if (window.location.pathname.startsWith('/superadmin')) {
+        const publicPaths = ['/superadmin', '/superadmin/login', '/superadmin/forgot-password', '/superadmin/reset-password'];
+        if (!publicPaths.some((p) => window.location.pathname === p || window.location.pathname.startsWith(p + '/'))) {
+          window.location.href = '/superadmin';
+        }
       }
     }
     return Promise.reject(error);
@@ -84,4 +87,3 @@ export const superAdminAuthService = {
 };
 
 export default superAdminAuthService;
-

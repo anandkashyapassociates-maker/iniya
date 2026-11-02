@@ -3,20 +3,13 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import AuthLayout from '../../layouts/AuthLayout';
 import LoginForm from '../../components/LoginForm';
 import { useAdminAuth } from '../../features/auth/AdminAuthContext';
-import { useSuperAdminAuth } from '../../superadmin/auth/SuperAdminAuthContext';
 import { useToast } from '../../context/ToastContext';
 
 export default function AdminLoginPage() {
   const { login, isAuthenticated, user, isLoading: isAdminLoading } = useAdminAuth();
-  const { isAuthenticated: isSuperAdminAuth, isLoading: isSuperAdminLoading } = useSuperAdminAuth();
   const navigate = useNavigate();
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
-
-  // If already authenticated as SuperAdmin, redirect to SuperAdmin dashboard
-  if (!isSuperAdminLoading && isSuperAdminAuth) {
-    return <Navigate to="/superadmin/dashboard" replace />;
-  }
 
   // If already authenticated as active Admin, redirect to Admin dashboard
   if (!isAdminLoading && isAuthenticated && user?.is_active) {

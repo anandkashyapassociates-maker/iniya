@@ -38,9 +38,13 @@ superAdminApi.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('superadmin_token');
       localStorage.removeItem('superadmin_user');
-      if (!window.location.pathname.startsWith('/superadmin/login') && 
-          !window.location.pathname.startsWith('/superadmin/forgot-password') &&
-          !window.location.pathname.startsWith('/superadmin/reset-password')) {
+      // Only redirect if the current active tab is viewing a superadmin route
+      if (
+        window.location.pathname.startsWith('/superadmin') &&
+        !window.location.pathname.startsWith('/superadmin/login') &&
+        !window.location.pathname.startsWith('/superadmin/forgot-password') &&
+        !window.location.pathname.startsWith('/superadmin/reset-password')
+      ) {
         window.location.href = '/superadmin';
       }
     }
@@ -84,9 +88,13 @@ adminApi.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('admin_token');
       localStorage.removeItem('admin_user');
-      if (!window.location.pathname.startsWith('/admin/login') && 
-          !window.location.pathname.startsWith('/admin/forgot-password') &&
-          !window.location.pathname.startsWith('/admin/reset-password')) {
+      // Only redirect if the current active tab is viewing an admin route
+      if (
+        window.location.pathname.startsWith('/admin') &&
+        !window.location.pathname.startsWith('/admin/login') &&
+        !window.location.pathname.startsWith('/admin/forgot-password') &&
+        !window.location.pathname.startsWith('/admin/reset-password')
+      ) {
         window.location.href = '/admin';
       }
     }
@@ -98,4 +106,3 @@ export default {
   superAdminApi,
   adminApi,
 };
-
