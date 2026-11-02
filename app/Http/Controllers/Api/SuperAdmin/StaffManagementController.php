@@ -7,6 +7,7 @@ use App\Models\AdminActivityLog;
 use App\Models\Staff;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class StaffManagementController extends Controller
@@ -105,6 +106,7 @@ class StaffManagementController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:staff,email'],
+            'password' => ['nullable', 'string', 'min:6'],
             'mobile' => ['nullable', 'string', 'min:7', 'max:25'],
             'department' => ['nullable', 'string', 'max:100'],
             'designation' => ['nullable', 'string', 'max:100'],
@@ -123,12 +125,14 @@ class StaffManagementController extends Controller
 
         // Concurrency-safe backend generated Staff Code
         $staffCode = Staff::generateUniqueCode();
+        $plainPassword = ! empty($validated['password']) ? $validated['password'] : '123456';
 
         $staff = Staff::create([
             'staff_code' => $staffCode,
             'created_by_superadmin_id' => $superAdmin->id,
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'password' => Hash::make($plainPassword),
             'mobile' => $validated['mobile'] ?? null,
             'department' => $validated['department'] ?? null,
             'designation' => $validated['designation'] ?? null,
@@ -188,6 +192,7 @@ class StaffManagementController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('staff')->ignore($staff->id)],
+            'password' => ['nullable', 'string', 'min:6'],
             'mobile' => ['nullable', 'string', 'min:7', 'max:25'],
             'department' => ['nullable', 'string', 'max:100'],
             'designation' => ['nullable', 'string', 'max:100'],
@@ -203,6 +208,10 @@ class StaffManagementController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
         ];
+
+        if (! empty($validated['password'])) {
+            $dataToUpdate['password'] = Hash::make($validated['password']);
+        }
 
         foreach (['mobile', 'department', 'designation', 'employment_type', 'joining_date', 'address', 'profile_photo'] as $field) {
             if (array_key_exists($field, $validated)) {

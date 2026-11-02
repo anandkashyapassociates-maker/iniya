@@ -439,16 +439,32 @@ export default function Sidebar({
         {/* Bottom Section: User Info & Sign Out */}
         <div className="p-4 border-t border-slate-800/80 bg-slate-950/40 space-y-3 shrink-0">
           <div className="flex items-center gap-3 px-1 pt-1">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0 font-display">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-xs shrink-0 font-display text-white ${
+              user?.role === 'staff'
+                ? 'bg-gradient-to-tr from-teal-500 to-emerald-600'
+                : 'bg-gradient-to-tr from-blue-600 to-indigo-600'
+            }`}>
               {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-slate-200 truncate font-display tracking-tight">
-                {user?.name || 'Administrator'}
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs font-semibold text-slate-200 truncate font-display tracking-tight">
+                  {user?.name || (isSuperAdmin ? 'Super Administrator' : 'Administrator')}
+                </p>
+                {user?.role === 'staff' && (
+                  <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30 uppercase">
+                    Staff
+                  </span>
+                )}
+              </div>
               <p className="text-[10px] text-slate-400 truncate font-mono">
-                {user?.email || 'admin@example.com'}
+                {user?.email || (isSuperAdmin ? 'superadmin@example.com' : 'admin@example.com')}
               </p>
+              {user?.department && (
+                <p className="text-[9px] text-slate-400 truncate font-sans">
+                  {user.department} {user.staff_code ? `(${user.staff_code})` : ''}
+                </p>
+              )}
             </div>
           </div>
 

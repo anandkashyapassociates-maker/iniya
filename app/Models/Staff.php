@@ -3,14 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\HasApiTokens;
 
-class Staff extends Model
+class Staff extends Authenticatable
 {
-    use HasFactory;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $table = 'staff';
 
@@ -29,6 +31,7 @@ class Staff extends Model
         'staff_code',
         'name',
         'email',
+        'password',
         'mobile',
         'department',
         'designation',
@@ -38,7 +41,18 @@ class Staff extends Model
         'profile_photo',
         'status',
         'is_active',
+        'last_login_at',
         'created_by_superadmin_id',
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var list<string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
 
     /**
@@ -51,6 +65,7 @@ class Staff extends Model
         return [
             'joining_date' => 'date:Y-m-d',
             'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
     }
 

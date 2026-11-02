@@ -19,8 +19,12 @@ export default function AdminLoginPage() {
   const handleLogin = async (credentials) => {
     setIsLoading(true);
     try {
-      await login(credentials);
-      toast.success('Authenticated successfully. Welcome to the Admin Portal!');
+      const res = await login(credentials);
+      const isStaff = res?.user?.role === 'staff' || res?.user?.user_type === 'staff';
+      const welcomeMsg = isStaff
+        ? `Authenticated successfully. Welcome, ${res?.user?.name || 'Staff Member'}!`
+        : 'Authenticated successfully. Welcome to the Admin Portal!';
+      toast.success(welcomeMsg);
       navigate('/admin/dashboard');
     } finally {
       setIsLoading(false);
@@ -30,8 +34,8 @@ export default function AdminLoginPage() {
   return (
     <AuthLayout
       role="admin"
-      title="Admin Portal"
-      subtitle="Sign in with your administrative credentials and security verification."
+      title="Admin & Staff Portal"
+      subtitle="Sign in with your Admin or Staff credentials to access the clinic workspace."
     >
       <LoginForm
         role="admin"
