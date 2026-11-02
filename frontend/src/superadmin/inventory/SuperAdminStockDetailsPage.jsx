@@ -582,24 +582,6 @@ export default function SuperAdminStockDetailsPage() {
                   </tr>
                 )}
               </tbody>
-
-              {/* Table Footer with Summary Totals */}
-              <tfoot>
-                <tr className="border-t-2 border-slate-200 bg-slate-100/90 font-bold text-xs">
-                  <td colSpan={3} className="py-3.5 px-4 text-slate-700 uppercase tracking-wider text-[11px]">
-                    Current Net Stock Summary
-                  </td>
-                  <td className="py-3.5 px-4 text-right font-mono text-emerald-700 text-sm bg-emerald-100/50 border-l border-emerald-200">
-                    +{totalAdded || (product.last_added_quantity ?? currentStock)} {unit}
-                  </td>
-                  <td className="py-3.5 px-4 text-right font-mono text-rose-700 text-sm bg-rose-100/50 border-l border-rose-200">
-                    -{totalIssued || (product.last_issued_quantity ?? 0)} {unit}
-                  </td>
-                  <td className="py-3.5 px-4 text-right font-mono text-blue-700 text-sm bg-blue-100/50 border-l border-blue-200">
-                    {currentStock} {unit}
-                  </td>
-                </tr>
-              </tfoot>
             </table>
           </div>
         )}
