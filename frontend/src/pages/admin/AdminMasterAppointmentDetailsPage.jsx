@@ -25,6 +25,7 @@ import adminMasterAppointmentService from '../../services/adminMasterAppointment
 import SessionRescheduleModal from '../../components/admin/SessionRescheduleModal';
 import SessionRescheduleHistoryModal from '../../components/admin/SessionRescheduleHistoryModal';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import ProductMultiSelectDropdown from '../../components/admin/ProductMultiSelectDropdown';
 import { useToast } from '../../context/ToastContext';
 
 export default function AdminMasterAppointmentDetailsPage() {
@@ -54,6 +55,7 @@ export default function AdminMasterAppointmentDetailsPage() {
     staff_id: '',
     staff_commission: '0',
     inventory_product_id: '',
+    inventory_product_ids: [],
   });
 
   // Load appointment details
@@ -132,13 +134,15 @@ export default function AdminMasterAppointmentDetailsPage() {
 
     setAddingSession(true);
     try {
+      const pIds = (newSessionData.inventory_product_ids || []).map((pId) => Number(pId));
       const payload = {
         treatment_details: newSessionData.treatment_details.trim(),
         session_date: newSessionData.session_date,
         session_time: newSessionData.session_time,
         staff_id: Number(newSessionData.staff_id),
         staff_commission: Number(newSessionData.staff_commission || 0),
-        inventory_product_id: newSessionData.inventory_product_id ? Number(newSessionData.inventory_product_id) : null,
+        inventory_product_ids: pIds,
+        inventory_product_id: pIds.length > 0 ? pIds[0] : null,
       };
 
       const res = await adminMasterAppointmentService.addSession(id, payload);
@@ -151,6 +155,7 @@ export default function AdminMasterAppointmentDetailsPage() {
         staff_id: staffList[0]?.id ? String(staffList[0].id) : '',
         staff_commission: '0',
         inventory_product_id: '',
+        inventory_product_ids: [],
       });
       fetchDetails();
     } catch (err) {
@@ -464,9 +469,9 @@ export default function AdminMasterAppointmentDetailsPage() {
 
       {/* Add Extra Session Modal */}
       {showAddSessionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in">
-            <div className="px-6 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
+          <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-visible animate-in fade-in my-auto">
+            <div className="px-6 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white flex items-center justify-between rounded-t-2xl">
               <div className="flex items-center space-x-2">
                 <Plus className="w-5 h-5" />
                 <h3 className="font-bold text-base">Add Extra Session</h3>
@@ -528,28 +533,28 @@ export default function AdminMasterAppointmentDetailsPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
-                  Assigned Staff <span className="text-rose-500">*</span>
-                </label>
-                <select
-                  required
-                  value={newSessionData.staff_id}
-                  onChange={(e) =>
-                    setNewSessionData({ ...newSessionData, staff_id: e.target.value })
-                  }
-                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm"
-                >
-                  <option value="">Select Staff</option>
-                  {staffList.map((st) => (
-                    <option key={st.id} value={st.id}>
-                      {st.name} {st.department ? `(${st.department})` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                    Assigned Staff <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    required
+                    value={newSessionData.staff_id}
+                    onChange={(e) =>
+                      setNewSessionData({ ...newSessionData, staff_id: e.target.value })
+                    }
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm"
+                  >
+                    <option value="">Select Staff</option>
+                    {staffList.map((st) => (
+                      <option key={st.id} value={st.id}>
+                        {st.name} {st.department ? `(${st.department})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
                     Staff Commission (₹) <span className="text-rose-500">*</span>
@@ -566,25 +571,30 @@ export default function AdminMasterAppointmentDetailsPage() {
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
-                    Inventory Product
-                  </label>
-                  <select
-                    value={newSessionData.inventory_product_id}
-                    onChange={(e) =>
-                      setNewSessionData({ ...newSessionData, inventory_product_id: e.target.value })
-                    }
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm"
-                  >
-                    <option value="">None</option>
-                    {inventoryProducts.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.product_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 font-bold uppercase text-xs">
+                    <Package className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Inventory Products Used</span>
+                  </span>
+                  <span className="text-[11px] text-slate-500 font-normal">
+                    Multiple Allowed • Optional
+                  </span>
+                </label>
+                <ProductMultiSelectDropdown
+                  products={inventoryProducts}
+                  selectedIds={newSessionData.inventory_product_ids || []}
+                  onChange={(newIds) => {
+                    setNewSessionData((prev) => ({
+                      ...prev,
+                      inventory_product_ids: newIds,
+                      inventory_product_id: newIds[0] ? String(newIds[0]) : '',
+                    }));
+                  }}
+                  placeholder="-- Select Inventory Products (Check all that apply) --"
+                />
               </div>
 
               <div className="pt-3 flex justify-end space-x-3 border-t border-slate-100">

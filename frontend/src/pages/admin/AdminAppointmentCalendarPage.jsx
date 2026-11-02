@@ -20,6 +20,16 @@ import SessionRescheduleModal from '../../components/admin/SessionRescheduleModa
 import SessionQuickDetailsModal from '../../components/admin/SessionQuickDetailsModal';
 import { useToast } from '../../context/ToastContext';
 
+// Safe local date formatting (YYYY-MM-DD) avoiding UTC timezone shifts
+const formatLocalDate = (d) => {
+  if (!d) return '';
+  const dateObj = d instanceof Date ? d : new Date(d);
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export default function AdminAppointmentCalendarPage() {
   const navigate = useNavigate();
   const toast = useToast();
@@ -58,22 +68,22 @@ export default function AdminAppointmentCalendarPage() {
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
       return {
-        start: firstDay.toISOString().split('T')[0],
-        end: lastDay.toISOString().split('T')[0],
+        start: formatLocalDate(firstDay),
+        end: formatLocalDate(lastDay),
       };
     } else if (viewMode === 'week') {
       const curr = new Date(currentDate);
       const first = curr.getDate() - curr.getDay();
       const last = first + 6;
-      const firstDay = new Date(curr.setDate(first));
-      const lastDay = new Date(curr.setDate(last));
+      const firstDay = new Date(curr.getFullYear(), curr.getMonth(), first);
+      const lastDay = new Date(curr.getFullYear(), curr.getMonth(), last);
       return {
-        start: firstDay.toISOString().split('T')[0],
-        end: lastDay.toISOString().split('T')[0],
+        start: formatLocalDate(firstDay),
+        end: formatLocalDate(lastDay),
       };
     } else {
       // Day view
-      const dayStr = currentDate.toISOString().split('T')[0];
+      const dayStr = formatLocalDate(currentDate);
       return {
         start: dayStr,
         end: dayStr,
@@ -155,7 +165,7 @@ export default function AdminAppointmentCalendarPage() {
       const d = new Date(year, month - 1, prevMonthDays - i);
       days.push({
         date: d,
-        dateStr: d.toISOString().split('T')[0],
+        dateStr: formatLocalDate(d),
         isCurrentMonth: false,
       });
     }
@@ -165,7 +175,7 @@ export default function AdminAppointmentCalendarPage() {
       const d = new Date(year, month, i);
       days.push({
         date: d,
-        dateStr: d.toISOString().split('T')[0],
+        dateStr: formatLocalDate(d),
         isCurrentMonth: true,
       });
     }
@@ -176,7 +186,7 @@ export default function AdminAppointmentCalendarPage() {
       const d = new Date(year, month + 1, i);
       days.push({
         date: d,
-        dateStr: d.toISOString().split('T')[0],
+        dateStr: formatLocalDate(d),
         isCurrentMonth: false,
       });
     }
@@ -184,7 +194,7 @@ export default function AdminAppointmentCalendarPage() {
     return days;
   }, [currentDate]);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = formatLocalDate(new Date());
 
   return (
     <div className="space-y-6 pb-12">
@@ -420,7 +430,8 @@ export default function AdminAppointmentCalendarPage() {
               ) : (
                 Object.keys(sessionsByDate).sort().map((dStr) => {
                   const sList = sessionsByDate[dStr] || [];
-                  const dateObj = new Date(dStr);
+                  const [y, m, dayNum] = dStr.split('-').map(Number);
+                  const dateObj = new Date(y, m - 1, dayNum);
 
                   return (
                     <div key={dStr} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50">
