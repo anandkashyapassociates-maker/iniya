@@ -55,8 +55,6 @@ export default function AdminMasterAppointmentCreatePage() {
   const [customerId, setCustomerId] = useState('');
   const [appointmentDate, setAppointmentDate] = useState(todayStr);
   const [salesTeamId, setSalesTeamId] = useState('');
-  const [appointmentFees, setAppointmentFees] = useState('');
-  const [masterServiceId, setMasterServiceId] = useState('');
   const [notes, setNotes] = useState('');
 
   // Flattened list of all services for easy lookup
@@ -78,20 +76,13 @@ export default function AdminMasterAppointmentCreatePage() {
     return list;
   }, [servicesTree]);
 
-  // Read-only display string for selected clinical service
-  const selectedServiceDisplayText = useMemo(() => {
-    if (!masterServiceId) return '';
-    const svcObj = allServicesList.find((s) => String(s.id) === String(masterServiceId));
-    if (!svcObj) return '';
-    return `${svcObj.name} (${svcObj.sub_category_name || 'Service'}) — ₹${Number(svcObj.price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-  }, [allServicesList, masterServiceId]);
-
   // Dynamic Sessions state
   const [sessions, setSessions] = useState([
     {
       category_id: '',
       sub_category_id: '',
       service_id: '',
+      service_price: '0',
       treatment_details: '',
       session_date: todayStr,
       session_time: getDefaultTime(1),
@@ -154,16 +145,13 @@ export default function AdminMasterAppointmentCreatePage() {
             }
 
             if (foundSvc) {
-              setMasterServiceId(String(foundSvc.id));
-              // Auto-fill Appointment Fees with the selected Service's price!
-              setAppointmentFees(String(foundSvc.price !== undefined ? foundSvc.price : '0'));
-
               setSessions((prev) => [
                 {
                   ...prev[0],
                   category_id: String(foundSvc.category_id),
                   sub_category_id: String(foundSvc.sub_category_id),
                   service_id: String(foundSvc.id),
+                  service_price: String(foundSvc.price !== undefined ? foundSvc.price : '0'),
                   treatment_details: prev[0]?.treatment_details?.trim() || foundSvc.name,
                 },
                 ...prev.slice(1),
@@ -180,30 +168,6 @@ export default function AdminMasterAppointmentCreatePage() {
         setOptionsLoading(false);
       });
   }, [toast, preServiceId, preCategoryId, preSubCategoryId]);
-
-  // Master Service selection change handler
-  const handleMasterServiceChange = (serviceId) => {
-    setMasterServiceId(serviceId);
-    if (!serviceId) return;
-
-    const svcObj = allServicesList.find((s) => String(s.id) === String(serviceId));
-    if (svcObj) {
-      // Auto-fill Appointment Fees with the selected Service Price!
-      setAppointmentFees(String(svcObj.price !== undefined ? svcObj.price : '0'));
-
-      // Also link to Session #1
-      setSessions((prev) => [
-        {
-          ...prev[0],
-          category_id: String(svcObj.category_id || ''),
-          sub_category_id: String(svcObj.sub_category_id || ''),
-          service_id: String(svcObj.id),
-          treatment_details: prev[0]?.treatment_details?.trim() || svcObj.name,
-        },
-        ...prev.slice(1),
-      ]);
-    }
-  };
 
   // Session handler methods
   const handleAddSession = () => {
@@ -223,6 +187,7 @@ export default function AdminMasterAppointmentCreatePage() {
         category_id: '',
         sub_category_id: '',
         service_id: '',
+        service_price: '0',
         treatment_details: lastSession?.treatment_details || '',
         session_date: lastSession?.session_date || todayStr,
         session_time: nextTime,
@@ -242,6 +207,7 @@ export default function AdminMasterAppointmentCreatePage() {
         category_id: catId,
         sub_category_id: '',
         service_id: '',
+        service_price: '0',
       };
       return copy;
     });
@@ -254,6 +220,7 @@ export default function AdminMasterAppointmentCreatePage() {
         ...copy[index],
         sub_category_id: subId,
         service_id: '',
+        service_price: '0',
       };
       return copy;
     });
@@ -264,15 +231,20 @@ export default function AdminMasterAppointmentCreatePage() {
       const copy = [...prev];
       const s = copy[index];
       let serviceName = '';
+      let servicePrice = '0';
       if (serviceId) {
         const cat = servicesTree.find((c) => String(c.id) === String(s.category_id));
         const sub = cat?.children?.find((sc) => String(sc.id) === String(s.sub_category_id));
         const svc = sub?.services?.find((sv) => String(sv.id) === String(serviceId));
-        if (svc) serviceName = svc.name;
+        if (svc) {
+          serviceName = svc.name;
+          servicePrice = String(svc.price !== undefined && svc.price !== null ? svc.price : '0');
+        }
       }
       copy[index] = {
         ...s,
         service_id: serviceId,
+        service_price: servicePrice,
         treatment_details: s.treatment_details?.trim() ? s.treatment_details : serviceName,
       };
       return copy;
@@ -316,11 +288,6 @@ export default function AdminMasterAppointmentCreatePage() {
       return;
     }
 
-    if (appointmentFees === '' || Number(appointmentFees) < 0) {
-      setError('Please enter a valid appointment fee (0 or greater).');
-      return;
-    }
-
     if (sessions.length === 0) {
       setError('Please add at least one session.');
       return;
@@ -330,8 +297,12 @@ export default function AdminMasterAppointmentCreatePage() {
     const now = new Date();
     for (let i = 0; i < sessions.length; i++) {
       const s = sessions[i];
-      if (!s.treatment_details?.trim() && !s.service_id) {
-        setError(`Session #${i + 1}: Please select a clinical service or enter treatment details.`);
+      if (!s.category_id || !s.sub_category_id || !s.service_id) {
+        setError(`Session #${i + 1}: Please select a Clinical Service (Category → Sub-Category → Service).`);
+        return;
+      }
+      if (!s.treatment_details?.trim()) {
+        setError(`Session #${i + 1}: Treatment details are required.`);
         return;
       }
       if (!s.session_date) {
@@ -366,11 +337,13 @@ export default function AdminMasterAppointmentCreatePage() {
     setSaving(true);
 
     try {
+      const totalAppointmentFees = sessions.reduce((sum, s) => sum + Number(s.service_price || 0), 0);
+
       const payload = {
         customer_id: Number(customerId),
         appointment_date: appointmentDate,
         sales_team_id: Number(salesTeamId),
-        appointment_fees: Number(appointmentFees),
+        appointment_fees: totalAppointmentFees,
         notes: notes ? notes.trim() : undefined,
         sessions: sessions.map((s) => ({
           service_id: s.service_id ? Number(s.service_id) : null,
@@ -473,9 +446,9 @@ export default function AdminMasterAppointmentCreatePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {/* Customer Dropdown */}
-            <div className="lg:col-span-2">
+            <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                 Patient / Customer <span className="text-rose-500">*</span>
               </label>
@@ -530,78 +503,6 @@ export default function AdminMasterAppointmentCreatePage() {
                   </option>
                 ))}
               </select>
-            </div>
-
-            {/* Total Appointment Fees (Read-Only) */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2 flex items-center justify-between">
-                <span>Appointment Fees (₹)</span>
-                <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/80 px-2 py-0.5 rounded-md">
-                  Read Only
-                </span>
-              </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 font-bold text-sm">
-                  ₹
-                </span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={appointmentFees}
-                  readOnly
-                  placeholder="0.00"
-                  required
-                  className="w-full pl-8 pr-4 py-2.5 bg-slate-100/90 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 cursor-not-allowed select-none focus:outline-none"
-                />
-              </div>
-              <p className="text-[11px] text-slate-500 mt-1">Auto-assigned from selected clinical service</p>
-            </div>
-
-            {/* Clinical Services (Read-Only) */}
-            <div className="lg:col-span-3">
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2 flex items-center justify-between">
-                <span className="flex items-center gap-1.5 font-bold">
-                  <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Clinical Services</span>
-                </span>
-                <div className="flex items-center space-x-2">
-                  <span className="text-[10px] font-semibold text-slate-500 bg-slate-200/80 px-2 py-0.5 rounded-md">
-                    Read Only
-                  </span>
-                  {!masterServiceId && (
-                    <button
-                      type="button"
-                      onClick={() => navigate('/admin/appointments/services')}
-                      className="text-xs text-blue-600 hover:text-blue-800 font-semibold underline underline-offset-2 cursor-pointer"
-                    >
-                      Choose from Services Catalog
-                    </button>
-                  )}
-                </div>
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={
-                    selectedServiceDisplayText ||
-                    'No service selected — please select from Services catalog'
-                  }
-                  readOnly
-                  className="w-full px-4 py-2.5 bg-slate-100/90 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 cursor-not-allowed select-none focus:outline-none"
-                />
-                {masterServiceId && (
-                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-xs font-semibold">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Selected &amp; Linked</span>
-                    </span>
-                  </div>
-                )}
-              </div>
-              <p className="text-[11px] text-slate-500 mt-1">
-                Fixed from Services Management module selection (non-editable)
-              </p>
             </div>
           </div>
         </div>
@@ -669,21 +570,25 @@ export default function AdminMasterAppointmentCreatePage() {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5 font-display">
                       <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-                      <span>Select Clinical Service (Category → Sub-Category → Service)</span>
+                      <span>
+                        Select Clinical Service (Category → Sub-Category → Service) <span className="text-rose-500">*</span>
+                      </span>
                     </span>
-                    <span className="text-[11px] text-slate-500">Optional • Loads procedure & price</span>
+                    <span className="text-[11px] font-semibold text-rose-600 bg-rose-50 border border-rose-200/80 px-2 py-0.5 rounded-full">
+                      Required
+                    </span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                     {/* 1. Category */}
                     <div>
                       <label className="block text-[10px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
-                        1. Category
+                        1. Category <span className="text-rose-500">*</span>
                       </label>
                       <select
                         value={session.category_id || ''}
                         onChange={(e) => handleSessionCategoryChange(index, e.target.value)}
-                        className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium"
                       >
                         <option value="">-- Choose Category --</option>
                         {servicesTree.map((c) => (
@@ -697,13 +602,13 @@ export default function AdminMasterAppointmentCreatePage() {
                     {/* 2. Sub-Category */}
                     <div>
                       <label className="block text-[10px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
-                        2. Sub-Category
+                        2. Sub-Category <span className="text-rose-500">*</span>
                       </label>
                       <select
                         value={session.sub_category_id || ''}
                         onChange={(e) => handleSessionSubCategoryChange(index, e.target.value)}
                         disabled={!session.category_id}
-                        className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
+                        className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 font-medium"
                       >
                         <option value="">-- Choose Sub-Category --</option>
                         {servicesTree
@@ -719,13 +624,13 @@ export default function AdminMasterAppointmentCreatePage() {
                     {/* 3. Service */}
                     <div>
                       <label className="block text-[10px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
-                        3. Clinical Service
+                        3. Clinical Service <span className="text-rose-500">*</span>
                       </label>
                       <select
                         value={session.service_id || ''}
                         onChange={(e) => handleSessionServiceChange(index, e.target.value)}
                         disabled={!session.sub_category_id}
-                        className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium disabled:opacity-50"
+                        className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-semibold text-emerald-800 disabled:opacity-50"
                       >
                         <option value="">-- Choose Service --</option>
                         {servicesTree
@@ -733,10 +638,33 @@ export default function AdminMasterAppointmentCreatePage() {
                           ?.children?.find((sub) => String(sub.id) === String(session.sub_category_id))
                           ?.services?.map((svc) => (
                             <option key={svc.id} value={svc.id}>
-                              {svc.name} (₹{Number(svc.price).toLocaleString('en-IN')})
+                              {svc.name}
                             </option>
                           ))}
                       </select>
+                    </div>
+
+                    {/* 4. Appointment Fees (₹) [Auto Pre-filled from Service] */}
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
+                        Appointment Fees (₹) <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <span className="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-500 font-bold text-xs pointer-events-none">
+                          ₹
+                        </span>
+                        <input
+                          type="text"
+                          readOnly
+                          disabled
+                          value={
+                            session.service_price !== undefined && session.service_price !== ''
+                              ? Number(session.service_price).toLocaleString('en-IN', { minimumFractionDigits: 2 })
+                              : '0.00'
+                          }
+                          className="w-full pl-7 pr-3 py-1.5 bg-slate-200/70 border border-slate-300 rounded-lg text-xs font-bold text-slate-800 cursor-not-allowed select-none focus:outline-none"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -860,19 +788,24 @@ export default function AdminMasterAppointmentCreatePage() {
           </div>
 
           {/* Add Session Bottom Button */}
-          <div className="pt-2 flex items-center justify-between">
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
             <button
               type="button"
               onClick={handleAddSession}
-              className="inline-flex items-center space-x-2 px-5 py-2.5 text-sm font-semibold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/80 rounded-xl transition-all"
+              className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-2.5 text-sm font-semibold text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200/80 rounded-xl transition-all"
             >
               <Plus className="w-4 h-4" />
               <span>Add Another Session</span>
             </button>
 
-            <span className="text-xs text-slate-500 font-medium">
-              Total {sessions.length} {sessions.length === 1 ? 'session' : 'sessions'} queued for creation
-            </span>
+            <div className="flex flex-wrap items-center gap-3 text-xs">
+              <span className="text-slate-500 font-medium">
+                Total {sessions.length} {sessions.length === 1 ? 'session' : 'sessions'} queued
+              </span>
+              <span className="px-3 py-1 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold shadow-xs">
+                Total Fees: ₹{sessions.reduce((sum, s) => sum + Number(s.service_price || 0), 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
           </div>
         </div>
 

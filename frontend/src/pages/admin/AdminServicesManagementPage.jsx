@@ -16,7 +16,6 @@ import {
   Loader2,
   RefreshCw,
   SlidersHorizontal,
-  CalendarPlus,
 } from 'lucide-react';
 import adminServiceManagementService from '../../services/adminServiceManagementService';
 import CategoryModal from '../../components/admin/CategoryModal';
@@ -217,28 +216,6 @@ export default function AdminServicesManagementPage() {
     () => subCategories.find((s) => s.id === selectedSubCategoryId) || null,
     [subCategories, selectedSubCategoryId]
   );
-
-  const selectedServiceObj = useMemo(
-    () => services.find((s) => s.id === selectedServiceId) || null,
-    [services, selectedServiceId]
-  );
-
-  const handleProceedToCreateAppointment = () => {
-    if (!selectedServiceId) {
-      toast.warning('Please select a service in Column 3 first.');
-      return;
-    }
-    navigate(
-      `/admin/appointments/create?category_id=${selectedCategoryId || ''}&sub_category_id=${selectedSubCategoryId || ''}&service_id=${selectedServiceId}`,
-      {
-        state: {
-          category_id: selectedCategoryId,
-          sub_category_id: selectedSubCategoryId,
-          service_id: selectedServiceId,
-        },
-      }
-    );
-  };
 
   // ==========================================
   // Form A: Category Submit (Create / Update)
@@ -897,57 +874,6 @@ export default function AdminServicesManagementPage() {
               })
             )}
           </div>
-        </div>
-      </div>
-
-      {/* Bottom Action Bar: Create Appointment with Selected Service */}
-      <div className="bg-white border-2 border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center space-x-3.5 min-w-0">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
-            <CalendarPlus className="w-5 h-5" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-sm font-bold text-slate-900 font-display flex items-center gap-2">
-              <span>Book Appointment with Selected Service</span>
-              {selectedServiceObj && (
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  Ready to Book
-                </span>
-              )}
-            </h3>
-            <p className="text-xs text-slate-600 truncate mt-0.5">
-              {selectedServiceObj ? (
-                <>
-                  <span className="font-semibold text-slate-800">{activeCategoryObj?.name || 'Category'}</span>
-                  <span className="mx-1.5 text-slate-400 font-bold">→</span>
-                  <span className="font-semibold text-slate-800">{activeSubCategoryObj?.name || 'Sub-Category'}</span>
-                  <span className="mx-1.5 text-slate-400 font-bold">→</span>
-                  <span className="font-bold text-emerald-700">{selectedServiceObj.name}</span>
-                  <span className="ml-2 font-black text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md">
-                    ₹{Number(selectedServiceObj.price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                  </span>
-                </>
-              ) : selectedCategoryId && selectedSubCategoryId ? (
-                <span className="text-amber-600 font-medium">Please select a Clinical Service in Column 3 to proceed.</span>
-              ) : selectedCategoryId ? (
-                <span className="text-slate-500">Please select a Sub-Category and Service to proceed.</span>
-              ) : (
-                <span className="text-slate-400">Select Category, Sub-Category, and Service in the 3 columns above.</span>
-              )}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-3 w-full sm:w-auto shrink-0">
-          <button
-            type="button"
-            onClick={handleProceedToCreateAppointment}
-            disabled={!selectedServiceId}
-            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-          >
-            <CalendarPlus className="w-4 h-4" />
-            <span>Create Appointment</span>
-          </button>
         </div>
       </div>
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Sparkles, Loader2, IndianRupee } from 'lucide-react';
+import { X, Sparkles, Loader2, IndianRupee, Lock } from 'lucide-react';
 
 export default function ServiceModal({
   isOpen,
@@ -123,51 +123,76 @@ export default function ServiceModal({
             </div>
           )}
 
-          {/* 1. Category Dropdown */}
+          {/* 1. Category (Read-only) */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-              1. Select Category <span className="text-rose-500">*</span>
-            </label>
-            <select
-              value={selectedCategoryId}
-              onChange={handleCategoryChange}
-              disabled={loading}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium"
-            >
-              <option value="">-- Choose Category --</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                1. Category <span className="text-rose-500">*</span>
+              </label>
+              <span className="inline-flex items-center space-x-1 text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                <Lock className="w-2.5 h-2.5 text-slate-400" />
+                <span>Read-only</span>
+              </span>
+            </div>
+            <div className="relative">
+              <input
+                type="text"
+                readOnly
+                disabled
+                value={
+                  (() => {
+                    const selectedCat = categories.find((c) => String(c.id) === String(selectedCategoryId));
+                    if (selectedCat) {
+                      return `${selectedCat.name} (${selectedCat.status === 'active' ? 'Active' : 'Inactive'})`;
+                    }
+                    if (service?.category?.parent?.name) {
+                      return service.category.parent.name;
+                    }
+                    return 'Selected Category';
+                  })()
+                }
+                className="w-full px-3.5 py-2.5 bg-slate-100/80 border border-slate-200 rounded-xl text-sm text-slate-700 font-semibold cursor-not-allowed select-none focus:outline-none shadow-xs"
+              />
+              <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                <Lock className="w-4 h-4" />
+              </div>
+            </div>
           </div>
 
-          {/* 2. Sub-Category Dependent Dropdown */}
+          {/* 2. Sub-Category (Read-only) */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-              2. Select Sub-Category <span className="text-rose-500">*</span>
-            </label>
-            <select
-              value={selectedSubCategoryId}
-              onChange={(e) => setSelectedSubCategoryId(e.target.value)}
-              disabled={loading || !selectedCategoryId}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium disabled:opacity-50"
-            >
-              <option value="">
-                {selectedCategoryId ? '-- Choose Sub-Category --' : '-- First Select Category Above --'}
-              </option>
-              {filteredSubCategories.map((sub) => (
-                <option key={sub.id} value={sub.id}>
-                  {sub.name}
-                </option>
-              ))}
-            </select>
-            {selectedCategoryId && filteredSubCategories.length === 0 && (
-              <p className="text-[11px] text-amber-600 mt-1">
-                No Sub-Categories found in this Category. Please add one first.
-              </p>
-            )}
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                2. Sub-Category <span className="text-rose-500">*</span>
+              </label>
+              <span className="inline-flex items-center space-x-1 text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                <Lock className="w-2.5 h-2.5 text-slate-400" />
+                <span>Read-only</span>
+              </span>
+            </div>
+            <div className="relative">
+              <input
+                type="text"
+                readOnly
+                disabled
+                value={
+                  (() => {
+                    const selectedSub = subCategories.find((s) => String(s.id) === String(selectedSubCategoryId));
+                    if (selectedSub) {
+                      return `${selectedSub.name} (${selectedSub.status === 'active' ? 'Active' : 'Inactive'})`;
+                    }
+                    if (service?.category?.name) {
+                      return service.category.name;
+                    }
+                    return 'Selected Sub-Category';
+                  })()
+                }
+                className="w-full px-3.5 py-2.5 bg-slate-100/80 border border-slate-200 rounded-xl text-sm text-slate-700 font-semibold cursor-not-allowed select-none focus:outline-none shadow-xs"
+              />
+              <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                <Lock className="w-4 h-4" />
+              </div>
+            </div>
           </div>
 
           {/* 3. Service Name & Price */}
