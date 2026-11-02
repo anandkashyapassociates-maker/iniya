@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FileText,
@@ -19,15 +19,25 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
+  AlertTriangle,
+  FolderTree,
+  Tag,
+  CheckCircle2,
+  Clock,
+  ArrowUpRight,
 } from 'lucide-react';
 import superAdminInventoryService from '../services/superAdminInventoryService';
 import SearchableProductSelect from '../../components/SearchableProductSelect';
 
 export default function SuperAdminInventoryReportsPage() {
-  const [logs, setLogs] = useState([]);
+  // Tab View: 'products' (inventory_products table) | 'transactions' (inventory_stock_logs table)
+  const [activeTab, setActiveTab] = useState('products');
+
+  const [dataItems, setDataItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterOptions, setFilterOptions] = useState({
     products: [],
+    categories: [],
     vendors: [],
     admins: [],
   });
@@ -37,16 +47,26 @@ export default function SuperAdminInventoryReportsPage() {
   const [selectedProduct, setSelectedProduct] = useState('');
   const [selectedVendor, setSelectedVendor] = useState('');
   const [selectedAdmin, setSelectedAdmin] = useState('');
-  const [selectedType, setSelectedType] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedStockStatus, setSelectedStockStatus] = useState('all'); // for products
+  const [selectedType, setSelectedType] = useState('all'); // for transactions
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [datePreset, setDatePreset] = useState('all');
 
-  // Pagination & Metrics
+  // Pagination
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(15);
   const [pagination, setPagination] = useState(null);
+
+  // Metrics (supports both product and transaction structures)
   const [metrics, setMetrics] = useState({
+    total_products: 0,
+    total_stock_units: 0,
+    total_valuation: 0,
+    total_retail_value: 0,
+    low_stock_count: 0,
+    out_of_stock_count: 0,
     total_records: 0,
     total_credit_qty: 0,
     total_credit_value: 0,
@@ -63,11 +83,12 @@ export default function SuperAdminInventoryReportsPage() {
         const res = await superAdminInventoryService.getReportFilterOptions();
         setFilterOptions({
           products: res.products || [],
+          categories: res.categories || [],
           vendors: res.vendors || [],
           admins: res.admins || [],
         });
       } catch (err) {
-        console.error('Failed to load superadmin report filter options:', err);
+        console.error('Failed to load report filter options:', err);
       }
     };
     loadFilterOptions();
@@ -99,42 +120,66 @@ export default function SuperAdminInventoryReportsPage() {
       past.setDate(today.getDate() - 30);
       setStartDate(formatDate(past));
       setEndDate(formatDate(today));
-    } else if (preset === 'all') {
+    } else {
       setStartDate('');
       setEndDate('');
     }
   };
 
-  // Fetch reports data
+  // Fetch report data from API
   const fetchReports = useCallback(async () => {
     setIsLoading(true);
     try {
       const params = {
         page,
         per_page: perPage,
+        report_type: activeTab,
       };
 
       if (search.trim()) params.search = search.trim();
       if (selectedProduct) params.product_id = selectedProduct;
       if (selectedVendor) params.vendor_id = selectedVendor;
       if (selectedAdmin) params.admin_id = selectedAdmin;
-      if (selectedType && selectedType !== 'all') params.type = selectedType;
+      if (selectedCategory) params.category_id = selectedCategory;
+
+      if (activeTab === 'products') {
+        if (selectedStockStatus && selectedStockStatus !== 'all') {
+          params.stock_status = selectedStockStatus;
+        }
+      } else {
+        if (selectedType && selectedType !== 'all') {
+          params.type = selectedType;
+        }
+      }
+
       if (startDate) params.start_date = startDate;
       if (endDate) params.end_date = endDate;
 
       const res = await superAdminInventoryService.getReports(params);
-      setLogs(res.data || []);
+      setDataItems(res.data || []);
       setPagination(res.pagination || null);
       if (res.metrics) {
-        setMetrics(res.metrics);
+        setMetrics((prev) => ({ ...prev, ...res.metrics }));
       }
     } catch (err) {
-      console.error('Failed to fetch superadmin inventory reports:', err);
-      setLogs([]);
+      console.error('Failed to load inventory reports:', err);
     } finally {
       setIsLoading(false);
     }
-  }, [page, perPage, search, selectedProduct, selectedVendor, selectedAdmin, selectedType, startDate, endDate]);
+  }, [
+    page,
+    perPage,
+    activeTab,
+    search,
+    selectedProduct,
+    selectedVendor,
+    selectedAdmin,
+    selectedCategory,
+    selectedStockStatus,
+    selectedType,
+    startDate,
+    endDate,
+  ]);
 
   useEffect(() => {
     fetchReports();
@@ -146,6 +191,8 @@ export default function SuperAdminInventoryReportsPage() {
     setSelectedProduct('');
     setSelectedVendor('');
     setSelectedAdmin('');
+    setSelectedCategory('');
+    setSelectedStockStatus('all');
     setSelectedType('all');
     setStartDate('');
     setEndDate('');
@@ -158,74 +205,151 @@ export default function SuperAdminInventoryReportsPage() {
     Boolean(selectedProduct) ||
     Boolean(selectedVendor) ||
     Boolean(selectedAdmin) ||
+    Boolean(selectedCategory) ||
+    selectedStockStatus !== 'all' ||
     selectedType !== 'all' ||
     Boolean(startDate) ||
-    Boolean(endDate);
+    Boolean(endDate) ||
+    datePreset !== 'all';
 
-  // Export CSV functionality
+  // Export current table view to CSV
   const handleExportCSV = () => {
-    if (!logs.length) return;
+    if (!dataItems.length) return;
 
-    const headers = [
-      'SR. NO.',
-      'Date',
-      'Time',
-      'Product Code',
-      'Product Name',
-      'Category',
-      'Transaction Type',
-      'Performed By',
-      'Admin Email',
-      'Vendor Name',
-      'Rate (INR)',
-      'Credit (+ In)',
-      'Debit (- Out)',
-      'Unit',
-      'Total Value (INR)',
-      'Notes',
-    ];
-
-    const rows = logs.map((log, index) => {
-      const srNo = (pagination?.from || 1) + index;
-      const date = log.created_at ? new Date(log.created_at).toLocaleDateString() : '';
-      const time = log.created_at ? new Date(log.created_at).toLocaleTimeString() : '';
-      const isIssue = log.type === 'issue' || log.type === 'issued';
-      const isAdj = log.type === 'adjustment';
-      const qty = Math.abs(log.quantity || 0);
-      const rate = Number(log.buy_price || log.average_price || 0);
-      const totalVal = qty * rate;
-
-      return [
-        srNo,
-        `"${date}"`,
-        `"${time}"`,
-        `"${log.product?.product_code || ''}"`,
-        `"${(log.product?.product_name || '').replace(/"/g, '""')}"`,
-        `"${(log.product?.category?.name || '').replace(/"/g, '""')}"`,
-        `"${isIssue ? 'Stock Issued' : isAdj ? 'Stock Adjustment' : 'Stock Added'}"`,
-        `"${(log.admin?.name || '').replace(/"/g, '""')}"`,
-        `"${log.admin?.email || ''}"`,
-        `"${(log.vendor?.vendor_name || log.vendor?.company_name || 'N/A').replace(/"/g, '""')}"`,
-        rate.toFixed(2),
-        !isIssue ? qty : 0,
-        isIssue ? qty : 0,
-        `"${log.business_unit || log.product?.business_unit || 'Units'}"`,
-        totalVal.toFixed(2),
-        `"${(log.notes || '').replace(/"/g, '""')}"`,
+    if (activeTab === 'products') {
+      const headers = [
+        'SR. NO.',
+        'Product Name',
+        'Category',
+        'Brand',
+        'Vendor',
+        'Product Type',
+        'Unit',
+        'Current Stock Qty',
+        'Buy Price (INR)',
+        'Total Valuation (INR)',
+        'MRP (INR)',
+        'Total Retail Value (INR)',
+        'Low Stock Threshold',
+        'Stock Status',
+        'Managed By Admin',
+        'Last Updated',
       ];
-    });
 
-    const csvContent =
-      'data:text/csv;charset=utf-8,' +
-      [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+      const rows = dataItems.map((prod, index) => {
+        const srNo = (pagination?.from || 1) + index;
+        const buyPrice = Number(prod.buy_price || 0);
+        const mrp = Number(prod.mrp || 0);
+        const qty = Number(prod.quantity || 0);
+        const totalVal = qty * buyPrice;
+        const totalRetail = qty * mrp;
+        const status =
+          qty <= 0
+            ? 'Out of Stock'
+            : qty <= Number(prod.low_stock_threshold || 10)
+            ? 'Low Stock Alert'
+            : 'In Stock (Optimal)';
+        const adminName =
+          prod.inventory_updater?.name || prod.creator?.name || 'Admin';
+        const dateStr = prod.inventory_updated_at || prod.updated_at || prod.created_at;
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `superadmin_inventory_report_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+        return [
+          srNo,
+          `"${(prod.product_name || '').replace(/"/g, '""')}"`,
+          `"${(prod.category?.name || 'N/A').replace(/"/g, '""')}"`,
+          `"${(prod.brand?.name || 'N/A').replace(/"/g, '""')}"`,
+          `"${(prod.vendor?.vendor_name || prod.vendor?.company_name || 'N/A').replace(/"/g, '""')}"`,
+          `"${prod.product_type || 'Standard'}"`,
+          `"${prod.business_unit || 'Units'}"`,
+          qty,
+          buyPrice.toFixed(2),
+          totalVal.toFixed(2),
+          mrp.toFixed(2),
+          totalRetail.toFixed(2),
+          prod.low_stock_threshold || 10,
+          `"${status}"`,
+          `"${adminName.replace(/"/g, '""')}"`,
+          `"${dateStr ? new Date(dateStr).toLocaleString() : ''}"`,
+        ];
+      });
+
+      const csvContent =
+        'data:text/csv;charset=utf-8,' +
+        [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute(
+        'download',
+        `superadmin_products_report_${new Date().toISOString().split('T')[0]}.csv`
+      );
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      const headers = [
+        'SR. NO.',
+        'Date',
+        'Time',
+        'Product Name',
+        'Category',
+        'Transaction Type',
+        'Performed By',
+        'Admin Email',
+        'Vendor Name',
+        'Rate (INR)',
+        'Credit (+ In)',
+        'Debit (- Out)',
+        'Unit',
+        'Total Value (INR)',
+        'Notes',
+      ];
+
+      const rows = dataItems.map((log, index) => {
+        const srNo = (pagination?.from || 1) + index;
+        const date = log.created_at ? new Date(log.created_at).toLocaleDateString() : '';
+        const time = log.created_at ? new Date(log.created_at).toLocaleTimeString() : '';
+        const isIssue = log.type === 'issue' || log.type === 'issued';
+        const isAdj = log.type === 'adjustment';
+        const qty = Math.abs(log.quantity || 0);
+        const rate = Number(log.buy_price || log.average_price || 0);
+        const totalVal = qty * rate;
+
+        return [
+          srNo,
+          `"${date}"`,
+          `"${time}"`,
+          `"${(log.product?.product_name || '').replace(/"/g, '""')}"`,
+          `"${(log.product?.category?.name || '').replace(/"/g, '""')}"`,
+          `"${isIssue ? 'Stock Issued' : isAdj ? 'Stock Adjustment' : 'Stock Added'}"`,
+          `"${(log.admin?.name || '').replace(/"/g, '""')}"`,
+          `"${log.admin?.email || ''}"`,
+          `"${(log.vendor?.vendor_name || log.vendor?.company_name || 'N/A').replace(/"/g, '""')}"`,
+          rate.toFixed(2),
+          !isIssue ? qty : 0,
+          isIssue ? qty : 0,
+          `"${log.business_unit || log.product?.business_unit || 'Units'}"`,
+          totalVal.toFixed(2),
+          `"${(log.notes || '').replace(/"/g, '""')}"`,
+        ];
+      });
+
+      const csvContent =
+        'data:text/csv;charset=utf-8,' +
+        [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute(
+        'download',
+        `superadmin_transactions_report_${new Date().toISOString().split('T')[0]}.csv`
+      );
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   return (
@@ -233,23 +357,23 @@ export default function SuperAdminInventoryReportsPage() {
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 uppercase tracking-wider">
-            <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-            <span>SuperAdmin Audit &amp; Central Oversight</span>
+          <div className="flex items-center gap-2 text-xs font-semibold text-purple-600 uppercase tracking-wider">
+            <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
+            <span>SuperAdmin Executive Oversight &amp; Audit</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold font-display text-slate-900 tracking-tight mt-1.5 flex items-center gap-2.5">
-            <FileText className="w-6 h-6 text-blue-600" />
-            <span>Central Inventory Movement Reports</span>
+            <FileText className="w-6 h-6 text-purple-600" />
+            <span>Inventory Reports &amp; Stock Analytics</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-normal mt-0.5 max-w-2xl leading-relaxed">
-            Clinic-wide stock movements, vendor spend allocations, admin transaction accountability, and historical audit ledger.
+            Executive oversight of entire clinic inventory stock valuation, supplier dependencies, reorder shortages, and administrative transaction audit passbooks.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
           <button
             onClick={handleExportCSV}
-            disabled={isLoading || !logs.length}
+            disabled={isLoading || !dataItems.length}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 border border-slate-200 transition-all shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             title="Export filtered records to CSV"
           >
@@ -260,7 +384,7 @@ export default function SuperAdminInventoryReportsPage() {
           <button
             onClick={fetchReports}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-xs font-semibold text-white transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-xs font-semibold text-white transition-all shadow-2xs cursor-pointer disabled:opacity-50"
             title="Refresh Report Data"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -269,94 +393,228 @@ export default function SuperAdminInventoryReportsPage() {
         </div>
       </div>
 
-      {/* Real-time KPI Ribbon */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Total Transactions */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-              Filtered Records
-            </span>
-            <span className="text-2xl font-bold text-slate-900 font-mono mt-0.5 block">
-              {metrics.total_records.toLocaleString()}
-            </span>
-            <span className="text-[10px] text-slate-400 mt-0.5 block">Total logged stock events</span>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 border border-slate-200/80">
-            <FileText className="w-5 h-5" />
-          </div>
-        </div>
+      {/* Main Tab View Switcher (Official Products Report vs Transaction Ledger) */}
+      <div className="flex items-center gap-2 bg-slate-100/80 p-1.5 rounded-2xl w-fit border border-slate-200/80">
+        <button
+          type="button"
+          onClick={() => {
+            if (activeTab !== 'products') {
+              setActiveTab('products');
+              setPage(1);
+            }
+          }}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === 'products'
+              ? 'bg-white text-purple-700 shadow-sm border border-slate-200/60 font-semibold'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+          }`}
+        >
+          <Package className={`w-4 h-4 ${activeTab === 'products' ? 'text-purple-600' : 'text-slate-400'}`} />
+          <span>Product Stock &amp; Valuation Report</span>
+        </button>
 
-        {/* Card 2: Total Added (Credit) */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-semibold text-emerald-600 uppercase tracking-wider block">
-              Total In (+ Credit)
-            </span>
-            <div className="flex items-baseline gap-1 mt-0.5">
-              <span className="text-2xl font-bold text-emerald-700 font-mono">
-                +{metrics.total_credit_qty.toLocaleString()}
-              </span>
-              <span className="text-xs text-emerald-600 font-medium">Units</span>
-            </div>
-            <span className="text-[10px] font-mono text-emerald-600 font-semibold mt-0.5 block">
-              Val: ₹{metrics.total_credit_value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
-            <TrendingUp className="w-5 h-5" />
-          </div>
-        </div>
-
-        {/* Card 3: Total Issued (Debit) */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-semibold text-rose-600 uppercase tracking-wider block">
-              Total Out (- Debit)
-            </span>
-            <div className="flex items-baseline gap-1 mt-0.5">
-              <span className="text-2xl font-bold text-rose-700 font-mono">
-                -{metrics.total_debit_qty.toLocaleString()}
-              </span>
-              <span className="text-xs text-rose-600 font-medium">Units</span>
-            </div>
-            <span className="text-[10px] font-mono text-rose-600 font-semibold mt-0.5 block">
-              Val: ₹{metrics.total_debit_value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
-            <TrendingDown className="w-5 h-5" />
-          </div>
-        </div>
-
-        {/* Card 4: Net Movement */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-semibold text-blue-600 uppercase tracking-wider block">
-              Net Stock Movement
-            </span>
-            <div className="flex items-baseline gap-1 mt-0.5">
-              <span className="text-2xl font-bold text-blue-800 font-mono">
-                {metrics.net_qty >= 0 ? `+${metrics.net_qty.toLocaleString()}` : metrics.net_qty.toLocaleString()}
-              </span>
-              <span className="text-xs text-blue-600 font-medium">Units</span>
-            </div>
-            <span className="text-[10px] font-mono text-blue-700 font-semibold mt-0.5 block">
-              Net Val: ₹{metrics.net_value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
-            <Boxes className="w-5 h-5" />
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={() => {
+            if (activeTab !== 'transactions') {
+              setActiveTab('transactions');
+              setPage(1);
+            }
+          }}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === 'transactions'
+              ? 'bg-white text-purple-700 shadow-sm border border-slate-200/60 font-semibold'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+          }`}
+        >
+          <RotateCcw className={`w-4 h-4 ${activeTab === 'transactions' ? 'text-purple-600' : 'text-slate-400'}`} />
+          <span>Stock Transactions &amp; Audit Ledger</span>
+        </button>
       </div>
+
+      {/* Real-time KPI Ribbon */}
+      {activeTab === 'products' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Card 1: Total Products */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+                Total Products
+              </span>
+              <span className="text-2xl font-bold text-slate-900 font-mono mt-0.5 block">
+                {(metrics.total_products || 0).toLocaleString()}
+              </span>
+              <span className="text-[10px] text-slate-400 mt-0.5 block">Clinic active catalog</span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100">
+              <Package className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Card 2: Total Units In Stock */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-semibold text-emerald-600 uppercase tracking-wider block">
+                Total In-Hand Stock
+              </span>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-2xl font-bold text-emerald-700 font-mono">
+                  {(metrics.total_stock_units || 0).toLocaleString()}
+                </span>
+                <span className="text-xs text-emerald-600 font-medium">Units</span>
+              </div>
+              <span className="text-[10px] text-emerald-600 font-medium mt-0.5 block">Total physical stock</span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+              <Boxes className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Card 3: Inventory Valuation */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-semibold text-indigo-600 uppercase tracking-wider block">
+                Stock Valuation (Cost)
+              </span>
+              <span className="text-xl font-bold text-indigo-700 font-mono mt-0.5 block">
+                ₹{(metrics.total_valuation || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+              <span className="text-[10px] text-indigo-500 mt-0.5 block">Asset value at Buy Price</span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Card 4: Potential Retail Value */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-semibold text-purple-600 uppercase tracking-wider block">
+                Total Retail Value (MRP)
+              </span>
+              <span className="text-xl font-bold text-purple-700 font-mono mt-0.5 block">
+                ₹{(metrics.total_retail_value || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+              <span className="text-[10px] text-purple-500 mt-0.5 block">Max retail realization</span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100">
+              <FileText className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Card 5: Reorder Alerts */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-semibold text-amber-600 uppercase tracking-wider block">
+                Reorder Alerts
+              </span>
+              <div className="flex items-baseline gap-2 mt-0.5">
+                <span className="text-2xl font-bold text-amber-700 font-mono">
+                  {(metrics.low_stock_count || 0)}
+                </span>
+                <span className="text-xs font-semibold text-amber-600">Low</span>
+                {(metrics.out_of_stock_count || 0) > 0 && (
+                  <span className="text-xs font-semibold text-rose-600 font-mono">
+                    / {metrics.out_of_stock_count} Out
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] text-amber-600 mt-0.5 block">Items below threshold level</span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1: Total Transactions */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+                Filtered Records
+              </span>
+              <span className="text-2xl font-bold text-slate-900 font-mono mt-0.5 block">
+                {(metrics.total_records || 0).toLocaleString()}
+              </span>
+              <span className="text-[10px] text-slate-400 mt-0.5 block">Total logged stock events</span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 border border-slate-200/80">
+              <FileText className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Card 2: Total Added (Credit) */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-semibold text-emerald-600 uppercase tracking-wider block">
+                Stock In (+ Credit)
+              </span>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-2xl font-bold text-emerald-700 font-mono">
+                  +{(metrics.total_credit_qty || 0).toLocaleString()}
+                </span>
+                <span className="text-xs text-emerald-600 font-medium">Units</span>
+              </div>
+              <span className="text-[10px] font-mono text-emerald-600 font-semibold mt-0.5 block">
+                Val: ₹{(metrics.total_credit_value || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Card 3: Total Issued (Debit) */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-semibold text-rose-600 uppercase tracking-wider block">
+                Stock Out (- Debit)
+              </span>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-2xl font-bold text-rose-700 font-mono">
+                  -{(metrics.total_debit_qty || 0).toLocaleString()}
+                </span>
+                <span className="text-xs text-rose-600 font-medium">Units</span>
+              </div>
+              <span className="text-[10px] font-mono text-rose-600 font-semibold mt-0.5 block">
+                Val: ₹{(metrics.total_debit_value || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
+              <TrendingDown className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Card 4: Net Movement */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-semibold text-blue-600 uppercase tracking-wider block">
+                Net Stock Movement
+              </span>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-2xl font-bold text-blue-800 font-mono">
+                  {(metrics.net_qty || 0) >= 0 ? '+' : ''}{(metrics.net_qty || 0).toLocaleString()}
+                </span>
+                <span className="text-xs text-blue-600 font-medium">Units</span>
+              </div>
+              <span className="text-[10px] font-mono text-blue-600 font-semibold mt-0.5 block">
+                Net Val: ₹{(metrics.net_value || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
+              <Boxes className="w-5 h-5" />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Advanced Filter Control Card */}
       <div className="bg-white rounded-3xl border border-slate-200/90 p-5 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase tracking-wider">
-            <SlidersHorizontal className="w-4 h-4 text-blue-600" />
-            <span>Filter Criteria (Products, Dates, Vendors, Admins &amp; Type)</span>
+            <SlidersHorizontal className="w-4 h-4 text-purple-600" />
+            <span>Filter Criteria (Products, Dates, Vendors, Admins &amp; Status)</span>
           </div>
 
           {hasActiveFilters && (
@@ -388,9 +646,9 @@ export default function SuperAdminInventoryReportsPage() {
               onClick={() => handleDatePresetChange(preset.id)}
               className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 datePreset === preset.id && !startDate && !endDate && preset.id === 'all'
-                  ? 'bg-blue-600 text-white shadow-2xs'
+                  ? 'bg-purple-600 text-white shadow-2xs'
                   : datePreset === preset.id && (startDate || endDate)
-                  ? 'bg-blue-600 text-white shadow-2xs'
+                  ? 'bg-purple-600 text-white shadow-2xs'
                   : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
               }`}
             >
@@ -410,13 +668,13 @@ export default function SuperAdminInventoryReportsPage() {
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Notes, product, bill no..."
+                placeholder={activeTab === 'products' ? 'Product name, unit, category...' : 'Notes, product, bill no...'}
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                className="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:outline-hidden transition-all text-slate-800"
+                className="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-purple-500 focus:outline-hidden transition-all text-slate-800"
               />
             </div>
           </div>
@@ -424,7 +682,7 @@ export default function SuperAdminInventoryReportsPage() {
           {/* 2. Product Filter (Searchable) */}
           <div>
             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-              Product (Search)
+              Product (Searchable)
             </label>
             <SearchableProductSelect
               products={filterOptions.products}
@@ -437,7 +695,29 @@ export default function SuperAdminInventoryReportsPage() {
             />
           </div>
 
-          {/* 3. Vendor Filter */}
+          {/* 3. Category Filter */}
+          <div>
+            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+              Category
+            </label>
+            <select
+              value={selectedCategory}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setPage(1);
+              }}
+              className="w-full px-2.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-purple-500 focus:outline-hidden transition-all text-slate-800 truncate"
+            >
+              <option value="">All Categories</option>
+              {filterOptions.categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* 4. Vendor Filter */}
           <div>
             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
               Vendor / Supplier
@@ -448,7 +728,7 @@ export default function SuperAdminInventoryReportsPage() {
                 setSelectedVendor(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-2.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:outline-hidden transition-all text-slate-800 truncate"
+              className="w-full px-2.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-purple-500 focus:outline-hidden transition-all text-slate-800 truncate"
             >
               <option value="">All Vendors</option>
               {filterOptions.vendors.map((v) => (
@@ -459,10 +739,10 @@ export default function SuperAdminInventoryReportsPage() {
             </select>
           </div>
 
-          {/* 4. Admin / Performed By */}
+          {/* 5. Admin Filter */}
           <div>
             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-              Performed By (Admin)
+              Managed By (Admin)
             </label>
             <select
               value={selectedAdmin}
@@ -470,7 +750,7 @@ export default function SuperAdminInventoryReportsPage() {
                 setSelectedAdmin(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-2.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:outline-hidden transition-all text-slate-800 truncate"
+              className="w-full px-2.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-purple-500 focus:outline-hidden transition-all text-slate-800 truncate"
             >
               <option value="">All Admins</option>
               {filterOptions.admins.map((a) => (
@@ -481,27 +761,48 @@ export default function SuperAdminInventoryReportsPage() {
             </select>
           </div>
 
-          {/* 5. Transaction Type */}
-          <div>
-            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-              Transaction Type
-            </label>
-            <select
-              value={selectedType}
-              onChange={(e) => {
-                setSelectedType(e.target.value);
-                setPage(1);
-              }}
-              className="w-full px-2.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:outline-hidden transition-all text-slate-800"
-            >
-              <option value="all">All Movements</option>
-              <option value="added">Stock Added (+ Credit)</option>
-              <option value="issued">Stock Issued (- Debit)</option>
-              <option value="adjustment">Stock Adjustment</option>
-            </select>
-          </div>
+          {/* 6. Context-Specific Filter (Stock Status vs Transaction Type) */}
+          {activeTab === 'products' ? (
+            <div>
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                Stock Health Status
+              </label>
+              <select
+                value={selectedStockStatus}
+                onChange={(e) => {
+                  setSelectedStockStatus(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full px-2.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-purple-500 focus:outline-hidden transition-all text-slate-800"
+              >
+                <option value="all">All Products</option>
+                <option value="in_stock">In Stock (Optimal)</option>
+                <option value="low_stock">Low Stock (Reorder Needed)</option>
+                <option value="out_of_stock">Out of Stock</option>
+              </select>
+            </div>
+          ) : (
+            <div>
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                Movement Type
+              </label>
+              <select
+                value={selectedType}
+                onChange={(e) => {
+                  setSelectedType(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full px-2.5 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-purple-500 focus:outline-hidden transition-all text-slate-800"
+              >
+                <option value="all">All Movements</option>
+                <option value="added">Stock Added (+ Credit)</option>
+                <option value="issued">Stock Issued (- Debit)</option>
+                <option value="adjustment">Stock Adjustment</option>
+              </select>
+            </div>
+          )}
 
-          {/* 6. Custom Start Date */}
+          {/* 7. Custom Start Date */}
           <div className="sm:col-span-1 lg:col-span-3">
             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
               From Date
@@ -514,11 +815,11 @@ export default function SuperAdminInventoryReportsPage() {
                 setDatePreset('custom');
                 setPage(1);
               }}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:outline-hidden transition-all text-slate-800 font-mono"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-purple-500 focus:outline-hidden transition-all text-slate-800 font-mono"
             />
           </div>
 
-          {/* 7. Custom End Date */}
+          {/* 8. Custom End Date */}
           <div className="sm:col-span-1 lg:col-span-3">
             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
               To Date
@@ -531,35 +832,38 @@ export default function SuperAdminInventoryReportsPage() {
                 setDatePreset('custom');
                 setPage(1);
               }}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:outline-hidden transition-all text-slate-800 font-mono"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-purple-500 focus:outline-hidden transition-all text-slate-800 font-mono"
             />
           </div>
         </div>
       </div>
 
-      {/* Main Report Table */}
+      {/* Main Report Table Container */}
       <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
         <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
           <div className="flex items-center gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
+            <span className="w-2.5 h-2.5 rounded-full bg-purple-600 animate-pulse" />
             <h2 className="text-sm font-bold font-display text-slate-900 tracking-tight">
-              Central Movement Statements &amp; Audit Logs
+              {activeTab === 'products'
+                ? 'SuperAdmin Product Inventory & Valuation Statement'
+                : 'Stock Transactions & Movement Audit Trail'}
             </h2>
-            <span className="text-xs font-mono text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
-              {metrics.total_records} record{metrics.total_records !== 1 ? 's' : ''}
-            </span>
+            {pagination && (
+              <span className="text-[11px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full font-mono">
+                {pagination.total} Records
+              </span>
+            )}
           </div>
 
-          {/* Per Page Selector */}
-          <div className="flex items-center gap-2 self-end sm:self-auto text-xs text-slate-500">
-            <span>Show:</span>
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <span>Rows per page:</span>
             <select
               value={perPage}
               onChange={(e) => {
                 setPerPage(Number(e.target.value));
                 setPage(1);
               }}
-              className="px-2 py-1 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 font-semibold cursor-pointer"
+              className="px-2 py-1 text-xs rounded-lg border border-slate-200 bg-slate-50 font-semibold focus:outline-hidden"
             >
               <option value="15">15 rows</option>
               <option value="25">25 rows</option>
@@ -573,27 +877,217 @@ export default function SuperAdminInventoryReportsPage() {
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="py-16 text-center space-y-3">
-              <RefreshCw className="w-7 h-7 text-blue-600 animate-spin mx-auto" />
-              <p className="text-xs font-medium text-slate-500">Loading central inventory transactions...</p>
+              <RefreshCw className="w-7 h-7 text-purple-600 animate-spin mx-auto" />
+              <p className="text-xs font-medium text-slate-500">
+                {activeTab === 'products'
+                  ? 'Loading official inventory products report...'
+                  : 'Loading inventory transactions...'}
+              </p>
             </div>
-          ) : !logs.length ? (
-            <div className="py-16 px-4 text-center space-y-3">
-              <Package className="w-10 h-10 text-slate-300 mx-auto" />
-              <h3 className="text-sm font-bold text-slate-700">No Inventory Reports Found</h3>
+          ) : dataItems.length === 0 ? (
+            <div className="py-16 text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                <FileText className="w-6 h-6" />
+              </div>
+              <h3 className="text-sm font-bold text-slate-700">No inventory records found</h3>
               <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                No stock movement logs match your current filter criteria. Try clearing or expanding your date and vendor filters.
+                No matching records for the selected filters. Try clearing some criteria or expanding your date range.
               </p>
               {hasActiveFilters && (
                 <button
                   onClick={handleResetFilters}
-                  className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition-all cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition-colors"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   <span>Reset Filters</span>
                 </button>
               )}
             </div>
+          ) : activeTab === 'products' ? (
+            /* ============================================================== */
+            /* 1. OFFICIAL PRODUCTS INVENTORY REPORT (inventory_products)      */
+            /* ============================================================== */
+            <table className="w-full text-left border-collapse min-w-[1100px]">
+              <thead>
+                <tr className="border-b border-slate-200/80 bg-slate-50/80 text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+                  <th className="py-3.5 px-3 w-14 text-center">SR. NO.</th>
+                  <th className="py-3.5 px-4 w-[24%]">Product Name &amp; Classification</th>
+                  <th className="py-3.5 px-4 w-[14%]">Category &amp; Brand</th>
+                  <th className="py-3.5 px-4 w-[14%]">Vendor / Supplier</th>
+                  <th className="py-3.5 px-3 text-center w-20">Unit</th>
+                  <th className="py-3.5 px-4 text-right w-24">Buy Price</th>
+                  <th className="py-3.5 px-4 text-center w-28">Current Stock</th>
+                  <th className="py-3.5 px-4 text-right w-32">Total Valuation</th>
+                  <th className="py-3.5 px-3 text-right w-24">MRP (₹)</th>
+                  <th className="py-3.5 px-3 text-center w-28">Stock Status</th>
+                  <th className="py-3.5 px-4 w-[12%]">Admin</th>
+                  <th className="py-3.5 px-3 text-center w-24">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs">
+                {dataItems.map((prod, index) => {
+                  const srNo = (pagination?.from || 1) + index;
+                  const buyPrice = Number(prod.buy_price || 0);
+                  const mrp = Number(prod.mrp || 0);
+                  const qty = Number(prod.quantity || 0);
+                  const totalVal = qty * buyPrice;
+                  const threshold = Number(prod.low_stock_threshold || 10);
+                  const isOutOfStock = qty <= 0;
+                  const isLowStock = !isOutOfStock && qty <= threshold;
+
+                  return (
+                    <tr
+                      key={prod.id}
+                      className="hover:bg-purple-50/20 transition-colors group"
+                    >
+                      {/* 1. SR. NO. */}
+                      <td className="py-3.5 px-3 text-center font-mono font-semibold text-slate-500 bg-slate-50/40">
+                        {srNo}
+                      </td>
+
+                      {/* 2. Product Name & Classification */}
+                      <td className="py-3.5 px-4">
+                        <div className="space-y-1">
+                          <Link
+                            to={`/superadmin/inventory/stocks/${prod.id}`}
+                            className="font-bold text-slate-900 hover:text-purple-600 transition-colors block text-xs leading-snug"
+                          >
+                            {prod.product_name}
+                          </Link>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600">
+                              {prod.product_type || 'Standard'}
+                            </span>
+                            {prod.is_used && (
+                              <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-100">
+                                In Use
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* 3. Category & Brand */}
+                      <td className="py-3.5 px-4">
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1 text-slate-700 font-medium">
+                            <FolderTree className="w-3 h-3 text-slate-400 shrink-0" />
+                            <span className="truncate">{prod.category?.name || '—'}</span>
+                          </div>
+                          {prod.brand?.name && (
+                            <div className="flex items-center gap-1 text-[11px] text-slate-400">
+                              <Tag className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                              <span className="truncate">{prod.brand.name}</span>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* 4. Vendor / Supplier */}
+                      <td className="py-3.5 px-4">
+                        {prod.vendor ? (
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-1 text-slate-800 font-semibold truncate">
+                              <Truck className="w-3 h-3 text-purple-500 shrink-0" />
+                              <span className="truncate">{prod.vendor.vendor_name || prod.vendor.company_name}</span>
+                            </div>
+                            {prod.vendor.vendor_code && (
+                              <span className="text-[10px] font-mono text-slate-400 block">
+                                {prod.vendor.vendor_code}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 italic text-[11px]">No Vendor</span>
+                        )}
+                      </td>
+
+                      {/* 5. Unit */}
+                      <td className="py-3.5 px-3 text-center">
+                        <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                          {prod.business_unit || 'Unit'}
+                        </span>
+                      </td>
+
+                      {/* 6. Buy Price */}
+                      <td className="py-3.5 px-4 text-right font-mono font-semibold text-slate-700">
+                        ₹{buyPrice.toFixed(2)}
+                      </td>
+
+                      {/* 7. Current Stock */}
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="inline-flex items-center gap-1 font-mono font-bold text-sm text-slate-900 bg-slate-50 px-2.5 py-1 rounded-xl border border-slate-200/80">
+                          <span>{qty}</span>
+                          <span className="text-[10px] font-normal text-slate-500 font-sans">
+                            {prod.business_unit}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* 8. Total Valuation */}
+                      <td className="py-3.5 px-4 text-right">
+                        <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200/60 inline-block">
+                          ₹{totalVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </td>
+
+                      {/* 9. MRP */}
+                      <td className="py-3.5 px-3 text-right font-mono text-slate-600">
+                        ₹{mrp.toFixed(2)}
+                      </td>
+
+                      {/* 10. Stock Status */}
+                      <td className="py-3.5 px-3 text-center">
+                        {isOutOfStock ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                            Out of Stock
+                          </span>
+                        ) : isLowStock ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                            Low Stock (≤{threshold})
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <CheckCircle2 className="w-2.5 h-2.5" />
+                            In Stock
+                          </span>
+                        )}
+                      </td>
+
+                      {/* 11. Admin & Date */}
+                      <td className="py-3.5 px-4">
+                        <div className="space-y-0.5">
+                          <span className="font-semibold text-slate-700 block truncate">
+                            {prod.inventory_updater?.name || prod.creator?.name || 'Admin'}
+                          </span>
+                          <span className="text-[10px] text-slate-400 block">
+                            {prod.inventory_updated_at || prod.updated_at
+                              ? new Date(prod.inventory_updated_at || prod.updated_at).toLocaleDateString()
+                              : '—'}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* 12. Action */}
+                      <td className="py-3.5 px-3 text-center">
+                        <Link
+                          to={`/superadmin/inventory/stocks/${prod.id}`}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold text-purple-600 hover:text-white hover:bg-purple-600 transition-colors border border-purple-200 hover:border-purple-600 shadow-2xs"
+                          title="Open product stock ledger"
+                        >
+                          <Boxes className="w-3 h-3" />
+                          <span>Ledger</span>
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           ) : (
+            /* ============================================================== */
+            /* 2. TRANSACTIONS AUDIT LEDGER (inventory_stock_logs)              */
+            /* ============================================================== */
             <table className="w-full text-left border-collapse min-w-[900px]">
               <thead>
                 <tr className="border-b border-slate-200/80 bg-slate-50/80 text-[10px] font-bold text-slate-600 uppercase tracking-widest">
@@ -601,166 +1095,108 @@ export default function SuperAdminInventoryReportsPage() {
                   <th className="py-3.5 px-4 w-[13%]">Date &amp; Time</th>
                   <th className="py-3.5 px-4 w-[22%]">Product Details</th>
                   <th className="py-3.5 px-4 w-[13%]">Movement Type</th>
-                  <th className="py-3.5 px-4 w-[14%]">Performed By</th>
-                  <th className="py-3.5 px-4 w-[12%]">Vendor</th>
-                  <th className="py-3.5 px-4 w-[10%]">Rate (₹)</th>
-                  <th className="py-3.5 px-4 w-[10%] text-right text-emerald-800 bg-emerald-50/60 border-l border-emerald-100">
+                  <th className="py-3.5 px-4 text-right w-[11%]">Rate (₹)</th>
+                  <th className="py-3.5 px-4 text-right w-[13%] bg-emerald-50/40 text-emerald-800">
                     Credit (+ In)
                   </th>
-                  <th className="py-3.5 px-4 w-[10%] text-right text-rose-800 bg-rose-50/60 border-l border-rose-100">
+                  <th className="py-3.5 px-4 text-right w-[13%] bg-rose-50/40 text-rose-800">
                     Debit (- Out)
                   </th>
-                  <th className="py-3.5 px-4 w-[12%] text-right">Total (₹)</th>
+                  <th className="py-3.5 px-4 text-right w-[11%] bg-purple-50/40 text-purple-900 font-mono">
+                    Balance
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-xs font-normal">
-                {logs.map((log, index) => {
+              <tbody className="divide-y divide-slate-100 text-xs">
+                {dataItems.map((log, index) => {
                   const srNo = (pagination?.from || 1) + index;
                   const isIssue = log.type === 'issue' || log.type === 'issued';
-                  const isAdjustment = log.type === 'adjustment';
-                  const dateStr = log.created_at ? new Date(log.created_at).toLocaleDateString() : '—';
-                  const timeStr = log.created_at
-                    ? new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    : '';
+                  const isAdj = log.type === 'adjustment';
                   const qty = Math.abs(log.quantity || 0);
                   const rate = Number(log.buy_price || log.average_price || 0);
-                  const totalRowVal = qty * rate;
-                  const unit = log.business_unit || log.product?.business_unit || 'Units';
-                  const vendorName = log.vendor?.vendor_name || log.vendor?.company_name || null;
+                  const unit = log.business_unit || log.product?.business_unit || 'Unit';
+                  const date = log.created_at ? new Date(log.created_at).toLocaleDateString() : '—';
+                  const time = log.created_at ? new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
                   return (
-                    <tr
-                      key={log.id}
-                      className={`transition-colors hover:bg-slate-50/90 ${
-                        isIssue ? 'bg-amber-50/15' : 'bg-emerald-50/15'
-                      }`}
-                    >
-                      {/* 1. Sr. No. */}
-                      <td className="py-3.5 px-3 text-center align-top">
-                        <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-500 font-mono text-[11px] font-semibold tabular-nums">
-                          {srNo < 10 ? `0${srNo}` : srNo}
-                        </span>
+                    <tr key={log.id} className="hover:bg-purple-50/30 transition-colors">
+                      {/* SR. NO. */}
+                      <td className="py-3 px-3 text-center font-mono font-semibold text-slate-500 bg-slate-50/40">
+                        {srNo}
                       </td>
 
-                      {/* 2. Date & Time */}
-                      <td className="py-3.5 px-4 align-top">
-                        <div className="font-mono text-slate-800 font-semibold">{dateStr}</div>
-                        {timeStr && <div className="text-[11px] font-mono text-slate-400 mt-0.5">{timeStr}</div>}
+                      {/* Date & Time */}
+                      <td className="py-3 px-4">
+                        <span className="font-semibold text-slate-800 block">{date}</span>
+                        <span className="text-[10px] text-slate-400 font-mono">{time}</span>
                       </td>
 
-                      {/* 3. Product Details */}
-                      <td className="py-3.5 px-4 align-top">
+                      {/* Product Details */}
+                      <td className="py-3 px-4">
                         <div className="space-y-0.5">
-                          <Link
-                            to={`/superadmin/inventory/stocks/${log.product?.id}`}
-                            className="font-bold text-slate-900 hover:text-blue-600 transition-colors block truncate max-w-xs"
-                            title={log.product?.product_name}
-                          >
-                            {log.product?.product_name || '—'}
-                          </Link>
-                          <div className="flex items-center gap-1.5 flex-wrap text-[11px] text-slate-500">
-                            {log.product?.product_code && (
-                              <span className="font-mono text-[10px] bg-slate-100 px-1.5 py-0.2 rounded text-slate-600">
-                                {log.product.product_code}
-                              </span>
-                            )}
-                            {log.product?.category?.name && (
-                              <span className="text-[10px] text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200/60">
-                                {log.product.category.name}
-                              </span>
-                            )}
-                          </div>
-                          {log.notes && (
-                            <p className="text-[11px] text-slate-500 italic mt-0.5 line-clamp-1" title={log.notes}>
-                              Note: {log.notes}
-                            </p>
+                          {log.product ? (
+                            <Link
+                              to={`/superadmin/inventory/stocks/${log.product.id}`}
+                              className="font-bold text-slate-900 hover:text-purple-600 transition-colors block text-xs"
+                            >
+                              {log.product.product_name}
+                            </Link>
+                          ) : (
+                            <span className="font-bold text-slate-900">Product #{log.product_id}</span>
                           )}
-                        </div>
-                      </td>
-
-                      {/* 4. Movement Type */}
-                      <td className="py-3.5 px-4 align-top">
-                        {isIssue ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200/90 shadow-2xs">
-                            <MinusCircle className="w-3 h-3 text-amber-600" />
-                            <span>Stock Issued</span>
-                          </span>
-                        ) : isAdjustment ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200/90 shadow-2xs">
-                            <Boxes className="w-3 h-3 text-blue-600" />
-                            <span>Adjustment</span>
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/90 shadow-2xs">
-                            <PlusCircle className="w-3 h-3 text-emerald-600" />
-                            <span>Stock Added</span>
-                          </span>
-                        )}
-                      </td>
-
-                      {/* 5. Performed By */}
-                      <td className="py-3.5 px-4 align-top">
-                        <div className="flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <div className="min-w-0">
-                            <span className="font-semibold text-slate-800 block truncate text-[11px]">
-                              {log.admin?.name || 'Admin'}
-                            </span>
-                            {log.admin?.email && (
-                              <span className="text-[10px] text-slate-400 block truncate">
-                                {log.admin.email}
-                              </span>
+                          <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                            {log.product?.category?.name && <span>{log.product.category.name}</span>}
+                            {log.vendor?.vendor_name && (
+                              <span className="text-slate-500">• Sup: {log.vendor.vendor_name}</span>
                             )}
                           </div>
                         </div>
                       </td>
 
-                      {/* 6. Vendor */}
-                      <td className="py-3.5 px-4 align-top">
-                        {vendorName ? (
-                          <div className="flex items-center gap-1 text-[11px] text-slate-700 font-medium truncate max-w-[140px]" title={vendorName}>
-                            <Truck className="w-3 h-3 text-slate-400 shrink-0" />
-                            <span>{vendorName}</span>
-                          </div>
+                      {/* Movement Type */}
+                      <td className="py-3 px-4">
+                        {isIssue ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                            <MinusCircle className="w-3 h-3" />
+                            Stock Issued
+                          </span>
+                        ) : isAdj ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                            Adjustment
+                          </span>
                         ) : (
-                          <span className="text-slate-400 font-mono text-[11px]">—</span>
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <PlusCircle className="w-3 h-3" />
+                            Stock Added
+                          </span>
+                        )}
+                        {log.admin?.name && (
+                          <span className="text-[10px] text-slate-400 block mt-0.5 truncate">
+                            by {log.admin.name}
+                          </span>
                         )}
                       </td>
 
-                      {/* 7. Rate */}
-                      <td className="py-3.5 px-4 align-top font-mono font-medium text-slate-700">
+                      {/* Rate */}
+                      <td className="py-3 px-4 text-right font-mono text-slate-700">
                         {rate > 0 ? `₹${rate.toFixed(2)}` : '—'}
                       </td>
 
-                      {/* 8. Credit (+ In) */}
-                      <td className="py-3.5 px-4 text-right align-top bg-emerald-50/25 border-l border-emerald-100 font-mono">
-                        {!isIssue ? (
-                          <span className="text-emerald-700 font-bold text-xs sm:text-sm">
-                            +{qty} <span className="text-[10px] font-normal text-emerald-600">{unit}</span>
-                          </span>
-                        ) : (
-                          <span className="text-slate-300 font-mono">—</span>
-                        )}
+                      {/* Credit (+ In) */}
+                      <td className="py-3 px-4 text-right font-mono font-bold text-emerald-700 bg-emerald-50/20">
+                        {!isIssue ? `+${qty} ${unit}` : '—'}
                       </td>
 
-                      {/* 9. Debit (- Out) */}
-                      <td className="py-3.5 px-4 text-right align-top bg-rose-50/25 border-l border-rose-100 font-mono">
-                        {isIssue ? (
-                          <span className="text-rose-700 font-bold text-xs sm:text-sm">
-                            -{qty} <span className="text-[10px] font-normal text-rose-600">{unit}</span>
-                          </span>
-                        ) : (
-                          <span className="text-slate-300 font-mono">—</span>
-                        )}
+                      {/* Debit (- Out) */}
+                      <td className="py-3 px-4 text-right font-mono font-bold text-rose-700 bg-rose-50/20">
+                        {isIssue ? `-${qty} ${unit}` : '—'}
                       </td>
 
-                      {/* 10. Total Value */}
-                      <td className="py-3.5 px-4 text-right align-top font-mono font-bold text-slate-900">
-                        {totalRowVal > 0 ? (
-                          `₹${totalRowVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                        ) : (
-                          <span className="text-slate-400 font-normal">—</span>
-                        )}
+                      {/* Running Balance */}
+                      <td className="py-3 px-4 text-right font-mono font-bold text-purple-900 bg-purple-50/20">
+                        {log.running_balance !== null && log.running_balance !== undefined
+                          ? `${log.running_balance} ${unit}`
+                          : '—'}
                       </td>
                     </tr>
                   );
@@ -772,34 +1208,34 @@ export default function SuperAdminInventoryReportsPage() {
 
         {/* Pagination Footer */}
         {pagination && pagination.total > 0 && (
-          <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
-            <span className="text-xs text-slate-500 font-medium">
-              Showing <strong className="text-slate-700 font-mono">{pagination.from || 0}</strong> to{' '}
-              <strong className="text-slate-700 font-mono">{pagination.to || 0}</strong> of{' '}
-              <strong className="text-slate-700 font-mono">{pagination.total || 0}</strong> entries
+          <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white text-xs">
+            <span className="text-slate-500">
+              Showing <span className="font-semibold text-slate-900">{pagination.from || 1}</span> to{' '}
+              <span className="font-semibold text-slate-900">{pagination.to || pagination.total}</span> of{' '}
+              <span className="font-semibold text-slate-900">{pagination.total}</span> records
             </span>
 
-            <div className="flex items-center gap-1.5 self-end sm:self-auto">
+            <div className="flex items-center gap-1.5">
               <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1 || isLoading}
-                className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition-colors cursor-pointer"
-                title="Previous Page"
+                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                disabled={pagination.current_page <= 1 || isLoading}
+                className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-all inline-flex items-center gap-1"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Previous</span>
               </button>
 
-              <span className="text-xs font-mono font-semibold px-3 py-1 rounded-lg bg-slate-100 text-slate-700">
-                Page {page} of {pagination.last_page || 1}
+              <span className="px-3 py-1 font-mono font-semibold text-slate-700">
+                Page {pagination.current_page} of {pagination.last_page}
               </span>
 
               <button
-                onClick={() => setPage((p) => Math.min(pagination.last_page || 1, p + 1))}
-                disabled={page >= (pagination.last_page || 1) || isLoading}
-                className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition-colors cursor-pointer"
-                title="Next Page"
+                onClick={() => setPage((prev) => Math.min(prev + 1, pagination.last_page))}
+                disabled={pagination.current_page >= pagination.last_page || isLoading}
+                className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-all inline-flex items-center gap-1"
               >
-                <ChevronRight className="w-4 h-4" />
+                <span>Next</span>
+                <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>

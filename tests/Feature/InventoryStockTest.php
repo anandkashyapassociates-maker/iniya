@@ -491,8 +491,59 @@ class InventoryStockTest extends TestCase
         $filterResponse->assertStatus(200)
             ->assertJsonStructure([
                 'products',
+                'categories',
                 'vendors',
                 'admins',
+            ]);
+    }
+
+    /**
+     * 14. Admin can view official products valuation reports from inventory_products table.
+     */
+    public function test_admin_can_view_inventory_products_report(): void
+    {
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->admin1Token)
+            ->getJson('/api/admin/inventory/reports?report_type=products');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('report_type', 'products')
+            ->assertJsonStructure([
+                'report_type',
+                'data',
+                'pagination',
+                'metrics' => [
+                    'total_products',
+                    'total_stock_units',
+                    'total_valuation',
+                    'total_retail_value',
+                    'low_stock_count',
+                    'out_of_stock_count',
+                ],
+            ]);
+    }
+
+    /**
+     * 15. SuperAdmin can view official products valuation reports from inventory_products table.
+     */
+    public function test_superadmin_can_view_inventory_products_report(): void
+    {
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->getJson('/api/superadmin/inventory/reports?report_type=products');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('report_type', 'products')
+            ->assertJsonStructure([
+                'report_type',
+                'data',
+                'pagination',
+                'metrics' => [
+                    'total_products',
+                    'total_stock_units',
+                    'total_valuation',
+                    'total_retail_value',
+                    'low_stock_count',
+                    'out_of_stock_count',
+                ],
             ]);
     }
 }
