@@ -11,6 +11,7 @@ import {
   AlertCircle,
   Hash,
   Sparkles,
+  Lock,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import staffManagementService from '../services/staffManagementService';
@@ -41,6 +42,7 @@ export default function StaffForm({
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    password: '',
     mobile: '',
     department: 'Engineering',
     designation: '',
@@ -118,7 +120,7 @@ export default function StaffForm({
     }
 
     try {
-      await onSubmit({
+      const payload = {
         name: formData.name.trim(),
         email: formData.email.trim(),
         mobile: formData.mobile.trim() || null,
@@ -128,12 +130,19 @@ export default function StaffForm({
         joining_date: formData.joining_date || null,
         address: formData.address.trim() || null,
         status: formData.status,
-      });
+      };
+
+      if (formData.password && formData.password.trim()) {
+        payload.password = formData.password.trim();
+      }
+
+      await onSubmit(payload);
 
       // Reset form on success
       setFormData({
         name: '',
         email: '',
+        password: '',
         mobile: '',
         department: 'Engineering',
         designation: '',
@@ -278,6 +287,33 @@ export default function StaffForm({
           {errors.mobile && (
             <p className="text-[11px] text-rose-600 mt-1 font-medium">
               {Array.isArray(errors.mobile) ? errors.mobile[0] : errors.mobile}
+            </p>
+          )}
+        </div>
+
+        {/* Login Password */}
+        <div>
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            Login Password <span className="text-slate-400 font-normal lowercase">(optional, default: 123456)</span>
+          </label>
+          <div className="relative">
+            <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="password"
+              value={formData.password}
+              onChange={(e) => handleChange('password', e.target.value)}
+              placeholder="Leave blank for default (123456)"
+              disabled={isLoading}
+              className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/80 text-slate-900 border rounded-xl focus:bg-white focus:outline-none focus:ring-2 transition-all ${
+                errors.password
+                  ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20'
+                  : 'border-slate-300 focus:border-blue-600 focus:ring-blue-600/20'
+              }`}
+            />
+          </div>
+          {errors.password && (
+            <p className="text-[11px] text-rose-600 mt-1 font-medium">
+              {Array.isArray(errors.password) ? errors.password[0] : errors.password}
             </p>
           )}
         </div>
