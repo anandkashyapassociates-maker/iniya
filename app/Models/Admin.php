@@ -31,12 +31,36 @@ class Admin extends Authenticatable
         'name',
         'email',
         'mobile',
+        'image',
         'status',
         'password',
         'is_active',
         'email_verified_at',
         'last_login_at',
     ];
+
+    /**
+     * Appended attributes.
+     */
+    protected $appends = [
+        'image_url',
+    ];
+
+    /**
+     * Accessor for full image URL.
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        if (! $this->image) {
+            return null;
+        }
+
+        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
+            return $this->image;
+        }
+
+        return asset('storage/'.ltrim($this->image, '/'));
+    }
 
     /**
      * The attributes that should be hidden for serialization.
