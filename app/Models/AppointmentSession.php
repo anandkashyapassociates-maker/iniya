@@ -43,6 +43,7 @@ class AppointmentSession extends Model
         'session_number',
         'service_id',
         'treatment_details',
+        'image',
         'session_date',
         'session_time',
         'staff_id',
@@ -63,16 +64,15 @@ class AppointmentSession extends Model
      */
     public function getImageUrlAttribute(): ?string
     {
-        $img = $this->image;
-        if (! $img) {
+        if (! $this->image) {
             return null;
         }
 
-        if (str_starts_with($img, 'http://') || str_starts_with($img, 'https://')) {
-            return $img;
+        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
+            return $this->image;
         }
 
-        return asset('storage/'.ltrim($img, '/'));
+        return asset('storage/'.ltrim($this->image, '/'));
     }
 
     /**

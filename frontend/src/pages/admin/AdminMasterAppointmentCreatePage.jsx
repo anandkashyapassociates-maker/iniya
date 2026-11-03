@@ -21,6 +21,9 @@ import {
   UserPlus,
   Save,
   Check,
+  Upload,
+  Image as ImageIcon,
+  X,
 } from 'lucide-react';
 import adminMasterAppointmentService from '../../services/adminMasterAppointmentService';
 import ProductMultiSelectDropdown from '../../components/admin/ProductMultiSelectDropdown';
@@ -61,6 +64,37 @@ export default function AdminMasterAppointmentCreatePage() {
   const [appointmentDate, setAppointmentDate] = useState(todayStr);
   const [salesTeamId, setSalesTeamId] = useState('');
   const [notes, setNotes] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  // Handle consultation/appointment image selection
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file (PNG, JPG, JPEG, WEBP).');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image size cannot exceed 10MB.');
+      return;
+    }
+
+    setImageFile(file);
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+    setError('');
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+      setImagePreview(null);
+    }
+  };
 
   // Selected customer preview
   const selectedCustomer = useMemo(() => {
@@ -81,6 +115,8 @@ export default function AdminMasterAppointmentCreatePage() {
       staff_commission: '0',
       inventory_product_ids: [],
       inventory_product_id: '',
+      image_file: null,
+      image_preview: null,
     },
   ]);
 
@@ -195,8 +231,51 @@ export default function AdminMasterAppointmentCreatePage() {
         staff_commission: '0',
         inventory_product_ids: [],
         inventory_product_id: '',
+        image_file: null,
+        image_preview: null,
       },
     ]);
+  };
+
+  const handleSessionImageChange = (index, e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file (PNG, JPG, WEBP).');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Session image size cannot exceed 10MB.');
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setSessions((prev) => {
+      const copy = [...prev];
+      copy[index] = {
+        ...copy[index],
+        image_file: file,
+        image_preview: previewUrl,
+      };
+      return copy;
+    });
+  };
+
+  const handleRemoveSessionImage = (index) => {
+    setSessions((prev) => {
+      const copy = [...prev];
+      if (copy[index]?.image_preview) {
+        URL.revokeObjectURL(copy[index].image_preview);
+      }
+      copy[index] = {
+        ...copy[index],
+        image_file: null,
+        image_preview: null,
+      };
+      return copy;
+    });
   };
 
   const handleSessionCategoryChange = (index, catId) => {
@@ -298,6 +377,11 @@ export default function AdminMasterAppointmentCreatePage() {
       return;
     }
 
+    if (!imageFile) {
+      setError('Appointment image is required. Please upload an image.');
+      return;
+    }
+
     // Validate sessions
     const now = new Date();
     for (let i = 0; i < sessions.length; i++) {
@@ -342,24 +426,46 @@ export default function AdminMasterAppointmentCreatePage() {
     setSaving(true);
 
     try {
+      const toBase64 = (file) =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = (err) => reject(err);
+        });
+
+      const imageBase64 = await toBase64(imageFile);
+
+      const processedSessions = await Promise.all(
+        sessions.map(async (s) => {
+          let sessionImageBase64 = null;
+          if (s.image_file) {
+            sessionImageBase64 = await toBase64(s.image_file);
+          }
+          return {
+            service_id: s.service_id ? Number(s.service_id) : null,
+            treatment_details: (s.treatment_details || '').trim(),
+            session_date: s.session_date,
+            session_time: s.session_time,
+            staff_id: Number(s.staff_id),
+            staff_commission: Number(s.staff_commission || 0),
+            inventory_product_ids: (s.inventory_product_ids || []).map(Number),
+            inventory_product_id: (s.inventory_product_ids && s.inventory_product_ids.length > 0)
+              ? Number(s.inventory_product_ids[0])
+              : (s.inventory_product_id ? Number(s.inventory_product_id) : null),
+            image: sessionImageBase64 || undefined,
+          };
+        })
+      );
+
       const payload = {
         customer_id: Number(customerId),
         appointment_date: appointmentDate,
         sales_team_id: Number(salesTeamId),
         appointment_fees: totalAppointmentFees,
+        image: imageBase64,
         notes: notes ? notes.trim() : undefined,
-        sessions: sessions.map((s) => ({
-          service_id: s.service_id ? Number(s.service_id) : null,
-          treatment_details: (s.treatment_details || '').trim(),
-          session_date: s.session_date,
-          session_time: s.session_time,
-          staff_id: Number(s.staff_id),
-          staff_commission: Number(s.staff_commission || 0),
-          inventory_product_ids: (s.inventory_product_ids || []).map(Number),
-          inventory_product_id: (s.inventory_product_ids && s.inventory_product_ids.length > 0)
-            ? Number(s.inventory_product_ids[0])
-            : (s.inventory_product_id ? Number(s.inventory_product_id) : null),
-        })),
+        sessions: processedSessions,
       };
 
       const res = await adminMasterAppointmentService.create(payload);
@@ -541,18 +647,94 @@ export default function AdminMasterAppointmentCreatePage() {
             </div>
           </div>
 
-          {/* Optional Notes */}
-          <div>
-            <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-              Notes (Optional)
-            </label>
-            <textarea
-              rows={2}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Clinical remarks, patient instructions, or special notes..."
-              className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-y shadow-xs"
-            />
+          {/* 2-Column Row: Image & Notes (Half-Half) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 items-stretch">
+            {/* Consultation / Appointment Image (Required) */}
+            <div className="flex flex-col justify-between">
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
+                Image <span className="text-rose-500">*</span>
+              </label>
+
+              <input
+                type="file"
+                name="image"
+                id="appointment_image"
+                accept="image/*"
+                required
+                onChange={handleImageChange}
+                className="hidden"
+              />
+
+              {!imagePreview ? (
+                <label
+                  htmlFor="appointment_image"
+                  className="group flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-blue-50/40 rounded-2xl p-4 sm:p-5 transition-all cursor-pointer text-center bg-slate-50/60 min-h-[120px]"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center transition-all mb-2 shadow-xs">
+                    <Upload className="w-4 h-4" />
+                  </div>
+                  <div className="text-xs sm:text-sm font-semibold text-slate-800 group-hover:text-blue-600 transition-colors">
+                    Click to browse and upload image <span className="text-rose-500">*</span>
+                  </div>
+                  <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">
+                    Supported: PNG, JPG, JPEG, WEBP (Max 10MB)
+                  </p>
+                </label>
+              ) : (
+                <div className="flex-1 p-3 sm:p-3.5 bg-slate-50/90 border border-slate-200/90 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border border-slate-200 bg-white shrink-0 shadow-xs">
+                      <img
+                        src={imagePreview}
+                        alt="Appointment Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                        <Check className="w-3 h-3" /> Image Selected
+                      </span>
+                      <p className="text-xs sm:text-sm font-semibold text-slate-800 truncate mt-1">
+                        {imageFile?.name}
+                      </p>
+                      <p className="text-[11px] text-slate-400 font-mono">
+                        {(imageFile?.size / (1024 * 1024)).toFixed(2)} MB
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 self-end sm:self-center shrink-0">
+                    <label
+                      htmlFor="appointment_image"
+                      className="px-2.5 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition-all cursor-pointer shadow-xs"
+                    >
+                      Change
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="p-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200/80 rounded-xl transition-all cursor-pointer"
+                      title="Remove Image"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Optional Notes */}
+            <div className="flex flex-col justify-between">
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
+                Notes (Optional)
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Clinical remarks, patient instructions, or special notes..."
+                className="w-full flex-1 min-h-[120px] px-3.5 py-2.5 sm:px-4 sm:py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-y shadow-xs"
+              />
+            </div>
           </div>
         </div>
 
@@ -841,6 +1023,81 @@ export default function AdminMasterAppointmentCreatePage() {
                       />
                     </div>
                   </div>
+                </div>
+
+                {/* Session Image (Optional) */}
+                <div className="pt-3 border-t border-slate-100">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Session Image (Optional)
+                  </label>
+
+                  <input
+                    type="file"
+                    id={`session_image_${index}`}
+                    accept="image/*"
+                    onChange={(e) => handleSessionImageChange(index, e)}
+                    className="hidden"
+                  />
+
+                  {!session.image_preview ? (
+                    <label
+                      htmlFor={`session_image_${index}`}
+                      className="group flex items-center justify-between p-3 border border-dashed border-slate-300 hover:border-indigo-500 hover:bg-indigo-50/40 rounded-xl transition-all cursor-pointer bg-slate-50/60"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center transition-all shrink-0">
+                          <Upload className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <span className="text-xs font-semibold text-slate-700 group-hover:text-indigo-600 transition-colors">
+                            Click to upload session image (Optional)
+                          </span>
+                          <span className="text-[10px] text-slate-400 block">
+                            Supported: PNG, JPG, JPEG, WEBP (Max 10MB)
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-xs font-semibold text-indigo-600 group-hover:underline pr-2">
+                        Browse file &rarr;
+                      </span>
+                    </label>
+                  ) : (
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden border border-slate-200 bg-white shrink-0">
+                          <img
+                            src={session.image_preview}
+                            alt={`Session #${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">
+                            <Check className="w-2.5 h-2.5" /> Session Image Attached
+                          </span>
+                          <p className="text-xs font-medium text-slate-800 truncate mt-0.5">
+                            {session.image_file?.name || 'Session Image'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <label
+                          htmlFor={`session_image_${index}`}
+                          className="px-2.5 py-1 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors cursor-pointer"
+                        >
+                          Change
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSessionImage(index)}
+                          className="p-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          title="Remove session image"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

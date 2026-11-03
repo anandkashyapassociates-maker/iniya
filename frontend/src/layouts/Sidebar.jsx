@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
@@ -204,14 +204,18 @@ export default function Sidebar({
       >
         {/* Top Branding Section */}
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="h-24 px-3 border-b border-slate-800/80 flex items-center justify-between shrink-0 bg-slate-950/40">
-            <div className="flex-1 h-[82px] flex items-center justify-center bg-white rounded-2xl p-1.5 shadow-md border border-white/20 overflow-hidden">
+          <div className="h-24 px-3.5 border-b border-slate-800/80 flex items-center justify-between shrink-0 bg-slate-950/40">
+            <Link
+              to="/admin/dashboard"
+              className="flex-1 flex items-center justify-center py-1 group transition-all duration-300"
+              title="Iniya Aesthetics &amp; Wellness"
+            >
               <img
-                src="/logo.png"
-                alt="Iniya Aesthetics & Wellness"
-                className="w-full h-full object-contain"
+                src="/logo-gold.png"
+                alt="Iniya Aesthetics &amp; Wellness"
+                className="h-16 sm:h-[68px] w-auto max-w-[200px] object-contain drop-shadow-[0_3px_16px_rgba(255,230,170,0.3)] group-hover:scale-105 group-hover:drop-shadow-[0_5px_20px_rgba(255,230,170,0.45)] transition-all duration-300"
               />
-            </div>
+            </Link>
 
             <button
               onClick={onClose}

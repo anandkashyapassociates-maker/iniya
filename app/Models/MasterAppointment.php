@@ -32,7 +32,9 @@ class MasterAppointment extends Model
     ];
 
     /**
-     * Appended attributes.
+     * The accessors to append to the model's array form.
+     *
+     * @var list<string>
      */
     protected $appends = [
         'image_url',
@@ -43,16 +45,15 @@ class MasterAppointment extends Model
      */
     public function getImageUrlAttribute(): ?string
     {
-        $img = $this->image;
-        if (! $img) {
+        if (! $this->image) {
             return null;
         }
 
-        if (str_starts_with($img, 'http://') || str_starts_with($img, 'https://')) {
-            return $img;
+        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
+            return $this->image;
         }
 
-        return asset('storage/'.ltrim($img, '/'));
+        return asset('storage/'.ltrim($this->image, '/'));
     }
 
     /**

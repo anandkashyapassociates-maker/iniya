@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Shield,
   LayoutDashboard,
@@ -178,15 +178,19 @@ export default function SuperAdminLayout() {
         } h-screen`}
       >
         <div className="flex-1 overflow-y-auto">
-          {/* Logo / Header */}
-          <div className="h-24 px-4 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-950 z-10">
-            <div className="flex-1 h-[82px] flex items-center justify-center bg-white rounded-2xl p-1.5 shadow-md border border-white/20 overflow-hidden">
+          {/* Logo / Header: Transparent background with balanced, elegant light-colored logo */}
+          <div className="h-24 px-4 border-b border-slate-800/80 flex items-center justify-between sticky top-0 bg-slate-950/95 backdrop-blur-md z-10">
+            <Link
+              to="/superadmin/dashboard"
+              className="flex-1 flex items-center justify-center py-1 group transition-all duration-300"
+              title="Iniya Aesthetics &amp; Wellness"
+            >
               <img
-                src="/logo.png"
-                alt="Iniya Aesthetics & Wellness"
-                className="w-full h-full object-contain"
+                src="/logo-gold.png"
+                alt="Iniya Aesthetics &amp; Wellness"
+                className="h-16 sm:h-[68px] w-auto max-w-[210px] object-contain drop-shadow-[0_3px_16px_rgba(255,230,170,0.3)] group-hover:scale-105 group-hover:drop-shadow-[0_5px_20px_rgba(255,230,170,0.45)] transition-all duration-300"
               />
-            </div>
+            </Link>
 
             <button
               onClick={() => setMobileMenuOpen(false)}

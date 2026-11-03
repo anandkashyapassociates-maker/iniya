@@ -9,6 +9,8 @@ use App\Models\MasterAppointment;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class AppointmentSessionController extends Controller
@@ -30,6 +32,7 @@ class AppointmentSessionController extends Controller
             'inventory_product_id' => ['nullable'],
             'inventory_product_ids' => ['nullable', 'array'],
             'inventory_product_ids.*' => ['integer', 'exists:inventory_products,id'],
+            'image' => ['nullable'],
         ]);
 
         $nextSessionNumber = ($master->sessions()->max('session_number') ?? 0) + 1;
@@ -38,11 +41,29 @@ class AppointmentSessionController extends Controller
             ? array_map('intval', (array) $validated['inventory_product_ids'])
             : (! empty($validated['inventory_product_id']) ? [(int) $validated['inventory_product_id']] : []);
 
+        $sessionImagePath = null;
+        if ($request->hasFile('image')) {
+            $sessionImagePath = $request->file('image')->store('appointment_sessions', 'public');
+        } elseif ($request->filled('image') && is_string($request->input('image')) && str_starts_with($request->input('image'), 'data:image')) {
+            $dataUri = $request->input('image');
+            if (preg_match('/^data:image\/(\w+);base64,/', $dataUri, $type)) {
+                $data = substr($dataUri, strpos($dataUri, ',') + 1);
+                $type = strtolower($type[1]);
+                $data = base64_decode($data);
+                if ($data !== false) {
+                    $fileName = 'appointment_sessions/'.Str::random(40).'.'.$type;
+                    Storage::disk('public')->put($fileName, $data);
+                    $sessionImagePath = $fileName;
+                }
+            }
+        }
+
         $session = AppointmentSession::create([
             'master_appointment_id' => $master->id,
             'session_number' => $nextSessionNumber,
             'service_id' => $validated['service_id'] ?? null,
             'treatment_details' => $validated['treatment_details'] ?? '',
+            'image' => $sessionImagePath,
             'session_date' => $validated['session_date'],
             'session_time' => $validated['session_time'],
             'staff_id' => $validated['staff_id'],
@@ -85,6 +106,28 @@ class AppointmentSessionController extends Controller
                 : null;
         }
 
+        if ($request->hasFile('image')) {
+            if ($session->image && Storage::disk('public')->exists($session->image)) {
+                Storage::disk('public')->delete($session->image);
+            }
+            $validated['image'] = $request->file('image')->store('appointment_sessions', 'public');
+        } elseif ($request->filled('image') && is_string($request->input('image')) && str_starts_with($request->input('image'), 'data:image')) {
+            $dataUri = $request->input('image');
+            if (preg_match('/^data:image\/(\w+);base64,/', $dataUri, $type)) {
+                $data = substr($dataUri, strpos($dataUri, ',') + 1);
+                $type = strtolower($type[1]);
+                $data = base64_decode($data);
+                if ($data !== false) {
+                    if ($session->image && Storage::disk('public')->exists($session->image)) {
+                        Storage::disk('public')->delete($session->image);
+                    }
+                    $fileName = 'appointment_sessions/'.Str::random(40).'.'.$type;
+                    Storage::disk('public')->put($fileName, $data);
+                    $validated['image'] = $fileName;
+                }
+            }
+        }
+
         $session->update($validated);
 
         return response()->json([
@@ -122,6 +165,11 @@ class AppointmentSessionController extends Controller
     public function destroy(int $id): JsonResponse
     {
         $session = AppointmentSession::findOrFail($id);
+
+        if ($session->image && Storage::disk('public')->exists($session->image)) {
+            Storage::disk('public')->delete($session->image);
+        }
+
         $session->delete();
 
         return response()->json([

@@ -22,8 +22,12 @@ export default function LandingPage() {
 
       <div className="max-w-4xl w-full text-center relative z-10 space-y-10">
         <div className="flex flex-col items-center">
-          <div className="bg-white rounded-2xl p-3 shadow-xl border border-white/20 mb-5">
-            <img src="/logo.png" alt="Iniya Aesthetics & Wellness" className="h-14 sm:h-16 w-auto object-contain" />
+          <div className="mb-5 flex items-center justify-center">
+            <img
+              src="/logo-gold.png"
+              alt="Iniya Aesthetics &amp; Wellness"
+              className="h-16 sm:h-20 w-auto max-w-[260px] object-contain drop-shadow-[0_4px_20px_rgba(255,230,170,0.35)] hover:scale-105 transition-transform duration-300"
+            />
           </div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-300 text-xs font-semibold mb-4">
             <Lock className="w-3.5 h-3.5 text-blue-400" />
