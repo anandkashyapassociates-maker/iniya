@@ -185,18 +185,16 @@ export default function Sidebar({
       >
         {/* Top Branding Section */}
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="h-20 px-3.5 border-b border-slate-800/80 flex items-center justify-between shrink-0 bg-slate-950/70">
+          <div className="h-24 px-4 border-b border-slate-800/80 flex items-center justify-between shrink-0 bg-slate-950/40">
             <Link
               to="/admin/dashboard"
-              className="flex-1 flex items-center justify-center py-2 px-3 rounded-2xl bg-gradient-to-r from-slate-900/90 via-slate-850/60 to-slate-900/90 border border-slate-800/90 hover:border-blue-500/40 shadow-inner group transition-all duration-300 relative overflow-hidden"
-              title="Iniya Clinic OPD Suite"
+              className="flex-1 flex items-center justify-center py-1 group transition-all duration-300"
+              title="Iniya Aesthetics &amp; Wellness"
             >
-              {/* Subtle ambient brand glow matching Admin blue palette */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-transparent opacity-40 group-hover:opacity-80 transition-opacity pointer-events-none" />
               <img
-                src="/logo-white.png"
+                src="/logo-gold.png"
                 alt="Iniya Aesthetics &amp; Wellness"
-                className="h-9 sm:h-10 w-auto max-w-[180px] object-contain drop-shadow-[0_2px_12px_rgba(255,255,255,0.14)] group-hover:scale-[1.03] transition-transform duration-300 relative z-10"
+                className="h-14 sm:h-16 w-auto max-w-[200px] object-contain drop-shadow-[0_2px_14px_rgba(255,230,170,0.28)] group-hover:scale-105 group-hover:drop-shadow-[0_4px_18px_rgba(255,230,170,0.4)] transition-all duration-300"
               />
             </Link>
 
