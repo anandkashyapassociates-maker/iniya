@@ -384,6 +384,19 @@ export default function AdminMasterAppointmentDetailsPage() {
                           <span>{ses.service.name} (₹{Number(ses.service.price || 0).toLocaleString('en-IN')})</span>
                         </div>
                       )}
+                      {ses.image_url && (
+                        <div className="mt-1">
+                          <a
+                            href={ses.image_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 text-[11px] font-semibold transition-colors"
+                          >
+                            <ImageIcon className="w-3 h-3 text-purple-600" />
+                            <span>Session Image &rarr;</span>
+                          </a>
+                        </div>
+                      )}
                       {hasRescheduleHistories && (
                         <div className="inline-flex items-center space-x-1 text-[10px] text-indigo-600 font-medium mt-1 block">
                           <History className="w-3 h-3" />

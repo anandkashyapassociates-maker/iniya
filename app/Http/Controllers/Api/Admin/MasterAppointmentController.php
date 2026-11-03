@@ -235,6 +235,7 @@ class MasterAppointmentController extends Controller
             'sessions.*.inventory_product_id' => ['nullable'],
             'sessions.*.inventory_product_ids' => ['nullable', 'array'],
             'sessions.*.inventory_product_ids.*' => ['integer', 'exists:inventory_products,id'],
+            'sessions.*.image' => ['nullable'],
         ]);
 
         // Process mandatory appointment image
@@ -309,11 +310,30 @@ class MasterAppointmentController extends Controller
                     ? array_map('intval', (array) $sData['inventory_product_ids'])
                     : (! empty($sData['inventory_product_id']) ? [(int) $sData['inventory_product_id']] : []);
 
+                // Process optional session image
+                $sessionImagePath = null;
+                if (! empty($sData['image']) && is_string($sData['image']) && str_starts_with($sData['image'], 'data:image')) {
+                    $sDataUri = $sData['image'];
+                    if (preg_match('/^data:image\/(\w+);base64,/', $sDataUri, $sType)) {
+                        $sDataDecoded = substr($sDataUri, strpos($sDataUri, ',') + 1);
+                        $sTypeStr = strtolower($sType[1]);
+                        $sBinary = base64_decode($sDataDecoded);
+                        if ($sBinary !== false) {
+                            $sFileName = 'appointment_sessions/'.Str::random(40).'.'.$sTypeStr;
+                            Storage::disk('public')->put($sFileName, $sBinary);
+                            $sessionImagePath = $sFileName;
+                        }
+                    }
+                } elseif ($request->hasFile("sessions.{$i}.image")) {
+                    $sessionImagePath = $request->file("sessions.{$i}.image")->store('appointment_sessions', 'public');
+                }
+
                 AppointmentSession::create([
                     'master_appointment_id' => $master->id,
                     'session_number' => $i + 1,
                     'service_id' => ! empty($sData['service_id']) ? $sData['service_id'] : null,
                     'treatment_details' => $sData['treatment_details'] ?? '',
+                    'image' => $sessionImagePath,
                     'session_date' => $sData['session_date'],
                     'session_time' => $sData['session_time'],
                     'staff_id' => $sData['staff_id'],

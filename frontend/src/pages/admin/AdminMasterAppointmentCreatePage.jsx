@@ -115,6 +115,8 @@ export default function AdminMasterAppointmentCreatePage() {
       staff_commission: '0',
       inventory_product_ids: [],
       inventory_product_id: '',
+      image_file: null,
+      image_preview: null,
     },
   ]);
 
@@ -229,8 +231,51 @@ export default function AdminMasterAppointmentCreatePage() {
         staff_commission: '0',
         inventory_product_ids: [],
         inventory_product_id: '',
+        image_file: null,
+        image_preview: null,
       },
     ]);
+  };
+
+  const handleSessionImageChange = (index, e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file (PNG, JPG, WEBP).');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Session image size cannot exceed 10MB.');
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setSessions((prev) => {
+      const copy = [...prev];
+      copy[index] = {
+        ...copy[index],
+        image_file: file,
+        image_preview: previewUrl,
+      };
+      return copy;
+    });
+  };
+
+  const handleRemoveSessionImage = (index) => {
+    setSessions((prev) => {
+      const copy = [...prev];
+      if (copy[index]?.image_preview) {
+        URL.revokeObjectURL(copy[index].image_preview);
+      }
+      copy[index] = {
+        ...copy[index],
+        image_file: null,
+        image_preview: null,
+      };
+      return copy;
+    });
   };
 
   const handleSessionCategoryChange = (index, catId) => {
@@ -391,6 +436,28 @@ export default function AdminMasterAppointmentCreatePage() {
 
       const imageBase64 = await toBase64(imageFile);
 
+      const processedSessions = await Promise.all(
+        sessions.map(async (s) => {
+          let sessionImageBase64 = null;
+          if (s.image_file) {
+            sessionImageBase64 = await toBase64(s.image_file);
+          }
+          return {
+            service_id: s.service_id ? Number(s.service_id) : null,
+            treatment_details: (s.treatment_details || '').trim(),
+            session_date: s.session_date,
+            session_time: s.session_time,
+            staff_id: Number(s.staff_id),
+            staff_commission: Number(s.staff_commission || 0),
+            inventory_product_ids: (s.inventory_product_ids || []).map(Number),
+            inventory_product_id: (s.inventory_product_ids && s.inventory_product_ids.length > 0)
+              ? Number(s.inventory_product_ids[0])
+              : (s.inventory_product_id ? Number(s.inventory_product_id) : null),
+            image: sessionImageBase64 || undefined,
+          };
+        })
+      );
+
       const payload = {
         customer_id: Number(customerId),
         appointment_date: appointmentDate,
@@ -398,18 +465,7 @@ export default function AdminMasterAppointmentCreatePage() {
         appointment_fees: totalAppointmentFees,
         image: imageBase64,
         notes: notes ? notes.trim() : undefined,
-        sessions: sessions.map((s) => ({
-          service_id: s.service_id ? Number(s.service_id) : null,
-          treatment_details: (s.treatment_details || '').trim(),
-          session_date: s.session_date,
-          session_time: s.session_time,
-          staff_id: Number(s.staff_id),
-          staff_commission: Number(s.staff_commission || 0),
-          inventory_product_ids: (s.inventory_product_ids || []).map(Number),
-          inventory_product_id: (s.inventory_product_ids && s.inventory_product_ids.length > 0)
-            ? Number(s.inventory_product_ids[0])
-            : (s.inventory_product_id ? Number(s.inventory_product_id) : null),
-        })),
+        sessions: processedSessions,
       };
 
       const res = await adminMasterAppointmentService.create(payload);
@@ -977,6 +1033,86 @@ export default function AdminMasterAppointmentCreatePage() {
                       />
                     </div>
                   </div>
+                </div>
+
+                {/* Session Image (Optional) */}
+                <div className="pt-3 border-t border-slate-100">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700">
+                      Session Image (Optional)
+                    </label>
+                    <span className="text-[10px] text-slate-400">
+                      Before/after procedure photo or clinical scan
+                    </span>
+                  </div>
+
+                  <input
+                    type="file"
+                    id={`session_image_${index}`}
+                    accept="image/*"
+                    onChange={(e) => handleSessionImageChange(index, e)}
+                    className="hidden"
+                  />
+
+                  {!session.image_preview ? (
+                    <label
+                      htmlFor={`session_image_${index}`}
+                      className="group flex items-center justify-between p-3 border border-dashed border-slate-300 hover:border-indigo-500 hover:bg-indigo-50/40 rounded-xl transition-all cursor-pointer bg-slate-50/60"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center transition-all shrink-0">
+                          <Upload className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <span className="text-xs font-semibold text-slate-700 group-hover:text-indigo-600 transition-colors">
+                            Click to upload session image (Optional)
+                          </span>
+                          <span className="text-[10px] text-slate-400 block">
+                            Supported: PNG, JPG, JPEG, WEBP (Max 10MB)
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-xs font-semibold text-indigo-600 group-hover:underline pr-2">
+                        Browse file &rarr;
+                      </span>
+                    </label>
+                  ) : (
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden border border-slate-200 bg-white shrink-0">
+                          <img
+                            src={session.image_preview}
+                            alt={`Session #${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">
+                            <Check className="w-2.5 h-2.5" /> Session Image Attached
+                          </span>
+                          <p className="text-xs font-medium text-slate-800 truncate mt-0.5">
+                            {session.image_file?.name || 'Session Image'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <label
+                          htmlFor={`session_image_${index}`}
+                          className="px-2.5 py-1 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors cursor-pointer"
+                        >
+                          Change
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSessionImage(index)}
+                          className="p-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          title="Remove session image"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
