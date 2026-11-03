@@ -135,4 +135,12 @@ class Staff extends Authenticatable
     {
         return $this->hasMany(AppointmentSession::class, 'staff_id');
     }
+
+    /**
+     * Payout records disbursed to this staff member.
+     */
+    public function payouts(): HasMany
+    {
+        return $this->hasMany(Payout::class, 'staff_id');
+    }
 }

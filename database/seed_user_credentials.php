@@ -1,12 +1,13 @@
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
-$app = require_once __DIR__ . '/../bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+require __DIR__.'/../vendor/autoload.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
+$kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
 use App\Models\Admin;
 use App\Models\SuperAdmin;
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Hash;
 
 // 1. Super Admin with superadmin@gmail.com and password 123456
@@ -52,8 +53,7 @@ $a2 = Admin::updateOrCreate(
 );
 
 echo "UPDATED_SUCCESSFULLY\n";
-echo "SuperAdmin: " . $sa1->email . " / 123456\n";
-echo "SuperAdmin: " . $sa2->email . " / 123456\n";
-echo "Admin: " . $a1->email . " / 123456\n";
-echo "Admin: " . $a2->email . " / 123456\n";
-
+echo 'SuperAdmin: '.$sa1->email." / 123456\n";
+echo 'SuperAdmin: '.$sa2->email." / 123456\n";
+echo 'Admin: '.$a1->email." / 123456\n";
+echo 'Admin: '.$a2->email." / 123456\n";
