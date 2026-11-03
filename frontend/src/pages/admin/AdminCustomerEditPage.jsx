@@ -314,8 +314,8 @@ export default function AdminCustomerEditPage() {
                 </div>
               </div>
 
-              {/* Patient Card Preview (3D Frosted Smart Card with Holographic Shine & Float) */}
-              <div className="smart-card-3d animate-float-subtle relative overflow-hidden p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white space-y-4 select-none cursor-default group/smartcard">
+              {/* Patient Card Preview (3D Frosted Smart Card with Holographic Shine & Smooth Floating) */}
+              <div className="smart-card-3d animate-float-card mx-auto relative overflow-hidden p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white select-none cursor-default group/smartcard flex flex-col justify-between">
                 {/* 3D Holographic Light Beam Sweep */}
                 <div className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/[0.08] to-transparent pointer-events-none animate-holographic-sweep" />
 
@@ -324,17 +324,17 @@ export default function AdminCustomerEditPage() {
                 <div className="absolute -bottom-16 -left-16 w-44 h-44 bg-gradient-to-tr from-cyan-500/15 to-emerald-500/10 rounded-full blur-3xl pointer-events-none group-hover/smartcard:scale-125 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-b from-white/[0.05] via-transparent to-black/40 pointer-events-none" />
 
-                {/* Card Header: 3D Heartbeat & Holographic Chip / Tag */}
-                <div className="relative z-10 flex items-center justify-between pb-3.5 border-b border-slate-800/90">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white shadow-md shadow-rose-500/30 ring-1 ring-white/20 shrink-0">
-                      <HeartPulse className="w-4 h-4 animate-pulse drop-shadow-sm" />
+                {/* Top Section: Card Header & 3D Gold Microchip */}
+                <div className="relative z-10 flex items-center justify-between pb-2.5 border-b border-slate-800/80">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white shadow-md shadow-rose-500/30 ring-1 ring-white/20 shrink-0">
+                      <HeartPulse className="w-3.5 h-3.5 animate-pulse drop-shadow-sm" />
                     </div>
                     <div>
-                      <span className="text-xs font-bold text-white tracking-wide font-display block leading-tight">
+                      <span className="text-[11px] sm:text-xs font-bold text-white tracking-wide font-display block leading-tight">
                         Patient Medical Record
                       </span>
-                      <span className="text-[10px] text-slate-400 font-mono tracking-tight">
+                      <span className="text-[9px] text-slate-400 font-mono tracking-tight block">
                         Digital Health ID
                       </span>
                     </div>
@@ -343,8 +343,8 @@ export default function AdminCustomerEditPage() {
                   {/* 3D Gold EMV Smart Chip + Status Tag */}
                   <div className="flex items-center gap-2">
                     {/* Simulated 3D Gold Contact Chip */}
-                    <div className="w-7 h-5 rounded-[4px] bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 p-[1px] shadow-sm shadow-amber-950/60 shrink-0 opacity-90 group-hover/smartcard:opacity-100 transition-opacity" title="Smart Medical ID Chip">
-                      <div className="w-full h-full rounded-[3px] bg-gradient-to-tr from-amber-400 via-amber-300 to-amber-200 grid grid-cols-2 gap-[1px] p-[1.5px]">
+                    <div className="w-6 h-4.5 rounded-[3px] bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 p-[1px] shadow-sm shadow-amber-950/60 shrink-0 opacity-90 group-hover/smartcard:opacity-100 transition-opacity" title="Smart Medical ID Chip">
+                      <div className="w-full h-full rounded-[2px] bg-gradient-to-tr from-amber-400 via-amber-300 to-amber-200 grid grid-cols-2 gap-[1px] p-[1px]">
                         <div className="border-r border-b border-amber-700/50 rounded-tl-[1px]" />
                         <div className="border-l border-b border-amber-700/50 rounded-tr-[1px]" />
                         <div className="border-r border-t border-amber-700/50 rounded-bl-[1px]" />
@@ -352,59 +352,59 @@ export default function AdminCustomerEditPage() {
                       </div>
                     </div>
 
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-blue-950/90 text-blue-300 border border-blue-600/40 tracking-wider shadow-xs">
+                    <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-md bg-blue-950/90 text-blue-300 border border-blue-600/40 tracking-wider shadow-xs">
                       {recordCode}
                     </span>
                   </div>
                 </div>
 
-                {/* Patient Primary Details (3D Raised Avatar) */}
-                <div className="relative z-10 flex items-center gap-3.5 pt-1">
-                  <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 overflow-hidden flex items-center justify-center font-bold text-base text-white border border-slate-700/80 shadow-lg shadow-black/50 ring-2 ring-white/10 shrink-0 group-hover/smartcard:scale-105 transition-transform duration-300">
+                {/* Middle Section: Patient Primary Details (3D Raised Avatar & Name) */}
+                <div className="relative z-10 flex items-center gap-3 py-2">
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 overflow-hidden flex items-center justify-center font-bold text-sm sm:text-base text-white border border-slate-700/80 shadow-md shadow-black/50 ring-2 ring-white/10 shrink-0 group-hover/smartcard:scale-105 transition-transform duration-300">
                     {imagePreview ? (
                       <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="bg-gradient-to-tr from-blue-300 via-indigo-200 to-cyan-300 bg-clip-text text-transparent font-extrabold text-lg drop-shadow-sm">
+                      <span className="bg-gradient-to-tr from-blue-300 via-indigo-200 to-cyan-300 bg-clip-text text-transparent font-extrabold text-base drop-shadow-sm">
                         {formData.name?.charAt(0).toUpperCase() || 'P'}
                       </span>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-bold text-base text-white truncate font-display tracking-tight drop-shadow-xs">
+                    <div className="font-bold text-sm sm:text-base text-white truncate font-display tracking-tight drop-shadow-xs">
                       {formData.name || 'Patient Full Name'}
                     </div>
-                    <div className="flex items-center gap-2 text-[11px] text-slate-300 font-medium capitalize mt-1.5">
-                      <span className="px-2 py-0.5 rounded-md bg-slate-800/90 text-[10px] font-bold text-slate-200 border border-slate-700/80 shadow-2xs">
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-300 font-medium capitalize mt-1">
+                      <span className="px-1.5 py-0.5 rounded bg-slate-800/90 text-[10px] font-bold text-slate-200 border border-slate-700/80 shadow-2xs">
                         {formData.gender || 'Gender'}
                       </span>
                       <span className="text-slate-500">•</span>
-                      <span className="text-slate-300 font-medium text-xs">
+                      <span className="text-slate-300 font-medium text-[11px]">
                         {formData.age ? `${formData.age} Yrs` : 'Age pending'}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Card Footer: Contact & 3D Clearance Badge */}
-                <div className="relative z-10 grid grid-cols-2 gap-3 pt-3.5 border-t border-slate-800/90 text-[11px]">
+                {/* Bottom Section: Contact & 3D Clearance Status */}
+                <div className="relative z-10 grid grid-cols-2 gap-2 pt-2.5 border-t border-slate-800/80 text-[11px]">
                   <div>
-                    <div className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Contact</div>
+                    <div className="text-slate-400 text-[9px] font-bold uppercase tracking-wider">Contact</div>
                     <div className="text-white font-mono font-bold text-xs truncate mt-0.5 tracking-tight">
                       {formData.mobile || '—'}
                     </div>
                   </div>
                   <div>
-                    <div className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Clearance</div>
+                    <div className="text-slate-400 text-[9px] font-bold uppercase tracking-wider">Clearance</div>
                     <div className="mt-0.5">
                       <span
-                        className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-md border shadow-sm ${
+                        className={`inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-md border shadow-sm ${
                           formData.is_active
                             ? 'bg-gradient-to-r from-emerald-950/90 to-teal-950/90 text-emerald-300 border-emerald-500/50 shadow-emerald-950/50'
                             : 'bg-slate-900 text-slate-400 border-slate-700/60'
                         }`}
                       >
                         <span
-                          className={`w-2 h-2 rounded-full ${
+                          className={`w-1.5 h-1.5 rounded-full ${
                             formData.is_active ? 'bg-emerald-400 shadow-[0_0_8px_#34d399] animate-pulse' : 'bg-slate-500'
                           }`}
                         />
