@@ -263,60 +263,72 @@ export default function AdminCustomerCreatePage() {
                 </div>
               </div>
 
-              {/* Live Patient Medical Card Preview */}
-              <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white shadow-lg space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-700/80">
+              {/* Live Patient Medical Card Preview (Glassmorphic Frosted Card) */}
+              <div className="relative overflow-hidden p-5 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-white/15 shadow-xl shadow-slate-900/15 text-white space-y-4">
+                {/* Decorative Ambient Glass Glows */}
+                <div className="absolute -top-12 -right-12 w-36 h-36 bg-blue-500/25 rounded-full blur-2xl pointer-events-none" />
+                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-500/25 rounded-full blur-2xl pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.07] to-transparent pointer-events-none" />
+
+                {/* Card Header */}
+                <div className="relative z-10 flex items-center justify-between pb-3 border-b border-white/10">
                   <div className="flex items-center gap-2">
                     <HeartPulse className="w-4 h-4 text-rose-400 animate-pulse" />
-                    <span className="text-xs font-semibold text-slate-200 tracking-wide">
+                    <span className="text-xs font-bold text-white tracking-wide font-display">
                       Clinic OPD Card Preview
                     </span>
                   </div>
-                  <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-200 border border-blue-400/30 tracking-wider">
                     NEW RECORD
                   </span>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-slate-700/70 overflow-hidden flex items-center justify-center font-medium text-base text-white border border-slate-600 shrink-0">
+                {/* Patient Primary Details */}
+                <div className="relative z-10 flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md overflow-hidden flex items-center justify-center font-bold text-base text-white border border-white/20 shadow-inner shrink-0">
                     {imagePreview ? (
                       <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
                       formData.name?.charAt(0).toUpperCase() || 'P'
                     )}
                   </div>
-                  <div className="min-w-0">
-                    <div className="font-semibold text-sm text-white truncate">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-bold text-sm sm:text-base text-white truncate font-display tracking-tight">
                       {formData.name || 'Patient Full Name'}
                     </div>
-                    <div className="flex items-center gap-1.5 text-[11px] text-slate-300 font-normal capitalize mt-0.5">
-                      <span>{formData.gender}</span>
-                      <span>•</span>
-                      <span>{formData.age ? `${formData.age} Yrs` : 'Age pending'}</span>
+                    <div className="flex items-center gap-2 text-[11px] text-slate-300 font-medium capitalize mt-1">
+                      <span className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-bold text-slate-200 border border-white/10">
+                        {formData.gender || 'Gender'}
+                      </span>
+                      <span className="text-slate-400">•</span>
+                      <span className="text-slate-200 font-medium">
+                        {formData.age ? `${formData.age} Yrs` : 'Age pending'}
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-700/80 text-[11px]">
+                {/* Card Footer: Contact & Clearance Status */}
+                <div className="relative z-10 grid grid-cols-2 gap-3 pt-3 border-t border-white/10 text-[11px]">
                   <div>
-                    <div className="text-slate-400 text-[10px] font-medium">Contact</div>
-                    <div className="text-slate-200 font-mono font-normal truncate mt-0.5">
+                    <div className="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Contact</div>
+                    <div className="text-white font-mono font-bold text-xs truncate mt-0.5">
                       {formData.mobile || '—'}
                     </div>
                   </div>
                   <div>
-                    <div className="text-slate-400 text-[10px] font-medium">Clearance</div>
+                    <div className="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Clearance</div>
                     <div className="mt-0.5">
                       <span
-                        className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded ${
+                        className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded-md border backdrop-blur-xs ${
                           formData.is_active
-                            ? 'bg-emerald-500/20 text-emerald-300'
-                            : 'bg-slate-600/30 text-slate-300'
+                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                            : 'bg-slate-700/40 text-slate-300 border-slate-600/40'
                         }`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${
-                            formData.is_active ? 'bg-emerald-400' : 'bg-slate-400'
+                            formData.is_active ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'
                           }`}
                         />
                         {formData.is_active ? 'Active OPD' : 'Inactive'}
