@@ -27,7 +27,34 @@ class AdminProfileController extends Controller
                 'name' => ['required', 'string', 'max:255'],
                 'email' => ['required', 'email', 'max:255', Rule::unique('staff')->ignore($user->id)],
                 'mobile' => ['nullable', 'string', 'max:25'],
+                'image' => ['nullable'],
             ]);
+
+            if ($request->hasFile('image')) {
+                $request->validate([
+                    'image' => ['file', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
+                ]);
+                if ($user->profile_photo && ! str_starts_with($user->profile_photo, 'http') && Storage::disk('public')->exists($user->profile_photo)) {
+                    Storage::disk('public')->delete($user->profile_photo);
+                }
+                $validated['profile_photo'] = $request->file('image')->store('staff', 'public');
+            } elseif ($request->filled('image') && is_string($request->input('image')) && str_starts_with($request->input('image'), 'data:image')) {
+                $dataUri = $request->input('image');
+                if (preg_match('/^data:image\/(\w+);base64,/', $dataUri, $type)) {
+                    $data = substr($dataUri, strpos($dataUri, ',') + 1);
+                    $type = strtolower($type[1]);
+                    $data = base64_decode($data);
+                    if ($data !== false) {
+                        if ($user->profile_photo && ! str_starts_with($user->profile_photo, 'http') && Storage::disk('public')->exists($user->profile_photo)) {
+                            Storage::disk('public')->delete($user->profile_photo);
+                        }
+                        $fileName = 'staff/'.Str::random(40).'.'.$type;
+                        Storage::disk('public')->put($fileName, $data);
+                        $validated['profile_photo'] = $fileName;
+                    }
+                }
+            }
+            unset($validated['image']);
 
             $user->update($validated);
 
@@ -49,6 +76,9 @@ class AdminProfileController extends Controller
                     'mobile' => $user->mobile,
                     'department' => $user->department,
                     'designation' => $user->designation,
+                    'image' => $user->profile_photo,
+                    'image_url' => $user->image_url,
+                    'status' => $user->status,
                     'is_active' => $user->is_active,
                     'last_login_at' => $user->last_login_at,
                     'created_at' => $user->created_at,
@@ -127,11 +157,56 @@ class AdminProfileController extends Controller
      */
     public function uploadAvatar(Request $request): JsonResponse
     {
-        $admin = $request->user();
+        $user = $request->user();
 
         $request->validate([
             'image' => ['required', 'file', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
         ]);
+
+        if ($user instanceof Staff) {
+            if ($user->profile_photo && ! str_starts_with($user->profile_photo, 'http') && Storage::disk('public')->exists($user->profile_photo)) {
+                Storage::disk('public')->delete($user->profile_photo);
+            }
+
+            $path = $request->file('image')->store('staff', 'public');
+
+            $user->update([
+                'profile_photo' => $path,
+            ]);
+
+            AdminActivityLog::record(
+                'staff',
+                $user->id,
+                'staff_avatar_updated',
+                "Staff '{$user->name}' updated their profile avatar.",
+                $request
+            );
+
+            return response()->json([
+                'message' => 'Avatar updated successfully.',
+                'image' => $user->profile_photo,
+                'image_url' => $user->image_url,
+                'user' => [
+                    'id' => $user->id,
+                    'staff_code' => $user->staff_code,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'mobile' => $user->mobile,
+                    'department' => $user->department,
+                    'designation' => $user->designation,
+                    'image' => $user->profile_photo,
+                    'image_url' => $user->image_url,
+                    'status' => $user->status,
+                    'is_active' => $user->is_active,
+                    'last_login_at' => $user->last_login_at,
+                    'created_at' => $user->created_at,
+                    'role' => 'staff',
+                    'user_type' => 'staff',
+                ],
+            ]);
+        }
+
+        $admin = $user;
 
         if ($admin->image && ! str_starts_with($admin->image, 'http') && Storage::disk('public')->exists($admin->image)) {
             Storage::disk('public')->delete($admin->image);

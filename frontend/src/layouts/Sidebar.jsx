@@ -5,7 +5,6 @@ import {
   Users,
   UserPlus,
   User,
-  KeyRound,
   Shield,
   Stethoscope,
   LogOut,
@@ -95,6 +94,12 @@ export default function Sidebar({
       color: 'from-blue-600 to-indigo-600',
     },
     {
+      to: '/admin/profile',
+      label: 'Profile',
+      icon: User,
+      color: 'from-rose-500 to-pink-600',
+    },
+    {
       to: '/admin/customers',
       label: 'Patient Directory',
       icon: Users,
@@ -157,21 +162,6 @@ export default function Sidebar({
       to: '/admin/inventory/brands',
       label: 'Brands',
       icon: Layers,
-    },
-  ];
-
-  const adminFooterNavItems = [
-    {
-      to: '/admin/profile',
-      label: 'Admin Profile',
-      icon: User,
-      color: 'from-rose-500 to-pink-600',
-    },
-    {
-      to: '/admin/change-password',
-      label: 'Security & Password',
-      icon: KeyRound,
-      color: 'from-amber-500 to-orange-600',
     },
   ];
 
@@ -406,31 +396,7 @@ export default function Sidebar({
                   )}
                 </div>
 
-                {/* Profile & Security Footer Items */}
-                {adminFooterNavItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      onClick={onClose}
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all group ${
-                          isActive
-                            ? 'bg-gradient-to-r from-blue-600/25 via-indigo-600/15 to-transparent text-white border-l-4 border-blue-500 shadow-sm'
-                            : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-                        }`
-                      }
-                    >
-                      <div
-                        className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${item.color} text-white flex items-center justify-center shrink-0 icon-3d shadow-md group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-300`}
-                      >
-                        <Icon className="w-4 h-4 drop-shadow-sm" />
-                      </div>
-                      <span className="truncate group-hover:translate-x-0.5 transition-transform">{item.label}</span>
-                    </NavLink>
-                  );
-                })}
+
               </>
             )}
           </div>
