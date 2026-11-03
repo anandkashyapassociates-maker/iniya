@@ -23,7 +23,6 @@ import {
   Layers,
   FileText,
 } from 'lucide-react';
-import { ClinicBrandIcon } from '../components/ClinicArtwork';
 
 export default function Sidebar({
   role = 'admin', // 'superadmin' | 'admin'
@@ -185,23 +184,18 @@ export default function Sidebar({
       >
         {/* Top Branding Section */}
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="h-18 px-5 border-b border-slate-800/80 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-3">
-              <ClinicBrandIcon size={40} variant={isSuperAdmin ? 'purple' : 'blue'} />
-              <div>
-                <span className="text-sm font-bold tracking-tight text-white block leading-snug font-display">
-                  Iniya Clinic<span className="text-blue-400">.</span>OPD
-                </span>
-                <span className="text-[10px] font-semibold text-emerald-400 flex items-center gap-1 micro-label">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping inline-block" />
-                  {isSuperAdmin ? 'Hospital Governance' : 'Doctors On Duty'}
-                </span>
-              </div>
+          <div className="h-24 px-3 border-b border-slate-800/80 flex items-center justify-between shrink-0 bg-slate-950/40">
+            <div className="flex-1 h-[82px] flex items-center justify-center bg-white rounded-2xl p-1.5 shadow-md border border-white/20 overflow-hidden">
+              <img
+                src="/logo.png"
+                alt="Iniya Aesthetics & Wellness"
+                className="w-full h-full object-contain"
+              />
             </div>
 
             <button
               onClick={onClose}
-              className="lg:hidden text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer"
+              className="lg:hidden ml-2 text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer shrink-0"
             >
               <X className="w-5 h-5" />
             </button>
