@@ -433,176 +433,219 @@ export default function AdminInventoryReportsPage() {
 
       {/* Real-time KPI Ribbon */}
       {activeTab === 'products' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-5">
           {/* Card 1: Total Products */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-white via-white to-blue-50/40 border border-slate-200/90 p-5 shadow-xs hover:shadow-md hover:border-blue-200 transition-all duration-200 flex flex-col justify-between group">
             <div>
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-                Total Products
-              </span>
-              <span className="text-2xl font-bold text-slate-900 font-mono mt-0.5 block">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
+                  Total Products
+                </span>
+                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100 shadow-2xs group-hover:scale-105 transition-transform">
+                  <Package className="w-4.5 h-4.5" />
+                </div>
+              </div>
+              <div className="text-2xl sm:text-[26px] font-extrabold text-slate-900 font-mono tracking-tight leading-none mb-1.5 truncate">
                 {(metrics.total_products || 0).toLocaleString()}
-              </span>
-              <span className="text-[10px] text-slate-400 mt-0.5 block">Active catalog items</span>
+              </div>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
-              <Package className="w-5 h-5" />
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 pt-2 border-t border-slate-100/80 truncate">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></span>
+              <span className="truncate">Active catalog items</span>
             </div>
           </div>
 
           {/* Card 2: Total Units In Stock */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-white via-white to-emerald-50/40 border border-slate-200/90 p-5 shadow-xs hover:shadow-md hover:border-emerald-200 transition-all duration-200 flex flex-col justify-between group">
             <div>
-              <span className="text-[11px] font-semibold text-emerald-600 uppercase tracking-wider block">
-                Total In-Hand Stock
-              </span>
-              <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-2xl font-bold text-emerald-700 font-mono">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider truncate">
+                  Total In-Hand Stock
+                </span>
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100 shadow-2xs group-hover:scale-105 transition-transform">
+                  <Boxes className="w-4.5 h-4.5" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1.5 mb-1.5 truncate">
+                <span className="text-2xl sm:text-[26px] font-extrabold text-emerald-700 font-mono tracking-tight leading-none">
                   {(metrics.total_stock_units || 0).toLocaleString()}
                 </span>
-                <span className="text-xs text-emerald-600 font-medium">Units</span>
+                <span className="text-xs font-semibold text-emerald-600 font-sans">Units</span>
               </div>
-              <span className="text-[10px] text-emerald-600 font-medium mt-0.5 block">Available clinic inventory</span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
-              <Boxes className="w-5 h-5" />
+            <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium pt-2 border-t border-slate-100/80 truncate">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+              <span className="truncate">Available clinic inventory</span>
             </div>
           </div>
 
           {/* Card 3: Inventory Valuation */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-white via-white to-indigo-50/40 border border-slate-200/90 p-5 shadow-xs hover:shadow-md hover:border-indigo-200 transition-all duration-200 flex flex-col justify-between group">
             <div>
-              <span className="text-[11px] font-semibold text-indigo-600 uppercase tracking-wider block">
-                Stock Valuation (Cost)
-              </span>
-              <span className="text-xl font-bold text-indigo-700 font-mono mt-0.5 block">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <span className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider truncate">
+                  Stock Valuation (Cost)
+                </span>
+                <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100 shadow-2xs group-hover:scale-105 transition-transform">
+                  <TrendingUp className="w-4.5 h-4.5" />
+                </div>
+              </div>
+              <div
+                className="text-2xl sm:text-[24px] xl:text-[26px] font-extrabold text-indigo-700 font-mono tracking-tight leading-none mb-1.5 truncate"
+                title={`₹${(metrics.total_valuation || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+              >
                 ₹{(metrics.total_valuation || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-              <span className="text-[10px] text-indigo-500 mt-0.5 block">Asset value at Buy Price</span>
+              </div>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100">
-              <TrendingUp className="w-5 h-5" />
+            <div className="flex items-center gap-1.5 text-xs text-indigo-600 font-medium pt-2 border-t border-slate-100/80 truncate">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0"></span>
+              <span className="truncate">Asset value at Buy Price</span>
             </div>
           </div>
 
           {/* Card 4: Potential Retail Value */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-white via-white to-purple-50/40 border border-slate-200/90 p-5 shadow-xs hover:shadow-md hover:border-purple-200 transition-all duration-200 flex flex-col justify-between group">
             <div>
-              <span className="text-[11px] font-semibold text-purple-600 uppercase tracking-wider block">
-                Total Retail Value (MRP)
-              </span>
-              <span className="text-xl font-bold text-purple-700 font-mono mt-0.5 block">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <span className="text-[11px] font-bold text-purple-700 uppercase tracking-wider truncate">
+                  Total Retail Value (MRP)
+                </span>
+                <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100 shadow-2xs group-hover:scale-105 transition-transform">
+                  <FileText className="w-4.5 h-4.5" />
+                </div>
+              </div>
+              <div
+                className="text-2xl sm:text-[24px] xl:text-[26px] font-extrabold text-purple-700 font-mono tracking-tight leading-none mb-1.5 truncate"
+                title={`₹${(metrics.total_retail_value || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+              >
                 ₹{(metrics.total_retail_value || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-              <span className="text-[10px] text-purple-500 mt-0.5 block">Max retail realization</span>
+              </div>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100">
-              <FileText className="w-5 h-5" />
+            <div className="flex items-center gap-1.5 text-xs text-purple-600 font-medium pt-2 border-t border-slate-100/80 truncate">
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0"></span>
+              <span className="truncate">Max retail realization</span>
             </div>
           </div>
 
           {/* Card 5: Reorder Alerts */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-white via-white to-amber-50/40 border border-slate-200/90 p-5 shadow-xs hover:shadow-md hover:border-amber-200 transition-all duration-200 flex flex-col justify-between group">
             <div>
-              <span className="text-[11px] font-semibold text-amber-600 uppercase tracking-wider block">
-                Reorder Alerts
-              </span>
-              <div className="flex items-baseline gap-2 mt-0.5">
-                <span className="text-2xl font-bold text-amber-700 font-mono">
-                  {(metrics.low_stock_count || 0)}
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <span className="text-[11px] font-bold text-amber-700 uppercase tracking-wider truncate">
+                  Reorder Alerts
                 </span>
-                <span className="text-xs font-semibold text-amber-600">Low</span>
-                {(metrics.out_of_stock_count || 0) > 0 && (
-                  <span className="text-xs font-semibold text-rose-600 font-mono">
-                    / {metrics.out_of_stock_count} Out
-                  </span>
-                )}
+                <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100 shadow-2xs group-hover:scale-105 transition-transform">
+                  <AlertTriangle className="w-4.5 h-4.5" />
+                </div>
               </div>
-              <span className="text-[10px] text-amber-600 mt-0.5 block">Items below minimum threshold</span>
+              <div className="flex items-baseline gap-2 mb-1.5">
+                <span className="text-2xl sm:text-[26px] font-extrabold text-slate-900 font-mono tracking-tight leading-none">
+                  {(metrics.low_stock_count || 0) + (metrics.out_of_stock_count || 0)}
+                </span>
+                <span className="text-xs font-semibold text-slate-500">Items Alerted</span>
+              </div>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100">
-              <AlertTriangle className="w-5 h-5" />
+            <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-slate-100/80">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200/80 text-[11px] font-bold font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                {metrics.low_stock_count || 0} Low
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200/80 text-[11px] font-bold font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                {metrics.out_of_stock_count || 0} Out
+              </span>
             </div>
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {/* Card 1: Total Transactions */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-white via-white to-slate-50/60 border border-slate-200/90 p-5 shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 flex flex-col justify-between group">
             <div>
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-                Filtered Records
-              </span>
-              <span className="text-2xl font-bold text-slate-900 font-mono mt-0.5 block">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">
+                  Filtered Records
+                </span>
+                <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 border border-slate-200 shadow-2xs group-hover:scale-105 transition-transform">
+                  <FileText className="w-4.5 h-4.5" />
+                </div>
+              </div>
+              <div className="text-2xl sm:text-[26px] font-extrabold text-slate-900 font-mono tracking-tight leading-none mb-1.5 truncate">
                 {(metrics.total_records || 0).toLocaleString()}
-              </span>
-              <span className="text-[10px] text-slate-400 mt-0.5 block">Total logged stock events</span>
+              </div>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center shrink-0 border border-slate-200/80">
-              <FileText className="w-5 h-5" />
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 pt-2 border-t border-slate-100/80 truncate">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0"></span>
+              <span className="truncate">Total logged stock events</span>
             </div>
           </div>
 
           {/* Card 2: Total Added (Credit) */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-white via-white to-emerald-50/40 border border-slate-200/90 p-5 shadow-xs hover:shadow-md hover:border-emerald-200 transition-all duration-200 flex flex-col justify-between group">
             <div>
-              <span className="text-[11px] font-semibold text-emerald-600 uppercase tracking-wider block">
-                Stock In (+ Credit)
-              </span>
-              <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-2xl font-bold text-emerald-700 font-mono">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider truncate">
+                  Stock In (+ Credit)
+                </span>
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100 shadow-2xs group-hover:scale-105 transition-transform">
+                  <TrendingUp className="w-4.5 h-4.5" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1.5 mb-1.5 truncate">
+                <span className="text-2xl sm:text-[26px] font-extrabold text-emerald-700 font-mono tracking-tight leading-none">
                   +{(metrics.total_credit_qty || 0).toLocaleString()}
                 </span>
-                <span className="text-xs text-emerald-600 font-medium">Units</span>
+                <span className="text-xs font-semibold text-emerald-600 font-sans">Units</span>
               </div>
-              <span className="text-[10px] font-mono text-emerald-600 font-semibold mt-0.5 block">
-                Val: ₹{(metrics.total_credit_value || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
-              <TrendingUp className="w-5 h-5" />
+            <div className="text-xs font-mono text-emerald-600 font-bold pt-2 border-t border-slate-100/80 truncate">
+              Val: ₹{(metrics.total_credit_value || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
 
           {/* Card 3: Total Issued (Debit) */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-white via-white to-rose-50/40 border border-slate-200/90 p-5 shadow-xs hover:shadow-md hover:border-rose-200 transition-all duration-200 flex flex-col justify-between group">
             <div>
-              <span className="text-[11px] font-semibold text-rose-600 uppercase tracking-wider block">
-                Stock Out (- Debit)
-              </span>
-              <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-2xl font-bold text-rose-700 font-mono">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <span className="text-[11px] font-bold text-rose-700 uppercase tracking-wider truncate">
+                  Stock Out (- Debit)
+                </span>
+                <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100 shadow-2xs group-hover:scale-105 transition-transform">
+                  <TrendingDown className="w-4.5 h-4.5" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1.5 mb-1.5 truncate">
+                <span className="text-2xl sm:text-[26px] font-extrabold text-rose-700 font-mono tracking-tight leading-none">
                   -{(metrics.total_debit_qty || 0).toLocaleString()}
                 </span>
-                <span className="text-xs text-rose-600 font-medium">Units</span>
+                <span className="text-xs font-semibold text-rose-600 font-sans">Units</span>
               </div>
-              <span className="text-[10px] font-mono text-rose-600 font-semibold mt-0.5 block">
-                Val: ₹{(metrics.total_debit_value || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
-              <TrendingDown className="w-5 h-5" />
+            <div className="text-xs font-mono text-rose-600 font-bold pt-2 border-t border-slate-100/80 truncate">
+              Val: ₹{(metrics.total_debit_value || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
 
           {/* Card 4: Net Movement */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-white via-white to-blue-50/40 border border-slate-200/90 p-5 shadow-xs hover:shadow-md hover:border-blue-200 transition-all duration-200 flex flex-col justify-between group">
             <div>
-              <span className="text-[11px] font-semibold text-blue-600 uppercase tracking-wider block">
-                Net Stock Movement
-              </span>
-              <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-2xl font-bold text-blue-800 font-mono">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wider truncate">
+                  Net Stock Movement
+                </span>
+                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100 shadow-2xs group-hover:scale-105 transition-transform">
+                  <Boxes className="w-4.5 h-4.5" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1.5 mb-1.5 truncate">
+                <span className="text-2xl sm:text-[26px] font-extrabold text-blue-800 font-mono tracking-tight leading-none">
                   {(metrics.net_qty || 0) >= 0 ? '+' : ''}{(metrics.net_qty || 0).toLocaleString()}
                 </span>
-                <span className="text-xs text-blue-600 font-medium">Units</span>
+                <span className="text-xs font-semibold text-blue-600 font-sans">Units</span>
               </div>
-              <span className="text-[10px] font-mono text-blue-600 font-semibold mt-0.5 block">
-                Net Val: ₹{(metrics.net_value || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
-              <Boxes className="w-5 h-5" />
+            <div className="text-xs font-mono text-blue-600 font-bold pt-2 border-t border-slate-100/80 truncate">
+              Net Val: ₹{(metrics.net_value || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
         </div>
@@ -903,19 +946,19 @@ export default function AdminInventoryReportsPage() {
             /* ============================================================== */
             <table className="w-full text-left border-collapse min-w-[1100px]">
               <thead>
-                <tr className="border-b border-slate-200/80 bg-slate-50/80 text-[10px] font-bold text-slate-600 uppercase tracking-widest">
-                  <th className="py-3.5 px-3 w-14 text-center">SR. NO.</th>
-                  <th className="py-3.5 px-4 w-[24%]">Product Name &amp; Classification</th>
-                  <th className="py-3.5 px-4 w-[14%]">Category &amp; Brand</th>
-                  <th className="py-3.5 px-4 w-[14%]">Vendor / Supplier</th>
-                  <th className="py-3.5 px-3 text-center w-20">Unit</th>
-                  <th className="py-3.5 px-4 text-right w-24">Buy Price</th>
-                  <th className="py-3.5 px-4 text-center w-28">Current Stock</th>
-                  <th className="py-3.5 px-4 text-right w-32">Total Valuation</th>
-                  <th className="py-3.5 px-3 text-right w-24">MRP (₹)</th>
-                  <th className="py-3.5 px-3 text-center w-28">Stock Status</th>
-                  <th className="py-3.5 px-4 w-[12%]">Admin</th>
-                  <th className="py-3.5 px-3 text-center w-24">Action</th>
+                <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="py-4 px-3 w-14 text-center whitespace-nowrap">SR. NO.</th>
+                  <th className="py-4 px-4 min-w-[220px]">Product Name &amp; Classification</th>
+                  <th className="py-4 px-4 min-w-[140px]">Category &amp; Brand</th>
+                  <th className="py-4 px-4 min-w-[150px]">Vendor / Supplier</th>
+                  <th className="py-4 px-3 text-center min-w-[80px] whitespace-nowrap">Unit</th>
+                  <th className="py-4 px-4 text-right min-w-[110px] whitespace-nowrap">Buy Price</th>
+                  <th className="py-4 px-4 text-center min-w-[120px] whitespace-nowrap">Current Stock</th>
+                  <th className="py-4 px-4 text-right min-w-[140px] whitespace-nowrap">Total Valuation</th>
+                  <th className="py-4 px-3 text-right min-w-[100px] whitespace-nowrap">MRP (₹)</th>
+                  <th className="py-4 px-3 text-center min-w-[130px] whitespace-nowrap">Stock Status</th>
+                  <th className="py-4 px-4 min-w-[120px]">Admin</th>
+                  <th className="py-4 px-3 text-center min-w-[90px] whitespace-nowrap">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs">
@@ -935,12 +978,12 @@ export default function AdminInventoryReportsPage() {
                       className="hover:bg-blue-50/20 transition-colors group"
                     >
                       {/* 1. SR. NO. */}
-                      <td className="py-3.5 px-3 text-center font-mono font-semibold text-slate-500 bg-slate-50/40">
+                      <td className="py-4 px-3 text-center font-mono font-semibold text-slate-500 bg-slate-50/40 whitespace-nowrap">
                         {srNo}
                       </td>
 
                       {/* 2. Product Name & Classification */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-4 px-4">
                         <div className="space-y-1">
                           <Link
                             to={`/admin/inventory/stocks/${prod.id}`}
@@ -962,7 +1005,7 @@ export default function AdminInventoryReportsPage() {
                       </td>
 
                       {/* 3. Category & Brand */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-4 px-4">
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-1 text-slate-700 font-medium">
                             <FolderTree className="w-3 h-3 text-slate-400 shrink-0" />
@@ -978,7 +1021,7 @@ export default function AdminInventoryReportsPage() {
                       </td>
 
                       {/* 4. Vendor / Supplier */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-4 px-4">
                         {prod.vendor ? (
                           <div className="space-y-0.5">
                             <div className="flex items-center gap-1 text-slate-800 font-semibold truncate">
@@ -997,19 +1040,19 @@ export default function AdminInventoryReportsPage() {
                       </td>
 
                       {/* 5. Unit */}
-                      <td className="py-3.5 px-3 text-center">
+                      <td className="py-4 px-3 text-center whitespace-nowrap">
                         <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
                           {prod.business_unit || 'Unit'}
                         </span>
                       </td>
 
                       {/* 6. Buy Price */}
-                      <td className="py-3.5 px-4 text-right font-mono font-semibold text-slate-700">
+                      <td className="py-4 px-4 text-right font-mono font-semibold text-slate-700 whitespace-nowrap">
                         ₹{buyPrice.toFixed(2)}
                       </td>
 
                       {/* 7. Current Stock */}
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-4 px-4 text-center whitespace-nowrap">
                         <div className="inline-flex items-center gap-1 font-mono font-bold text-sm text-slate-900 bg-slate-50 px-2.5 py-1 rounded-xl border border-slate-200/80">
                           <span>{qty}</span>
                           <span className="text-[10px] font-normal text-slate-500 font-sans">
@@ -1019,29 +1062,29 @@ export default function AdminInventoryReportsPage() {
                       </td>
 
                       {/* 8. Total Valuation */}
-                      <td className="py-3.5 px-4 text-right">
+                      <td className="py-4 px-4 text-right whitespace-nowrap">
                         <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200/60 inline-block">
                           ₹{totalVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </td>
 
                       {/* 9. MRP */}
-                      <td className="py-3.5 px-3 text-right font-mono text-slate-600">
+                      <td className="py-4 px-3 text-right font-mono text-slate-600 whitespace-nowrap">
                         ₹{mrp.toFixed(2)}
                       </td>
 
                       {/* 10. Stock Status */}
-                      <td className="py-3.5 px-3 text-center">
+                      <td className="py-4 px-3 text-center whitespace-nowrap">
                         {isOutOfStock ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
                             Out of Stock
                           </span>
                         ) : isLowStock ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                             Low Stock (≤{threshold})
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                             <CheckCircle2 className="w-2.5 h-2.5" />
                             In Stock
                           </span>
@@ -1049,12 +1092,12 @@ export default function AdminInventoryReportsPage() {
                       </td>
 
                       {/* 11. Admin & Date */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-4 px-4">
                         <div className="space-y-0.5">
                           <span className="font-semibold text-slate-700 block truncate">
                             {prod.inventory_updater?.name || prod.creator?.name || 'Admin'}
                           </span>
-                          <span className="text-[10px] text-slate-400 block">
+                          <span className="text-[10px] text-slate-400 block whitespace-nowrap">
                             {prod.inventory_updated_at || prod.updated_at
                               ? new Date(prod.inventory_updated_at || prod.updated_at).toLocaleDateString()
                               : '—'}
@@ -1063,7 +1106,7 @@ export default function AdminInventoryReportsPage() {
                       </td>
 
                       {/* 12. Action */}
-                      <td className="py-3.5 px-3 text-center">
+                      <td className="py-4 px-3 text-center whitespace-nowrap">
                         <Link
                           to={`/admin/inventory/stocks/${prod.id}`}
                           className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold text-blue-600 hover:text-white hover:bg-blue-600 transition-colors border border-blue-200 hover:border-blue-600 shadow-2xs"
@@ -1084,19 +1127,19 @@ export default function AdminInventoryReportsPage() {
             /* ============================================================== */
             <table className="w-full text-left border-collapse min-w-[900px]">
               <thead>
-                <tr className="border-b border-slate-200/80 bg-slate-50/80 text-[10px] font-bold text-slate-600 uppercase tracking-widest">
-                  <th className="py-3.5 px-3 w-14 text-center">SR. NO.</th>
-                  <th className="py-3.5 px-4 w-[13%]">Date &amp; Time</th>
-                  <th className="py-3.5 px-4 w-[22%]">Product Details</th>
-                  <th className="py-3.5 px-4 w-[13%]">Movement Type</th>
-                  <th className="py-3.5 px-4 text-right w-[11%]">Rate (₹)</th>
-                  <th className="py-3.5 px-4 text-right w-[13%] bg-emerald-50/40 text-emerald-800">
+                <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="py-4 px-3 w-14 text-center whitespace-nowrap">SR. NO.</th>
+                  <th className="py-4 px-4 min-w-[130px] whitespace-nowrap">Date &amp; Time</th>
+                  <th className="py-4 px-4 min-w-[220px]">Product Details</th>
+                  <th className="py-4 px-4 min-w-[150px] whitespace-nowrap">Movement Type</th>
+                  <th className="py-4 px-4 text-right min-w-[100px] whitespace-nowrap">Rate (₹)</th>
+                  <th className="py-4 px-4 text-right min-w-[130px] bg-emerald-50/40 text-emerald-800 whitespace-nowrap">
                     Credit (+ In)
                   </th>
-                  <th className="py-3.5 px-4 text-right w-[13%] bg-rose-50/40 text-rose-800">
+                  <th className="py-4 px-4 text-right min-w-[130px] bg-rose-50/40 text-rose-800 whitespace-nowrap">
                     Debit (- Out)
                   </th>
-                  <th className="py-3.5 px-4 text-right w-[11%] bg-blue-50/40 text-blue-900 font-mono">
+                  <th className="py-4 px-4 text-right min-w-[120px] bg-blue-50/40 text-blue-900 font-mono whitespace-nowrap">
                     Balance
                   </th>
                 </tr>
@@ -1115,18 +1158,18 @@ export default function AdminInventoryReportsPage() {
                   return (
                     <tr key={log.id} className="hover:bg-blue-50/30 transition-colors">
                       {/* SR. NO. */}
-                      <td className="py-3 px-3 text-center font-mono font-semibold text-slate-500 bg-slate-50/40">
+                      <td className="py-4 px-3 text-center font-mono font-semibold text-slate-500 bg-slate-50/40 whitespace-nowrap">
                         {srNo}
                       </td>
 
                       {/* Date & Time */}
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-4 whitespace-nowrap">
                         <span className="font-semibold text-slate-800 block">{date}</span>
                         <span className="text-[10px] text-slate-400 font-mono">{time}</span>
                       </td>
 
                       {/* Product Details */}
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-4">
                         <div className="space-y-0.5">
                           {log.product ? (
                             <Link
@@ -1148,7 +1191,7 @@ export default function AdminInventoryReportsPage() {
                       </td>
 
                       {/* Movement Type */}
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-4 whitespace-nowrap">
                         {isIssue ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                             <MinusCircle className="w-3 h-3" />
@@ -1172,22 +1215,22 @@ export default function AdminInventoryReportsPage() {
                       </td>
 
                       {/* Rate */}
-                      <td className="py-3 px-4 text-right font-mono text-slate-700">
+                      <td className="py-4 px-4 text-right font-mono text-slate-700 whitespace-nowrap">
                         {rate > 0 ? `₹${rate.toFixed(2)}` : '—'}
                       </td>
 
                       {/* Credit (+ In) */}
-                      <td className="py-3 px-4 text-right font-mono font-bold text-emerald-700 bg-emerald-50/20">
+                      <td className="py-4 px-4 text-right font-mono font-bold text-emerald-700 bg-emerald-50/20 whitespace-nowrap">
                         {!isIssue ? `+${qty} ${unit}` : '—'}
                       </td>
 
                       {/* Debit (- Out) */}
-                      <td className="py-3 px-4 text-right font-mono font-bold text-rose-700 bg-rose-50/20">
+                      <td className="py-4 px-4 text-right font-mono font-bold text-rose-700 bg-rose-50/20 whitespace-nowrap">
                         {isIssue ? `-${qty} ${unit}` : '—'}
                       </td>
 
                       {/* Running Balance */}
-                      <td className="py-3 px-4 text-right font-mono font-bold text-blue-900 bg-blue-50/20">
+                      <td className="py-4 px-4 text-right font-mono font-bold text-blue-900 bg-blue-50/20 whitespace-nowrap">
                         {log.running_balance !== null && log.running_balance !== undefined
                           ? `${log.running_balance} ${unit}`
                           : '—'}
