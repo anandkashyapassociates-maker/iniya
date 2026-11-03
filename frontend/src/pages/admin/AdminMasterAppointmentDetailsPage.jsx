@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Sparkles,
   ReceiptIndianRupee,
+  Image as ImageIcon,
 } from 'lucide-react';
 import adminMasterAppointmentService from '../../services/adminMasterAppointmentService';
 import SessionRescheduleModal from '../../components/admin/SessionRescheduleModal';
@@ -256,7 +257,7 @@ export default function AdminMasterAppointmentDetailsPage() {
       </div>
 
       {/* Master Info Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className={`grid grid-cols-1 ${appointment.image_url ? 'sm:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-3'} gap-4`}>
         {/* Customer Card */}
         <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-xs">
           <div className="flex items-center justify-between mb-2">
@@ -296,6 +297,36 @@ export default function AdminMasterAppointmentDetailsPage() {
           </div>
           <p className="text-[11px] text-slate-500 mt-1">Charged once at Master level</p>
         </div>
+
+        {/* Consultation / Prescription Image Card */}
+        {appointment.image_url && (
+          <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Consultation Image</span>
+                <div className="p-1.5 bg-purple-50 text-purple-600 rounded-lg">
+                  <ImageIcon className="w-4 h-4" />
+                </div>
+              </div>
+              <a
+                href={appointment.image_url}
+                target="_blank"
+                rel="noreferrer"
+                className="group block relative rounded-xl overflow-hidden border border-slate-200 bg-slate-50 aspect-video hover:opacity-95 transition-opacity"
+              >
+                <img
+                  src={appointment.image_url}
+                  alt="Consultation Document"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity">
+                  View Full Document &rarr;
+                </div>
+              </a>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-2 text-center">Click to open original image</p>
+          </div>
+        )}
       </div>
 
       {/* SESSIONS TABLE */}
