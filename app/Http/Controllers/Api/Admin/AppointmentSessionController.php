@@ -23,7 +23,7 @@ class AppointmentSessionController extends Controller
         $master = MasterAppointment::findOrFail($masterAppointmentId);
 
         $validated = $request->validate([
-            'service_id' => ['nullable', 'exists:services,id'],
+            'service_id' => ['required', 'exists:services,id'],
             'treatment_details' => ['nullable', 'string', 'max:5000'],
             'session_date' => ['required', 'date', 'after_or_equal:today'],
             'session_time' => ['required', 'string', 'max:20'],

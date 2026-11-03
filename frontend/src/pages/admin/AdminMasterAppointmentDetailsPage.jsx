@@ -216,6 +216,18 @@ export default function AdminMasterAppointmentDetailsPage() {
   // Add new session submit
   const handleAddSessionSubmit = async (e) => {
     e.preventDefault();
+    if (!newSessionData.category_id) {
+      toast.error('Please select a Category.');
+      return;
+    }
+    if (!newSessionData.sub_category_id) {
+      toast.error('Please select a Sub-Category.');
+      return;
+    }
+    if (!newSessionData.service_id) {
+      toast.error('Please select a Service.');
+      return;
+    }
     if (!newSessionData.treatment_details?.trim()) {
       toast.error('Please enter procedure / treatment details.');
       return;
@@ -703,7 +715,7 @@ export default function AdminMasterAppointmentDetailsPage() {
                   {/* Category */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Category
+                      Category <span className="text-rose-500">*</span>
                     </label>
                     <select
                       value={newSessionData.category_id || ''}
@@ -722,7 +734,7 @@ export default function AdminMasterAppointmentDetailsPage() {
                   {/* Sub-Category */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Sub-Category
+                      Sub-Category <span className="text-rose-500">*</span>
                     </label>
                     <select
                       value={newSessionData.sub_category_id || ''}
@@ -744,7 +756,7 @@ export default function AdminMasterAppointmentDetailsPage() {
                   {/* Service */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Service
+                      Service <span className="text-rose-500">*</span>
                     </label>
                     <select
                       value={newSessionData.service_id || ''}
