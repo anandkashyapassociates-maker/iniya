@@ -27,8 +27,33 @@ class MasterAppointment extends Model
         'sales_team_id',
         'appointment_fees',
         'notes',
+        'image',
         'admin_id',
     ];
+
+    /**
+     * Appended attributes.
+     */
+    protected $appends = [
+        'image_url',
+    ];
+
+    /**
+     * Accessor for full image URL.
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        $img = $this->image;
+        if (! $img) {
+            return null;
+        }
+
+        if (str_starts_with($img, 'http://') || str_starts_with($img, 'https://')) {
+            return $img;
+        }
+
+        return asset('storage/'.ltrim($img, '/'));
+    }
 
     /**
      * Get the attributes that should be cast.

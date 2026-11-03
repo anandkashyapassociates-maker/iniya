@@ -69,6 +69,7 @@ import AdminInventoryStocksPage from '../pages/admin/inventory/AdminInventorySto
 import AdminStockDetailsPage from '../pages/admin/inventory/AdminStockDetailsPage';
 import AdminInventoryReportsPage from '../pages/admin/inventory/AdminInventoryReportsPage';
 import AdminPayoutsReportsPage from '../pages/admin/reports/AdminPayoutsReportsPage';
+import StaffMyAppointmentsPage from '../pages/admin/staff/StaffMyAppointmentsPage';
 
 // Portal Root
 import LandingPage from '../pages/LandingPage';
@@ -164,6 +165,8 @@ export default function AppRoutes() {
       <Route element={<AdminProtectedRoute />}>
         <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+          {/* Staff Personal Portal */}
+          <Route path="/admin/my-appointments" element={<StaffMyAppointmentsPage />} />
           <Route path="/admin/appointments" element={<AdminMasterAppointmentsPage />} />
           <Route path="/admin/appointments/create" element={<AdminMasterAppointmentCreatePage />} />
           <Route path="/admin/appointments/services" element={<AdminServicesManagementPage />} />

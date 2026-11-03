@@ -12,6 +12,7 @@ import {
   Calendar,
   CalendarDays,
   CalendarPlus,
+  CalendarCheck,
   ListFilter,
   Sparkles,
   ChevronDown,
@@ -86,6 +87,8 @@ export default function Sidebar({
     },
   ];
 
+  const isStaff = user?.role === 'staff';
+
   const adminNavItems = [
     {
       to: '/admin/dashboard',
@@ -93,6 +96,17 @@ export default function Sidebar({
       icon: LayoutDashboard,
       color: 'from-blue-600 to-indigo-600',
     },
+    // My Appointments: Only visible to logged-in Staff members (Admin ko show nahi honge)
+    ...(isStaff
+      ? [
+          {
+            to: '/admin/my-appointments',
+            label: 'My Appointments',
+            icon: CalendarCheck,
+            color: 'from-emerald-600 to-teal-600',
+          },
+        ]
+      : []),
     {
       to: '/admin/profile',
       label: 'Profile',
@@ -105,36 +119,41 @@ export default function Sidebar({
       icon: Users,
       color: 'from-teal-500 to-emerald-600',
     },
-    {
-      label: 'Appointments',
-      icon: Calendar,
-      color: 'from-blue-600 to-indigo-600',
-      isDropdown: true,
-      basePath: '/admin/appointments',
-      children: [
-        {
-          to: '/admin/appointments/create',
-          label: 'Create Appointments',
-          icon: CalendarPlus,
-        },
-        {
-          to: '/admin/appointments',
-          label: 'Appointments Directory',
-          icon: ListFilter,
-          end: true,
-        },
-        {
-          to: '/admin/appointments/services',
-          label: 'Create Services',
-          icon: Sparkles,
-        },
-        {
-          to: '/admin/appointments/calendar',
-          label: 'Session Calendar',
-          icon: CalendarDays,
-        },
-      ],
-    },
+    // Regular Appointments Management: Visible to Admin (Admin can manage all appointments)
+    ...(!isStaff
+      ? [
+          {
+            label: 'Appointments',
+            icon: Calendar,
+            color: 'from-blue-600 to-indigo-600',
+            isDropdown: true,
+            basePath: '/admin/appointments',
+            children: [
+              {
+                to: '/admin/appointments/create',
+                label: 'Create Appointments',
+                icon: CalendarPlus,
+              },
+              {
+                to: '/admin/appointments',
+                label: 'Appointments Directory',
+                icon: ListFilter,
+                end: true,
+              },
+              {
+                to: '/admin/appointments/services',
+                label: 'Create Services',
+                icon: Sparkles,
+              },
+              {
+                to: '/admin/appointments/calendar',
+                label: 'Session Calendar',
+                icon: CalendarDays,
+              },
+            ],
+          },
+        ]
+      : []),
   ];
 
   const inventorySubItems = [

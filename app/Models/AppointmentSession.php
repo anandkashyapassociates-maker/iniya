@@ -50,11 +50,30 @@ class AppointmentSession extends Model
         'inventory_product_id',
         'inventory_product_ids',
         'status',
+        'image',
     ];
 
     protected $appends = [
         'selected_products',
+        'image_url',
     ];
+
+    /**
+     * Accessor for full session image URL.
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        $img = $this->image;
+        if (! $img) {
+            return null;
+        }
+
+        if (str_starts_with($img, 'http://') || str_starts_with($img, 'https://')) {
+            return $img;
+        }
+
+        return asset('storage/'.ltrim($img, '/'));
+    }
 
     /**
      * Get the attributes that should be cast.

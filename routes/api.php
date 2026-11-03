@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Admin\MasterAppointmentController;
 use App\Http\Controllers\Api\Admin\ProductController;
 use App\Http\Controllers\Api\Admin\ServiceManagementController;
 use App\Http\Controllers\Api\Admin\SessionRescheduleController;
+use App\Http\Controllers\Api\Admin\StaffAppointmentController;
 use App\Http\Controllers\Api\SuperAdmin\AdminManagementController;
 use App\Http\Controllers\Api\SuperAdmin\PayoutController;
 use App\Http\Controllers\Api\SuperAdmin\SalesMemberManagementController;
@@ -314,4 +315,12 @@ Route::prefix('admin')
             Route::get('/{id}', [PayoutController::class, 'show']);
         });
         Route::get('/payouts/ledger', [PayoutController::class, 'ledger']);
+
+        // ==========================================
+        // STAFF PERSONAL PORTAL: MY APPOINTMENTS
+        // ==========================================
+        Route::prefix('my-appointments')->group(function () {
+            Route::get('/', [StaffAppointmentController::class, 'index']);
+            Route::get('/{id}', [StaffAppointmentController::class, 'show']);
+        });
     });
