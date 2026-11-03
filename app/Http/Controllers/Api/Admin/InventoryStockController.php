@@ -292,7 +292,7 @@ class InventoryStockController extends Controller
         // Record stock issue log
         InventoryStockLog::create([
             'product_id' => $product->id,
-            'vendor_id' => $product->vendor_id,
+            'vendor_id' => null,
             'admin_id' => $admin->id,
             'quantity' => -$quantityToIssue,
             'business_unit' => $product->business_unit,
