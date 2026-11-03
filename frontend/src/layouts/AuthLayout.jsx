@@ -41,9 +41,13 @@ export default function AuthLayout({
 
           {/* Top Brand Header */}
           <div className="relative z-10">
-            {/* Prominent centered logo card */}
-            <div className="w-full bg-white rounded-2xl p-3 sm:p-3.5 shadow-xl shadow-black/20 border border-white/20 flex items-center justify-center mb-4">
-              <img src="/logo.png" alt="Iniya Aesthetics & Wellness" className="h-14 sm:h-16 w-auto max-w-[240px] object-contain" />
+            {/* Prominent centered radiant gold logo with transparent background */}
+            <div className="w-full flex items-center justify-center mb-5 py-1">
+              <img
+                src="/logo-gold.png"
+                alt="Iniya Aesthetics &amp; Wellness"
+                className="h-16 sm:h-20 w-auto max-w-[240px] object-contain drop-shadow-[0_4px_20px_rgba(255,230,170,0.35)] hover:scale-105 transition-transform duration-300"
+              />
             </div>
 
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-[10px] font-extrabold micro-label mb-3">
@@ -92,9 +96,13 @@ export default function AuthLayout({
                 <span>{isSuperAdmin ? 'Executive Authentication' : 'Clinical Access Verification'}</span>
               </div>
 
-              {/* Logo between badge and title */}
-              <div className="bg-white rounded-2xl py-2 px-5 shadow-lg border border-white/20 mb-3 flex items-center justify-center">
-                <img src="/logo.png" alt="Iniya Logo" className="h-10 sm:h-12 w-auto max-w-[200px] object-contain" />
+              {/* Logo between badge and title with transparent background */}
+              <div className="py-2 px-4 mb-3 flex items-center justify-center">
+                <img
+                  src="/logo-gold.png"
+                  alt="Iniya Aesthetics &amp; Wellness"
+                  className="h-14 sm:h-16 w-auto max-w-[210px] object-contain drop-shadow-[0_3px_16px_rgba(255,230,170,0.32)] hover:scale-105 transition-transform duration-300"
+                />
               </div>
 
               <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight font-display">{title}</h1>

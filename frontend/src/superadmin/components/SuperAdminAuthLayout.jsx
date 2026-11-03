@@ -27,9 +27,13 @@ export default function SuperAdminAuthLayout({
 
           {/* Top ERP & Clinic Branding */}
           <div className="relative z-10">
-            {/* Prominent centered logo card */}
-            <div className="w-full bg-white rounded-2xl p-3 sm:p-3.5 shadow-xl shadow-black/20 border border-white/20 flex items-center justify-center mb-4">
-              <img src="/logo.png" alt="Iniya Aesthetics & Wellness" className="h-14 sm:h-16 w-auto max-w-[240px] object-contain" />
+            {/* Prominent centered radiant gold logo with transparent background */}
+            <div className="w-full flex items-center justify-center mb-5 py-1">
+              <img
+                src="/logo-gold.png"
+                alt="Iniya Aesthetics &amp; Wellness"
+                className="h-16 sm:h-20 w-auto max-w-[240px] object-contain drop-shadow-[0_4px_20px_rgba(255,230,170,0.35)] hover:scale-105 transition-transform duration-300"
+              />
             </div>
 
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-400/20 text-purple-300 text-[11px] font-medium mb-3">
