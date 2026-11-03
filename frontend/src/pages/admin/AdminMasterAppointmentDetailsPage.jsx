@@ -5,10 +5,9 @@ import {
   Clock,
   User,
   ArrowLeft,
-  DollarSign,
+  IndianRupee,
   Plus,
   Trash2,
-  Edit3,
   History,
   RotateCw,
   Package,
@@ -20,12 +19,14 @@ import {
   ShieldCheck,
   ChevronRight,
   Sparkles,
+  ReceiptIndianRupee,
 } from 'lucide-react';
 import adminMasterAppointmentService from '../../services/adminMasterAppointmentService';
 import SessionRescheduleModal from '../../components/admin/SessionRescheduleModal';
 import SessionRescheduleHistoryModal from '../../components/admin/SessionRescheduleHistoryModal';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import ProductMultiSelectDropdown from '../../components/admin/ProductMultiSelectDropdown';
+import AppointmentReceiptModal from '../../components/admin/AppointmentReceiptModal';
 import { useToast } from '../../context/ToastContext';
 
 export default function AdminMasterAppointmentDetailsPage() {
@@ -43,6 +44,20 @@ export default function AdminMasterAppointmentDetailsPage() {
   const [historySession, setHistorySession] = useState(null);
   const [deleteSessionId, setDeleteSessionId] = useState(null);
   const [deletingSession, setDeletingSession] = useState(false);
+  const [receiptModal, setReceiptModal] = useState({ isOpen: false, type: 'master', session: null });
+
+  // Receipt Handlers
+  const handleOpenMasterReceipt = () => {
+    setReceiptModal({ isOpen: true, type: 'master', session: null });
+  };
+
+  const handleOpenSessionReceipt = (ses) => {
+    setReceiptModal({ isOpen: true, type: 'session', session: ses });
+  };
+
+  const handleCloseReceipt = () => {
+    setReceiptModal({ isOpen: false, type: 'master', session: null });
+  };
 
   // Add extra session modal/form state
   const [showAddSessionModal, setShowAddSessionModal] = useState(false);
@@ -198,11 +213,11 @@ export default function AdminMasterAppointmentDetailsPage() {
   return (
     <div className="space-y-6 pb-12">
       {/* Top Header Card */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="min-w-0">
           <button
             onClick={() => navigate('/admin/appointments')}
-            className="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 mb-2 transition-colors"
+            className="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 mb-2 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Appointments Directory</span>
@@ -220,19 +235,19 @@ export default function AdminMasterAppointmentDetailsPage() {
           </p>
         </div>
 
-        <div className="flex items-center space-x-3 w-full sm:w-auto">
+        <div className="flex items-center gap-3 shrink-0 w-full md:w-auto">
           <button
             type="button"
-            onClick={() => navigate(`/admin/appointments/${id}/edit`)}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition-all shadow-xs"
+            onClick={handleOpenMasterReceipt}
+            className="flex-1 md:flex-initial inline-flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-all shadow-xs cursor-pointer whitespace-nowrap"
           >
-            <Edit3 className="w-4 h-4" />
-            <span>Edit Master Info</span>
+            <ReceiptIndianRupee className="w-4 h-4" />
+            <span>Payment Receipt</span>
           </button>
           <button
             type="button"
             onClick={() => setShowAddSessionModal(true)}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition-all shadow-xs"
+            className="flex-1 md:flex-initial inline-flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition-all shadow-xs cursor-pointer whitespace-nowrap"
           >
             <Plus className="w-4 h-4" />
             <span>Add Extra Session</span>
@@ -273,7 +288,7 @@ export default function AdminMasterAppointmentDetailsPage() {
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Appointment Fees</span>
             <div className="p-1.5 bg-amber-50 text-amber-600 rounded-lg">
-              <DollarSign className="w-4 h-4" />
+              <IndianRupee className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl font-black text-slate-900">
@@ -417,6 +432,16 @@ export default function AdminMasterAppointmentDetailsPage() {
                     {/* Actions */}
                     <td className="py-3 px-4 text-center">
                       <div className="flex items-center justify-center space-x-1.5">
+                        {/* Session Receipt Button */}
+                        <button
+                          type="button"
+                          onClick={() => handleOpenSessionReceipt(ses)}
+                          title="View & Download Session Payment Receipt (₹)"
+                          className="p-1.5 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <ReceiptIndianRupee className="w-4 h-4" />
+                        </button>
+
                         {/* Reschedule Button */}
                         <button
                           type="button"
@@ -643,6 +668,15 @@ export default function AdminMasterAppointmentDetailsPage() {
         onConfirm={handleDeleteSessionConfirm}
         onCancel={() => setDeleteSessionId(null)}
         isLoading={deletingSession}
+      />
+
+      {/* Appointment & Session Payment Receipt Modal */}
+      <AppointmentReceiptModal
+        isOpen={receiptModal.isOpen}
+        onClose={handleCloseReceipt}
+        appointment={appointment}
+        session={receiptModal.session}
+        type={receiptModal.type}
       />
     </div>
   );
