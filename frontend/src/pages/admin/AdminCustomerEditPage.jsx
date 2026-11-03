@@ -314,33 +314,35 @@ export default function AdminCustomerEditPage() {
                 </div>
               </div>
 
-              {/* Patient Card Preview (Glassmorphic Frosted Card) */}
-              <div className="relative overflow-hidden p-5 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-white/15 shadow-xl shadow-slate-900/15 text-white space-y-4">
-                {/* Decorative Ambient Glass Glows */}
-                <div className="absolute -top-12 -right-12 w-36 h-36 bg-blue-500/25 rounded-full blur-2xl pointer-events-none" />
-                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-500/25 rounded-full blur-2xl pointer-events-none" />
-                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.07] to-transparent pointer-events-none" />
+              {/* Patient Card Preview (Deep Dark Transparent Frosted Glass) */}
+              <div className="relative overflow-hidden p-5 rounded-2xl bg-slate-950/92 backdrop-blur-2xl border border-slate-800/90 ring-1 ring-white/10 shadow-2xl shadow-slate-950/40 text-white space-y-4">
+                {/* Subtle Midnight Specular Ambient Glow */}
+                <div className="absolute -top-16 -right-16 w-40 h-40 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-16 -left-16 w-40 h-40 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] via-transparent to-black/30 pointer-events-none" />
 
                 {/* Card Header */}
-                <div className="relative z-10 flex items-center justify-between pb-3 border-b border-white/10">
+                <div className="relative z-10 flex items-center justify-between pb-3 border-b border-slate-800/90">
                   <div className="flex items-center gap-2">
-                    <HeartPulse className="w-4 h-4 text-rose-400 animate-pulse" />
+                    <HeartPulse className="w-4 h-4 text-rose-500 animate-pulse drop-shadow-[0_0_6px_rgba(244,63,94,0.4)]" />
                     <span className="text-xs font-bold text-white tracking-wide font-display">
                       Patient Medical Record
                     </span>
                   </div>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-200 border border-blue-400/30 tracking-wider">
+                  <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-md bg-blue-950/80 text-blue-300 border border-blue-700/50 tracking-wider">
                     {recordCode}
                   </span>
                 </div>
 
                 {/* Patient Primary Details */}
                 <div className="relative z-10 flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md overflow-hidden flex items-center justify-center font-bold text-base text-white border border-white/20 shadow-inner shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-slate-900/90 overflow-hidden flex items-center justify-center font-bold text-base text-white border border-slate-700/80 shadow-inner shrink-0">
                     {imagePreview ? (
                       <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
-                      formData.name?.charAt(0).toUpperCase() || 'P'
+                      <span className="bg-gradient-to-tr from-blue-400 to-indigo-300 bg-clip-text text-transparent font-extrabold">
+                        {formData.name?.charAt(0).toUpperCase() || 'P'}
+                      </span>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -348,11 +350,11 @@ export default function AdminCustomerEditPage() {
                       {formData.name || 'Patient Full Name'}
                     </div>
                     <div className="flex items-center gap-2 text-[11px] text-slate-300 font-medium capitalize mt-1">
-                      <span className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-bold text-slate-200 border border-white/10">
+                      <span className="px-2 py-0.5 rounded-md bg-slate-800/90 text-[10px] font-bold text-slate-200 border border-slate-700/80">
                         {formData.gender || 'Gender'}
                       </span>
-                      <span className="text-slate-400">•</span>
-                      <span className="text-slate-200 font-medium">
+                      <span className="text-slate-500">•</span>
+                      <span className="text-slate-300 font-medium">
                         {formData.age ? `${formData.age} Yrs` : 'Age pending'}
                       </span>
                     </div>
@@ -360,7 +362,7 @@ export default function AdminCustomerEditPage() {
                 </div>
 
                 {/* Card Footer: Contact & Clearance Status */}
-                <div className="relative z-10 grid grid-cols-2 gap-3 pt-3 border-t border-white/10 text-[11px]">
+                <div className="relative z-10 grid grid-cols-2 gap-3 pt-3 border-t border-slate-800/90 text-[11px]">
                   <div>
                     <div className="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Contact</div>
                     <div className="text-white font-mono font-bold text-xs truncate mt-0.5">
@@ -371,15 +373,15 @@ export default function AdminCustomerEditPage() {
                     <div className="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">Clearance</div>
                     <div className="mt-0.5">
                       <span
-                        className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded-md border backdrop-blur-xs ${
+                        className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-md border ${
                           formData.is_active
-                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                            : 'bg-slate-700/40 text-slate-300 border-slate-600/40'
+                            ? 'bg-emerald-950/80 text-emerald-300 border-emerald-600/50 shadow-[0_0_10px_rgba(16,185,129,0.15)]'
+                            : 'bg-slate-850 text-slate-400 border-slate-700/60'
                         }`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${
-                            formData.is_active ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'
+                            formData.is_active ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'
                           }`}
                         />
                         {formData.is_active ? 'Active OPD' : 'Inactive'}
