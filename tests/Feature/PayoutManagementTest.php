@@ -720,4 +720,85 @@ class PayoutManagementTest extends TestCase
         $this->assertEquals(8000.00, (float) $vendorData2['total_paid']);
         $this->assertEquals(0.00, (float) $vendorData2['pending_balance']);
     }
+
+    /**
+     * Test admin can access payouts reports ledger, dropdown options, and voucher details.
+     */
+    public function test_admin_can_access_payouts_reports_ledger_and_options(): void
+    {
+        $admin = Admin::create([
+            'super_admin_id' => $this->superAdmin->id,
+            'name' => 'Clinic Admin Reporter',
+            'email' => 'admin_reporter_'.uniqid().'@example.com',
+            'mobile' => '9777788888',
+            'password' => Hash::make('Password@123'),
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+
+        $adminToken = $admin->createToken('admin-reporter-token', ['role:admin'])->plainTextToken;
+
+        $staff = Staff::create([
+            'staff_code' => 'STF-REP-01',
+            'name' => 'Report Staff Member',
+            'email' => 'repstaff_'.uniqid().'@example.com',
+            'mobile' => '9777766666',
+            'status' => 'active',
+            'created_by_superadmin_id' => $this->superAdmin->id,
+        ]);
+
+        $vendor = Vendor::create([
+            'vendor_code' => 'VEN-REP-01',
+            'vendor_name' => 'Report Vendor Supplies',
+            'email' => 'repvendor_'.uniqid().'@example.com',
+            'mobile' => '9777755555',
+            'status' => 'active',
+            'created_by_superadmin_id' => $this->superAdmin->id,
+        ]);
+
+        $payout = Payout::create([
+            'payout_number' => 'PAY-REP-001',
+            'payout_type' => Payout::TYPE_STAFF,
+            'staff_id' => $staff->id,
+            'total_amount' => 5000.00,
+            'paid_amount' => 5000.00,
+            'balance_amount' => 0.00,
+            'amount' => 5000.00,
+            'payout_date' => '2026-11-03',
+            'account_type' => Payout::ACCOUNT_BANK,
+            'status' => Payout::STATUS_COMPLETED,
+            'created_by_superadmin_id' => $this->superAdmin->id,
+        ]);
+
+        // 1. Admin accesses Payouts Reports Ledger
+        $ledgerRes = $this->withHeader('Authorization', 'Bearer '.$adminToken)
+            ->getJson('/api/admin/reports/payouts');
+
+        $ledgerRes->assertStatus(200)
+            ->assertJsonPath('summary.records_count', 1)
+            ->assertJsonPath('summary.total_disbursed', 5000)
+            ->assertJsonPath('summary.total_staff_disbursed', 5000);
+
+        // 2. Admin accesses staff-options
+        $staffOptRes = $this->withHeader('Authorization', 'Bearer '.$adminToken)
+            ->getJson('/api/admin/reports/payouts/staff-options');
+
+        $staffOptRes->assertStatus(200)
+            ->assertJsonFragment(['name' => 'Report Staff Member']);
+
+        // 3. Admin accesses vendor-options
+        $vendorOptRes = $this->withHeader('Authorization', 'Bearer '.$adminToken)
+            ->getJson('/api/admin/reports/payouts/vendor-options');
+
+        $vendorOptRes->assertStatus(200)
+            ->assertJsonFragment(['vendor_name' => 'Report Vendor Supplies']);
+
+        // 4. Admin accesses single voucher details
+        $voucherRes = $this->withHeader('Authorization', 'Bearer '.$adminToken)
+            ->getJson('/api/admin/reports/payouts/'.$payout->id);
+
+        $voucherRes->assertStatus(200)
+            ->assertJsonPath('payout.payout_number', 'PAY-REP-001')
+            ->assertJsonPath('payout.amount', '5000.00');
+    }
 }
