@@ -142,9 +142,8 @@
 .smart-card-3d {
   position: relative;
   transform-style: preserve-3d;
-  aspect-ratio: 1.586 / 1;
   width: 100%;
-  max-width: 380px;
+  max-width: 400px;
   border-radius: 1.25rem;
   box-shadow: 
     0 18px 40px -10px rgba(2, 6, 23, 0.7),
