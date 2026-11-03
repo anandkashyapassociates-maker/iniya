@@ -36,6 +36,17 @@ export const adminAuthService = {
     return response.data;
   },
 
+  async uploadAvatar(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    const response = await adminApi.post('/admin/profile/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
   async changePassword(data) {
     const response = await adminApi.post('/admin/change-password', data);
     return response.data;
