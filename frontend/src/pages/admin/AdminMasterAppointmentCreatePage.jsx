@@ -693,7 +693,7 @@ export default function AdminMasterAppointmentCreatePage() {
                         Consultation Fee (₹)
                       </label>
                       <div className="relative">
-                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-xs sm:text-sm pointer-events-none">
+                        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 font-bold text-xs sm:text-sm pointer-events-none select-none">
                           ₹
                         </span>
                         <input
@@ -705,7 +705,7 @@ export default function AdminMasterAppointmentCreatePage() {
                               ? Number(session.service_price).toLocaleString('en-IN', { minimumFractionDigits: 2 })
                               : '0.00'
                           }
-                          className="w-full pl-7 pr-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 cursor-not-allowed select-none font-mono"
+                          className="w-full pl-8 pr-3 py-2 sm:pl-9 sm:pr-3.5 sm:py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 cursor-not-allowed select-none font-mono"
                         />
                       </div>
                     </div>
@@ -759,7 +759,7 @@ export default function AdminMasterAppointmentCreatePage() {
                         Commission (₹) <span className="text-rose-500">*</span>
                       </label>
                       <div className="relative">
-                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-xs sm:text-sm pointer-events-none">
+                        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 font-bold text-xs sm:text-sm pointer-events-none select-none">
                           ₹
                         </span>
                         <input
@@ -770,7 +770,7 @@ export default function AdminMasterAppointmentCreatePage() {
                           onChange={(e) => handleSessionChange(index, 'staff_commission', e.target.value)}
                           placeholder="0.00"
                           required
-                          className="w-full pl-7 pr-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-mono font-bold focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                          className="w-full pl-8 pr-3 py-2 sm:pl-9 sm:pr-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-mono font-bold focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                         />
                       </div>
                     </div>
