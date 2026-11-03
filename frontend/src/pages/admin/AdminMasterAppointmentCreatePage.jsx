@@ -89,8 +89,10 @@ export default function AdminMasterAppointmentCreatePage() {
 
   // Load dropdown options
   useEffect(() => {
+    let isMounted = true;
     adminMasterAppointmentService.getOptions()
       .then((res) => {
+        if (!isMounted) return;
         if (res.success && res.data) {
           const custs = res.data.customers || [];
           const teams = res.data.sales_teams || [];
@@ -152,12 +154,19 @@ export default function AdminMasterAppointmentCreatePage() {
         }
       })
       .catch((err) => {
+        if (!isMounted) return;
         console.error('Failed to load options', err);
         toast.error('Failed to load customers, staff, and sales teams list.');
       })
       .finally(() => {
-        setOptionsLoading(false);
+        if (isMounted) {
+          setOptionsLoading(false);
+        }
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, [preServiceId, preCategoryId, preSubCategoryId]);
 
   // Session handler methods
@@ -851,7 +860,7 @@ export default function AdminMasterAppointmentCreatePage() {
         </div>
 
         {/* Sticky Bottom Action Bar (Fully Responsive on Mobile) */}
-        <div className="sticky bottom-3 sm:bottom-6 z-20 bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-slate-200/90 shadow-xl shadow-slate-900/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="sticky bottom-3 sm:bottom-6 z-20 bg-white/98 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-slate-200/90 shadow-xl shadow-slate-900/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 transform-gpu">
           <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-400 via-teal-500 to-emerald-600 shadow-md sm:shadow-lg shadow-emerald-500/25 ring-2 ring-emerald-50 flex items-center justify-center text-white shrink-0">

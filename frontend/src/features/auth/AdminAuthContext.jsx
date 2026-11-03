@@ -13,7 +13,7 @@ export function AdminAuthProvider({ children }) {
     }
   });
   const [token, setToken] = useState(() => localStorage.getItem('admin_token'));
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => !localStorage.getItem('admin_token'));
 
   const checkAuth = useCallback(async () => {
     const savedToken = localStorage.getItem('admin_token');
