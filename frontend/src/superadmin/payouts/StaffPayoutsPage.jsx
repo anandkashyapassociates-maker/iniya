@@ -270,76 +270,97 @@ export default function StaffPayoutsPage() {
         </div>
       </div>
 
-      {/* KPI Cards: Total Payouts, Total Paid, Balance Due, Cash Mode, Bank Mode */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-        {/* Total Payouts */}
-        <div className="bg-white rounded-2xl border border-blue-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
-              Total Payout
-            </span>
-            <Wallet className="w-4 h-4 text-blue-600" />
+      {/* KPI Cards: Row 1 (2 cards) and Row 2 (3 cards) to avoid amount overflow */}
+      <div className="space-y-3.5">
+        {/* Row 1: 2 Cards (Total Payout & Paid Amount) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          {/* Total Payout */}
+          <div className="bg-white rounded-2xl border border-blue-200/80 p-4 sm:p-5 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
+                Total Payout
+              </span>
+              <Wallet className="w-4 h-4 text-blue-600" />
+            </div>
+            <p
+              className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 mt-2 truncate"
+              title={formatCurrency(summary.total_payout_amount || summary.total_amount)}
+            >
+              {formatCurrency(summary.total_payout_amount || summary.total_amount)}
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">Total payable salary & dues</p>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-slate-900 mt-2">
-            {formatCurrency(summary.total_payout_amount || summary.total_amount)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">Total payable salary & dues</p>
+
+          {/* Total Paid */}
+          <div className="bg-white rounded-2xl border border-emerald-200/80 p-4 sm:p-5 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                Paid Amount
+              </span>
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            </div>
+            <p
+              className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-emerald-700 mt-2 truncate"
+              title={formatCurrency(summary.total_paid_amount || summary.total_amount)}
+            >
+              {formatCurrency(summary.total_paid_amount || summary.total_amount)}
+            </p>
+            <p className="text-xs text-emerald-600 mt-0.5">{summary.total_count} vouchers paid</p>
+          </div>
         </div>
 
-        {/* Total Paid */}
-        <div className="bg-white rounded-2xl border border-emerald-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-              Paid Amount
-            </span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        {/* Row 2: 3 Cards (Balance Due, Cash Paid, Bank Paid) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          {/* Balance Due */}
+          <div className="bg-white rounded-2xl border border-amber-200/80 p-4 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md">
+                Balance Due
+              </span>
+              <Clock className="w-4 h-4 text-amber-600" />
+            </div>
+            <p
+              className="text-xl sm:text-2xl font-bold tracking-tight text-amber-700 mt-2 truncate"
+              title={formatCurrency(summary.total_balance_amount)}
+            >
+              {formatCurrency(summary.total_balance_amount)}
+            </p>
+            <p className="text-xs text-amber-600 mt-0.5">Pending balance</p>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-emerald-700 mt-2">
-            {formatCurrency(summary.total_paid_amount || summary.total_amount)}
-          </p>
-          <p className="text-xs text-emerald-600 mt-0.5">{summary.total_count} vouchers paid</p>
-        </div>
 
-        {/* Balance Due */}
-        <div className="bg-white rounded-2xl border border-amber-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md">
-              Balance Due
-            </span>
-            <Clock className="w-4 h-4 text-amber-600" />
+          {/* Cash Paid */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                Cash Paid
+              </span>
+              <Banknote className="w-4 h-4 text-emerald-600" />
+            </div>
+            <p
+              className="text-lg sm:text-xl font-bold tracking-tight text-slate-800 mt-2 truncate"
+              title={formatCurrency(summary.cash_amount)}
+            >
+              {formatCurrency(summary.cash_amount)}
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">Physical cash drawer</p>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-amber-700 mt-2">
-            {formatCurrency(summary.total_balance_amount)}
-          </p>
-          <p className="text-xs text-amber-600 mt-0.5">Pending balance</p>
-        </div>
 
-        {/* Cash Paid */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
-              Cash Paid
-            </span>
-            <Banknote className="w-4 h-4 text-emerald-600" />
+          {/* Bank Paid */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                Bank Paid
+              </span>
+              <CreditCard className="w-4 h-4 text-indigo-600" />
+            </div>
+            <p
+              className="text-lg sm:text-xl font-bold tracking-tight text-indigo-700 mt-2 truncate"
+              title={formatCurrency(summary.bank_amount)}
+            >
+              {formatCurrency(summary.bank_amount)}
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">NEFT / RTGS / UPI</p>
           </div>
-          <p className="text-lg sm:text-xl font-bold text-slate-800 mt-2">
-            {formatCurrency(summary.cash_amount)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">Physical cash drawer</p>
-        </div>
-
-        {/* Bank Paid */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
-              Bank Paid
-            </span>
-            <CreditCard className="w-4 h-4 text-indigo-600" />
-          </div>
-          <p className="text-lg sm:text-xl font-bold text-indigo-700 mt-2">
-            {formatCurrency(summary.bank_amount)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">NEFT / RTGS / UPI</p>
         </div>
       </div>
 

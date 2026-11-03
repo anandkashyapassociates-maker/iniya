@@ -132,9 +132,10 @@ export default function VendorPayoutsPage() {
   // Open creation modal
   const handleOpenModal = () => {
     setEditingPayout(null);
+    const defaultVendor = vendorOptions.length > 0 ? vendorOptions[0] : null;
     setFormData({
-      vendor_id: vendorOptions.length > 0 ? vendorOptions[0].id : '',
-      amount: '',
+      vendor_id: defaultVendor ? defaultVendor.id : '',
+      amount: defaultVendor && defaultVendor.pending_balance > 0 ? String(defaultVendor.pending_balance) : '',
       payout_date: new Date().toISOString().split('T')[0],
       account_type: 'Bank',
       reference_number: '',
@@ -142,6 +143,18 @@ export default function VendorPayoutsPage() {
     });
     setFormErrors({});
     setIsModalOpen(true);
+  };
+
+  const handleVendorSelect = (vendorId) => {
+    const found = vendorOptions.find((v) => String(v.id) === String(vendorId));
+    setFormData((prev) => ({
+      ...prev,
+      vendor_id: vendorId,
+      amount: found && found.pending_balance > 0 ? String(found.pending_balance) : prev.amount,
+    }));
+    if (formErrors.vendor_id) {
+      setFormErrors((prev) => ({ ...prev, vendor_id: null }));
+    }
   };
 
   // Open edit modal
@@ -255,76 +268,99 @@ export default function VendorPayoutsPage() {
         </div>
       </div>
 
-      {/* KPI Cards: Total Payouts, Total Paid, Balance Due, Cash Paid, Bank Paid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-        {/* Total Payout */}
-        <div className="bg-white rounded-2xl border border-blue-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
-              Total Payout
-            </span>
-            <DollarSign className="w-4 h-4 text-blue-600" />
+      {/* KPI Cards: Row 1 (2 cards) and Row 2 (3 cards) to avoid amount overflow */}
+      <div className="space-y-3.5">
+        {/* Row 1: 2 Cards (Total Payout & Paid Amount) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          {/* Total Payout */}
+          <div className="bg-white rounded-2xl border border-blue-200/80 p-4 sm:p-5 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
+                Total Payout
+              </span>
+              <DollarSign className="w-4 h-4 text-blue-600" />
+            </div>
+            <p
+              className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 mt-2 truncate"
+              title={formatCurrency(summary.total_payout_amount || summary.total_amount)}
+            >
+              {formatCurrency(summary.total_payout_amount || summary.total_amount)}
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {summary.total_purchased_qty ? `${Number(summary.total_purchased_qty).toLocaleString('en-IN')} units purchased` : 'Total supplier purchases'}
+            </p>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-slate-900 mt-2">
-            {formatCurrency(summary.total_payout_amount || summary.total_amount)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">Total supplier billed dues</p>
+
+          {/* Paid Amount */}
+          <div className="bg-white rounded-2xl border border-emerald-200/80 p-4 sm:p-5 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                Paid Amount
+              </span>
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            </div>
+            <p
+              className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-emerald-700 mt-2 truncate"
+              title={formatCurrency(summary.total_paid_amount || summary.total_amount)}
+            >
+              {formatCurrency(summary.total_paid_amount || summary.total_amount)}
+            </p>
+            <p className="text-xs text-emerald-600 mt-0.5">{summary.total_count} vouchers paid</p>
+          </div>
         </div>
 
-        {/* Paid Amount */}
-        <div className="bg-white rounded-2xl border border-emerald-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-              Paid Amount
-            </span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        {/* Row 2: 3 Cards (Balance Due, Cash Paid, Bank Paid) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          {/* Balance Due */}
+          <div className="bg-white rounded-2xl border border-amber-200/80 p-4 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md">
+                Balance Due
+              </span>
+              <Clock className="w-4 h-4 text-amber-600" />
+            </div>
+            <p
+              className="text-xl sm:text-2xl font-bold tracking-tight text-amber-700 mt-2 truncate"
+              title={formatCurrency(summary.total_balance_amount)}
+            >
+              {formatCurrency(summary.total_balance_amount)}
+            </p>
+            <p className="text-xs text-amber-600 mt-0.5">Pending supplier balance</p>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-emerald-700 mt-2">
-            {formatCurrency(summary.total_paid_amount || summary.total_amount)}
-          </p>
-          <p className="text-xs text-emerald-600 mt-0.5">{summary.total_count} vouchers paid</p>
-        </div>
 
-        {/* Balance Due */}
-        <div className="bg-white rounded-2xl border border-amber-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md">
-              Balance Due
-            </span>
-            <Clock className="w-4 h-4 text-amber-600" />
+          {/* Cash Paid */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                Cash Paid
+              </span>
+              <Banknote className="w-4 h-4 text-emerald-600" />
+            </div>
+            <p
+              className="text-lg sm:text-xl font-bold tracking-tight text-slate-800 mt-2 truncate"
+              title={formatCurrency(summary.cash_amount)}
+            >
+              {formatCurrency(summary.cash_amount)}
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">Physical cash handovers</p>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-amber-700 mt-2">
-            {formatCurrency(summary.total_balance_amount)}
-          </p>
-          <p className="text-xs text-amber-600 mt-0.5">Pending supplier balance</p>
-        </div>
 
-        {/* Cash Paid */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
-              Cash Paid
-            </span>
-            <Banknote className="w-4 h-4 text-emerald-600" />
+          {/* Bank Paid */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                Bank Paid
+              </span>
+              <CreditCard className="w-4 h-4 text-indigo-600" />
+            </div>
+            <p
+              className="text-lg sm:text-xl font-bold tracking-tight text-indigo-700 mt-2 truncate"
+              title={formatCurrency(summary.bank_amount)}
+            >
+              {formatCurrency(summary.bank_amount)}
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">NEFT / RTGS / Cheque</p>
           </div>
-          <p className="text-lg sm:text-xl font-bold text-slate-800 mt-2">
-            {formatCurrency(summary.cash_amount)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">Physical cash handovers</p>
-        </div>
-
-        {/* Bank Paid */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
-              Bank Paid
-            </span>
-            <CreditCard className="w-4 h-4 text-indigo-600" />
-          </div>
-          <p className="text-lg sm:text-xl font-bold text-indigo-700 mt-2">
-            {formatCurrency(summary.bank_amount)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">NEFT / RTGS / Cheque</p>
         </div>
       </div>
 
@@ -461,23 +497,25 @@ export default function VendorPayoutsPage() {
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="bg-slate-50/80 text-slate-600 border-b border-slate-200/80 uppercase font-semibold text-[10px] tracking-wider">
-                <th className="py-3 px-4 w-12 text-center">Sr.</th>
-                <th className="py-3 px-4">Voucher No</th>
-                <th className="py-3 px-4">Date</th>
+                <th className="py-3 px-3 w-10 text-center">Sr.</th>
+                <th className="py-3 px-3">Voucher #</th>
+                <th className="py-3 px-3">Date</th>
                 <th className="py-3 px-4">Vendor / Supplier</th>
-                <th className="py-3 px-4 text-right">Total Payout (₹)</th>
+                <th className="py-3 px-3 text-right">Purchase Qty</th>
+                <th className="py-3 px-3 text-right">Avg Rate (₹)</th>
+                <th className="py-3 px-4 text-right">Total Bill (₹)</th>
                 <th className="py-3 px-4 text-right">Paid Amount (₹)</th>
                 <th className="py-3 px-4 text-right">Balance Due (₹)</th>
-                <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-center">Account Type</th>
-                <th className="py-3 px-4">Note / Remarks</th>
-                <th className="py-3 px-4 text-center">Actions</th>
+                <th className="py-3 px-3 text-center">Status</th>
+                <th className="py-3 px-3 text-center">Payment Mode</th>
+                <th className="py-3 px-3">Note / Remarks</th>
+                <th className="py-3 px-3 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td colSpan="11" className="py-12 text-center text-slate-500">
+                  <td colSpan="13" className="py-12 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <RefreshCw className="w-6 h-6 animate-spin text-amber-600" />
                       <p className="text-xs font-medium">Loading vendor payouts...</p>
@@ -486,7 +524,7 @@ export default function VendorPayoutsPage() {
                 </tr>
               ) : payouts.length === 0 ? (
                 <tr>
-                  <td colSpan="11" className="py-12 text-center text-slate-500">
+                  <td colSpan="13" className="py-12 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <Truck className="w-8 h-8 text-slate-300" />
                       <p className="text-xs font-medium text-slate-700">No vendor payouts found</p>
@@ -507,13 +545,13 @@ export default function VendorPayoutsPage() {
 
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-3 px-4 text-center text-slate-400 font-mono">{serialNo}</td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-3 text-center text-slate-400 font-mono">{serialNo}</td>
+                      <td className="py-3 px-3">
                         <span className="font-mono font-semibold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
                           {item.payout_number}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-slate-600 whitespace-nowrap">
+                      <td className="py-3 px-3 text-slate-600 whitespace-nowrap">
                         {item.payout_date ? new Date(item.payout_date).toLocaleDateString('en-IN', {
                           day: '2-digit',
                           month: 'short',
@@ -524,9 +562,8 @@ export default function VendorPayoutsPage() {
                         {item.vendor ? (
                           <div>
                             <p className="font-semibold text-slate-900">{item.vendor.vendor_name}</p>
-                            <p className="text-[11px] text-slate-500">
-                              {item.vendor.company_name ? `${item.vendor.company_name} • ` : ''}
-                              <span className="font-mono font-semibold">{item.vendor.vendor_code}</span>
+                            <p className="text-[11px] text-slate-500 font-mono">
+                              {item.vendor.vendor_code} {item.vendor.company_name ? `• ${item.vendor.company_name}` : ''}
                             </p>
                           </div>
                         ) : (
@@ -534,22 +571,38 @@ export default function VendorPayoutsPage() {
                         )}
                       </td>
 
+                      {/* Purchase Qty */}
+                      <td className="py-3 px-3 text-right whitespace-nowrap">
+                        <span className="font-mono font-semibold text-slate-800 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200">
+                          {Number(item.total_purchased_qty || 0).toLocaleString('en-IN')} Units
+                        </span>
+                      </td>
+
+                      {/* Purchase Rate */}
+                      <td className="py-3 px-3 text-right font-mono text-slate-600 whitespace-nowrap">
+                        {item.avg_buy_price && Number(item.avg_buy_price) > 0 ? (
+                          <span>₹{Number(item.avg_buy_price).toFixed(2)}</span>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </td>
+
                       {/* Total Payout */}
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
                         <span className="font-semibold text-slate-900">
                           {formatCurrency(totalAmt)}
                         </span>
                       </td>
 
                       {/* Paid Amount */}
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
                         <span className="font-bold text-emerald-700">
                           {formatCurrency(paidAmt)}
                         </span>
                       </td>
 
                       {/* Balance Due */}
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
                         {balAmt > 0 ? (
                           <span className="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
                             {formatCurrency(balAmt)}
@@ -560,7 +613,7 @@ export default function VendorPayoutsPage() {
                       </td>
 
                       {/* Status */}
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                      <td className="py-3 px-3 text-center whitespace-nowrap">
                         {isPaid ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                             <CheckCircle2 className="w-3 h-3" />
@@ -580,7 +633,7 @@ export default function VendorPayoutsPage() {
                       </td>
 
                       {/* Account Type */}
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                      <td className="py-3 px-3 text-center whitespace-nowrap">
                         {item.account_type === 'Cash' ? (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                             <Banknote className="w-3 h-3" />
@@ -594,11 +647,11 @@ export default function VendorPayoutsPage() {
                         )}
                       </td>
 
-                      <td className="py-3 px-4 max-w-xs truncate text-slate-600" title={item.note || ''}>
+                      <td className="py-3 px-3 max-w-[150px] truncate text-slate-600" title={item.note || ''}>
                         {item.note || <span className="text-slate-300 italic">-</span>}
                       </td>
 
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-3 text-center">
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => {
@@ -709,13 +762,13 @@ export default function VendorPayoutsPage() {
                 ) : (
                   <select
                     value={formData.vendor_id}
-                    onChange={(e) => setFormData({ ...formData, vendor_id: e.target.value })}
+                    onChange={(e) => handleVendorSelect(e.target.value)}
                     className="w-full px-3 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-800"
                   >
                     <option value="">-- Choose Vendor / Supplier --</option>
                     {vendorOptions.map((v) => (
                       <option key={v.id} value={v.id}>
-                        {v.vendor_name} {v.company_name ? `(${v.company_name})` : ''} &mdash; Code: {v.vendor_code}
+                        {v.vendor_name} ({v.company_name || v.vendor_code}) &mdash; Purchases: ₹{Number(v.total_purchased_amount || 0).toLocaleString('en-IN')} {v.pending_balance > 0 ? `(Pending: ₹${Number(v.pending_balance || 0).toLocaleString('en-IN')})` : ''}
                       </option>
                     ))}
                   </select>
@@ -723,6 +776,38 @@ export default function VendorPayoutsPage() {
                 {formErrors.vendor_id && (
                   <p className="text-[11px] text-rose-500 mt-1 font-medium">{formErrors.vendor_id}</p>
                 )}
+
+                {vendorOptions.find((v) => String(v.id) === String(formData.vendor_id)) && (() => {
+                  const selVendor = vendorOptions.find((v) => String(v.id) === String(formData.vendor_id));
+                  return (
+                    <div className="mt-2.5 p-3 bg-amber-50/70 border border-amber-200/90 rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-600 block">Purchase Qty</span>
+                        <span className="font-bold text-slate-900 font-mono text-xs">
+                          {Number(selVendor.total_purchased_qty || 0).toLocaleString('en-IN')} Units
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-600 block">Avg Rate</span>
+                        <span className="font-bold text-slate-900 font-mono text-xs">
+                          ₹{Number(selVendor.avg_rate || 0).toFixed(2)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-amber-700 block">Total Bill</span>
+                        <span className="font-bold text-amber-900 font-mono text-xs">
+                          {formatCurrency(selVendor.total_purchased_amount)}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] uppercase font-bold text-rose-700 block">Pending Balance</span>
+                        <span className="font-bold text-rose-900 font-mono text-xs">
+                          {formatCurrency(selVendor.pending_balance)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Amount and Payout Date */}
@@ -909,9 +994,23 @@ export default function VendorPayoutsPage() {
               </div>
 
               {/* Total Payout, Paid Amount, Balance Breakdown */}
-              <div className="grid grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center">
+                  <p className="text-[10px] uppercase font-bold text-slate-500">Purchase Qty</p>
+                  <p className="text-sm font-bold text-slate-900 mt-1 font-mono">
+                    {Number(selectedPayout.total_purchased_qty || 0).toLocaleString('en-IN')} Units
+                  </p>
+                </div>
+
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center">
+                  <p className="text-[10px] uppercase font-bold text-slate-500">Avg Purchase Rate</p>
+                  <p className="text-sm font-bold text-slate-900 mt-1 font-mono">
+                    ₹{Number(selectedPayout.avg_buy_price || 0).toFixed(2)}
+                  </p>
+                </div>
+
                 <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-100 text-center">
-                  <p className="text-[10px] uppercase font-bold text-blue-700">Total Payout</p>
+                  <p className="text-[10px] uppercase font-bold text-blue-700">Total Bill (Payout)</p>
                   <p className="text-sm font-bold text-slate-900 mt-1">
                     {formatCurrency(selectedPayout.total_amount > 0 ? selectedPayout.total_amount : selectedPayout.amount)}
                   </p>
@@ -924,7 +1023,7 @@ export default function VendorPayoutsPage() {
                   </p>
                 </div>
 
-                <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-100 text-center">
+                <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-100 text-center sm:col-span-2">
                   <p className="text-[10px] uppercase font-bold text-amber-700">Balance Due</p>
                   <p className="text-sm font-bold text-amber-700 mt-1">
                     {formatCurrency(selectedPayout.balance_amount || 0)}
