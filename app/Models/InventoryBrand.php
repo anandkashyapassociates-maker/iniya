@@ -77,4 +77,3 @@ class InventoryBrand extends Model
         return $query->where('status', 'active');
     }
 }
-

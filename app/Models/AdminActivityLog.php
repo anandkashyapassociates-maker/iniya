@@ -38,4 +38,3 @@ class AdminActivityLog extends Model
         ]);
     }
 }
-

@@ -77,4 +77,3 @@ class InventoryCategory extends Model
         return $query->where('status', 'active');
     }
 }
-

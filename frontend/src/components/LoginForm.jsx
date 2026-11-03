@@ -105,24 +105,47 @@ export default function LoginForm({
             </button>
           </div>
         ) : (
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-[11px] text-slate-200">
-              {accountType === 'staff' ? 'ramesh@iniya.com / 123456' : 'admin@gmail.com / 123456'}
-            </span>
+          <div className="grid grid-cols-2 gap-2 pt-1">
             <button
               type="button"
               onClick={() => {
-                setEmail(accountType === 'staff' ? 'ramesh@iniya.com' : 'admin@gmail.com');
+                setAccountType('admin');
+                setEmail('admin@gmail.com');
                 setPassword('123456');
                 setErrors({});
               }}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-xl text-white transition-all cursor-pointer shadow-xs font-display ${
-                accountType === 'staff'
-                  ? 'bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500'
-                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500'
+              className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                accountType === 'admin'
+                  ? 'bg-blue-950/70 border-blue-500/70 ring-1 ring-blue-500/40 text-white'
+                  : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'
               }`}
             >
-              Auto-fill
+              <div className="flex items-center justify-between w-full">
+                <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">ADMIN FILL</span>
+                <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
+              </div>
+              <span className="font-mono text-[11px] text-slate-200 mt-1 truncate">admin@gmail.com</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setAccountType('staff');
+                setEmail('ramesh@iniya.com');
+                setPassword('123456');
+                setErrors({});
+              }}
+              className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                accountType === 'staff'
+                  ? 'bg-teal-950/70 border-teal-500/70 ring-1 ring-teal-500/40 text-white'
+                  : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+              }`}
+            >
+              <div className="flex items-center justify-between w-full">
+                <span className="text-[10px] font-bold text-teal-400 uppercase tracking-wider">STAFF FILL</span>
+                <Users className="w-3.5 h-3.5 text-teal-400" />
+              </div>
+              <span className="font-mono text-[11px] text-slate-200 mt-1 truncate">ramesh@iniya.com</span>
             </button>
           </div>
         )}
@@ -203,8 +226,16 @@ export default function LoginForm({
             type="email"
             value={email}
             onChange={(e) => {
-              setEmail(e.target.value);
+              const val = e.target.value;
+              setEmail(val);
               if (errors.email) setErrors((prev) => ({ ...prev, email: null }));
+              if (!isSuperAdmin) {
+                if (val.toLowerCase().includes('ramesh') || val.toLowerCase().endsWith('@iniya.com')) {
+                  setAccountType('staff');
+                } else if (val.toLowerCase().includes('admin@')) {
+                  setAccountType('admin');
+                }
+              }
             }}
             placeholder={
               isSuperAdmin

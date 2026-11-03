@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\Admin\ProductController;
 use App\Http\Controllers\Api\Admin\ServiceManagementController;
 use App\Http\Controllers\Api\Admin\SessionRescheduleController;
 use App\Http\Controllers\Api\SuperAdmin\AdminManagementController;
+use App\Http\Controllers\Api\SuperAdmin\PayoutController;
 use App\Http\Controllers\Api\SuperAdmin\SalesMemberManagementController;
 use App\Http\Controllers\Api\SuperAdmin\StaffManagementController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminAuthController;
@@ -133,6 +134,22 @@ Route::prefix('superadmin')
             Route::delete('/brands/{id}', [SuperAdminInventoryController::class, 'destroyBrand']);
 
             Route::get('/admin-report', [SuperAdminInventoryController::class, 'adminReport']);
+        });
+
+        // Payout Management (Staff Payouts, Vendor Payouts, Payouts Ledger)
+        Route::prefix('payouts')->group(function () {
+            Route::get('/stats', [PayoutController::class, 'stats']);
+            Route::get('/staff-options', [PayoutController::class, 'staffOptions']);
+            Route::get('/vendor-options', [PayoutController::class, 'vendorOptions']);
+            Route::get('/staff', [PayoutController::class, 'staffPayouts']);
+            Route::post('/staff', [PayoutController::class, 'storeStaffPayout']);
+            Route::put('/staff/{id}', [PayoutController::class, 'updateStaffPayout']);
+            Route::get('/vendors', [PayoutController::class, 'vendorPayouts']);
+            Route::post('/vendors', [PayoutController::class, 'storeVendorPayout']);
+            Route::put('/vendors/{id}', [PayoutController::class, 'updateVendorPayout']);
+            Route::get('/ledger', [PayoutController::class, 'ledger']);
+            Route::get('/{id}', [PayoutController::class, 'show']);
+            Route::delete('/{id}', [PayoutController::class, 'destroy']);
         });
     });
 

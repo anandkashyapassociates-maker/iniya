@@ -150,7 +150,7 @@ class SuperAdminAuthTest extends TestCase
 
         $token = $superAdmin->createToken('test-token', ['role:superadmin'])->plainTextToken;
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/superadmin/me');
 
         $response->assertStatus(200)
@@ -183,7 +183,7 @@ class SuperAdminAuthTest extends TestCase
         $adminToken = $admin->createToken('admin-token', ['role:admin'])->plainTextToken;
 
         // Attempting to access Super Admin endpoint with Admin token
-        $response = $this->withHeader('Authorization', 'Bearer ' . $adminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$adminToken)
             ->getJson('/api/superadmin/me');
 
         $response->assertStatus(403)
@@ -200,7 +200,7 @@ class SuperAdminAuthTest extends TestCase
 
         $userToken = $user->createToken('user-token')->plainTextToken;
 
-        $userResponse = $this->withHeader('Authorization', 'Bearer ' . $userToken)
+        $userResponse = $this->withHeader('Authorization', 'Bearer '.$userToken)
             ->getJson('/api/superadmin/me');
 
         $userResponse->assertStatus(403)
@@ -224,7 +224,7 @@ class SuperAdminAuthTest extends TestCase
         $token = $superAdmin->createToken('test-token', ['role:superadmin'])->plainTextToken;
 
         // Logout
-        $logoutResponse = $this->withHeader('Authorization', 'Bearer ' . $token)
+        $logoutResponse = $this->withHeader('Authorization', 'Bearer '.$token)
             ->postJson('/api/superadmin/logout');
 
         $logoutResponse->assertStatus(200)
@@ -239,7 +239,7 @@ class SuperAdminAuthTest extends TestCase
         $this->app['auth']->forgetGuards();
 
         // Accessing protected endpoint with revoked token must fail
-        $subsequentResponse = $this->withHeader('Authorization', 'Bearer ' . $token)
+        $subsequentResponse = $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/superadmin/me');
 
         $subsequentResponse->assertStatus(401);
@@ -439,7 +439,7 @@ class SuperAdminAuthTest extends TestCase
 
         $token = $user->createToken('client-token')->plainTextToken;
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/user');
 
         $response->assertStatus(200)

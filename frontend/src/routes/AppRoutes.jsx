@@ -30,6 +30,11 @@ import SuperAdminInventoryStocksPage from '../superadmin/inventory/SuperAdminInv
 import SuperAdminStockDetailsPage from '../superadmin/inventory/SuperAdminStockDetailsPage';
 import SuperAdminInventoryReportsPage from '../superadmin/inventory/SuperAdminInventoryReportsPage';
 
+// Super Admin Payouts Module
+import StaffPayoutsPage from '../superadmin/payouts/StaffPayoutsPage';
+import VendorPayoutsPage from '../superadmin/payouts/VendorPayoutsPage';
+import PayoutsLedgerPage from '../superadmin/payouts/PayoutsLedgerPage';
+
 // Admin Module (Panel 2 - Separate Team Developer)
 import AdminLayout from '../layouts/AdminLayout';
 import AdminProtectedRoute from './AdminProtectedRoute';
@@ -131,6 +136,12 @@ export default function AppRoutes() {
           <Route path="/superadmin/inventory/low-stock" element={<Navigate to="/superadmin/inventory/stocks" replace />} />
           <Route path="/superadmin/inventory/categories" element={<SuperAdminInventoryCategoriesPage />} />
           <Route path="/superadmin/inventory/brands" element={<SuperAdminInventoryBrandsPage />} />
+
+          {/* Super Admin Payouts Management Module */}
+          <Route path="/superadmin/payouts" element={<Navigate to="/superadmin/payouts/ledger" replace />} />
+          <Route path="/superadmin/payouts/staff" element={<StaffPayoutsPage />} />
+          <Route path="/superadmin/payouts/vendors" element={<VendorPayoutsPage />} />
+          <Route path="/superadmin/payouts/ledger" element={<PayoutsLedgerPage />} />
 
           <Route path="/superadmin/profile" element={<SuperAdminProfilePage />} />
         </Route>

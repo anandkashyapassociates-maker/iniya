@@ -2,12 +2,13 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        if (\Illuminate\Support\Facades\Schema::hasTable('appointments') && DB::getDriverName() === 'mysql') {
+        if (Schema::hasTable('appointments') && DB::getDriverName() === 'mysql') {
             // Step 1: First expand enum to include both old and new values
             DB::statement("ALTER TABLE appointments MODIFY COLUMN status ENUM('scheduled','rescheduled','completed','cancelled','no_show','pending','confirmed') NOT NULL DEFAULT 'scheduled'");
 

@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Admin;
 use App\Models\SalesMember;
 use App\Models\SuperAdmin;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
@@ -17,6 +16,7 @@ class SalesMemberManagementTest extends TestCase
     use RefreshDatabase;
 
     protected SuperAdmin $superAdmin;
+
     protected string $superAdminToken;
 
     protected function setUp(): void
@@ -25,7 +25,7 @@ class SalesMemberManagementTest extends TestCase
 
         $this->superAdmin = SuperAdmin::create([
             'name' => 'Lead SuperAdmin',
-            'email' => 'superadmin_sales_test_' . uniqid() . '@example.com',
+            'email' => 'superadmin_sales_test_'.uniqid().'@example.com',
             'password' => Hash::make('SuperSecurePass@2026!'),
             'is_active' => true,
         ]);
@@ -63,11 +63,11 @@ class SalesMemberManagementTest extends TestCase
         $member = SalesMember::create([
             'sales_code' => 'SAL-9001',
             'name' => 'Existing Member',
-            'email' => 'existing_' . uniqid() . '@sales.com',
+            'email' => 'existing_'.uniqid().'@sales.com',
             'mobile' => '9876543210',
         ]);
 
-        $response = $this->putJson('/api/superadmin/sales-members/' . $member->id, [
+        $response = $this->putJson('/api/superadmin/sales-members/'.$member->id, [
             'name' => 'Attempted Update',
             'email' => $member->email,
             'mobile' => $member->mobile,
@@ -83,14 +83,14 @@ class SalesMemberManagementTest extends TestCase
         $admin = Admin::create([
             'super_admin_id' => $this->superAdmin->id,
             'name' => 'Operational Admin',
-            'email' => 'admin_sales_test_' . uniqid() . '@example.com',
+            'email' => 'admin_sales_test_'.uniqid().'@example.com',
             'password' => Hash::make('AdminPass@2026!'),
             'is_active' => true,
         ]);
 
         $adminToken = $admin->createToken('admin-test-token', ['role:admin'])->plainTextToken;
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $adminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$adminToken)
             ->getJson('/api/superadmin/sales-members');
 
         $response->assertStatus(403);
@@ -114,7 +114,7 @@ class SalesMemberManagementTest extends TestCase
     {
         $payload = [
             'name' => 'Aarav Singhania',
-            'email' => 'aarav_' . uniqid() . '@salescorp.com',
+            'email' => 'aarav_'.uniqid().'@salescorp.com',
             'mobile' => '9876543210',
             'alternate_mobile' => '9876500000',
             'gender' => 'Male',
@@ -131,7 +131,7 @@ class SalesMemberManagementTest extends TestCase
             'status' => 'active',
         ];
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/sales-members', $payload);
 
         $response->assertStatus(201)
@@ -160,9 +160,9 @@ class SalesMemberManagementTest extends TestCase
      */
     public function test_record_is_saved_in_sales_members(): void
     {
-        $email = 'saved_' . uniqid() . '@sales.com';
+        $email = 'saved_'.uniqid().'@sales.com';
 
-        $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/sales-members', [
                 'name' => 'Database Check Member',
                 'email' => $email,
@@ -183,9 +183,9 @@ class SalesMemberManagementTest extends TestCase
      */
     public function test_no_record_is_inserted_into_staff_admins_vendors_customers_or_users(): void
     {
-        $email = 'isolated_sales_' . uniqid() . '@sales.com';
+        $email = 'isolated_sales_'.uniqid().'@sales.com';
 
-        $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/sales-members', [
                 'name' => 'Isolated Sales Member',
                 'email' => $email,
@@ -206,10 +206,10 @@ class SalesMemberManagementTest extends TestCase
      */
     public function test_sales_code_is_generated_automatically_with_sal_prefix(): void
     {
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/sales-members', [
                 'name' => 'Prefix Check Member',
-                'email' => 'prefix_' . uniqid() . '@sales.com',
+                'email' => 'prefix_'.uniqid().'@sales.com',
                 'mobile' => '9222233333',
             ]);
 
@@ -223,18 +223,18 @@ class SalesMemberManagementTest extends TestCase
      */
     public function test_sequential_sales_codes_are_incremented_properly(): void
     {
-        $res1 = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $res1 = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/sales-members', [
                 'name' => 'Member Alpha',
-                'email' => 'alpha_' . uniqid() . '@sales.com',
+                'email' => 'alpha_'.uniqid().'@sales.com',
                 'mobile' => '9333344441',
             ]);
         $code1 = $res1->json('sales_member.sales_code');
 
-        $res2 = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $res2 = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/sales-members', [
                 'name' => 'Member Beta',
-                'email' => 'beta_' . uniqid() . '@sales.com',
+                'email' => 'beta_'.uniqid().'@sales.com',
                 'mobile' => '9333344442',
             ]);
         $code2 = $res2->json('sales_member.sales_code');
@@ -250,7 +250,7 @@ class SalesMemberManagementTest extends TestCase
      */
     public function test_duplicate_email_is_rejected(): void
     {
-        $email = 'duplicate_' . uniqid() . '@sales.com';
+        $email = 'duplicate_'.uniqid().'@sales.com';
 
         SalesMember::create([
             'sales_code' => 'SAL-9981',
@@ -259,7 +259,7 @@ class SalesMemberManagementTest extends TestCase
             'mobile' => '9444455551',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/sales-members', [
                 'name' => 'Second Holder',
                 'email' => $email,
@@ -275,7 +275,7 @@ class SalesMemberManagementTest extends TestCase
      */
     public function test_missing_required_fields_are_rejected(): void
     {
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/sales-members', []);
 
         $response->assertStatus(422)
@@ -287,10 +287,10 @@ class SalesMemberManagementTest extends TestCase
      */
     public function test_invalid_field_lengths_are_rejected(): void
     {
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/sales-members', [
                 'name' => str_repeat('A', 151),
-                'email' => 'length_test_' . uniqid() . '@sales.com',
+                'email' => 'length_test_'.uniqid().'@sales.com',
                 'mobile' => str_repeat('9', 25),
             ]);
 
@@ -303,10 +303,10 @@ class SalesMemberManagementTest extends TestCase
      */
     public function test_default_status_is_active(): void
     {
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/sales-members', [
                 'name' => 'Default Status Member',
-                'email' => 'default_status_' . uniqid() . '@sales.com',
+                'email' => 'default_status_'.uniqid().'@sales.com',
                 'mobile' => '9555566666',
             ]);
 
@@ -319,12 +319,12 @@ class SalesMemberManagementTest extends TestCase
      */
     public function test_protected_fields_cannot_be_manipulated_on_creation(): void
     {
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->postJson('/api/superadmin/sales-members', [
                 'sales_code' => 'SAL-9999',
                 'created_by_superadmin_id' => 999999,
                 'name' => 'Security Check Member',
-                'email' => 'security_check_' . uniqid() . '@sales.com',
+                'email' => 'security_check_'.uniqid().'@sales.com',
                 'mobile' => '9666677777',
             ]);
 
@@ -342,10 +342,10 @@ class SalesMemberManagementTest extends TestCase
 
         $fakeFile = UploadedFile::fake()->create('malicious.php', 100, 'text/php');
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->post('/api/superadmin/sales-members', [
                 'name' => 'Photo Test Member',
-                'email' => 'photo_test_' . uniqid() . '@sales.com',
+                'email' => 'photo_test_'.uniqid().'@sales.com',
                 'mobile' => '9777788888',
                 'profile_photo' => $fakeFile,
             ], ['Accept' => 'application/json']);
@@ -362,11 +362,11 @@ class SalesMemberManagementTest extends TestCase
         SalesMember::create([
             'sales_code' => 'SAL-0101',
             'name' => 'Listing Member 1',
-            'email' => 'list1_' . uniqid() . '@sales.com',
+            'email' => 'list1_'.uniqid().'@sales.com',
             'mobile' => '9000010001',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members');
 
         $response->assertStatus(200)
@@ -381,11 +381,11 @@ class SalesMemberManagementTest extends TestCase
         SalesMember::create([
             'sales_code' => 'SAL-7777',
             'name' => 'Search Code Target',
-            'email' => 'search_code_' . uniqid() . '@sales.com',
+            'email' => 'search_code_'.uniqid().'@sales.com',
             'mobile' => '9000007777',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members?search=SAL-7777');
 
         $response->assertStatus(200);
@@ -400,11 +400,11 @@ class SalesMemberManagementTest extends TestCase
         SalesMember::create([
             'sales_code' => 'SAL-7778',
             'name' => 'ValkyrieRepresentative',
-            'email' => 'valkyrie_' . uniqid() . '@sales.com',
+            'email' => 'valkyrie_'.uniqid().'@sales.com',
             'mobile' => '9000007778',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members?search=Valkyrie');
 
         $response->assertStatus(200);
@@ -416,7 +416,7 @@ class SalesMemberManagementTest extends TestCase
      */
     public function test_search_works_by_email(): void
     {
-        $uniqueEmail = 'target_email_' . uniqid() . '@sales.com';
+        $uniqueEmail = 'target_email_'.uniqid().'@sales.com';
 
         SalesMember::create([
             'sales_code' => 'SAL-7779',
@@ -425,8 +425,8 @@ class SalesMemberManagementTest extends TestCase
             'mobile' => '9000007779',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
-            ->getJson('/api/superadmin/sales-members?search=' . $uniqueEmail);
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->getJson('/api/superadmin/sales-members?search='.$uniqueEmail);
 
         $response->assertStatus(200);
         $this->assertTrue(collect($response->json('data'))->contains('email', $uniqueEmail));
@@ -442,12 +442,12 @@ class SalesMemberManagementTest extends TestCase
         SalesMember::create([
             'sales_code' => 'SAL-7780',
             'name' => 'Mobile Target Member',
-            'email' => 'mobile_target_' . uniqid() . '@sales.com',
+            'email' => 'mobile_target_'.uniqid().'@sales.com',
             'mobile' => $uniqueMobile,
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
-            ->getJson('/api/superadmin/sales-members?search=' . $uniqueMobile);
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->getJson('/api/superadmin/sales-members?search='.$uniqueMobile);
 
         $response->assertStatus(200);
         $this->assertTrue(collect($response->json('data'))->contains('mobile', $uniqueMobile));
@@ -461,12 +461,12 @@ class SalesMemberManagementTest extends TestCase
         SalesMember::create([
             'sales_code' => 'SAL-7781',
             'name' => 'Designation Target Member',
-            'email' => 'designation_target_' . uniqid() . '@sales.com',
+            'email' => 'designation_target_'.uniqid().'@sales.com',
             'mobile' => '9000007781',
             'designation' => 'Principal Account Strategist',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members?search=Strategist');
 
         $response->assertStatus(200);
@@ -481,12 +481,12 @@ class SalesMemberManagementTest extends TestCase
         SalesMember::create([
             'sales_code' => 'SAL-7782',
             'name' => 'Dept Target Member',
-            'email' => 'dept_target_' . uniqid() . '@sales.com',
+            'email' => 'dept_target_'.uniqid().'@sales.com',
             'mobile' => '9000007782',
             'department' => 'Global Expansion Team',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members?search=Expansion');
 
         $response->assertStatus(200);
@@ -501,12 +501,12 @@ class SalesMemberManagementTest extends TestCase
         SalesMember::create([
             'sales_code' => 'SAL-7783',
             'name' => 'Territory Target Member',
-            'email' => 'territory_target_' . uniqid() . '@sales.com',
+            'email' => 'territory_target_'.uniqid().'@sales.com',
             'mobile' => '9000007783',
             'territory' => 'Scandinavia Sector',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members?search=Scandinavia');
 
         $response->assertStatus(200);
@@ -521,12 +521,12 @@ class SalesMemberManagementTest extends TestCase
         SalesMember::create([
             'sales_code' => 'SAL-7784',
             'name' => 'City Target Member',
-            'email' => 'city_target_' . uniqid() . '@sales.com',
+            'email' => 'city_target_'.uniqid().'@sales.com',
             'mobile' => '9000007784',
             'city' => 'Hyderabad',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members?search=Hyderabad');
 
         $response->assertStatus(200);
@@ -541,7 +541,7 @@ class SalesMemberManagementTest extends TestCase
         SalesMember::create([
             'sales_code' => 'SAL-8001',
             'name' => 'Active Member',
-            'email' => 'active_' . uniqid() . '@sales.com',
+            'email' => 'active_'.uniqid().'@sales.com',
             'mobile' => '9000008001',
             'status' => 'active',
         ]);
@@ -549,17 +549,17 @@ class SalesMemberManagementTest extends TestCase
         SalesMember::create([
             'sales_code' => 'SAL-8002',
             'name' => 'Blocked Member',
-            'email' => 'blocked_' . uniqid() . '@sales.com',
+            'email' => 'blocked_'.uniqid().'@sales.com',
             'mobile' => '9000008002',
             'status' => 'blocked',
         ]);
 
-        $resActive = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $resActive = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members?status=active');
         $resActive->assertStatus(200);
         $this->assertTrue(collect($resActive->json('data'))->every(fn ($m) => $m['status'] === 'active'));
 
-        $resBlocked = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $resBlocked = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members?status=blocked');
         $resBlocked->assertStatus(200);
         $this->assertTrue(collect($resBlocked->json('data'))->every(fn ($m) => $m['status'] === 'blocked'));
@@ -573,7 +573,7 @@ class SalesMemberManagementTest extends TestCase
         SalesMember::create([
             'sales_code' => 'SAL-8011',
             'name' => 'Retail Member',
-            'email' => 'retail_' . uniqid() . '@sales.com',
+            'email' => 'retail_'.uniqid().'@sales.com',
             'mobile' => '9000008011',
             'department' => 'Retail Sales',
         ]);
@@ -581,12 +581,12 @@ class SalesMemberManagementTest extends TestCase
         SalesMember::create([
             'sales_code' => 'SAL-8012',
             'name' => 'Direct Member',
-            'email' => 'direct_' . uniqid() . '@sales.com',
+            'email' => 'direct_'.uniqid().'@sales.com',
             'mobile' => '9000008012',
             'department' => 'Direct Sales',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members?department=Retail Sales');
 
         $response->assertStatus(200);
@@ -601,7 +601,7 @@ class SalesMemberManagementTest extends TestCase
         SalesMember::create([
             'sales_code' => 'SAL-8021',
             'name' => 'Commission Member',
-            'email' => 'comm_' . uniqid() . '@sales.com',
+            'email' => 'comm_'.uniqid().'@sales.com',
             'mobile' => '9000008021',
             'employment_type' => 'Commission-Based',
         ]);
@@ -609,12 +609,12 @@ class SalesMemberManagementTest extends TestCase
         SalesMember::create([
             'sales_code' => 'SAL-8022',
             'name' => 'FullTime Member',
-            'email' => 'full_' . uniqid() . '@sales.com',
+            'email' => 'full_'.uniqid().'@sales.com',
             'mobile' => '9000008022',
             'employment_type' => 'Full-Time',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members?employment_type=Commission-Based');
 
         $response->assertStatus(200);
@@ -629,7 +629,7 @@ class SalesMemberManagementTest extends TestCase
         SalesMember::create([
             'sales_code' => 'SAL-8031',
             'name' => 'North Member',
-            'email' => 'north_' . uniqid() . '@sales.com',
+            'email' => 'north_'.uniqid().'@sales.com',
             'mobile' => '9000008031',
             'territory' => 'North Zone',
         ]);
@@ -637,12 +637,12 @@ class SalesMemberManagementTest extends TestCase
         SalesMember::create([
             'sales_code' => 'SAL-8032',
             'name' => 'South Member',
-            'email' => 'south_' . uniqid() . '@sales.com',
+            'email' => 'south_'.uniqid().'@sales.com',
             'mobile' => '9000008032',
             'territory' => 'South Zone',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members?territory=North Zone');
 
         $response->assertStatus(200);
@@ -656,14 +656,14 @@ class SalesMemberManagementTest extends TestCase
     {
         for ($i = 1; $i <= 4; $i++) {
             SalesMember::create([
-                'sales_code' => 'SAL-810' . $i,
+                'sales_code' => 'SAL-810'.$i,
                 'name' => "Paginated Member {$i}",
-                'email' => "paged_{$i}_" . uniqid() . '@sales.com',
+                'email' => "paged_{$i}_".uniqid().'@sales.com',
                 'mobile' => "900000810{$i}",
             ]);
         }
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members?per_page=2');
 
         $response->assertStatus(200)
@@ -678,7 +678,7 @@ class SalesMemberManagementTest extends TestCase
      */
     public function test_empty_results_are_handled_correctly(): void
     {
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members?search=NonExistentQueryXYZ123');
 
         $response->assertStatus(200)
@@ -694,7 +694,7 @@ class SalesMemberManagementTest extends TestCase
         $member = SalesMember::create([
             'sales_code' => 'SAL-8201',
             'name' => 'Minimal Sales Member',
-            'email' => 'minimal_' . uniqid() . '@sales.com',
+            'email' => 'minimal_'.uniqid().'@sales.com',
             'mobile' => '9000008201',
             // Nullable fields
             'alternate_mobile' => null,
@@ -711,8 +711,8 @@ class SalesMemberManagementTest extends TestCase
             'notes' => null,
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
-            ->getJson('/api/superadmin/sales-members/' . $member->id);
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->getJson('/api/superadmin/sales-members/'.$member->id);
 
         $response->assertStatus(200)
             ->assertJsonPath('sales_member.name', 'Minimal Sales Member')
@@ -727,7 +727,7 @@ class SalesMemberManagementTest extends TestCase
         $member = SalesMember::create([
             'sales_code' => 'SAL-8301',
             'name' => 'Initial Name',
-            'email' => 'initial_' . uniqid() . '@sales.com',
+            'email' => 'initial_'.uniqid().'@sales.com',
             'mobile' => '9000008301',
             'designation' => 'Junior Rep',
             'status' => 'active',
@@ -735,14 +735,14 @@ class SalesMemberManagementTest extends TestCase
 
         $updatePayload = [
             'name' => 'Senior Promoted Rep',
-            'email' => 'senior_' . uniqid() . '@sales.com',
+            'email' => 'senior_'.uniqid().'@sales.com',
             'mobile' => '9999900000',
             'designation' => 'Lead Sales Consultant',
             'status' => 'inactive',
         ];
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
-            ->putJson('/api/superadmin/sales-members/' . $member->id, $updatePayload);
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->putJson('/api/superadmin/sales-members/'.$member->id, $updatePayload);
 
         $response->assertStatus(200)
             ->assertJsonPath('sales_member.name', 'Senior Promoted Rep')
@@ -764,12 +764,12 @@ class SalesMemberManagementTest extends TestCase
         $member = SalesMember::create([
             'sales_code' => 'SAL-8311',
             'name' => 'Code Immutable Member',
-            'email' => 'immutable_' . uniqid() . '@sales.com',
+            'email' => 'immutable_'.uniqid().'@sales.com',
             'mobile' => '9000008311',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
-            ->putJson('/api/superadmin/sales-members/' . $member->id, [
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->putJson('/api/superadmin/sales-members/'.$member->id, [
                 'sales_code' => 'SAL-9999',
                 'name' => 'Code Immutable Member Updated',
                 'email' => $member->email,
@@ -793,7 +793,7 @@ class SalesMemberManagementTest extends TestCase
      */
     public function test_duplicate_email_updates_are_rejected(): void
     {
-        $existingEmail = 'taken_' . uniqid() . '@sales.com';
+        $existingEmail = 'taken_'.uniqid().'@sales.com';
         SalesMember::create([
             'sales_code' => 'SAL-8321',
             'name' => 'Taken Email Member',
@@ -804,12 +804,12 @@ class SalesMemberManagementTest extends TestCase
         $targetMember = SalesMember::create([
             'sales_code' => 'SAL-8322',
             'name' => 'Target Update Member',
-            'email' => 'target_' . uniqid() . '@sales.com',
+            'email' => 'target_'.uniqid().'@sales.com',
             'mobile' => '9000008322',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
-            ->putJson('/api/superadmin/sales-members/' . $targetMember->id, [
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->putJson('/api/superadmin/sales-members/'.$targetMember->id, [
                 'name' => 'Target Update Member',
                 'email' => $existingEmail,
                 'mobile' => '9000008322',
@@ -824,7 +824,7 @@ class SalesMemberManagementTest extends TestCase
      */
     public function test_same_email_on_own_record_update_is_allowed(): void
     {
-        $email = 'own_email_' . uniqid() . '@sales.com';
+        $email = 'own_email_'.uniqid().'@sales.com';
         $member = SalesMember::create([
             'sales_code' => 'SAL-8331',
             'name' => 'Own Email Member',
@@ -832,8 +832,8 @@ class SalesMemberManagementTest extends TestCase
             'mobile' => '9000008331',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
-            ->putJson('/api/superadmin/sales-members/' . $member->id, [
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->putJson('/api/superadmin/sales-members/'.$member->id, [
                 'name' => 'Own Email Member Updated',
                 'email' => $email,
                 'mobile' => '9000008331',
@@ -850,12 +850,12 @@ class SalesMemberManagementTest extends TestCase
         $member = SalesMember::create([
             'sales_code' => 'SAL-8341',
             'name' => 'Status Check Member',
-            'email' => 'status_check_' . uniqid() . '@sales.com',
+            'email' => 'status_check_'.uniqid().'@sales.com',
             'mobile' => '9000008341',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
-            ->patchJson('/api/superadmin/sales-members/' . $member->id . '/status', [
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->patchJson('/api/superadmin/sales-members/'.$member->id.'/status', [
                 'status' => 'illegal_status',
             ]);
 
@@ -871,13 +871,13 @@ class SalesMemberManagementTest extends TestCase
         $member = SalesMember::create([
             'sales_code' => 'SAL-8351',
             'name' => 'Protected Update Member',
-            'email' => 'protected_' . uniqid() . '@sales.com',
+            'email' => 'protected_'.uniqid().'@sales.com',
             'mobile' => '9000008351',
             'created_by_superadmin_id' => $this->superAdmin->id,
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
-            ->putJson('/api/superadmin/sales-members/' . $member->id, [
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->putJson('/api/superadmin/sales-members/'.$member->id, [
                 'name' => 'Protected Update Member',
                 'email' => $member->email,
                 'mobile' => $member->mobile,
@@ -893,7 +893,7 @@ class SalesMemberManagementTest extends TestCase
      */
     public function test_nonexistent_sales_member_returns_http_404(): void
     {
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members/9999999');
 
         $response->assertStatus(404);
@@ -907,7 +907,7 @@ class SalesMemberManagementTest extends TestCase
         $unrelated = SalesMember::create([
             'sales_code' => 'SAL-8361',
             'name' => 'Unrelated Member',
-            'email' => 'unrelated_' . uniqid() . '@sales.com',
+            'email' => 'unrelated_'.uniqid().'@sales.com',
             'mobile' => '9000008361',
             'status' => 'active',
         ]);
@@ -915,15 +915,15 @@ class SalesMemberManagementTest extends TestCase
         $target = SalesMember::create([
             'sales_code' => 'SAL-8362',
             'name' => 'Target Member',
-            'email' => 'target_' . uniqid() . '@sales.com',
+            'email' => 'target_'.uniqid().'@sales.com',
             'mobile' => '9000008362',
             'status' => 'active',
         ]);
 
-        $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
-            ->putJson('/api/superadmin/sales-members/' . $target->id, [
+        $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->putJson('/api/superadmin/sales-members/'.$target->id, [
                 'name' => 'Target Member Changed',
-                'email' => 'target_changed_' . uniqid() . '@sales.com',
+                'email' => 'target_changed_'.uniqid().'@sales.com',
                 'mobile' => '9000008362',
                 'status' => 'blocked',
             ]);
@@ -940,13 +940,13 @@ class SalesMemberManagementTest extends TestCase
         $member = SalesMember::create([
             'sales_code' => 'SAL-8371',
             'name' => 'Status Toggle Member',
-            'email' => 'toggle_' . uniqid() . '@sales.com',
+            'email' => 'toggle_'.uniqid().'@sales.com',
             'mobile' => '9000008371',
             'status' => 'active',
         ]);
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
-            ->patchJson('/api/superadmin/sales-members/' . $member->id . '/status', [
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->patchJson('/api/superadmin/sales-members/'.$member->id.'/status', [
                 'status' => 'blocked',
             ]);
 
@@ -964,7 +964,7 @@ class SalesMemberManagementTest extends TestCase
      */
     public function test_preview_code_endpoint_returns_next_sequential_code(): void
     {
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members/preview-code');
 
         $response->assertStatus(200)
@@ -979,7 +979,7 @@ class SalesMemberManagementTest extends TestCase
      */
     public function test_departments_endpoint_returns_available_departments(): void
     {
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members/departments');
 
         $response->assertStatus(200)
@@ -995,7 +995,7 @@ class SalesMemberManagementTest extends TestCase
      */
     public function test_territories_endpoint_returns_available_territories(): void
     {
-        $response = $this->withHeader('Authorization', 'Bearer ' . $this->superAdminToken)
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
             ->getJson('/api/superadmin/sales-members/territories');
 
         $response->assertStatus(200)
@@ -1006,4 +1006,3 @@ class SalesMemberManagementTest extends TestCase
         $this->assertContains('North Zone', $territories);
     }
 }
-
