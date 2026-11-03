@@ -651,14 +651,9 @@ export default function AdminMasterAppointmentCreatePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 items-stretch">
             {/* Consultation / Appointment Image (Required) */}
             <div className="flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                <label className="block text-xs sm:text-sm font-semibold text-slate-700">
-                  Image <span className="text-rose-500">*</span>
-                </label>
-                <span className="text-[11px] font-medium text-slate-400">
-                  Mandatory document
-                </span>
-              </div>
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
+                Image <span className="text-rose-500">*</span>
+              </label>
 
               <input
                 type="file"
@@ -730,14 +725,9 @@ export default function AdminMasterAppointmentCreatePage() {
 
             {/* Optional Notes */}
             <div className="flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                <label className="block text-xs sm:text-sm font-semibold text-slate-700">
-                  Notes (Optional)
-                </label>
-                <span className="text-[11px] font-medium text-slate-400">
-                  Clinical Remarks
-                </span>
-              </div>
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
+                Notes (Optional)
+              </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
@@ -1037,14 +1027,9 @@ export default function AdminMasterAppointmentCreatePage() {
 
                 {/* Session Image (Optional) */}
                 <div className="pt-3 border-t border-slate-100">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-semibold text-slate-700">
-                      Session Image (Optional)
-                    </label>
-                    <span className="text-[10px] text-slate-400">
-                      Before/after procedure photo or clinical scan
-                    </span>
-                  </div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Session Image (Optional)
+                  </label>
 
                   <input
                     type="file"
