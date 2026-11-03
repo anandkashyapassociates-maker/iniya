@@ -214,80 +214,101 @@ export default function PayoutsLedgerPage() {
         </div>
       </div>
 
-      {/* KPI Cards: Total Payouts, Paid Amount, Balance Due, Staff Breakdown, Vendor Breakdown */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-        {/* Total Payout */}
-        <div className="bg-white rounded-2xl border border-blue-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
-              Total Payout
-            </span>
-            <Wallet className="w-4 h-4 text-blue-600" />
+      {/* KPI Cards: Row 1 (2 cards) and Row 2 (3 cards) to avoid amount overflow */}
+      <div className="space-y-3.5">
+        {/* Row 1: 2 Cards (Total Payout & Paid Amount) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          {/* Total Payout */}
+          <div className="bg-white rounded-2xl border border-blue-200/80 p-4 sm:p-5 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
+                Total Payout
+              </span>
+              <Wallet className="w-4 h-4 text-blue-600" />
+            </div>
+            <p
+              className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 mt-2 truncate"
+              title={formatCurrency(summary.total_payout_amount || summary.total_disbursed)}
+            >
+              {formatCurrency(summary.total_payout_amount || summary.total_disbursed)}
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">{summary.records_count} total records</p>
           </div>
-          <p className="text-xl font-bold text-slate-900 mt-2">
-            {formatCurrency(summary.total_payout_amount || summary.total_disbursed)}
-          </p>
-          <p className="text-[11px] text-slate-500 mt-0.5">{summary.records_count} total records</p>
+
+          {/* Paid Amount */}
+          <div className="bg-white rounded-2xl border border-emerald-200/80 p-4 sm:p-5 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                Paid Amount
+              </span>
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            </div>
+            <p
+              className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-emerald-700 mt-2 truncate"
+              title={formatCurrency(summary.total_paid_amount || summary.total_disbursed)}
+            >
+              {formatCurrency(summary.total_paid_amount || summary.total_disbursed)}
+            </p>
+            <p className="text-xs text-emerald-600 mt-0.5">Cleared disbursements</p>
+          </div>
         </div>
 
-        {/* Paid Amount */}
-        <div className="bg-white rounded-2xl border border-emerald-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-              Paid Amount
-            </span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        {/* Row 2: 3 Cards (Balance Due, Staff Paid / Bal, Vendor Paid / Bal) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          {/* Balance Due */}
+          <div className="bg-white rounded-2xl border border-amber-200/80 p-4 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md">
+                Balance Due
+              </span>
+              <Clock className="w-4 h-4 text-amber-600" />
+            </div>
+            <p
+              className="text-xl sm:text-2xl font-bold tracking-tight text-amber-700 mt-2 truncate"
+              title={formatCurrency(summary.total_balance_amount)}
+            >
+              {formatCurrency(summary.total_balance_amount)}
+            </p>
+            <p className="text-xs text-amber-600 mt-0.5">Total outstanding</p>
           </div>
-          <p className="text-xl font-bold text-emerald-700 mt-2">
-            {formatCurrency(summary.total_paid_amount || summary.total_disbursed)}
-          </p>
-          <p className="text-[11px] text-emerald-600 mt-0.5">Cleared disbursements</p>
-        </div>
 
-        {/* Balance Due */}
-        <div className="bg-white rounded-2xl border border-amber-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md">
-              Balance Due
-            </span>
-            <Clock className="w-4 h-4 text-amber-600" />
+          {/* Staff Breakdown */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                Staff Paid / Bal
+              </span>
+              <UserCheck className="w-4 h-4 text-emerald-600" />
+            </div>
+            <p
+              className="text-lg sm:text-xl font-bold tracking-tight text-slate-800 mt-2 truncate"
+              title={formatCurrency(summary.total_staff_disbursed)}
+            >
+              {formatCurrency(summary.total_staff_disbursed)}
+            </p>
+            <p className="text-xs text-amber-600 mt-0.5 truncate">
+              Bal: {formatCurrency(summary.total_staff_balance)}
+            </p>
           </div>
-          <p className="text-xl font-bold text-amber-700 mt-2">
-            {formatCurrency(summary.total_balance_amount)}
-          </p>
-          <p className="text-[11px] text-amber-600 mt-0.5">Total outstanding</p>
-        </div>
 
-        {/* Staff Breakdown */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-              Staff Paid / Bal
-            </span>
-            <UserCheck className="w-4 h-4 text-emerald-600" />
+          {/* Vendor Breakdown */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">
+                Vendor Paid / Bal
+              </span>
+              <Truck className="w-4 h-4 text-amber-600" />
+            </div>
+            <p
+              className="text-lg sm:text-xl font-bold tracking-tight text-slate-800 mt-2 truncate"
+              title={formatCurrency(summary.total_vendor_disbursed)}
+            >
+              {formatCurrency(summary.total_vendor_disbursed)}
+            </p>
+            <p className="text-xs text-amber-600 mt-0.5 truncate">
+              Bal: {formatCurrency(summary.total_vendor_balance)}
+            </p>
           </div>
-          <p className="text-lg font-bold text-slate-800 mt-2">
-            {formatCurrency(summary.total_staff_disbursed)}
-          </p>
-          <p className="text-[11px] text-amber-600 mt-0.5">
-            Bal: {formatCurrency(summary.total_staff_balance)}
-          </p>
-        </div>
-
-        {/* Vendor Breakdown */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">
-              Vendor Paid / Bal
-            </span>
-            <Truck className="w-4 h-4 text-amber-600" />
-          </div>
-          <p className="text-lg font-bold text-slate-800 mt-2">
-            {formatCurrency(summary.total_vendor_disbursed)}
-          </p>
-          <p className="text-[11px] text-amber-600 mt-0.5">
-            Bal: {formatCurrency(summary.total_vendor_balance)}
-          </p>
         </div>
       </div>
 

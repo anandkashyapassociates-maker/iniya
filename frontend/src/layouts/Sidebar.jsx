@@ -22,6 +22,7 @@ import {
   FolderTree,
   Layers,
   FileText,
+  Wallet,
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -385,6 +386,22 @@ export default function Sidebar({
                       >
                         <FileText className="w-3.5 h-3.5 shrink-0" />
                         <span className="truncate">Inventory Reports</span>
+                      </NavLink>
+
+                      <NavLink
+                        to="/admin/reports/payouts"
+                        end
+                        onClick={onClose}
+                        className={({ isActive }) =>
+                          `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                            isActive
+                              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs font-semibold'
+                              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                          }`
+                        }
+                      >
+                        <Wallet className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">Payouts Reports</span>
                       </NavLink>
                     </div>
                   )}
