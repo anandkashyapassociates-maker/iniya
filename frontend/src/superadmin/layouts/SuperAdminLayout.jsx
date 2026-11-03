@@ -178,17 +178,17 @@ export default function SuperAdminLayout() {
         } h-screen`}
       >
         <div className="flex-1 overflow-y-auto">
-          {/* Logo / Header: Transparent background with prominent, enlarged light-colored logo */}
-          <div className="h-28 px-4 border-b border-slate-800/80 flex items-center justify-between sticky top-0 bg-slate-950/95 backdrop-blur-md z-10">
+          {/* Logo / Header: Transparent background with balanced, elegant light-colored logo */}
+          <div className="h-24 px-4 border-b border-slate-800/80 flex items-center justify-between sticky top-0 bg-slate-950/95 backdrop-blur-md z-10">
             <Link
               to="/superadmin/dashboard"
-              className="flex-1 flex items-center justify-center py-2 group transition-all duration-300"
+              className="flex-1 flex items-center justify-center py-1 group transition-all duration-300"
               title="Iniya Aesthetics &amp; Wellness"
             >
               <img
                 src="/logo-gold.png"
                 alt="Iniya Aesthetics &amp; Wellness"
-                className="h-20 sm:h-22 w-auto max-w-[240px] object-contain drop-shadow-[0_4px_18px_rgba(255,230,170,0.35)] group-hover:scale-105 group-hover:drop-shadow-[0_6px_24px_rgba(255,230,170,0.5)] transition-all duration-300"
+                className="h-16 sm:h-[68px] w-auto max-w-[210px] object-contain drop-shadow-[0_3px_16px_rgba(255,230,170,0.3)] group-hover:scale-105 group-hover:drop-shadow-[0_5px_20px_rgba(255,230,170,0.45)] transition-all duration-300"
               />
             </Link>
 
