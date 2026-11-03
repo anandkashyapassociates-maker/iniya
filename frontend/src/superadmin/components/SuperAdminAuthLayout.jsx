@@ -27,18 +27,9 @@ export default function SuperAdminAuthLayout({
 
           {/* Top ERP & Clinic Branding */}
           <div className="relative z-10">
-            <div className="flex items-center gap-3.5 mb-3">
-              <div className="bg-white rounded-2xl p-2 shadow-lg shadow-black/20 border border-white/20 shrink-0 flex items-center justify-center">
-                <img src="/logo.png" alt="Iniya Aesthetics & Wellness" className="h-10 w-auto object-contain" />
-              </div>
-              <div>
-                <span className="text-base font-bold tracking-tight text-white uppercase block leading-tight font-sans">
-                  INIYA <span className="text-purple-400">HOSPITAL &amp; ERP</span>
-                </span>
-                <span className="text-[10px] font-medium tracking-wider uppercase text-purple-300">
-                  Superadmin Executive Gateway
-                </span>
-              </div>
+            {/* Prominent centered logo card */}
+            <div className="w-full bg-white rounded-2xl p-3 sm:p-3.5 shadow-xl shadow-black/20 border border-white/20 flex items-center justify-center mb-4">
+              <img src="/logo.png" alt="Iniya Aesthetics & Wellness" className="h-14 sm:h-16 w-auto max-w-[240px] object-contain" />
             </div>
 
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-400/20 text-purple-300 text-[11px] font-medium mb-3">
