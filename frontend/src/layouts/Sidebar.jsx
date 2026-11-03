@@ -185,16 +185,16 @@ export default function Sidebar({
       >
         {/* Top Branding Section */}
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="h-24 px-4 border-b border-slate-800/80 flex items-center justify-between shrink-0 bg-slate-950/40">
+          <div className="h-28 px-3.5 border-b border-slate-800/80 flex items-center justify-between shrink-0 bg-slate-950/40">
             <Link
               to="/admin/dashboard"
-              className="flex-1 flex items-center justify-center py-1 group transition-all duration-300"
+              className="flex-1 flex items-center justify-center py-2 group transition-all duration-300"
               title="Iniya Aesthetics &amp; Wellness"
             >
               <img
                 src="/logo-gold.png"
                 alt="Iniya Aesthetics &amp; Wellness"
-                className="h-14 sm:h-16 w-auto max-w-[200px] object-contain drop-shadow-[0_2px_14px_rgba(255,230,170,0.28)] group-hover:scale-105 group-hover:drop-shadow-[0_4px_18px_rgba(255,230,170,0.4)] transition-all duration-300"
+                className="h-20 sm:h-22 w-auto max-w-[220px] object-contain drop-shadow-[0_4px_18px_rgba(255,230,170,0.35)] group-hover:scale-105 group-hover:drop-shadow-[0_6px_24px_rgba(255,230,170,0.5)] transition-all duration-300"
               />
             </Link>
 
