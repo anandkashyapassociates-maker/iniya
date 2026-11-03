@@ -9,5 +9,6 @@ Route::get('/{any?}', function () {
             'Content-Type' => 'text/html; charset=UTF-8',
         ]);
     }
+
     return view('welcome');
 })->where('any', '^(?!api|sanctum|up).*$');

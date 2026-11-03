@@ -84,4 +84,3 @@ class SuperAdmin extends Authenticatable
         return $this->hasMany(SalesMember::class, 'created_by_superadmin_id');
     }
 }
-

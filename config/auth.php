@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Admin;
+use App\Models\SuperAdmin;
 use App\Models\User;
 
 return [
@@ -76,11 +78,11 @@ return [
         ],
         'super_admins' => [
             'driver' => 'eloquent',
-            'model' => \App\Models\SuperAdmin::class,
+            'model' => SuperAdmin::class,
         ],
         'admins' => [
             'driver' => 'eloquent',
-            'model' => \App\Models\Admin::class,
+            'model' => Admin::class,
         ],
     ],
 

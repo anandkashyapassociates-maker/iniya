@@ -22,6 +22,9 @@ import {
   BarChart3,
   AlertTriangle,
   FileText,
+  Wallet,
+  CreditCard,
+  Banknote,
 } from 'lucide-react';
 import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import ToastNotifications from '../../components/ToastNotifications';
@@ -71,6 +74,8 @@ export default function SuperAdminLayout() {
 
   const isInInventory = location.pathname.startsWith('/superadmin/inventory') && !isInReports;
 
+  const isInPayouts = location.pathname.startsWith('/superadmin/payouts');
+
   // Initialize only the currently active section as open on page load / reload
   const [adminMenuOpen, setAdminMenuOpen] = useState(isInAdminManagement);
   const [staffMenuOpen, setStaffMenuOpen] = useState(isInStaffManagement);
@@ -78,6 +83,7 @@ export default function SuperAdminLayout() {
   const [salesMenuOpen, setSalesMenuOpen] = useState(isInSalesManagement);
   const [inventoryMenuOpen, setInventoryMenuOpen] = useState(isInInventory);
   const [reportsMenuOpen, setReportsMenuOpen] = useState(isInReports);
+  const [payoutMenuOpen, setPayoutMenuOpen] = useState(isInPayouts);
 
   // When route changes, automatically ensure only the active section is open
   useEffect(() => {
@@ -88,6 +94,7 @@ export default function SuperAdminLayout() {
       setSalesMenuOpen(false);
       setInventoryMenuOpen(false);
       setReportsMenuOpen(false);
+      setPayoutMenuOpen(false);
     } else if (isInStaffManagement) {
       setStaffMenuOpen(true);
       setAdminMenuOpen(false);
@@ -95,6 +102,7 @@ export default function SuperAdminLayout() {
       setSalesMenuOpen(false);
       setInventoryMenuOpen(false);
       setReportsMenuOpen(false);
+      setPayoutMenuOpen(false);
     } else if (isInVendorManagement) {
       setVendorMenuOpen(true);
       setAdminMenuOpen(false);
@@ -102,6 +110,7 @@ export default function SuperAdminLayout() {
       setSalesMenuOpen(false);
       setInventoryMenuOpen(false);
       setReportsMenuOpen(false);
+      setPayoutMenuOpen(false);
     } else if (isInSalesManagement) {
       setSalesMenuOpen(true);
       setAdminMenuOpen(false);
@@ -109,6 +118,7 @@ export default function SuperAdminLayout() {
       setVendorMenuOpen(false);
       setInventoryMenuOpen(false);
       setReportsMenuOpen(false);
+      setPayoutMenuOpen(false);
     } else if (isInReports) {
       setReportsMenuOpen(true);
       setAdminMenuOpen(false);
@@ -116,6 +126,7 @@ export default function SuperAdminLayout() {
       setVendorMenuOpen(false);
       setSalesMenuOpen(false);
       setInventoryMenuOpen(false);
+      setPayoutMenuOpen(false);
     } else if (isInInventory) {
       setInventoryMenuOpen(true);
       setReportsMenuOpen(false);
@@ -123,8 +134,17 @@ export default function SuperAdminLayout() {
       setStaffMenuOpen(false);
       setVendorMenuOpen(false);
       setSalesMenuOpen(false);
+      setPayoutMenuOpen(false);
+    } else if (isInPayouts) {
+      setPayoutMenuOpen(true);
+      setAdminMenuOpen(false);
+      setStaffMenuOpen(false);
+      setVendorMenuOpen(false);
+      setSalesMenuOpen(false);
+      setInventoryMenuOpen(false);
+      setReportsMenuOpen(false);
     }
-  }, [location.pathname, isInAdminManagement, isInStaffManagement, isInVendorManagement, isInSalesManagement, isInInventory, isInReports]);
+  }, [location.pathname, isInAdminManagement, isInStaffManagement, isInVendorManagement, isInSalesManagement, isInInventory, isInReports, isInPayouts]);
 
   const handleLogout = async () => {
     try {
@@ -654,6 +674,88 @@ export default function SuperAdminLayout() {
                   >
                     <FileText className="w-3.5 h-3.5 shrink-0" />
                     <span>Inventory Reports</span>
+                  </NavLink>
+                </div>
+              )}
+            </div>
+
+            {/* ======================================================== */}
+            {/* PAYOUT MANAGEMENT ACCORDION SECTION                      */}
+            {/* ======================================================== */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setPayoutMenuOpen(!payoutMenuOpen)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold tracking-normal transition-all cursor-pointer group text-left ${
+                  isInPayouts
+                    ? 'text-emerald-400 bg-slate-900/90'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                }`}
+              >
+                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-600 to-cyan-600 text-white flex items-center justify-center shrink-0 icon-3d shadow-md group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-300">
+                    <Wallet className="w-4 h-4 drop-shadow-sm" />
+                  </div>
+                  <span className="text-left truncate group-hover:translate-x-0.5 transition-transform" title="Payout Management">
+                    Payout Management
+                  </span>
+                </div>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ml-1 ${
+                    payoutMenuOpen ? 'rotate-0' : '-rotate-90'
+                  }`}
+                />
+              </button>
+
+              {/* Collapsible Payouts Submenu */}
+              {payoutMenuOpen && (
+                <div className="pl-6 pr-1 pt-1.5 pb-1 space-y-1">
+                  {/* 1. Staff Payouts */}
+                  <NavLink
+                    to="/superadmin/payouts/staff"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-emerald-600/20 text-emerald-300 font-medium border border-emerald-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <UserCheck className="w-3.5 h-3.5 shrink-0" />
+                    <span>Staff Payouts</span>
+                  </NavLink>
+
+                  {/* 2. Vendor Payouts */}
+                  <NavLink
+                    to="/superadmin/payouts/vendors"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-amber-600/20 text-amber-300 font-medium border border-amber-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <Truck className="w-3.5 h-3.5 shrink-0" />
+                    <span>Vendor Payouts</span>
+                  </NavLink>
+
+                  {/* 3. Payouts Ledger */}
+                  <NavLink
+                    to="/superadmin/payouts/ledger"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive || isSubItemActive('/superadmin/payouts')
+                          ? 'bg-blue-600/20 text-blue-300 font-medium border border-blue-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <Wallet className="w-3.5 h-3.5 shrink-0" />
+                    <span>Payouts Ledger</span>
                   </NavLink>
                 </div>
               )}

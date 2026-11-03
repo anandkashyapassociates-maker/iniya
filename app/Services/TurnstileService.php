@@ -12,9 +12,6 @@ class TurnstileService
     /**
      * Verify a Cloudflare Turnstile token.
      *
-     * @param string|null $token
-     * @param string|null $ip
-     * @param string|null $expectedAction
      * @return array{success: bool, message: string, errors: array}
      */
     public function verify(?string $token, ?string $ip = null, ?string $expectedAction = null): array
@@ -54,11 +51,12 @@ class TurnstileService
                     ->post(self::VERIFY_URL, $payload);
 
                 if (! $response->successful()) {
-                    Log::error('Cloudflare Turnstile verification HTTP error: ' . $response->status());
+                    Log::error('Cloudflare Turnstile verification HTTP error: '.$response->status());
+
                     return [
                         'success' => false,
                         'message' => 'Security verification service temporarily unavailable. Please try again.',
-                        'errors' => ['http-error-' . $response->status()],
+                        'errors' => ['http-error-'.$response->status()],
                     ];
                 }
 
@@ -83,7 +81,7 @@ class TurnstileService
                 $errorCodes = $result['error-codes'] ?? [];
                 $errorMessage = $this->resolveErrorMessage($errorCodes);
 
-                Log::warning('Cloudflare Turnstile verification failed: ' . json_encode($errorCodes));
+                Log::warning('Cloudflare Turnstile verification failed: '.json_encode($errorCodes));
 
                 return [
                     'success' => false,
@@ -91,7 +89,8 @@ class TurnstileService
                     'errors' => $errorCodes,
                 ];
             } catch (\Throwable $e) {
-                Log::error('Cloudflare Turnstile exception: ' . $e->getMessage());
+                Log::error('Cloudflare Turnstile exception: '.$e->getMessage());
+
                 return [
                     'success' => false,
                     'message' => 'Unable to verify security challenge due to a network error. Please try again.',
@@ -136,4 +135,3 @@ class TurnstileService
         return 'Security verification failed. Please check the CAPTCHA and try again.';
     }
 }
-

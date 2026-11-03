@@ -280,20 +280,9 @@ class AdminAuthController extends Controller
         }
 
         return response()->json([
-            'message' => 'Login successful',
-            'token' => $token,
-            'user' => [
-                'id' => $admin->id,
-                'name' => $admin->name,
-                'email' => $admin->email,
-                'mobile' => $admin->mobile,
-                'image' => $admin->image,
-                'image_url' => $admin->image_url,
-                'status' => $admin->status,
-                'is_active' => $admin->is_active,
-                'last_login_at' => $admin->last_login_at,
-                'created_at' => $admin->created_at,
-                'role' => 'Administrator',
+            'message' => 'The provided credentials do not match our records.',
+            'errors' => [
+                'email' => ['The provided credentials do not match our records.'],
             ],
         ], 422);
     }

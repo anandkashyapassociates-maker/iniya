@@ -89,8 +89,10 @@ export default function AdminMasterAppointmentCreatePage() {
 
   // Load dropdown options
   useEffect(() => {
+    let isMounted = true;
     adminMasterAppointmentService.getOptions()
       .then((res) => {
+        if (!isMounted) return;
         if (res.success && res.data) {
           const custs = res.data.customers || [];
           const teams = res.data.sales_teams || [];
@@ -152,12 +154,19 @@ export default function AdminMasterAppointmentCreatePage() {
         }
       })
       .catch((err) => {
+        if (!isMounted) return;
         console.error('Failed to load options', err);
         toast.error('Failed to load customers, staff, and sales teams list.');
       })
       .finally(() => {
-        setOptionsLoading(false);
+        if (isMounted) {
+          setOptionsLoading(false);
+        }
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, [preServiceId, preCategoryId, preSubCategoryId]);
 
   // Session handler methods
@@ -693,7 +702,7 @@ export default function AdminMasterAppointmentCreatePage() {
                         Consultation Fee (₹)
                       </label>
                       <div className="relative">
-                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-xs sm:text-sm pointer-events-none">
+                        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 font-bold text-xs sm:text-sm pointer-events-none select-none">
                           ₹
                         </span>
                         <input
@@ -705,7 +714,7 @@ export default function AdminMasterAppointmentCreatePage() {
                               ? Number(session.service_price).toLocaleString('en-IN', { minimumFractionDigits: 2 })
                               : '0.00'
                           }
-                          className="w-full pl-7 pr-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 cursor-not-allowed select-none font-mono"
+                          className="w-full pl-8 pr-3 py-2 sm:pl-9 sm:pr-3.5 sm:py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 cursor-not-allowed select-none font-mono"
                         />
                       </div>
                     </div>
@@ -759,7 +768,7 @@ export default function AdminMasterAppointmentCreatePage() {
                         Commission (₹) <span className="text-rose-500">*</span>
                       </label>
                       <div className="relative">
-                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-xs sm:text-sm pointer-events-none">
+                        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 font-bold text-xs sm:text-sm pointer-events-none select-none">
                           ₹
                         </span>
                         <input
@@ -770,7 +779,7 @@ export default function AdminMasterAppointmentCreatePage() {
                           onChange={(e) => handleSessionChange(index, 'staff_commission', e.target.value)}
                           placeholder="0.00"
                           required
-                          className="w-full pl-7 pr-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-mono font-bold focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                          className="w-full pl-8 pr-3 py-2 sm:pl-9 sm:pr-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-mono font-bold focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                         />
                       </div>
                     </div>
@@ -851,7 +860,7 @@ export default function AdminMasterAppointmentCreatePage() {
         </div>
 
         {/* Sticky Bottom Action Bar (Fully Responsive on Mobile) */}
-        <div className="sticky bottom-3 sm:bottom-6 z-20 bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-slate-200/90 shadow-xl shadow-slate-900/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="sticky bottom-3 sm:bottom-6 z-20 bg-white/98 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-slate-200/90 shadow-xl shadow-slate-900/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 transform-gpu">
           <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-400 via-teal-500 to-emerald-600 shadow-md sm:shadow-lg shadow-emerald-500/25 ring-2 ring-emerald-50 flex items-center justify-center text-white shrink-0">
