@@ -41,18 +41,9 @@ export default function AuthLayout({
 
           {/* Top Brand Header */}
           <div className="relative z-10">
-            <div className="flex items-center gap-3.5 mb-3">
-              <div className="bg-white rounded-2xl p-2 shadow-lg shadow-black/20 border border-white/20 shrink-0 flex items-center justify-center">
-                <img src="/logo.png" alt="Iniya Aesthetics & Wellness" className="h-10 w-auto object-contain" />
-              </div>
-              <div>
-                <span className="text-base font-bold tracking-tight text-white uppercase block leading-tight font-display">
-                  INIYA <span className="text-blue-400">CLINIC</span>
-                </span>
-                <span className="text-[10px] font-extrabold tracking-widest uppercase text-blue-300 micro-label">
-                  {isSuperAdmin ? 'Executive Governance' : 'Doctor & OPD Care Portal'}
-                </span>
-              </div>
+            {/* Prominent centered logo card */}
+            <div className="w-full bg-white rounded-2xl p-3 sm:p-3.5 shadow-xl shadow-black/20 border border-white/20 flex items-center justify-center mb-4">
+              <img src="/logo.png" alt="Iniya Aesthetics & Wellness" className="h-14 sm:h-16 w-auto max-w-[240px] object-contain" />
             </div>
 
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-[10px] font-extrabold micro-label mb-3">
@@ -95,11 +86,17 @@ export default function AuthLayout({
         {/* ========================================================= */}
         <div className="lg:col-span-7 p-6 sm:p-9 lg:p-10 flex flex-col justify-between bg-slate-900/60">
           <div>
-            <div className="mb-6 text-center flex flex-col items-center">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-[10px] font-extrabold micro-label mb-2">
+            <div className="mb-5 text-center flex flex-col items-center">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-[10px] font-extrabold micro-label mb-3">
                 <Lock className="w-3.5 h-3.5" />
                 <span>{isSuperAdmin ? 'Executive Authentication' : 'Clinical Access Verification'}</span>
               </div>
+
+              {/* Logo between badge and title */}
+              <div className="bg-white rounded-2xl py-2 px-5 shadow-lg border border-white/20 mb-3 flex items-center justify-center">
+                <img src="/logo.png" alt="Iniya Logo" className="h-10 sm:h-12 w-auto max-w-[200px] object-contain" />
+              </div>
+
               <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight font-display">{title}</h1>
               {subtitle && <p className="text-xs text-slate-400 font-normal mt-1 text-center max-w-md">{subtitle}</p>}
             </div>
