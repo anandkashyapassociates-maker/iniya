@@ -91,10 +91,10 @@ export default function LiveClock({ className = '' }) {
             {time.hour}
           </span>
 
-          {/* Smooth Neon-Cyan Blinking Colon */}
+          {/* Smooth Neon-Cyan Colon */}
           <span
-            className={`text-cyan-400 font-bold text-xs sm:text-base transition-opacity duration-300 select-none ${
-              tick ? 'opacity-100 drop-shadow-[0_0_8px_rgba(34,211,238,0.85)]' : 'opacity-25'
+            className={`text-cyan-400 font-bold text-xs sm:text-base select-none transition-opacity duration-200 ${
+              tick ? 'opacity-100' : 'opacity-40'
             }`}
           >
             :
@@ -107,8 +107,8 @@ export default function LiveClock({ className = '' }) {
 
           {/* Seconds Colon & Counter (hidden on mobile, visible on sm and up) */}
           <span
-            className={`hidden lg:inline text-cyan-400 font-bold text-xs sm:text-sm transition-opacity duration-300 select-none ${
-              tick ? 'opacity-100 drop-shadow-[0_0_8px_rgba(34,211,238,0.85)]' : 'opacity-25'
+            className={`hidden lg:inline text-cyan-400 font-bold text-xs sm:text-sm select-none transition-opacity duration-200 ${
+              tick ? 'opacity-100' : 'opacity-40'
             }`}
           >
             :

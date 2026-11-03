@@ -13,7 +13,7 @@ export function SuperAdminAuthProvider({ children }) {
     }
   });
   const [token, setToken] = useState(() => localStorage.getItem('superadmin_token'));
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => !localStorage.getItem('superadmin_token'));
 
   const checkAuth = useCallback(async () => {
     const savedToken = localStorage.getItem('superadmin_token');

@@ -25,7 +25,7 @@ export default function Topbar({
   }, []);
 
   return (
-    <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 flex items-center justify-between px-3 sm:px-6 relative">
+    <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 flex items-center justify-between px-3 sm:px-6 relative transform-gpu">
       {/* Left side: Mobile Toggle & Clinic Context Pill */}
       <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 z-10">
         <button
