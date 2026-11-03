@@ -232,16 +232,18 @@ export default function AppointmentReceiptModal({
           >
             {/* 1. CLINIC HEADER & BRANDING */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3.5 border-b-2 border-slate-900/10">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-extrabold text-lg shadow-sm font-display shrink-0">
-                  +
-                </div>
+              <div className="flex items-center space-x-3.5">
+                <img
+                  src="/logo.png"
+                  alt="Iniya Aesthetics & Wellness"
+                  className="h-12 w-auto object-contain shrink-0"
+                />
                 <div>
                   <h1 className="text-base sm:text-lg font-black font-display text-slate-900 tracking-tight leading-tight">
                     INIYA CLINIC & OPD CARE
                   </h1>
                   <p className="text-[10px] text-slate-500 font-medium">
-                    Advanced Healthcare, Medical Consultations & Clinical Therapy
+                    Aesthetics, Wellness & Clinical Care
                   </p>
                   <p className="text-[9px] text-slate-400 mt-0.5 flex flex-wrap gap-x-2 font-mono">
                     <span>Reg: INIYA-OPD-DEL-8921A</span>
