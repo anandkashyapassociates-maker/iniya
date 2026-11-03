@@ -246,11 +246,13 @@ Route::prefix('admin')
         Route::get('/master-appointments', [MasterAppointmentController::class, 'index']);
         Route::post('/master-appointments', [MasterAppointmentController::class, 'store']);
         Route::get('/master-appointments/{id}', [MasterAppointmentController::class, 'show']);
+        Route::get('/master-appointments/{id}/receipt', [MasterAppointmentController::class, 'receipt']);
         Route::put('/master-appointments/{id}', [MasterAppointmentController::class, 'update']);
         Route::delete('/master-appointments/{id}', [MasterAppointmentController::class, 'destroy']);
 
         // Individual Session Management
         Route::post('/master-appointments/{id}/sessions', [AppointmentSessionController::class, 'store']);
+        Route::get('/sessions/{id}/receipt', [AppointmentSessionController::class, 'receipt']);
         Route::put('/sessions/{id}', [AppointmentSessionController::class, 'update']);
         Route::patch('/sessions/{id}/status', [AppointmentSessionController::class, 'updateStatus']);
         Route::delete('/sessions/{id}', [AppointmentSessionController::class, 'destroy']);
