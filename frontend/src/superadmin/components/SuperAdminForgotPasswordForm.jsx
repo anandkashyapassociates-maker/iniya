@@ -88,7 +88,7 @@ export default function SuperAdminForgotPasswordForm({
         </div>
       )}
 
-      <p className="text-xs text-slate-600 leading-relaxed">
+      <p className="text-xs text-slate-600 leading-relaxed text-center max-w-md mx-auto">
         Enter your administrative email address below. We will generate an expiring, single-use security token to recover your account.
       </p>
 
