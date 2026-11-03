@@ -155,7 +155,7 @@ export default function LoginForm({
               type="button"
               onClick={() => {
                 setAccountType('admin');
-                if (email === 'ramesh@iniya.com') setEmail('');
+                if (email === 'staff@example.com' || email === 'ramesh@iniya.com') setEmail('');
                 setErrors({});
               }}
               className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer font-display ${
@@ -210,7 +210,7 @@ export default function LoginForm({
               isSuperAdmin
                 ? 'superadmin@example.com'
                 : accountType === 'staff'
-                ? 'ramesh@iniya.com or staff email'
+                ? 'staff@example.com or staff email'
                 : 'admin@example.com'
             }
             disabled={isLoading}
