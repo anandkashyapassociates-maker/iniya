@@ -22,6 +22,9 @@ import {
   ReceiptIndianRupee,
   Image as ImageIcon,
   ExternalLink,
+  Upload,
+  X,
+  Check,
 } from 'lucide-react';
 import adminMasterAppointmentService from '../../services/adminMasterAppointmentService';
 import SessionRescheduleModal from '../../components/admin/SessionRescheduleModal';
@@ -40,6 +43,7 @@ export default function AdminMasterAppointmentDetailsPage() {
   const [appointment, setAppointment] = useState(null);
   const [staffList, setStaffList] = useState([]);
   const [inventoryProducts, setInventoryProducts] = useState([]);
+  const [servicesTree, setServicesTree] = useState([]);
 
   // Modals state
   const [rescheduleSession, setRescheduleSession] = useState(null);
@@ -66,6 +70,10 @@ export default function AdminMasterAppointmentDetailsPage() {
   const [addingSession, setAddingSession] = useState(false);
   const todayStr = new Date().toISOString().split('T')[0];
   const [newSessionData, setNewSessionData] = useState({
+    category_id: '',
+    sub_category_id: '',
+    service_id: '',
+    service_price: '0',
     treatment_details: '',
     session_date: todayStr,
     session_time: '10:00',
@@ -73,7 +81,74 @@ export default function AdminMasterAppointmentDetailsPage() {
     staff_commission: '0',
     inventory_product_id: '',
     inventory_product_ids: [],
+    image_file: null,
+    image_preview: null,
   });
+
+  const handleNewSessionCategoryChange = (catId) => {
+    setNewSessionData((prev) => ({
+      ...prev,
+      category_id: catId,
+      sub_category_id: '',
+      service_id: '',
+      service_price: '0',
+    }));
+  };
+
+  const handleNewSessionSubCategoryChange = (subId) => {
+    setNewSessionData((prev) => ({
+      ...prev,
+      sub_category_id: subId,
+      service_id: '',
+      service_price: '0',
+    }));
+  };
+
+  const handleNewSessionServiceChange = (serviceId) => {
+    const cat = servicesTree.find((c) => String(c.id) === String(newSessionData.category_id));
+    const sub = cat?.children?.find((s) => String(s.id) === String(newSessionData.sub_category_id));
+    const svc = sub?.services?.find((s) => String(s.id) === String(serviceId));
+
+    setNewSessionData((prev) => ({
+      ...prev,
+      service_id: serviceId,
+      service_price: svc ? String(svc.price) : '0',
+      treatment_details: prev.treatment_details?.trim() ? prev.treatment_details : (svc?.name || ''),
+    }));
+  };
+
+  const handleNewSessionImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file (PNG, JPG, WEBP).');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Session image size cannot exceed 10MB.');
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setNewSessionData((prev) => ({
+      ...prev,
+      image_file: file,
+      image_preview: previewUrl,
+    }));
+  };
+
+  const handleRemoveNewSessionImage = () => {
+    if (newSessionData.image_preview) {
+      URL.revokeObjectURL(newSessionData.image_preview);
+    }
+    setNewSessionData((prev) => ({
+      ...prev,
+      image_file: null,
+      image_preview: null,
+    }));
+  };
 
   // Load appointment details
   const fetchDetails = useCallback(async () => {
@@ -91,13 +166,14 @@ export default function AdminMasterAppointmentDetailsPage() {
     }
   }, [id]);
 
-  // Load options for staff and products
+  // Load options for staff, products, and services tree
   useEffect(() => {
     adminMasterAppointmentService.getOptions()
       .then((res) => {
         if (res.success && res.data) {
           setStaffList(res.data.staff || []);
           setInventoryProducts(res.data.inventory_products || []);
+          setServicesTree(res.data.services_tree || []);
           if (res.data.staff?.length > 0) {
             setNewSessionData((prev) => ({ ...prev, staff_id: String(res.data.staff[0].id) }));
           }
@@ -140,19 +216,33 @@ export default function AdminMasterAppointmentDetailsPage() {
   // Add new session submit
   const handleAddSessionSubmit = async (e) => {
     e.preventDefault();
-    if (!newSessionData.treatment_details.trim()) {
-      toast.error('Please enter treatment details.');
+    if (!newSessionData.treatment_details?.trim()) {
+      toast.error('Please enter procedure / treatment details.');
       return;
     }
     if (!newSessionData.staff_id) {
-      toast.error('Please assign a staff member.');
+      toast.error('Please assign a doctor / staff member.');
       return;
     }
 
     setAddingSession(true);
     try {
       const pIds = (newSessionData.inventory_product_ids || []).map((pId) => Number(pId));
+
+      let sessionImageBase64 = null;
+      if (newSessionData.image_file) {
+        const toBase64 = (file) =>
+          new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = (err) => reject(err);
+          });
+        sessionImageBase64 = await toBase64(newSessionData.image_file);
+      }
+
       const payload = {
+        service_id: newSessionData.service_id ? Number(newSessionData.service_id) : null,
         treatment_details: newSessionData.treatment_details.trim(),
         session_date: newSessionData.session_date,
         session_time: newSessionData.session_time,
@@ -160,12 +250,17 @@ export default function AdminMasterAppointmentDetailsPage() {
         staff_commission: Number(newSessionData.staff_commission || 0),
         inventory_product_ids: pIds,
         inventory_product_id: pIds.length > 0 ? pIds[0] : null,
+        image: sessionImageBase64 || undefined,
       };
 
       const res = await adminMasterAppointmentService.addSession(id, payload);
       toast.success(res.message || 'New session attached successfully!');
       setShowAddSessionModal(false);
       setNewSessionData({
+        category_id: '',
+        sub_category_id: '',
+        service_id: '',
+        service_price: '0',
         treatment_details: '',
         session_date: todayStr,
         session_time: '10:00',
@@ -173,6 +268,8 @@ export default function AdminMasterAppointmentDetailsPage() {
         staff_commission: '0',
         inventory_product_id: '',
         inventory_product_ids: [],
+        image_file: null,
+        image_preview: null,
       });
       fetchDetails();
     } catch (err) {
@@ -564,147 +661,335 @@ export default function AdminMasterAppointmentDetailsPage() {
       {/* Add Extra Session Modal */}
       {showAddSessionModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
-          <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-visible animate-in fade-in my-auto">
-            <div className="px-6 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white flex items-center justify-between rounded-t-2xl">
-              <div className="flex items-center space-x-2">
-                <Plus className="w-5 h-5" />
-                <h3 className="font-bold text-base">Add Extra Session</h3>
-              </div>
-              <button
-                onClick={() => setShowAddSessionModal(false)}
-                className="text-white/80 hover:text-white"
-              >
-                &times;
-              </button>
-            </div>
-
-            <form onSubmit={handleAddSessionSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
-                  Treatment / Procedure <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={newSessionData.treatment_details}
-                  onChange={(e) =>
-                    setNewSessionData({ ...newSessionData, treatment_details: e.target.value })
-                  }
-                  placeholder="e.g. Follow-up Therapy..."
-                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
-                    Date <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    min={todayStr}
-                    required
-                    value={newSessionData.session_date}
-                    onChange={(e) =>
-                      setNewSessionData({ ...newSessionData, session_date: e.target.value })
-                    }
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm"
-                  />
+          <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden my-auto max-h-[92vh] flex flex-col animate-in fade-in">
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center space-x-2.5">
+                <div className="p-1.5 bg-white/20 rounded-xl">
+                  <Plus className="w-5 h-5" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
-                    Time <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="time"
-                    required
-                    value={newSessionData.session_time}
-                    onChange={(e) =>
-                      setNewSessionData({ ...newSessionData, session_time: e.target.value })
-                    }
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm"
-                  />
+                  <h3 className="font-bold text-base font-display leading-tight">Add Extra Session</h3>
+                  <p className="text-[11px] text-blue-100 font-normal">
+                    Complete procedure, doctor, schedule & supplies details
+                  </p>
                 </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
-                    Assigned Staff <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    required
-                    value={newSessionData.staff_id}
-                    onChange={(e) =>
-                      setNewSessionData({ ...newSessionData, staff_id: e.target.value })
-                    }
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm"
-                  >
-                    <option value="">Select Staff</option>
-                    {staffList.map((st) => (
-                      <option key={st.id} value={st.id}>
-                        {st.name} {st.department ? `(${st.department})` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
-                    Staff Commission (₹) <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    required
-                    value={newSessionData.staff_commission}
-                    onChange={(e) =>
-                      setNewSessionData({ ...newSessionData, staff_commission: e.target.value })
-                    }
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 font-bold uppercase text-xs">
-                    <Package className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>Inventory Products Used</span>
+              <div className="flex items-center gap-2">
+                {Number(newSessionData.service_price || 0) > 0 && (
+                  <span className="px-2.5 py-1 rounded-lg bg-white/20 text-white text-xs font-bold font-mono">
+                    ₹{Number(newSessionData.service_price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </span>
-                  <span className="text-[11px] text-slate-500 font-normal">
-                    Multiple Allowed • Optional
-                  </span>
-                </label>
-                <ProductMultiSelectDropdown
-                  products={inventoryProducts}
-                  selectedIds={newSessionData.inventory_product_ids || []}
-                  onChange={(newIds) => {
-                    setNewSessionData((prev) => ({
-                      ...prev,
-                      inventory_product_ids: newIds,
-                      inventory_product_id: newIds[0] ? String(newIds[0]) : '',
-                    }));
-                  }}
-                  placeholder="-- Select Inventory Products (Check all that apply) --"
-                />
-              </div>
-
-              <div className="pt-3 flex justify-end space-x-3 border-t border-slate-100">
+                )}
                 <button
                   type="button"
                   onClick={() => setShowAddSessionModal(false)}
-                  className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-xl"
+                  className="p-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body Form */}
+            <form onSubmit={handleAddSessionSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
+              {/* SECTION: SERVICE PROCEDURE */}
+              <div className="p-4 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-3">
+                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Service Classification</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Category */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Category
+                    </label>
+                    <select
+                      value={newSessionData.category_id || ''}
+                      onChange={(e) => handleNewSessionCategoryChange(e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
+                    >
+                      <option value="">-- Select Category --</option>
+                      {servicesTree.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Sub-Category */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Sub-Category
+                    </label>
+                    <select
+                      value={newSessionData.sub_category_id || ''}
+                      onChange={(e) => handleNewSessionSubCategoryChange(e.target.value)}
+                      disabled={!newSessionData.category_id}
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:opacity-50 disabled:bg-slate-100 transition-all cursor-pointer"
+                    >
+                      <option value="">-- Select Sub-Category --</option>
+                      {servicesTree
+                        .find((c) => String(c.id) === String(newSessionData.category_id))
+                        ?.children?.map((sub) => (
+                          <option key={sub.id} value={sub.id}>
+                            {sub.name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
+                  {/* Service */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Service
+                    </label>
+                    <select
+                      value={newSessionData.service_id || ''}
+                      onChange={(e) => handleNewSessionServiceChange(e.target.value)}
+                      disabled={!newSessionData.sub_category_id}
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 font-medium focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:opacity-50 disabled:bg-slate-100 transition-all cursor-pointer"
+                    >
+                      <option value="">-- Select Service --</option>
+                      {servicesTree
+                        .find((c) => String(c.id) === String(newSessionData.category_id))
+                        ?.children?.find((s) => String(s.id) === String(newSessionData.sub_category_id))
+                        ?.services?.map((svc) => (
+                          <option key={svc.id} value={svc.id}>
+                            {svc.name} {svc.price ? `(₹${svc.price})` : ''}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION: PROCEDURE & DOCTOR */}
+              <div>
+                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  Doctor &amp; Procedure
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Procedure / Details <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newSessionData.treatment_details}
+                      onChange={(e) =>
+                        setNewSessionData({ ...newSessionData, treatment_details: e.target.value })
+                      }
+                      placeholder="e.g. Physiotherapy Cervical Spine Traction..."
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Doctor / Staff <span className="text-rose-500">*</span>
+                      </label>
+                      <select
+                        required
+                        value={newSessionData.staff_id}
+                        onChange={(e) =>
+                          setNewSessionData({ ...newSessionData, staff_id: e.target.value })
+                        }
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
+                      >
+                        <option value="">-- Assign Doctor --</option>
+                        {staffList.map((st) => (
+                          <option key={st.id} value={st.id}>
+                            {st.name} {st.department ? `(${st.department})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Commission (₹) <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 font-bold text-xs pointer-events-none">
+                          ₹
+                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          required
+                          value={newSessionData.staff_commission}
+                          onChange={(e) =>
+                            setNewSessionData({ ...newSessionData, staff_commission: e.target.value })
+                          }
+                          placeholder="0.00"
+                          className="w-full pl-8 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-mono font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION: SCHEDULE & MEDICAL SUPPLIES */}
+              <div>
+                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  Schedule &amp; Medical Supplies
+                </div>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Date <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="date"
+                        min={todayStr}
+                        required
+                        value={newSessionData.session_date}
+                        onChange={(e) =>
+                          setNewSessionData({ ...newSessionData, session_date: e.target.value })
+                        }
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-mono focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Time <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="time"
+                        required
+                        value={newSessionData.session_time}
+                        onChange={(e) =>
+                          setNewSessionData({ ...newSessionData, session_time: e.target.value })
+                        }
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 font-mono focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Inventory Products */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 font-bold uppercase text-[11px]">
+                        <Package className="w-3.5 h-3.5 text-indigo-600" />
+                        <span>Consumables / Supplies (Optional)</span>
+                      </span>
+                      <span className="text-[10px] text-slate-400">Multiple Allowed</span>
+                    </label>
+                    <ProductMultiSelectDropdown
+                      products={inventoryProducts}
+                      selectedIds={newSessionData.inventory_product_ids || []}
+                      onChange={(newIds) => {
+                        setNewSessionData((prev) => ({
+                          ...prev,
+                          inventory_product_ids: newIds,
+                          inventory_product_id: newIds[0] ? String(newIds[0]) : '',
+                        }));
+                      }}
+                      placeholder="-- Allocate Supplies / Consumables --"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION: SESSION IMAGE (OPTIONAL) */}
+              <div className="pt-2 border-t border-slate-100">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Session Image (Optional)
+                </label>
+
+                <input
+                  type="file"
+                  id="new_session_image"
+                  accept="image/*"
+                  onChange={handleNewSessionImageChange}
+                  className="hidden"
+                />
+
+                {!newSessionData.image_preview ? (
+                  <label
+                    htmlFor="new_session_image"
+                    className="group flex items-center justify-between p-3 border border-dashed border-slate-300 hover:border-indigo-500 hover:bg-indigo-50/40 rounded-xl transition-all cursor-pointer bg-slate-50/60"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center transition-all shrink-0">
+                        <Upload className="w-3.5 h-3.5" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-semibold text-slate-700 group-hover:text-indigo-600 transition-colors">
+                          Click to upload session image (Optional)
+                        </span>
+                        <span className="text-[10px] text-slate-400 block">
+                          Supported: PNG, JPG, JPEG, WEBP (Max 10MB)
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-xs font-semibold text-indigo-600 group-hover:underline pr-2">
+                      Browse file &rarr;
+                    </span>
+                  </label>
+                ) : (
+                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-12 h-12 rounded-lg overflow-hidden border border-slate-200 bg-white shrink-0">
+                        <img
+                          src={newSessionData.image_preview}
+                          alt="Session preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">
+                          <Check className="w-2.5 h-2.5" /> Session Image Attached
+                        </span>
+                        <p className="text-xs font-medium text-slate-800 truncate mt-0.5">
+                          {newSessionData.image_file?.name || 'Session Image'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <label
+                        htmlFor="new_session_image"
+                        className="px-2.5 py-1 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Change
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleRemoveNewSessionImage}
+                        className="p-1 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                        title="Remove session image"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="pt-3 flex justify-end space-x-3 border-t border-slate-100 sticky bottom-0 bg-white">
+                <button
+                  type="button"
+                  onClick={() => setShowAddSessionModal(false)}
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={addingSession}
-                  className="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl disabled:opacity-50 transition-all cursor-pointer shadow-md shadow-indigo-600/20"
                 >
-                  {addingSession ? 'Attaching...' : 'Attach Session'}
+                  {addingSession && <Loader2 className="w-4 h-4 animate-spin" />}
+                  <span>{addingSession ? 'Attaching Session...' : 'Attach Session'}</span>
                 </button>
               </div>
             </form>
