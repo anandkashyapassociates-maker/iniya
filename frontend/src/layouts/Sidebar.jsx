@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
@@ -185,14 +185,20 @@ export default function Sidebar({
       >
         {/* Top Branding Section */}
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="h-24 px-3 border-b border-slate-800/80 flex items-center justify-between shrink-0 bg-slate-950/40">
-            <div className="flex-1 h-[82px] flex items-center justify-center bg-white rounded-2xl p-1.5 shadow-md border border-white/20 overflow-hidden">
+          <div className="h-20 px-3.5 border-b border-slate-800/80 flex items-center justify-between shrink-0 bg-slate-950/70">
+            <Link
+              to="/admin/dashboard"
+              className="flex-1 flex items-center justify-center py-2 px-3 rounded-2xl bg-gradient-to-r from-slate-900/90 via-slate-850/60 to-slate-900/90 border border-slate-800/90 hover:border-blue-500/40 shadow-inner group transition-all duration-300 relative overflow-hidden"
+              title="Iniya Clinic OPD Suite"
+            >
+              {/* Subtle ambient brand glow matching Admin blue palette */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-transparent opacity-40 group-hover:opacity-80 transition-opacity pointer-events-none" />
               <img
-                src="/logo.png"
-                alt="Iniya Aesthetics & Wellness"
-                className="w-full h-full object-contain"
+                src="/logo-white.png"
+                alt="Iniya Aesthetics &amp; Wellness"
+                className="h-9 sm:h-10 w-auto max-w-[180px] object-contain drop-shadow-[0_2px_12px_rgba(255,255,255,0.14)] group-hover:scale-[1.03] transition-transform duration-300 relative z-10"
               />
-            </div>
+            </Link>
 
             <button
               onClick={onClose}

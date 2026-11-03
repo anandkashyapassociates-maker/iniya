@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Shield,
   LayoutDashboard,
@@ -179,14 +179,20 @@ export default function SuperAdminLayout() {
       >
         <div className="flex-1 overflow-y-auto">
           {/* Logo / Header */}
-          <div className="h-24 px-4 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-950 z-10">
-            <div className="flex-1 h-[82px] flex items-center justify-center bg-white rounded-2xl p-1.5 shadow-md border border-white/20 overflow-hidden">
+          <div className="h-20 px-3.5 border-b border-slate-800/80 flex items-center justify-between sticky top-0 bg-slate-950/95 backdrop-blur-md z-10">
+            <Link
+              to="/superadmin/dashboard"
+              className="flex-1 flex items-center justify-center py-2 px-3 rounded-2xl bg-gradient-to-r from-slate-900/90 via-slate-850/60 to-slate-900/90 border border-slate-800/90 hover:border-purple-500/40 shadow-inner group transition-all duration-300 relative overflow-hidden"
+              title="Iniya Hospital &amp; Clinic Suite"
+            >
+              {/* Subtle ambient theme glow matching SuperAdmin purple/blue palette */}
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-transparent opacity-40 group-hover:opacity-80 transition-opacity pointer-events-none" />
               <img
-                src="/logo.png"
-                alt="Iniya Aesthetics & Wellness"
-                className="w-full h-full object-contain"
+                src="/logo-white.png"
+                alt="Iniya Aesthetics &amp; Wellness"
+                className="h-9 sm:h-10 w-auto max-w-[190px] object-contain drop-shadow-[0_2px_12px_rgba(255,255,255,0.14)] group-hover:scale-[1.03] transition-transform duration-300 relative z-10"
               />
-            </div>
+            </Link>
 
             <button
               onClick={() => setMobileMenuOpen(false)}
