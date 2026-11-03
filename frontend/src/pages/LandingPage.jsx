@@ -21,7 +21,10 @@ export default function LandingPage() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
 
       <div className="max-w-4xl w-full text-center relative z-10 space-y-10">
-        <div>
+        <div className="flex flex-col items-center">
+          <div className="bg-white rounded-2xl p-3 shadow-xl border border-white/20 mb-5">
+            <img src="/logo.png" alt="Iniya Aesthetics & Wellness" className="h-14 sm:h-16 w-auto object-contain" />
+          </div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-300 text-xs font-semibold mb-4">
             <Lock className="w-3.5 h-3.5 text-blue-400" />
             <span className="micro-label text-[10px] font-extrabold uppercase tracking-widest text-slate-400">

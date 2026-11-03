@@ -324,7 +324,7 @@ export default function SuperAdminInventoryReportsPage() {
           `"${isIssue ? 'Stock Issued' : isAdj ? 'Stock Adjustment' : 'Stock Added'}"`,
           `"${(log.admin?.name || '').replace(/"/g, '""')}"`,
           `"${log.admin?.email || ''}"`,
-          `"${(log.vendor?.vendor_name || log.vendor?.company_name || 'N/A').replace(/"/g, '""')}"`,
+          `"${(!isIssue && (log.vendor?.vendor_name || log.vendor?.company_name) ? (log.vendor.vendor_name || log.vendor.company_name) : '—').replace(/"/g, '""')}"`,
           rate.toFixed(2),
           !isIssue ? qty : 0,
           isIssue ? qty : 0,
@@ -1183,7 +1183,7 @@ export default function SuperAdminInventoryReportsPage() {
                           )}
                           <div className="flex items-center gap-2 text-[10px] text-slate-400">
                             {log.product?.category?.name && <span>{log.product.category.name}</span>}
-                            {log.vendor?.vendor_name && (
+                            {!isIssue && log.vendor?.vendor_name && (
                               <span className="text-slate-500">• Sup: {log.vendor.vendor_name}</span>
                             )}
                           </div>

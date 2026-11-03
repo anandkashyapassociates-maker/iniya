@@ -27,13 +27,13 @@ export default function SuperAdminAuthLayout({
 
           {/* Top ERP & Clinic Branding */}
           <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-purple-600/40">
-                <Shield className="w-5 h-5" />
+            <div className="flex items-center gap-3.5 mb-3">
+              <div className="bg-white rounded-2xl p-2 shadow-lg shadow-black/20 border border-white/20 shrink-0 flex items-center justify-center">
+                <img src="/logo.png" alt="Iniya Aesthetics & Wellness" className="h-10 w-auto object-contain" />
               </div>
               <div>
-                <span className="text-base font-medium tracking-tight text-white uppercase block leading-tight font-sans">
-                  INIYA <span className="text-purple-400">HOSPITAL</span>
+                <span className="text-base font-bold tracking-tight text-white uppercase block leading-tight font-sans">
+                  INIYA <span className="text-purple-400">HOSPITAL &amp; ERP</span>
                 </span>
                 <span className="text-[10px] font-medium tracking-wider uppercase text-purple-300">
                   Superadmin Executive Gateway
@@ -95,12 +95,15 @@ export default function SuperAdminAuthLayout({
 
           {/* Card Header */}
           <div className="my-auto py-2">
-            <div className="mb-5">
-              <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+            <div className="mb-5 text-center flex flex-col items-center">
+              <div className="lg:hidden flex items-center gap-2.5 mb-4 p-2 bg-slate-50 rounded-xl border border-slate-200/80 w-fit">
+                <img src="/logo.png" alt="Iniya" className="h-8 w-auto object-contain" />
+              </div>
+              <h1 className="text-2xl font-semibold text-slate-900 tracking-tight text-center">
                 {title}
               </h1>
               {subtitle && (
-                <p className="text-xs sm:text-sm text-slate-500 font-normal mt-1 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-500 font-normal mt-1 leading-relaxed text-center max-w-md mx-auto">
                   {subtitle}
                 </p>
               )}

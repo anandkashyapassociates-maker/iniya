@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminActivityLog;
 use App\Models\AppointmentSession;
+use App\Models\InventoryStockLog;
 use App\Models\Payout;
 use App\Models\Staff;
 use App\Models\Vendor;
@@ -84,7 +85,7 @@ class PayoutController extends Controller
     }
 
     /**
-     * Active Vendors list for selection dropdown.
+     * Active Vendors list for selection dropdown with purchase totals & balances.
      */
     public function vendorOptions(): JsonResponse
     {
@@ -92,6 +93,38 @@ class PayoutController extends Controller
             ->where('status', '!=', Vendor::STATUS_BLOCKED)
             ->orderBy('vendor_name', 'asc')
             ->get();
+
+        // Calculate purchases (type = purchase) for each vendor from inventory_stock_logs
+        $purchases = InventoryStockLog::where('type', 'purchase')
+            ->whereNotNull('vendor_id')
+            ->select(
+                'vendor_id',
+                DB::raw('SUM(quantity) as total_qty'),
+                DB::raw('SUM(quantity * buy_price) as total_payable')
+            )
+            ->groupBy('vendor_id')
+            ->get()
+            ->keyBy('vendor_id');
+
+        $payouts = Payout::where('payout_type', Payout::TYPE_VENDOR)
+            ->select('vendor_id', DB::raw('SUM(paid_amount) as total_paid'))
+            ->groupBy('vendor_id')
+            ->pluck('total_paid', 'vendor_id');
+
+        $vendors->each(function ($v) use ($purchases, $payouts) {
+            $purchase = $purchases->get($v->id);
+            $totalQty = $purchase ? (int) $purchase->total_qty : 0;
+            $totalPayable = $purchase ? (float) $purchase->total_payable : 0.0;
+            $totalPaid = (float) ($payouts[$v->id] ?? 0);
+            $pendingBalance = max(0.00, round($totalPayable - $totalPaid, 2));
+            $avgRate = $totalQty > 0 ? round($totalPayable / $totalQty, 2) : 0.0;
+
+            $v->total_purchased_qty = $totalQty;
+            $v->total_purchased_amount = $totalPayable;
+            $v->avg_rate = $avgRate;
+            $v->total_paid = $totalPaid;
+            $v->pending_balance = $pendingBalance;
+        });
 
         return response()->json($vendors);
     }
@@ -413,9 +446,31 @@ class PayoutController extends Controller
         // Summary calculations
         $summaryQuery = clone $query;
         $totalAmount = (float) $summaryQuery->sum('amount');
-        $totalPayoutAmount = (float) (clone $query)->sum(DB::raw('CASE WHEN total_amount > 0 THEN total_amount ELSE amount END'));
+
+        // Total purchases from inventory_stock_logs where type = 'purchase'
+        $selectedVendorId = $request->input('vendor_id');
+        if ($selectedVendorId && $selectedVendorId !== 'all') {
+            $purchasesSum = (float) InventoryStockLog::where('vendor_id', $selectedVendorId)
+                ->where('type', 'purchase')
+                ->sum(DB::raw('quantity * buy_price'));
+            $totalQtySum = (int) InventoryStockLog::where('vendor_id', $selectedVendorId)
+                ->where('type', 'purchase')
+                ->sum('quantity');
+        } else {
+            $purchasesSum = (float) InventoryStockLog::whereNotNull('vendor_id')
+                ->where('type', 'purchase')
+                ->sum(DB::raw('quantity * buy_price'));
+            $totalQtySum = (int) InventoryStockLog::whereNotNull('vendor_id')
+                ->where('type', 'purchase')
+                ->sum('quantity');
+        }
+
+        $totalPayoutAmount = $purchasesSum > 0
+            ? $purchasesSum
+            : (float) (clone $query)->sum(DB::raw('CASE WHEN total_amount > 0 THEN total_amount ELSE amount END'));
+
         $totalPaidAmount = (float) (clone $query)->sum(DB::raw('CASE WHEN paid_amount > 0 THEN paid_amount ELSE amount END'));
-        $totalBalanceAmount = (float) (clone $query)->sum('balance_amount');
+        $totalBalanceAmount = max(0.00, round($totalPayoutAmount - $totalPaidAmount, 2));
         $cashAmount = (float) (clone $query)->where('account_type', Payout::ACCOUNT_CASH)->sum('amount');
         $bankAmount = (float) (clone $query)->where('account_type', Payout::ACCOUNT_BANK)->sum('amount');
         $totalCount = $summaryQuery->count();
@@ -433,6 +488,41 @@ class PayoutController extends Controller
         $perPage = min((int) $request->input('per_page', 15), 100);
         $paginated = $query->paginate($perPage);
 
+        // Dynamically enrich vendor payout items with purchase qty and rate from inventory_stock_logs
+        $vendorIds = collect($paginated->items())->pluck('vendor_id')->filter()->unique();
+        if ($vendorIds->isNotEmpty()) {
+            $purchasesByVendor = InventoryStockLog::whereIn('vendor_id', $vendorIds)
+                ->where('type', 'purchase')
+                ->select(
+                    'vendor_id',
+                    DB::raw('SUM(quantity) as total_qty'),
+                    DB::raw('SUM(quantity * buy_price) as total_payable')
+                )
+                ->groupBy('vendor_id')
+                ->get()
+                ->keyBy('vendor_id');
+
+            foreach ($paginated->items() as $item) {
+                if ($item->vendor_id && isset($purchasesByVendor[$item->vendor_id])) {
+                    $pData = $purchasesByVendor[$item->vendor_id];
+                    $qty = (int) $pData->total_qty;
+                    $payable = (float) $pData->total_payable;
+                    $avgPrice = $qty > 0 ? round($payable / $qty, 2) : 0.0;
+
+                    $item->total_purchased_qty = $qty;
+                    $item->avg_buy_price = $avgPrice;
+
+                    if ($payable > 0 && ((float) $item->total_amount <= 0 || (float) $item->total_amount < (float) $item->paid_amount)) {
+                        $item->total_amount = $payable;
+                        $item->balance_amount = max(0.00, round($payable - (float) $item->paid_amount, 2));
+                    }
+                } else {
+                    $item->total_purchased_qty = 0;
+                    $item->avg_buy_price = 0.0;
+                }
+            }
+        }
+
         return response()->json([
             'payouts' => $paginated,
             'summary' => [
@@ -441,6 +531,7 @@ class PayoutController extends Controller
                 'total_paid_amount' => $totalPaidAmount,
                 'total_balance_amount' => $totalBalanceAmount,
                 'total_count' => $totalCount,
+                'total_purchased_qty' => $totalQtySum,
                 'cash_amount' => $cashAmount,
                 'bank_amount' => $bankAmount,
             ],
@@ -466,10 +557,29 @@ class PayoutController extends Controller
 
         $payoutNumber = Payout::generateUniqueNumber(Payout::TYPE_VENDOR);
 
-        $amount = (float) $validated['amount'];
-        $totalAmount = (float) ($request->input('total_amount') ?? $amount);
-        $paidAmount = (float) ($request->input('paid_amount') ?? $amount);
-        $balanceAmount = max(0.00, round($totalAmount - $paidAmount, 2));
+        $paidAmount = (float) $validated['amount'];
+
+        // Automatically pull total purchases (quantity * buy_price) where type = 'purchase' from inventory_stock_logs
+        $purchaseStats = InventoryStockLog::where('vendor_id', $vendor->id)
+            ->where('type', 'purchase')
+            ->select(
+                DB::raw('SUM(quantity) as total_qty'),
+                DB::raw('SUM(quantity * buy_price) as total_payable')
+            )
+            ->first();
+
+        $totalPurchases = $purchaseStats ? (float) $purchaseStats->total_payable : 0.0;
+
+        // Sum previously paid disbursements to this vendor
+        $previouslyPaid = (float) Payout::where('payout_type', Payout::TYPE_VENDOR)
+            ->where('vendor_id', $vendor->id)
+            ->sum('paid_amount');
+
+        // Total Payout amount is the vendor's total purchase bill from inventory_stock_logs
+        $totalAmount = $totalPurchases > 0 ? $totalPurchases : (float) ($request->input('total_amount') ?? $paidAmount);
+
+        $cumulativePaid = $previouslyPaid + $paidAmount;
+        $balanceAmount = max(0.00, round($totalAmount - $cumulativePaid, 2));
 
         $status = Payout::STATUS_COMPLETED;
         if ($balanceAmount > 0 && $paidAmount > 0) {
@@ -533,10 +643,29 @@ class PayoutController extends Controller
         $superAdmin = $request->user();
         $vendor = Vendor::findOrFail($validated['vendor_id']);
 
-        $amount = (float) $validated['amount'];
-        $totalAmount = (float) ($request->input('total_amount') ?? ($payout->total_amount > 0 ? $payout->total_amount : $amount));
-        $paidAmount = (float) ($request->input('paid_amount') ?? $amount);
-        $balanceAmount = max(0.00, round($totalAmount - $paidAmount, 2));
+        $paidAmount = (float) $validated['amount'];
+
+        // Automatically pull total purchases (quantity * buy_price) where type = 'purchase' from inventory_stock_logs
+        $purchaseStats = InventoryStockLog::where('vendor_id', $vendor->id)
+            ->where('type', 'purchase')
+            ->select(
+                DB::raw('SUM(quantity) as total_qty'),
+                DB::raw('SUM(quantity * buy_price) as total_payable')
+            )
+            ->first();
+
+        $totalPurchases = $purchaseStats ? (float) $purchaseStats->total_payable : 0.0;
+
+        // Sum previously paid disbursements to this vendor (excluding this payout itself)
+        $previouslyPaid = (float) Payout::where('payout_type', Payout::TYPE_VENDOR)
+            ->where('vendor_id', $vendor->id)
+            ->where('id', '!=', $payout->id)
+            ->sum('paid_amount');
+
+        $totalAmount = $totalPurchases > 0 ? $totalPurchases : (float) ($request->input('total_amount') ?? ($payout->total_amount > 0 ? $payout->total_amount : $paidAmount));
+
+        $cumulativePaid = $previouslyPaid + $paidAmount;
+        $balanceAmount = max(0.00, round($totalAmount - $cumulativePaid, 2));
 
         $status = Payout::STATUS_COMPLETED;
         if ($balanceAmount > 0 && $paidAmount > 0) {

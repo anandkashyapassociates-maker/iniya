@@ -303,4 +303,15 @@ Route::prefix('admin')
             Route::put('/services/{id}', [ServiceManagementController::class, 'updateService']);
             Route::delete('/services/{id}', [ServiceManagementController::class, 'deleteService']);
         });
+
+        // ==========================================
+        // PAYOUTS REPORTS & AUDIT STATEMENT (READ-ONLY)
+        // ==========================================
+        Route::prefix('reports/payouts')->group(function () {
+            Route::get('/', [PayoutController::class, 'ledger']);
+            Route::get('/staff-options', [PayoutController::class, 'staffOptions']);
+            Route::get('/vendor-options', [PayoutController::class, 'vendorOptions']);
+            Route::get('/{id}', [PayoutController::class, 'show']);
+        });
+        Route::get('/payouts/ledger', [PayoutController::class, 'ledger']);
     });
