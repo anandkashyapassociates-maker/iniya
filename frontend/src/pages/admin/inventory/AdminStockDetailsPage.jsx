@@ -408,7 +408,9 @@ export default function AdminStockDetailsPage() {
                   const timeStr = log.created_at
                     ? new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
                     : '';
-                  const vendorName = log.vendor?.vendor_name || (log.vendor?.company_name ? `${log.vendor.vendor_name} (${log.vendor.company_name})` : null);
+                  const vendorName = !isIssue
+                    ? (log.vendor?.vendor_name || (log.vendor?.company_name ? `${log.vendor.vendor_name} (${log.vendor.company_name})` : null))
+                    : null;
                   const srNo = index + 1;
 
                   return (
@@ -460,7 +462,7 @@ export default function AdminStockDetailsPage() {
                                 {isIssue ? 'Stock Deducted' : 'Stock Added'}
                               </span>
 
-                              {vendorName && (
+                              {!isIssue && vendorName && (
                                 <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200/70 whitespace-nowrap">
                                   <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
                                   <span>Supplier: <strong className="text-slate-900 font-semibold">{vendorName}</strong></span>
