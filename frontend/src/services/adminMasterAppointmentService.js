@@ -60,6 +60,15 @@ export const adminMasterAppointmentService = {
   getCalendarSessions(params = {}) {
     return adminApi.get('/admin/calendar/sessions', { params }).then(r => r.data);
   },
+
+  // Payment Receipts (Master Appointment & Session-Wise)
+  getMasterReceipt(id) {
+    return adminApi.get(`/admin/master-appointments/${id}/receipt`).then(r => r.data);
+  },
+
+  getSessionReceipt(sessionId) {
+    return adminApi.get(`/admin/sessions/${sessionId}/receipt`).then(r => r.data);
+  },
 };
 
 export default adminMasterAppointmentService;

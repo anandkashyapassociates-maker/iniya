@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminActivityLog;
 use App\Models\AppointmentSession;
 use App\Models\Customer;
 use App\Models\InventoryProduct;
@@ -369,6 +370,45 @@ class MasterAppointmentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Master appointment and its sessions deleted successfully.',
+        ]);
+    }
+
+    /**
+     * Get receipt data for a master appointment.
+     */
+    public function receipt(Request $request, int $id): JsonResponse
+    {
+        $master = MasterAppointment::with([
+            'customer',
+            'salesTeam',
+            'admin:id,name,email',
+            'sessions' => function ($q) {
+                $q->with([
+                    'staff',
+                    'inventoryProduct',
+                    'service.category.parent',
+                ])->orderBy('session_number');
+            },
+        ])->findOrFail($id);
+
+        $admin = $request->user();
+        if ($admin) {
+            AdminActivityLog::record(
+                'admin',
+                $admin->id,
+                'master_appointment_receipt_viewed',
+                "Admin '{$admin->name}' generated receipt for Master Appointment #{$master->appointment_number}.",
+                $request
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'receipt_number' => 'RCP-M'.str_pad((string) $master->id, 5, '0', STR_PAD_LEFT),
+                'receipt_date' => Carbon::now()->toIso8601String(),
+                'appointment' => $master,
+            ],
         ]);
     }
 }

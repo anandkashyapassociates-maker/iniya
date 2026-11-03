@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminActivityLog;
 use App\Models\AppointmentSession;
 use App\Models\MasterAppointment;
 use Carbon\Carbon;
@@ -171,6 +172,42 @@ class AppointmentSessionController extends Controller
         return response()->json([
             'success' => true,
             'data' => $sessions,
+        ]);
+    }
+
+    /**
+     * Get receipt data for an individual session.
+     */
+    public function receipt(Request $request, int $id): JsonResponse
+    {
+        $session = AppointmentSession::with([
+            'masterAppointment.customer',
+            'masterAppointment.salesTeam',
+            'masterAppointment.admin:id,name,email',
+            'staff',
+            'inventoryProduct',
+            'service.category.parent',
+        ])->findOrFail($id);
+
+        $admin = $request->user();
+        if ($admin) {
+            AdminActivityLog::record(
+                'admin',
+                $admin->id,
+                'session_receipt_viewed',
+                "Admin '{$admin->name}' generated receipt for Session #{$session->session_number} of Master Appointment #{$session->masterAppointment?->appointment_number}.",
+                $request
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'receipt_number' => 'RCP-S'.str_pad((string) $session->id, 5, '0', STR_PAD_LEFT),
+                'receipt_date' => Carbon::now()->toIso8601String(),
+                'session' => $session,
+                'appointment' => $session->masterAppointment,
+            ],
         ]);
     }
 }

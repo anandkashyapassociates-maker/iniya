@@ -17,10 +17,12 @@ import {
   AlertCircle,
   Loader2,
   Users,
+  ReceiptIndianRupee,
 } from 'lucide-react';
 import adminMasterAppointmentService from '../../services/adminMasterAppointmentService';
 import DataTable from '../../components/DataTable';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import AppointmentReceiptModal from '../../components/admin/AppointmentReceiptModal';
 import { useToast } from '../../context/ToastContext';
 
 export default function AdminMasterAppointmentsPage() {
@@ -68,6 +70,9 @@ export default function AdminMasterAppointmentsPage() {
   // Delete modal state
   const [deleteId, setDeleteId] = useState(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Receipt Modal State
+  const [selectedReceiptAppointment, setSelectedReceiptAppointment] = useState(null);
 
   // Load dropdown options once
   useEffect(() => {
@@ -274,8 +279,15 @@ export default function AdminMasterAppointmentsPage() {
       render: (row) => (
         <div className="flex items-center justify-center space-x-1.5">
           <button
+            onClick={() => setSelectedReceiptAppointment(row)}
+            className="p-1.5 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
+            title="Download / Print Payment Receipt (₹)"
+          >
+            <ReceiptIndianRupee className="w-4 h-4" />
+          </button>
+          <button
             onClick={() => navigate(`/admin/appointments/${row.id}`)}
-            className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+            className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
             title="View Details & Sessions"
           >
             <Eye className="w-4 h-4" />
@@ -545,6 +557,14 @@ export default function AdminMasterAppointmentsPage() {
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteId(null)}
         isLoading={deleting}
+      />
+
+      {/* Master Appointment Payment Receipt Modal */}
+      <AppointmentReceiptModal
+        isOpen={Boolean(selectedReceiptAppointment)}
+        onClose={() => setSelectedReceiptAppointment(null)}
+        appointment={selectedReceiptAppointment}
+        type="master"
       />
     </div>
   );
