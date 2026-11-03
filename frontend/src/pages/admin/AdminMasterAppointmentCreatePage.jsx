@@ -21,6 +21,9 @@ import {
   UserPlus,
   Save,
   Check,
+  Upload,
+  Image as ImageIcon,
+  X,
 } from 'lucide-react';
 import adminMasterAppointmentService from '../../services/adminMasterAppointmentService';
 import ProductMultiSelectDropdown from '../../components/admin/ProductMultiSelectDropdown';
@@ -61,6 +64,37 @@ export default function AdminMasterAppointmentCreatePage() {
   const [appointmentDate, setAppointmentDate] = useState(todayStr);
   const [salesTeamId, setSalesTeamId] = useState('');
   const [notes, setNotes] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  // Handle consultation/appointment image selection
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file (PNG, JPG, JPEG, WEBP).');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image size cannot exceed 10MB.');
+      return;
+    }
+
+    setImageFile(file);
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+    setError('');
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+      setImagePreview(null);
+    }
+  };
 
   // Selected customer preview
   const selectedCustomer = useMemo(() => {
@@ -298,6 +332,11 @@ export default function AdminMasterAppointmentCreatePage() {
       return;
     }
 
+    if (!imageFile) {
+      setError('Appointment image is required. Please upload an image.');
+      return;
+    }
+
     // Validate sessions
     const now = new Date();
     for (let i = 0; i < sessions.length; i++) {
@@ -342,11 +381,22 @@ export default function AdminMasterAppointmentCreatePage() {
     setSaving(true);
 
     try {
+      const toBase64 = (file) =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = (err) => reject(err);
+        });
+
+      const imageBase64 = await toBase64(imageFile);
+
       const payload = {
         customer_id: Number(customerId),
         appointment_date: appointmentDate,
         sales_team_id: Number(salesTeamId),
         appointment_fees: totalAppointmentFees,
+        image: imageBase64,
         notes: notes ? notes.trim() : undefined,
         sessions: sessions.map((s) => ({
           service_id: s.service_id ? Number(s.service_id) : null,
@@ -539,6 +589,87 @@ export default function AdminMasterAppointmentCreatePage() {
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* Consultation / Appointment Image (Required) */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700">
+                Image <span className="text-rose-500">*</span>
+              </label>
+              <span className="text-[11px] font-medium text-slate-400">
+                Mandatory prescription / consultation document
+              </span>
+            </div>
+
+            <input
+              type="file"
+              name="image"
+              id="appointment_image"
+              accept="image/*"
+              required
+              onChange={handleImageChange}
+              className="hidden"
+            />
+
+            {!imagePreview ? (
+              <label
+                htmlFor="appointment_image"
+                className="group flex flex-col items-center justify-center border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-blue-50/40 rounded-2xl p-5 sm:p-6 transition-all cursor-pointer text-center bg-slate-50/60"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center transition-all mb-2.5 shadow-xs">
+                  <Upload className="w-5 h-5" />
+                </div>
+                <div className="text-xs sm:text-sm font-semibold text-slate-800 group-hover:text-blue-600 transition-colors">
+                  Click to browse and upload appointment image <span className="text-rose-500">*</span>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Supported formats: PNG, JPG, JPEG, WEBP (Max 10MB)
+                </p>
+              </label>
+            ) : (
+              <div className="p-3.5 sm:p-4 bg-slate-50/90 border border-slate-200/90 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-slate-200 bg-white shrink-0 shadow-xs">
+                    <img
+                      src={imagePreview}
+                      alt="Appointment Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                        <Check className="w-3 h-3" /> Image Selected
+                      </span>
+                    </div>
+                    <p className="text-xs sm:text-sm font-semibold text-slate-800 truncate mt-1">
+                      {imageFile?.name}
+                    </p>
+                    <p className="text-[11px] text-slate-400 font-mono">
+                      {(imageFile?.size / (1024 * 1024)).toFixed(2)} MB
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                  <label
+                    htmlFor="appointment_image"
+                    className="px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition-all cursor-pointer shadow-xs"
+                  >
+                    Change Image
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="p-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200/80 rounded-xl transition-all cursor-pointer"
+                    title="Remove Image"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Optional Notes */}

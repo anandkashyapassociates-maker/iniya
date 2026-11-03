@@ -15,6 +15,8 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class MasterAppointmentController extends Controller
@@ -210,6 +212,13 @@ class MasterAppointmentController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        if (is_string($request->input('sessions'))) {
+            $decodedSessions = json_decode($request->input('sessions'), true);
+            if (is_array($decodedSessions)) {
+                $request->merge(['sessions' => $decodedSessions]);
+            }
+        }
+
         $validated = $request->validate([
             'customer_id' => ['required', 'exists:customers,id'],
             'appointment_date' => ['required', 'date', 'after_or_equal:today'],
@@ -227,6 +236,37 @@ class MasterAppointmentController extends Controller
             'sessions.*.inventory_product_ids' => ['nullable', 'array'],
             'sessions.*.inventory_product_ids.*' => ['integer', 'exists:inventory_products,id'],
         ]);
+
+        // Process mandatory appointment image
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $request->validate([
+                'image' => ['file', 'mimes:jpeg,png,jpg,webp,gif,bmp,svg', 'max:10240'],
+            ], [
+                'image.file' => 'The appointment image must be a valid image file.',
+                'image.mimes' => 'The appointment image must be a file of type: jpeg, png, jpg, webp, gif, bmp, svg.',
+                'image.max' => 'The appointment image size cannot exceed 10MB.',
+            ]);
+            $imagePath = $request->file('image')->store('appointments', 'public');
+        } elseif ($request->filled('image') && is_string($request->input('image')) && str_starts_with($request->input('image'), 'data:image')) {
+            $dataUri = $request->input('image');
+            if (preg_match('/^data:image\/(\w+);base64,/', $dataUri, $type)) {
+                $data = substr($dataUri, strpos($dataUri, ',') + 1);
+                $type = strtolower($type[1]);
+                $data = base64_decode($data);
+                if ($data !== false) {
+                    $fileName = 'appointments/'.Str::random(40).'.'.$type;
+                    Storage::disk('public')->put($fileName, $data);
+                    $imagePath = $fileName;
+                }
+            }
+        }
+
+        if (! $imagePath) {
+            throw ValidationException::withMessages([
+                'image' => ['The appointment image is required.'],
+            ]);
+        }
 
         // Validate that session times for today are not in the past (with a 5-minute grace buffer)
         $today = Carbon::today()->toDateString();
@@ -250,7 +290,7 @@ class MasterAppointmentController extends Controller
             }
         }
 
-        $masterAppointment = DB::transaction(function () use ($validated, $request) {
+        $masterAppointment = DB::transaction(function () use ($validated, $request, $imagePath) {
             $appointmentNumber = MasterAppointment::generateUniqueNumber($validated['appointment_date']);
 
             $master = MasterAppointment::create([
@@ -260,6 +300,7 @@ class MasterAppointmentController extends Controller
                 'sales_team_id' => $validated['sales_team_id'],
                 'appointment_fees' => $validated['appointment_fees'],
                 'notes' => $validated['notes'] ?? null,
+                'image' => $imagePath,
                 'admin_id' => $request->user()?->id,
             ]);
 
@@ -340,6 +381,35 @@ class MasterAppointmentController extends Controller
             'notes' => ['nullable', 'string', 'max:5000'],
         ]);
 
+        if ($request->hasFile('image')) {
+            $request->validate([
+                'image' => ['file', 'mimes:jpeg,png,jpg,webp,gif,bmp,svg', 'max:10240'],
+            ], [
+                'image.file' => 'The appointment image must be a valid image file.',
+                'image.mimes' => 'The appointment image must be of type: jpeg, png, jpg, webp, gif, bmp, svg.',
+                'image.max' => 'The appointment image size cannot exceed 10MB.',
+            ]);
+            if ($master->image && Storage::disk('public')->exists($master->image)) {
+                Storage::disk('public')->delete($master->image);
+            }
+            $validated['image'] = $request->file('image')->store('appointments', 'public');
+        } elseif ($request->filled('image') && is_string($request->input('image')) && str_starts_with($request->input('image'), 'data:image')) {
+            $dataUri = $request->input('image');
+            if (preg_match('/^data:image\/(\w+);base64,/', $dataUri, $type)) {
+                $data = substr($dataUri, strpos($dataUri, ',') + 1);
+                $type = strtolower($type[1]);
+                $data = base64_decode($data);
+                if ($data !== false) {
+                    if ($master->image && Storage::disk('public')->exists($master->image)) {
+                        Storage::disk('public')->delete($master->image);
+                    }
+                    $fileName = 'appointments/'.Str::random(40).'.'.$type;
+                    Storage::disk('public')->put($fileName, $data);
+                    $validated['image'] = $fileName;
+                }
+            }
+        }
+
         $master->update($validated);
 
         return response()->json([
@@ -361,6 +431,10 @@ class MasterAppointmentController extends Controller
                 'success' => true,
                 'message' => 'Master appointment already removed.',
             ]);
+        }
+
+        if ($master->image && Storage::disk('public')->exists($master->image)) {
+            Storage::disk('public')->delete($master->image);
         }
 
         DB::transaction(function () use ($master) {
