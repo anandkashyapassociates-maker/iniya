@@ -395,7 +395,7 @@ export default function AppointmentReceiptModal({
                 <table className="w-full text-left text-[11px]">
                   <thead className="bg-slate-50 text-[10px] font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">
                     <tr>
-                      <th className="py-2 px-2.5 text-center w-8">#</th>
+                      <th className="py-2 px-2.5 text-center w-12 whitespace-nowrap">S.NO.</th>
                       <th className="py-2 px-3">Treatment / Procedure Details</th>
                       <th className="py-2 px-3">Scheduled Date & Time</th>
                       <th className="py-2 px-3">Doctor / Specialist</th>

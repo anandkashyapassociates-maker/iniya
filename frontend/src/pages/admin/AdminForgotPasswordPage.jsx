@@ -25,7 +25,7 @@ export default function AdminForgotPasswordPage() {
         role="admin"
         onSubmit={handleForgotPassword}
         isLoading={isLoading}
-        loginPath="/admin"
+        loginPath="/"
       />
     </AuthLayout>
   );

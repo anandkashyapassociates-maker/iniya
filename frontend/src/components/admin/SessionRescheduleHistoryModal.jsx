@@ -116,6 +116,12 @@ export default function SessionRescheduleHistoryModal({
                             <User className="w-3.5 h-3.5 text-rose-500" />
                             <span>{h.old_staff?.name || `Staff #${h.old_staff_id}`}</span>
                           </div>
+                          {h.old_commission !== null && h.old_commission !== undefined && (
+                            <div className="flex items-center space-x-1.5 text-slate-700 text-[11px]">
+                              <span className="font-bold text-rose-500">₹</span>
+                              <span className="font-mono">Commission: ₹{Number(h.old_commission).toFixed(2)}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -137,6 +143,12 @@ export default function SessionRescheduleHistoryModal({
                             <User className="w-3.5 h-3.5 text-emerald-500" />
                             <span className="font-medium">{h.new_staff?.name || `Staff #${h.new_staff_id}`}</span>
                           </div>
+                          {h.new_commission !== null && h.new_commission !== undefined && (
+                            <div className="flex items-center space-x-1.5 text-slate-700 text-[11px]">
+                              <span className="font-bold text-emerald-500">₹</span>
+                              <span className="font-mono font-medium">Commission: ₹{Number(h.new_commission).toFixed(2)}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

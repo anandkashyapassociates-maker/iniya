@@ -12,7 +12,7 @@ export default function AdminProtectedRoute() {
   }
 
   if (!isAuthenticated || !user?.is_active) {
-    return <Navigate to="/admin" state={{ from: location }} replace />;
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
 
   return <Outlet />;

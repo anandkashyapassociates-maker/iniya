@@ -24,9 +24,11 @@ class AppointmentRescheduleHistory extends Model
         'old_date',
         'old_time',
         'old_staff_id',
+        'old_commission',
         'new_date',
         'new_time',
         'new_staff_id',
+        'new_commission',
         'reschedule_reason',
         'rescheduled_by',
         'created_at',
@@ -42,6 +44,8 @@ class AppointmentRescheduleHistory extends Model
         return [
             'old_date' => 'date:Y-m-d',
             'new_date' => 'date:Y-m-d',
+            'old_commission' => 'decimal:2',
+            'new_commission' => 'decimal:2',
             'created_at' => 'datetime',
         ];
     }

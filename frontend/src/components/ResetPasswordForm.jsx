@@ -6,7 +6,7 @@ export default function ResetPasswordForm({
   role = 'admin',
   onSubmit,
   isLoading = false,
-  loginPath = '/admin',
+  loginPath = '/',
 }) {
   const isSuperAdmin = role === 'superadmin';
   const [searchParams] = useSearchParams();
