@@ -56,7 +56,7 @@ class SessionRescheduleController extends Controller
         $adminName = $request->user()?->name ?? 'Admin';
 
         // Execute in transaction with row locking
-        $result = DB::transaction(function () use ($id, $validated, $adminName, $request) {
+        $result = DB::transaction(function () use ($id, $validated, $adminName) {
             /** @var AppointmentSession $session */
             $session = AppointmentSession::where('id', $id)
                 ->lockForUpdate()
@@ -81,6 +81,17 @@ class SessionRescheduleController extends Controller
                 ? (float) $validated['staff_commission']
                 : (float) $session->staff_commission;
 
+            $oldProductIds = ! empty($session->inventory_product_ids)
+                ? array_map('intval', (array) $session->inventory_product_ids)
+                : (! empty($session->inventory_product_id) ? [(int) $session->inventory_product_id] : []);
+
+            $productIds = ! empty($validated['inventory_product_ids'])
+                ? array_map('intval', (array) $validated['inventory_product_ids'])
+                : (! empty($validated['inventory_product_id']) ? [(int) $validated['inventory_product_id']] : []);
+
+            $hasProductUpdate = array_key_exists('inventory_product_ids', $validated) || array_key_exists('inventory_product_id', $validated);
+            $newProductIds = $hasProductUpdate ? $productIds : $oldProductIds;
+
             // 1. Create reschedule history record
             $history = AppointmentRescheduleHistory::create([
                 'session_id' => $session->id,
@@ -88,18 +99,16 @@ class SessionRescheduleController extends Controller
                 'old_time' => $oldTime,
                 'old_staff_id' => $oldStaffId,
                 'old_commission' => $oldCommission,
+                'old_inventory_product_ids' => ! empty($oldProductIds) ? array_values($oldProductIds) : null,
                 'new_date' => $validated['session_date'],
                 'new_time' => $validated['session_time'],
                 'new_staff_id' => $validated['staff_id'],
                 'new_commission' => $newCommission,
+                'new_inventory_product_ids' => ! empty($newProductIds) ? array_values($newProductIds) : null,
                 'reschedule_reason' => $validated['reschedule_reason'] ?? null,
                 'rescheduled_by' => $adminName,
                 'created_at' => Carbon::now(),
             ]);
-
-            $productIds = ! empty($validated['inventory_product_ids'])
-                ? array_map('intval', (array) $validated['inventory_product_ids'])
-                : (! empty($validated['inventory_product_id']) ? [(int) $validated['inventory_product_id']] : []);
 
             // 2. Update session with new date, new time, new staff, commission, and supplies
             $sessionUpdateData = [
@@ -109,7 +118,7 @@ class SessionRescheduleController extends Controller
                 'staff_commission' => $newCommission,
             ];
 
-            if (array_key_exists('inventory_product_ids', $validated) || array_key_exists('inventory_product_id', $validated)) {
+            if ($hasProductUpdate) {
                 $sessionUpdateData['inventory_product_id'] = ! empty($productIds) ? $productIds[0] : null;
                 $sessionUpdateData['inventory_product_ids'] = ! empty($productIds) ? $productIds : null;
             }
