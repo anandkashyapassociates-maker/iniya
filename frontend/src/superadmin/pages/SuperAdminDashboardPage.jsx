@@ -685,70 +685,72 @@ export default function SuperAdminDashboardPage() {
           </div>
           <Link
             to="/superadmin/admin-management/details"
-            className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1"
+            className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1 group/headerlink"
           >
             <span>All Admins</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
+            <ArrowUpRight className="w-3.5 h-3.5 group-hover/headerlink:translate-x-0.5 group-hover/headerlink:-translate-y-0.5 transition-transform" />
           </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {/* Card A1: Admin Management */}
-          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-2xs flex flex-col justify-between">
+          {/* Card A1: Hospital Admins */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group">
             <div>
-              <div className="flex items-center justify-between gap-2 mb-3">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold shrink-0">
-                    <Shield className="w-4 h-4" />
-                  </div>
-                  <span className="text-xs font-bold text-slate-800 truncate">Admin Management</span>
+              {/* Top Row: 3D Royal Blue Shield + Active Rate Pill */}
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-blue-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+                  <Shield className="w-6 h-6 drop-shadow-sm" />
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-extrabold shrink-0">
+                <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200/60 shadow-2xs shrink-0">
                   {modules.admins.active_rate}% Active
                 </span>
               </div>
 
-              <div className="text-3xl font-black text-slate-900 tabular-numbers">
-                {modules.admins.total} <span className="text-xs font-normal text-slate-500">Admins</span>
-              </div>
-              <div className="text-xs text-slate-500 mt-1.5 flex items-center gap-3">
-                <span>Active: <strong className="text-emerald-600">{modules.admins.active}</strong></span>
-                <span>Blocked: <strong className="text-rose-600">{modules.admins.blocked}</strong></span>
+              {/* Title & Subtitle */}
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                Hospital Admins
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Branch governance &amp; security
+              </p>
+
+              {/* Primary Metric */}
+              <div className="mt-4 flex items-baseline gap-2">
+                <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers">
+                  <AnimatedCounter value={modules.admins.total} />
+                </span>
+                <span className="text-xs font-semibold text-slate-500">Admins</span>
               </div>
 
-              {/* Recent Admins Roster */}
-              <div className="mt-4 pt-3.5 border-t border-slate-100 space-y-2">
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-                  Recent Admins
-                </span>
-                {modules.admins.recent && modules.admins.recent.length > 0 ? (
-                  modules.admins.recent.slice(0, 3).map((adm) => (
-                    <div key={adm.id} className="flex items-center justify-between text-xs py-1 gap-2">
-                      <div className="min-w-0 flex-1 truncate">
-                        <div className="font-semibold text-slate-800 truncate">{adm.name}</div>
-                        <div className="text-[10px] text-slate-400 truncate">{adm.email}</div>
-                      </div>
-                      <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold shrink-0">
-                        Active
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-slate-400 py-1">No admin accounts found.</p>
-                )}
+              {/* Key Operational Highlight Chips */}
+              <div className="grid grid-cols-2 gap-2.5 mt-4">
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active</span>
+                  <span className="text-sm font-extrabold text-emerald-600 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.admins.active} /> Live
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Blocked</span>
+                  <span className="text-sm font-extrabold text-slate-600 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.admins.blocked} /> Restr.
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between gap-2">
+            {/* Bottom Actions */}
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
               <Link
                 to="/superadmin/admin-management/details"
-                className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+                className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1 group/btn"
               >
-                View Roster
+                <span>View Roster</span>
+                <ArrowUpRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
               </Link>
               <Link
                 to="/superadmin/admin-management/create"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold transition-all hover:scale-105"
               >
                 <PlusCircle className="w-3.5 h-3.5 text-blue-600" />
                 <span>Add Admin</span>
@@ -756,62 +758,64 @@ export default function SuperAdminDashboardPage() {
             </div>
           </div>
 
-          {/* Card A2: Staff Management */}
-          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-2xs flex flex-col justify-between">
+          {/* Card A2: Medical Staff */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group">
             <div>
-              <div className="flex items-center justify-between gap-2 mb-3">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0">
-                    <UserCheck className="w-4 h-4" />
-                  </div>
-                  <span className="text-xs font-bold text-slate-800 truncate">Staff Management</span>
+              {/* Top Row: 3D Emerald Stethoscope + Depts Pill */}
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-emerald-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+                  <UserCheck className="w-6 h-6 drop-shadow-sm" />
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-extrabold shrink-0">
+                <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200/60 shadow-2xs shrink-0">
                   {modules.staff.departments_count} Depts
                 </span>
               </div>
 
-              <div className="text-3xl font-black text-slate-900 tabular-numbers">
-                {modules.staff.total} <span className="text-xs font-normal text-slate-500">Staff</span>
-              </div>
-              <div className="text-xs text-slate-500 mt-1.5 flex items-center gap-3">
-                <span>Active: <strong className="text-emerald-600">{modules.staff.active}</strong></span>
-                <span>Inactive: <strong className="text-slate-500">{modules.staff.inactive}</strong></span>
+              {/* Title & Subtitle */}
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
+                Medical Staff
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Doctors, therapists &amp; OPD clinicians
+              </p>
+
+              {/* Primary Metric */}
+              <div className="mt-4 flex items-baseline gap-2">
+                <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers">
+                  <AnimatedCounter value={modules.staff.total} />
+                </span>
+                <span className="text-xs font-semibold text-slate-500">Staff</span>
               </div>
 
-              {/* Recent Staff Roster */}
-              <div className="mt-4 pt-3.5 border-t border-slate-100 space-y-2">
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-                  Recent Staff
-                </span>
-                {modules.staff.recent && modules.staff.recent.length > 0 ? (
-                  modules.staff.recent.slice(0, 3).map((stf) => (
-                    <div key={stf.id} className="flex items-center justify-between text-xs py-1 gap-2">
-                      <div className="min-w-0 flex-1 truncate">
-                        <div className="font-semibold text-slate-800 truncate">{stf.name}</div>
-                        <div className="text-[10px] text-slate-400 truncate">{stf.department || 'General'}</div>
-                      </div>
-                      <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold shrink-0">
-                        {stf.designation || 'Staff'}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-slate-400 py-1">No staff members found.</p>
-                )}
+              {/* Key Operational Highlight Chips */}
+              <div className="grid grid-cols-2 gap-2.5 mt-4">
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active</span>
+                  <span className="text-sm font-extrabold text-emerald-600 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.staff.active} /> On Duty
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Inactive</span>
+                  <span className="text-sm font-extrabold text-slate-600 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.staff.inactive} /> Inactive
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between gap-2">
+            {/* Bottom Actions */}
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
               <Link
                 to="/superadmin/staff-management/details"
-                className="text-xs font-semibold text-emerald-600 hover:text-emerald-800 transition-colors"
+                className="text-xs font-bold text-emerald-600 hover:text-emerald-800 transition-colors inline-flex items-center gap-1 group/btn"
               >
-                View Roster
+                <span>View Roster</span>
+                <ArrowUpRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
               </Link>
               <Link
                 to="/superadmin/staff-management/create"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold transition-all hover:scale-105"
               >
                 <PlusCircle className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Add Staff</span>
@@ -819,62 +823,64 @@ export default function SuperAdminDashboardPage() {
             </div>
           </div>
 
-          {/* Card A3: Vendor Management */}
-          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-2xs flex flex-col justify-between">
+          {/* Card A3: Vendors & Suppliers */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group">
             <div>
-              <div className="flex items-center justify-between gap-2 mb-3">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold shrink-0">
-                    <Truck className="w-4 h-4" />
-                  </div>
-                  <span className="text-xs font-bold text-slate-800 truncate">Vendor Management</span>
+              {/* Top Row: 3D Amber Truck + Types Pill */}
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-yellow-400 text-white flex items-center justify-center icon-3d shadow-md shadow-amber-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+                  <Truck className="w-6 h-6 drop-shadow-sm" />
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-extrabold shrink-0">
+                <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200/60 shadow-2xs shrink-0">
                   {modules.vendors.types_count} Types
                 </span>
               </div>
 
-              <div className="text-3xl font-black text-slate-900 tabular-numbers">
-                {modules.vendors.total} <span className="text-xs font-normal text-slate-500">Vendors</span>
-              </div>
-              <div className="text-xs text-slate-500 mt-1.5 flex items-center gap-3">
-                <span>Active: <strong className="text-emerald-600">{modules.vendors.active}</strong></span>
-                <span>Verified: <strong className="text-amber-600">{modules.vendors.total}</strong></span>
+              {/* Title & Subtitle */}
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
+                Vendors &amp; Suppliers
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Pharma &amp; consumables supply
+              </p>
+
+              {/* Primary Metric */}
+              <div className="mt-4 flex items-baseline gap-2">
+                <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers">
+                  <AnimatedCounter value={modules.vendors.total} />
+                </span>
+                <span className="text-xs font-semibold text-slate-500">Vendors</span>
               </div>
 
-              {/* Recent Vendors Roster */}
-              <div className="mt-4 pt-3.5 border-t border-slate-100 space-y-2">
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-                  Recent Vendors
-                </span>
-                {modules.vendors.recent && modules.vendors.recent.length > 0 ? (
-                  modules.vendors.recent.slice(0, 3).map((vnd) => (
-                    <div key={vnd.id} className="flex items-center justify-between text-xs py-1 gap-2">
-                      <div className="min-w-0 flex-1 truncate">
-                        <div className="font-semibold text-slate-800 truncate">{vnd.vendor_name}</div>
-                        <div className="text-[10px] text-slate-400 truncate">{vnd.company_name || vnd.email}</div>
-                      </div>
-                      <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 text-[10px] font-bold shrink-0">
-                        {vnd.vendor_type || 'Supply'}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-slate-400 py-1">No vendors recorded yet.</p>
-                )}
+              {/* Key Operational Highlight Chips */}
+              <div className="grid grid-cols-2 gap-2.5 mt-4">
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active</span>
+                  <span className="text-sm font-extrabold text-emerald-600 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.vendors.active} /> Live
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Verified</span>
+                  <span className="text-sm font-extrabold text-amber-600 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.vendors.total} /> Partners
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between gap-2">
+            {/* Bottom Actions */}
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
               <Link
                 to="/superadmin/vendors"
-                className="text-xs font-semibold text-amber-600 hover:text-amber-800 transition-colors"
+                className="text-xs font-bold text-amber-600 hover:text-amber-800 transition-colors inline-flex items-center gap-1 group/btn"
               >
-                View Vendors
+                <span>View Vendors</span>
+                <ArrowUpRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
               </Link>
               <Link
                 to="/superadmin/vendors/create"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-semibold transition-all hover:scale-105"
               >
                 <PlusCircle className="w-3.5 h-3.5 text-amber-600" />
                 <span>Add Vendor</span>
@@ -882,64 +888,64 @@ export default function SuperAdminDashboardPage() {
             </div>
           </div>
 
-          {/* Card A4: Sales Team Management */}
-          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-2xs flex flex-col justify-between">
+          {/* Card A4: Sales Team */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group">
             <div>
-              <div className="flex items-center justify-between gap-2 mb-3">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold shrink-0">
-                    <Briefcase className="w-4 h-4" />
-                  </div>
-                  <span className="text-xs font-bold text-slate-800 truncate">Sales Team</span>
+              {/* Top Row: 3D Purple Briefcase + Zones Pill */}
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 via-fuchsia-600 to-pink-500 text-white flex items-center justify-center icon-3d shadow-md shadow-purple-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+                  <Briefcase className="w-6 h-6 drop-shadow-sm" />
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 text-[10px] font-extrabold shrink-0">
+                <span className="px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-bold border border-purple-200/60 shadow-2xs shrink-0">
                   {modules.sales_team.territories_count} Zones
                 </span>
               </div>
 
-              <div className="text-3xl font-black text-slate-900 tabular-numbers">
-                {modules.sales_team.total} <span className="text-xs font-normal text-slate-500">Reps</span>
-              </div>
-              <div className="text-xs text-slate-500 mt-1.5 flex items-center gap-3">
-                <span>Active: <strong className="text-emerald-600">{modules.sales_team.active}</strong></span>
-                <span>Territories: <strong className="text-purple-600">{modules.sales_team.territories_count}</strong></span>
+              {/* Title & Subtitle */}
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
+                Sales Team
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Territory leads &amp; client outreach
+              </p>
+
+              {/* Primary Metric */}
+              <div className="mt-4 flex items-baseline gap-2">
+                <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers">
+                  <AnimatedCounter value={modules.sales_team.total} />
+                </span>
+                <span className="text-xs font-semibold text-slate-500">Reps</span>
               </div>
 
-              {/* Recent Sales Team */}
-              <div className="mt-4 pt-3.5 border-t border-slate-100 space-y-2">
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-                  Recent Sales Reps
-                </span>
-                {modules.sales_team.recent && modules.sales_team.recent.length > 0 ? (
-                  modules.sales_team.recent.slice(0, 3).map((sls) => (
-                    <div key={sls.id} className="flex items-center justify-between text-xs py-1 gap-2">
-                      <div className="min-w-0 flex-1 truncate">
-                        <div className="font-semibold text-slate-800 truncate">{sls.name}</div>
-                        <div className="text-[10px] text-slate-400 truncate">{sls.territory || 'General'}</div>
-                      </div>
-                      <span className="px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 text-[10px] font-bold shrink-0">
-                        {sls.designation || 'Sales'}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-xs text-slate-400 py-3 text-center">
-                    No sales members registered yet.
-                  </div>
-                )}
+              {/* Key Operational Highlight Chips */}
+              <div className="grid grid-cols-2 gap-2.5 mt-4">
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active</span>
+                  <span className="text-sm font-extrabold text-emerald-600 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.sales_team.active} /> Active
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Zones</span>
+                  <span className="text-sm font-extrabold text-purple-600 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.sales_team.territories_count} /> Coverage
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between gap-2">
+            {/* Bottom Actions */}
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
               <Link
                 to="/superadmin/sales-members"
-                className="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors"
+                className="text-xs font-bold text-purple-600 hover:text-purple-800 transition-colors inline-flex items-center gap-1 group/btn"
               >
-                View Team
+                <span>View Team</span>
+                <ArrowUpRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
               </Link>
               <Link
                 to="/superadmin/sales-members/create"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-semibold transition-all hover:scale-105"
               >
                 <PlusCircle className="w-3.5 h-3.5 text-purple-600" />
                 <span>Add Rep</span>
