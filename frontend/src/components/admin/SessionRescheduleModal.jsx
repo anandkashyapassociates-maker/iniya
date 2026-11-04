@@ -3,6 +3,7 @@ import { Calendar, Clock, User, AlertCircle, X, Check, Loader2, Package } from '
 import adminMasterAppointmentService from '../../services/adminMasterAppointmentService';
 import ProductMultiSelectDropdown from './ProductMultiSelectDropdown';
 import { useToast } from '../../context/ToastContext';
+import { useAdminAuth } from '../../features/auth/AdminAuthContext';
 
 export default function SessionRescheduleModal({
   isOpen,
@@ -13,6 +14,14 @@ export default function SessionRescheduleModal({
   onSuccess,
 }) {
   const toast = useToast();
+  const { user } = useAdminAuth();
+  const isStaff =
+    user?.role?.toLowerCase() === 'staff' ||
+    user?.user_type?.toLowerCase() === 'staff' ||
+    Boolean(user?.is_staff) ||
+    user?.role === 'Staff Practitioner' ||
+    Boolean(user?.staff_code);
+
   const [loading, setLoading] = useState(false);
   const [sessionDate, setSessionDate] = useState('');
   const [sessionTime, setSessionTime] = useState('');
@@ -48,7 +57,8 @@ export default function SessionRescheduleModal({
     }
   }, [session, staffList, todayStr]);
 
-  if (!isOpen || !session) return null;
+  // Staff members are strictly not permitted to reschedule sessions
+  if (!isOpen || !session || isStaff) return null;
 
   // STRICT BUSINESS RULE: Only pending sessions can be rescheduled
   const isPending = session.status === 'pending';

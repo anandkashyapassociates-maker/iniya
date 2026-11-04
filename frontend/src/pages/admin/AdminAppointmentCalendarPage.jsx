@@ -19,6 +19,7 @@ import adminMasterAppointmentService from '../../services/adminMasterAppointment
 import SessionRescheduleModal from '../../components/admin/SessionRescheduleModal';
 import SessionQuickDetailsModal from '../../components/admin/SessionQuickDetailsModal';
 import { useToast } from '../../context/ToastContext';
+import { useAdminAuth } from '../../features/auth/AdminAuthContext';
 
 // Safe local date formatting (YYYY-MM-DD) avoiding UTC timezone shifts
 const formatLocalDate = (d) => {
@@ -33,6 +34,13 @@ const formatLocalDate = (d) => {
 export default function AdminAppointmentCalendarPage() {
   const navigate = useNavigate();
   const toast = useToast();
+  const { user } = useAdminAuth();
+  const isStaff =
+    user?.role?.toLowerCase() === 'staff' ||
+    user?.user_type?.toLowerCase() === 'staff' ||
+    Boolean(user?.is_staff) ||
+    user?.role === 'Staff Practitioner' ||
+    Boolean(user?.staff_code);
 
   const [viewMode, setViewMode] = useState('month'); // 'month' | 'week' | 'day'
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -48,16 +56,18 @@ export default function AdminAppointmentCalendarPage() {
   const [rescheduleSession, setRescheduleSession] = useState(null);
   const [detailSession, setDetailSession] = useState(null);
 
-  // Load staff list
+  // Load staff list (only relevant for admin)
   useEffect(() => {
-    adminMasterAppointmentService.getOptions()
-      .then((res) => {
-        if (res.success && res.data) {
-          setStaffList(res.data.staff || []);
-        }
-      })
-      .catch((err) => console.error(err));
-  }, []);
+    if (!isStaff) {
+      adminMasterAppointmentService.getOptions()
+        .then((res) => {
+          if (res.success && res.data) {
+            setStaffList(res.data.staff || []);
+          }
+        })
+        .catch((err) => console.error(err));
+    }
+  }, [isStaff]);
 
   // Compute start and end date of currently viewed period
   const dateRange = useMemo(() => {
@@ -99,7 +109,11 @@ export default function AdminAppointmentCalendarPage() {
         start_date: dateRange.start,
         end_date: dateRange.end,
       };
-      if (selectedStaffId) params.staff_id = selectedStaffId;
+      if (isStaff && user?.id) {
+        params.staff_id = user.id;
+      } else if (selectedStaffId) {
+        params.staff_id = selectedStaffId;
+      }
       if (selectedStatus && selectedStatus !== 'all') params.status = selectedStatus;
 
       const res = await adminMasterAppointmentService.getCalendarSessions(params);
@@ -112,7 +126,7 @@ export default function AdminAppointmentCalendarPage() {
     } finally {
       setLoading(false);
     }
-  }, [dateRange, selectedStaffId, selectedStatus, toast]);
+  }, [dateRange, selectedStaffId, selectedStatus, toast, isStaff, user]);
 
   useEffect(() => {
     fetchCalendarSessions();
@@ -202,11 +216,11 @@ export default function AdminAppointmentCalendarPage() {
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <button
-            onClick={() => navigate('/admin/appointments')}
-            className="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 mb-2 transition-colors"
+            onClick={() => navigate(isStaff ? '/admin/my-appointments' : '/admin/appointments')}
+            className="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 mb-2 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back to Appointments Directory</span>
+            <span>{isStaff ? 'Back to My Appointments' : 'Back to Appointments Directory'}</span>
           </button>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center space-x-2">
             <span>Session Calendar</span>
@@ -215,19 +229,23 @@ export default function AdminAppointmentCalendarPage() {
             </span>
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Visual clinical schedule of independent treatment sessions by date, time, and assigned practitioner.
+            {isStaff
+              ? 'Visual clinical timeline of your personal patient consultations and sessions.'
+              : 'Visual clinical schedule of independent treatment sessions by date, time, and assigned practitioner.'}
           </p>
         </div>
 
-        <div className="flex items-center space-x-3 w-full md:w-auto">
-          <button
-            onClick={() => navigate('/admin/appointments/create')}
-            className="flex-1 md:flex-initial inline-flex items-center justify-center space-x-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-500/20 transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            <span>New Master Appointment</span>
-          </button>
-        </div>
+        {!isStaff && (
+          <div className="flex items-center space-x-3 w-full md:w-auto">
+            <button
+              onClick={() => navigate('/admin/appointments/create')}
+              className="flex-1 md:flex-initial inline-flex items-center justify-center space-x-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>New Master Appointment</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Calendar Controls & Filters Bar */}
@@ -266,19 +284,21 @@ export default function AdminAppointmentCalendarPage() {
 
         {/* View Mode Switcher + Filters */}
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* Staff Filter */}
-          <select
-            value={selectedStaffId}
-            onChange={(e) => setSelectedStaffId(e.target.value)}
-            className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          >
-            <option value="">All Staff Members</option>
-            {staffList.map((st) => (
-              <option key={st.id} value={st.id}>
-                {st.name} {st.department ? `(${st.department})` : ''}
-              </option>
-            ))}
-          </select>
+          {/* Staff Filter (Admin only) */}
+          {!isStaff && (
+            <select
+              value={selectedStaffId}
+              onChange={(e) => setSelectedStaffId(e.target.value)}
+              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            >
+              <option value="">All Staff Members</option>
+              {staffList.map((st) => (
+                <option key={st.id} value={st.id}>
+                  {st.name} {st.department ? `(${st.department})` : ''}
+                </option>
+              ))}
+            </select>
+          )}
 
           {/* Status Filter */}
           <select
@@ -487,16 +507,22 @@ export default function AdminAppointmentCalendarPage() {
 
                             <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
                               <button
-                                onClick={() => navigate(`/admin/appointments/${ses.master_appointment_id}`)}
-                                className="text-blue-600 font-semibold hover:underline inline-flex items-center space-x-1"
+                                onClick={() => {
+                                  if (isStaff) {
+                                    navigate(`/admin/my-appointments/${ses.id}`);
+                                  } else {
+                                    navigate(`/admin/appointments/${ses.master_appointment_id}`);
+                                  }
+                                }}
+                                className="text-blue-600 font-semibold hover:underline inline-flex items-center space-x-1 cursor-pointer"
                               >
                                 <Eye className="w-3.5 h-3.5" />
-                                <span>View Master</span>
+                                <span>{isStaff ? 'View My Session' : 'View Master'}</span>
                               </button>
-                              {ses.status === 'pending' && (
+                              {ses.status === 'pending' && !isStaff && (
                                 <button
                                   onClick={() => setRescheduleSession(ses)}
-                                  className="text-indigo-600 font-semibold hover:underline inline-flex items-center space-x-1"
+                                  className="text-indigo-600 font-semibold hover:underline inline-flex items-center space-x-1 cursor-pointer"
                                 >
                                   <RotateCw className="w-3.5 h-3.5" />
                                   <span>Reschedule</span>
@@ -520,24 +546,31 @@ export default function AdminAppointmentCalendarPage() {
         isOpen={Boolean(detailSession)}
         onClose={() => setDetailSession(null)}
         session={detailSession}
-        onReschedule={(ses) => {
+        onReschedule={isStaff ? null : (ses) => {
           setDetailSession(null);
           setRescheduleSession(ses);
         }}
-        onViewMaster={(masterId) => {
+        onViewMaster={(masterId, ses) => {
+          const target = ses || detailSession;
           setDetailSession(null);
-          navigate(`/admin/appointments/${masterId}`);
+          if (isStaff && target?.id) {
+            navigate(`/admin/my-appointments/${target.id}`);
+          } else {
+            navigate(`/admin/appointments/${masterId}`);
+          }
         }}
       />
 
-      {/* Reschedule Modal */}
-      <SessionRescheduleModal
-        isOpen={Boolean(rescheduleSession)}
-        onClose={() => setRescheduleSession(null)}
-        session={rescheduleSession}
-        staffList={staffList}
-        onSuccess={() => fetchCalendarSessions()}
-      />
+      {/* Reschedule Modal (Only for Admin) */}
+      {!isStaff && (
+        <SessionRescheduleModal
+          isOpen={Boolean(rescheduleSession)}
+          onClose={() => setRescheduleSession(null)}
+          session={rescheduleSession}
+          staffList={staffList}
+          onSuccess={() => fetchCalendarSessions()}
+        />
+      )}
     </div>
   );
 }

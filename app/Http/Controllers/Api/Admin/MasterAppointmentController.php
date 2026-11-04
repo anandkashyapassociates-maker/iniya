@@ -118,12 +118,25 @@ class MasterAppointmentController extends Controller
     /**
      * Get aggregate statistics for the dashboard cards.
      */
-    public function stats(): JsonResponse
+    public function stats(Request $request): JsonResponse
     {
+        $admin = $request->user();
+        $adminId = $admin?->id;
+        $isStaffUser = ($admin instanceof Staff)
+            || (isset($admin->role) && in_array(strtolower($admin->role), ['staff', 'staff practitioner']))
+            || (isset($admin->user_type) && strtolower($admin->user_type) === 'staff')
+            || ($admin && ! empty($admin->staff_code))
+            || ($request->user() && $request->user()->tokenCan('role:staff'));
+
         $todayStr = Carbon::today()->toDateString();
-        $totalMasterAppointments = MasterAppointment::count();
-        $todayMasterAppointments = MasterAppointment::whereDate('appointment_date', $todayStr)->count();
+        $totalMasterAppointments = $isStaffUser ? 0 : MasterAppointment::count();
+        $todayMasterAppointments = $isStaffUser ? 0 : MasterAppointment::whereDate('appointment_date', $todayStr)->count();
+
         $sessionsQuery = AppointmentSession::whereHas('masterAppointment');
+        if ($isStaffUser && $adminId) {
+            $sessionsQuery->where('staff_id', $adminId);
+        }
+
         $totalSessions = (clone $sessionsQuery)->count();
         $todaySessions = (clone $sessionsQuery)->whereDate('session_date', $todayStr)
             ->where('status', '!=', AppointmentSession::STATUS_CANCELLED)
@@ -135,8 +148,18 @@ class MasterAppointmentController extends Controller
         $inProgressSessions = (clone $sessionsQuery)->where('status', AppointmentSession::STATUS_IN_PROGRESS)->count();
         $completedSessions = (clone $sessionsQuery)->where('status', AppointmentSession::STATUS_COMPLETED)->count();
         $cancelledSessions = (clone $sessionsQuery)->where('status', AppointmentSession::STATUS_CANCELLED)->count();
-        $todayRevenue = (float) MasterAppointment::whereDate('appointment_date', $todayStr)->sum('appointment_fees');
-        $totalRevenue = (float) MasterAppointment::sum('appointment_fees');
+
+        if ($isStaffUser && $adminId) {
+            $todayRevenue = (float) (clone $sessionsQuery)->whereDate('session_date', $todayStr)
+                ->where('status', AppointmentSession::STATUS_COMPLETED)
+                ->sum('staff_commission');
+            $totalRevenue = (float) (clone $sessionsQuery)
+                ->where('status', AppointmentSession::STATUS_COMPLETED)
+                ->sum('staff_commission');
+        } else {
+            $todayRevenue = (float) MasterAppointment::whereDate('appointment_date', $todayStr)->sum('appointment_fees');
+            $totalRevenue = (float) MasterAppointment::sum('appointment_fees');
+        }
 
         return response()->json([
             'success' => true,

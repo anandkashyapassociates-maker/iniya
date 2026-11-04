@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminActivityLog;
 use App\Models\AppointmentSession;
 use App\Models\MasterAppointment;
+use App\Models\Staff;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -203,8 +204,17 @@ class AppointmentSessionController extends Controller
             $query->whereDate('session_date', '<=', Carbon::now()->endOfMonth()->toDateString());
         }
 
-        // Filter by Staff
-        if ($staffId = $request->input('staff_id')) {
+        // Filter by Staff (Automatic strict isolation if logged-in user is staff)
+        $user = $request->user();
+        $isStaff = ($user instanceof Staff)
+            || (isset($user->role) && in_array(strtolower($user->role), ['staff', 'staff practitioner']))
+            || (isset($user->user_type) && strtolower($user->user_type) === 'staff')
+            || ($user && ! empty($user->staff_code))
+            || ($user && $user->tokenCan('role:staff'));
+
+        if ($isStaff && $user?->id) {
+            $query->where('staff_id', $user->id);
+        } elseif ($staffId = $request->input('staff_id')) {
             $query->where('staff_id', $staffId);
         }
 

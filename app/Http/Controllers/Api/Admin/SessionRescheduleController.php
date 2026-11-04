@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AppointmentRescheduleHistory;
 use App\Models\AppointmentSession;
+use App\Models\Staff;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -24,6 +25,20 @@ class SessionRescheduleController extends Controller
      */
     public function reschedule(Request $request, int $id): JsonResponse
     {
+        $user = $request->user();
+        $isStaff = ($user instanceof Staff)
+            || (isset($user->role) && in_array(strtolower($user->role), ['staff', 'staff practitioner']))
+            || (isset($user->user_type) && strtolower($user->user_type) === 'staff')
+            || ($user && ! empty($user->staff_code))
+            || ($user && $user->tokenCan('role:staff'));
+
+        if ($isStaff) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Staff members are strictly not authorized to reschedule sessions. Only Clinic Administrators can reschedule appointments.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'session_date' => ['required', 'date', 'after_or_equal:today'],
             'session_time' => ['required', 'string', 'max:20'],

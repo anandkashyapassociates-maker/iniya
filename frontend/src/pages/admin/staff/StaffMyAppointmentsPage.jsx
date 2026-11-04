@@ -29,8 +29,15 @@ export default function StaffMyAppointmentsPage() {
   const { user } = useAdminAuth();
   const toast = useToast();
 
+  const isStaff =
+    user?.role?.toLowerCase() === 'staff' ||
+    user?.user_type?.toLowerCase() === 'staff' ||
+    Boolean(user?.is_staff) ||
+    user?.role === 'Staff Practitioner' ||
+    Boolean(user?.staff_code);
+
   // If logged-in user is not staff (e.g. Administrator), redirect to master appointments
-  if (user && user.role !== 'staff') {
+  if (user && !isStaff) {
     return <Navigate to="/admin/appointments" replace />;
   }
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams, Link, Navigate } from 'react-router-dom';
 import {
   Calendar,
   Clock,
@@ -28,12 +28,25 @@ import {
 import adminMasterAppointmentService from '../../services/adminMasterAppointmentService';
 import ProductMultiSelectDropdown from '../../components/admin/ProductMultiSelectDropdown';
 import { useToast } from '../../context/ToastContext';
+import { useAdminAuth } from '../../features/auth/AdminAuthContext';
 
 export default function AdminMasterAppointmentCreatePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const toast = useToast();
+  const { user } = useAdminAuth();
+
+  const isStaff =
+    user?.role?.toLowerCase() === 'staff' ||
+    user?.user_type?.toLowerCase() === 'staff' ||
+    Boolean(user?.is_staff) ||
+    user?.role === 'Staff Practitioner' ||
+    Boolean(user?.staff_code);
+
+  if (isStaff) {
+    return <Navigate to="/admin/my-appointments" replace />;
+  }
 
   const preCategoryId = location.state?.category_id || searchParams.get('category_id') || '';
   const preSubCategoryId = location.state?.sub_category_id || searchParams.get('sub_category_id') || '';

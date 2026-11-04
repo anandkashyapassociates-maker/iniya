@@ -12,6 +12,7 @@ import {
   Eye,
   ShieldCheck,
 } from 'lucide-react';
+import { useAdminAuth } from '../../features/auth/AdminAuthContext';
 
 export default function SessionQuickDetailsModal({
   isOpen,
@@ -20,6 +21,14 @@ export default function SessionQuickDetailsModal({
   onReschedule,
   onViewMaster,
 }) {
+  const { user } = useAdminAuth();
+  const isStaff =
+    user?.role?.toLowerCase() === 'staff' ||
+    user?.user_type?.toLowerCase() === 'staff' ||
+    Boolean(user?.is_staff) ||
+    user?.role === 'Staff Practitioner' ||
+    Boolean(user?.staff_code);
+
   if (!isOpen || !session) return null;
 
   const isPending = session.status === 'pending';
@@ -147,21 +156,23 @@ export default function SessionQuickDetailsModal({
 
         {/* Footer Actions */}
         <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => onViewMaster(session.master_appointment_id)}
-            className="inline-flex items-center space-x-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
-          >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Open Master Booking</span>
-          </button>
+          {onViewMaster && (
+            <button
+              type="button"
+              onClick={() => onViewMaster(session.master_appointment_id, session)}
+              className="inline-flex items-center space-x-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>{isStaff ? 'Open My Session File' : 'Open Master Booking'}</span>
+            </button>
+          )}
 
           <div className="flex items-center space-x-2">
-            {isPending && (
+            {isPending && !isStaff && onReschedule && (
               <button
                 type="button"
                 onClick={() => onReschedule(session)}
-                className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-colors"
+                className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-colors cursor-pointer"
               >
                 <RotateCw className="w-3.5 h-3.5" />
                 <span>Reschedule</span>
@@ -170,7 +181,7 @@ export default function SessionQuickDetailsModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200 rounded-xl transition-colors"
+              className="px-3.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
             >
               Close
             </button>

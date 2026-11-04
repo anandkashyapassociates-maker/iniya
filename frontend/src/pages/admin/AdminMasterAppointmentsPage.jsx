@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import {
   Calendar,
   Plus,
@@ -24,10 +24,23 @@ import DataTable from '../../components/DataTable';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import AppointmentReceiptModal from '../../components/admin/AppointmentReceiptModal';
 import { useToast } from '../../context/ToastContext';
+import { useAdminAuth } from '../../features/auth/AdminAuthContext';
 
 export default function AdminMasterAppointmentsPage() {
   const navigate = useNavigate();
   const toast = useToast();
+  const { user } = useAdminAuth();
+
+  const isStaff =
+    user?.role?.toLowerCase() === 'staff' ||
+    user?.user_type?.toLowerCase() === 'staff' ||
+    Boolean(user?.is_staff) ||
+    user?.role === 'Staff Practitioner' ||
+    Boolean(user?.staff_code);
+
+  if (isStaff) {
+    return <Navigate to="/admin/my-appointments" replace />;
+  }
   const toastRef = useRef(toast);
   toastRef.current = toast;
 

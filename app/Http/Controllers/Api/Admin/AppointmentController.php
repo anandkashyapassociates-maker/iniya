@@ -295,6 +295,20 @@ class AppointmentController extends Controller
      */
     public function reschedule(Request $request, int $id): JsonResponse
     {
+        $user = $request->user();
+        $isStaff = ($user instanceof Staff)
+            || (isset($user->role) && in_array(strtolower($user->role), ['staff', 'staff practitioner']))
+            || (isset($user->user_type) && strtolower($user->user_type) === 'staff')
+            || ($user && ! empty($user->staff_code))
+            || ($user && $user->tokenCan('role:staff'));
+
+        if ($isStaff) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Staff members are strictly not authorized to reschedule appointments. Only Clinic Administrators can reschedule.',
+            ], 403);
+        }
+
         $appointment = Appointment::findOrFail($id);
 
         if ($appointment->status === 'cancelled') {
