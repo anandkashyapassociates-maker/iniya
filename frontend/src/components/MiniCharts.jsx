@@ -344,8 +344,8 @@ export function StatWaveSparkline({
 export function SplineAreaChart({
   title = 'Revenue Overview',
   icon: Icon,
-  headline = '₹2,84,500',
-  trendBadge = '↑ 18% vs last period',
+  headline = '₹0',
+  trendBadge = 'Real Database',
   periods = ['Last 6 Months', 'Last 30 Days', 'This Year'],
   selectedPeriod,
   onPeriodChange,
@@ -359,12 +359,12 @@ export function SplineAreaChart({
 
   // Resolve dataset based on activePeriod or direct data prop
   const rawData = (dataByPeriod && dataByPeriod[activePeriod]) || data || [
-    { label: 'Jan', value: 1.2, display: '₹1,20,000' },
-    { label: 'Feb', value: 1.8, display: '₹1,80,000' },
-    { label: 'Mar', value: 1.5, display: '₹1,50,000' },
-    { label: 'Apr', value: 2.1, display: '₹2,10,000' },
-    { label: 'May', value: 2.0, display: '₹2,00,000' },
-    { label: 'Jun', value: 2.85, display: '₹2,84,500' },
+    { label: 'M1', value: 0, display: '₹0' },
+    { label: 'M2', value: 0, display: '₹0' },
+    { label: 'M3', value: 0, display: '₹0' },
+    { label: 'M4', value: 0, display: '₹0' },
+    { label: 'M5', value: 0, display: '₹0' },
+    { label: 'M6', value: 0, display: '₹0' },
   ];
 
   const chartData = Array.isArray(rawData) && rawData.length > 0 ? rawData : [
@@ -688,13 +688,9 @@ export function SplineAreaChart({
 export function MultiSegmentDonut({
   title = 'Session Status',
   icon: Icon,
-  segments = [
-    { label: 'Completed', value: 75, color: '#10b981', dotClass: 'bg-emerald-500' },
-    { label: 'Pending', value: 15, color: '#3b82f6', dotClass: 'bg-blue-500' },
-    { label: 'Cancelled', value: 10, color: '#f59e0b', dotClass: 'bg-amber-500' },
-  ],
-  centerValue = '75%',
-  centerLabel = 'Completed',
+  segments = [],
+  centerValue = '0%',
+  centerLabel = 'Closed',
   className = '',
 }) {
   const [isMounted, setIsMounted] = useState(false);
