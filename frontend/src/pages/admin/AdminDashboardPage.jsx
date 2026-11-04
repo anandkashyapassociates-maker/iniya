@@ -26,6 +26,7 @@ import {
   Award,
   FileText,
   Package,
+  ArrowUpRight,
 } from 'lucide-react';
 import StatCard from '../../components/StatCard';
 import DashboardSkeleton from '../../components/DashboardSkeleton';
@@ -785,18 +786,22 @@ export default function AdminDashboardPage() {
       {/* ======================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
         {/* Left (Col 1-7): Today's Live OPD & Session Dispatch Queue */}
-        <div className="lg:col-span-7 xl:col-span-7 bg-white rounded-2xl border border-slate-100 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
-          <div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center icon-3d shadow-xs">
-                  <Calendar className="w-4 h-4 drop-shadow-sm" />
+        <div className="lg:col-span-7 xl:col-span-7 bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs hover:shadow-xl transition-all duration-300 relative overflow-hidden group flex flex-col justify-between">
+          {/* Ambient Background Glow */}
+          <div className="absolute -top-12 -right-12 w-36 h-36 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-colors pointer-events-none" />
+
+          <div className="relative z-10">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-blue-500/25 ring-4 ring-blue-500/10 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+                  <Calendar className="w-6 h-6 drop-shadow-sm" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold font-display tracking-tight text-slate-800">
+                  <h2 className="text-sm sm:text-base font-bold font-display tracking-tight text-slate-900">
                     {isStaff ? 'My Scheduled Patient Consultations' : 'Live OPD Clinical Queue & Sessions'}
                   </h2>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
                     {isStaff
                       ? 'Your personal patient treatment queue and assigned sessions'
                       : 'Real-time consultation feed with patient & doctor assignment'}
@@ -805,70 +810,80 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* Filter Tabs */}
-              <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl">
+              <div className="flex items-center gap-1 bg-slate-100/90 p-1 rounded-xl border border-slate-200/60 shadow-2xs self-start sm:self-auto">
                 {[
-                  { key: 'all', label: `All (${schedule_sessions.length})` },
-                  { key: 'in_progress', label: `Active (${inProgressCount})` },
-                  { key: 'pending', label: `Pending (${pendingCount})` },
-                  { key: 'completed', label: `Closed (${completedCount})` },
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => setQueueTab(tab.key)}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
-                      queueTab === tab.key
-                        ? 'bg-white text-blue-700 shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
+                  { key: 'all', label: 'All', count: schedule_sessions.length },
+                  { key: 'in_progress', label: 'Active', count: inProgressCount },
+                  { key: 'pending', label: 'Pending', count: pendingCount },
+                  { key: 'completed', label: 'Closed', count: completedCount },
+                ].map((tab) => {
+                  const isActive = queueTab === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() => setQueueTab(tab.key)}
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+                        isActive
+                          ? 'bg-white text-blue-700 shadow-xs border border-slate-200/50 scale-[1.02]'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                      }`}
+                    >
+                      <span>{tab.label}</span>
+                      <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${
+                        isActive ? 'bg-blue-100/80 text-blue-800' : 'bg-slate-200/70 text-slate-600'
+                      }`}>
+                        {tab.count}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Queue Table */}
             {filteredSessions.length === 0 ? (
-              <div className="py-12 text-center">
-                <Calendar className="w-8 h-8 mx-auto text-slate-300 mb-2" />
-                <p className="text-xs font-semibold text-slate-600">No sessions match the selected filter</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">
+              <div className="py-14 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-50 to-indigo-50/80 border border-blue-100/80 text-blue-600 flex items-center justify-center shadow-xs mx-auto mb-3.5 icon-3d group-hover:scale-105 transition-transform duration-300">
+                  <Calendar className="w-7 h-7 drop-shadow-xs" />
+                </div>
+                <p className="text-sm font-bold text-slate-800">No sessions match the selected filter</p>
+                <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
                   {isStaff ? 'All consultations for this filter are cleared' : 'Schedule an appointment or review all consultations'}
                 </p>
                 {isStaff ? (
                   <Link
                     to="/admin/my-appointments"
-                    className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
+                    className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all duration-300 group/btn"
                   >
-                    <Calendar className="w-3.5 h-3.5" />
+                    <Calendar className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
                     <span>View All My Appointments</span>
                   </Link>
                 ) : (
                   <Link
                     to="/admin/appointments/create"
-                    className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700"
+                    className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 text-white text-xs font-bold shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 hover:-translate-y-0.5 transition-all duration-300 group/btn"
                   >
-                    <CalendarPlus className="w-3.5 h-3.5" />
+                    <CalendarPlus className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
                     <span>+ Book Appointment</span>
                   </Link>
                 )}
               </div>
             ) : (
-              <div className="overflow-x-auto mt-2">
+              <div className="overflow-x-auto mt-3">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-100 text-[11px] font-semibold text-slate-400">
-                      <th className="py-3 px-3">Time / Date</th>
-                      <th className="py-3 px-3">Patient Profile</th>
-                      <th className="py-3 px-3">{isStaff ? 'Treatment & Session' : 'Doctor on Duty'}</th>
-                      <th className="py-3 px-3">Payment</th>
-                      <th className="py-3 px-3">{isStaff ? 'Commission' : 'Status'}</th>
-                      {isStaff && <th className="py-3 px-3">Execution</th>}
-                      <th className="py-3 px-3 text-right">Action</th>
+                    <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50/60">
+                      <th className="py-2.5 px-3 rounded-l-lg">Time / Date</th>
+                      <th className="py-2.5 px-3">Patient Profile</th>
+                      <th className="py-2.5 px-3">{isStaff ? 'Treatment & Session' : 'Doctor on Duty'}</th>
+                      <th className="py-2.5 px-3">Payment</th>
+                      <th className="py-2.5 px-3">{isStaff ? 'Commission' : 'Status'}</th>
+                      {isStaff && <th className="py-2.5 px-3">Execution</th>}
+                      <th className="py-2.5 px-3 text-right rounded-r-lg">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
+                  <tbody className="divide-y divide-slate-100/70">
                     {filteredSessions.map((ses) => {
                       const isComplete = ses.status === 'completed';
                       const isInProg = ses.status === 'in_progress';
@@ -883,18 +898,18 @@ export default function AdminDashboardPage() {
                         : 'bg-rose-50 text-rose-700 border-rose-200';
 
                       return (
-                        <tr key={ses.id} className="hover:bg-slate-50/70 transition-colors">
+                        <tr key={ses.id} className="hover:bg-blue-50/30 transition-colors group/row">
                           <td className="py-3 px-3 font-mono font-medium text-slate-600 whitespace-nowrap">
                             <div className="font-bold text-slate-800">{ses.time || '--'}</div>
                             <div className="text-[10px] text-slate-400 font-sans">{ses.date || '--'}</div>
                           </td>
                           <td className="py-3 px-3">
                             <div className="flex items-center gap-2.5">
-                              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0 font-display icon-3d shadow-2xs">
+                              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0 font-display icon-3d shadow-2xs group-hover/row:scale-105 transition-transform">
                                 {ses.patient_initial || 'PT'}
                               </div>
                               <div className="min-w-0">
-                                <span className="font-semibold text-slate-800 block truncate" title={ses.patient_name}>
+                                <span className="font-bold text-slate-800 block truncate group-hover/row:text-blue-600 transition-colors" title={ses.patient_name}>
                                   {ses.patient_name}
                                 </span>
                                 <span className="text-[10px] text-slate-400 block truncate">
@@ -958,7 +973,7 @@ export default function AdminDashboardPage() {
                           <td className="py-3 px-3 text-right whitespace-nowrap">
                             <Link
                               to={isStaff ? `/admin/my-appointments/${ses.id}` : `/admin/appointments/${ses.master_appointment_id || ses.id}`}
-                              className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors inline-flex items-center justify-center"
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all inline-flex items-center justify-center hover:scale-110"
                               title={isStaff ? 'Open Session Clinical Details' : 'View Master Appointment & Clinical File'}
                             >
                               <Eye className="w-4 h-4" />
@@ -973,195 +988,273 @@ export default function AdminDashboardPage() {
             )}
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-            <span className="text-slate-400">Showing {filteredSessions.length} active sessions</span>
+          <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs relative z-10">
+            <span className="inline-flex items-center gap-2 text-slate-500 font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Live Queue Feed &bull; {filteredSessions.length} active sessions</span>
+            </span>
             <Link
               to={isStaff ? '/admin/my-appointments' : '/admin/appointments'}
-              className="font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 font-display"
+              className="font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 font-display group/link"
             >
               <span>{isStaff ? 'View My Appointments' : 'View All Appointments'}</span>
-              <ChevronRight className="w-3.5 h-3.5" />
+              <ChevronRight className="w-3.5 h-3.5 group-hover/link:translate-x-1 transition-transform" />
             </Link>
           </div>
         </div>
 
         {/* Right (Col 8-12): Role-Tailored Clinical Control Console */}
-        <div className="lg:col-span-5 xl:col-span-5 bg-white rounded-2xl border border-slate-100 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center icon-3d shadow-xs">
-                  <Zap className="w-4 h-4 drop-shadow-sm" />
+        <div className="lg:col-span-5 xl:col-span-5 bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs hover:shadow-xl transition-all duration-300 relative overflow-hidden group flex flex-col justify-between">
+          {/* Ambient Background Glow */}
+          <div className="absolute -top-12 -right-12 w-36 h-36 bg-amber-500/5 rounded-full blur-2xl group-hover:bg-amber-500/10 transition-colors pointer-events-none" />
+
+          <div className="relative z-10">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-yellow-500 text-white flex items-center justify-center icon-3d shadow-md shadow-amber-500/25 ring-4 ring-amber-500/10 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 shrink-0">
+                  <Zap className="w-6 h-6 drop-shadow-sm" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold font-display tracking-tight text-slate-800">
+                  <h2 className="text-sm sm:text-base font-bold font-display tracking-tight text-slate-900">
                     {isStaff ? 'Practitioner Desk Console' : 'Clinical Control Console'}
                   </h2>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
                     {isStaff ? 'Direct shortcuts for your clinical tasks' : 'Direct admin actions & management shortcuts'}
                   </p>
                 </div>
               </div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full font-mono">
-                {isStaff ? 'Practitioner' : 'Admin'}
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200/80 text-xs font-bold font-mono shadow-2xs shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                <span>{isStaff ? 'Practitioner' : 'Admin'}</span>
               </span>
             </div>
 
             {/* Role Action Tiles */}
             {isStaff ? (
-              <div className="grid grid-cols-2 gap-3 mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-4">
                 {/* Staff Tile 1: My Appointments Queue */}
                 <Link
                   to="/admin/my-appointments"
-                  className="p-3.5 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/60 hover:from-blue-100/70 hover:to-indigo-100/70 border border-blue-100/80 transition-all flex flex-col items-start group cursor-pointer"
+                  className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-blue-300 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile relative overflow-hidden cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center mb-2 shadow-xs group-hover:scale-105 transition-transform">
-                    <Calendar className="w-4 h-4" />
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-sm shadow-blue-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
+                      <Calendar className="w-5 h-5 drop-shadow-xs" />
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-slate-300 opacity-40 group-hover/tile:opacity-100 group-hover/tile:text-blue-600 group-hover/tile:translate-x-0.5 group-hover/tile:-translate-y-0.5 transition-all" />
                   </div>
-                  <span className="text-xs font-bold text-slate-800 group-hover:text-blue-700 transition-colors">
-                    My Appointments Queue
-                  </span>
-                  <span className="text-[10px] text-slate-500 mt-0.5">Clinical session history</span>
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 group-hover/tile:text-blue-700 transition-colors block">
+                      My Appointments Queue
+                    </span>
+                    <span className="text-[11px] text-slate-400 group-hover/tile:text-slate-500 transition-colors mt-0.5 block leading-snug">
+                      Clinical session history
+                    </span>
+                  </div>
                 </Link>
 
                 {/* Staff Tile 2: Active Treatments */}
                 <Link
                   to="/admin/my-appointments"
-                  className="p-3.5 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50/60 hover:from-indigo-100/70 hover:to-purple-100/70 border border-indigo-100/80 transition-all flex flex-col items-start group cursor-pointer"
+                  className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-indigo-300 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile relative overflow-hidden cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center mb-2 shadow-xs group-hover:scale-105 transition-transform">
-                    <Activity className="w-4 h-4" />
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-violet-500 text-white flex items-center justify-center icon-3d shadow-sm shadow-indigo-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
+                      <Activity className="w-5 h-5 drop-shadow-xs" />
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-slate-300 opacity-40 group-hover/tile:opacity-100 group-hover/tile:text-indigo-600 group-hover/tile:translate-x-0.5 group-hover/tile:-translate-y-0.5 transition-all" />
                   </div>
-                  <span className="text-xs font-bold text-slate-800 group-hover:text-indigo-700 transition-colors">
-                    Active Consultations
-                  </span>
-                  <span className="text-[10px] text-slate-500 mt-0.5">In-progress treatments</span>
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 group-hover/tile:text-indigo-700 transition-colors block">
+                      Active Consultations
+                    </span>
+                    <span className="text-[11px] text-slate-400 group-hover/tile:text-slate-500 transition-colors mt-0.5 block leading-snug">
+                      In-progress treatments
+                    </span>
+                  </div>
                 </Link>
 
                 {/* Staff Tile 3: Completed Consultations */}
                 <Link
                   to="/admin/my-appointments"
-                  className="p-3.5 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50/60 hover:from-emerald-100/70 hover:to-teal-100/70 border border-emerald-100/80 transition-all flex flex-col items-start group cursor-pointer"
+                  className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-emerald-300 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile relative overflow-hidden cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center mb-2 shadow-xs group-hover:scale-105 transition-transform">
-                    <CheckCircle2 className="w-4 h-4" />
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-sm shadow-emerald-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
+                      <CheckCircle2 className="w-5 h-5 drop-shadow-xs" />
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-slate-300 opacity-40 group-hover/tile:opacity-100 group-hover/tile:text-emerald-600 group-hover/tile:translate-x-0.5 group-hover/tile:-translate-y-0.5 transition-all" />
                   </div>
-                  <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">
-                    Completed Sessions
-                  </span>
-                  <span className="text-[10px] text-slate-500 mt-0.5">Commissions &amp; records</span>
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 group-hover/tile:text-emerald-700 transition-colors block">
+                      Completed Sessions
+                    </span>
+                    <span className="text-[11px] text-slate-400 group-hover/tile:text-slate-500 transition-colors mt-0.5 block leading-snug">
+                      Commissions &amp; records
+                    </span>
+                  </div>
                 </Link>
 
                 {/* Staff Tile 4: My Profile & Credentials */}
                 <Link
                   to="/admin/profile"
-                  className="p-3.5 rounded-xl bg-gradient-to-br from-teal-50 to-emerald-50/60 hover:from-teal-100/70 hover:to-emerald-100/70 border border-teal-100/80 transition-all flex flex-col items-start group cursor-pointer"
+                  className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-teal-300 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile relative overflow-hidden cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center mb-2 shadow-xs group-hover:scale-105 transition-transform">
-                    <Stethoscope className="w-4 h-4" />
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-500 via-emerald-500 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-sm shadow-teal-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
+                      <Stethoscope className="w-5 h-5 drop-shadow-xs" />
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-slate-300 opacity-40 group-hover/tile:opacity-100 group-hover/tile:text-teal-600 group-hover/tile:translate-x-0.5 group-hover/tile:-translate-y-0.5 transition-all" />
                   </div>
-                  <span className="text-xs font-bold text-slate-800 group-hover:text-teal-700 transition-colors">
-                    My Profile
-                  </span>
-                  <span className="text-[10px] text-slate-500 mt-0.5">Credentials &amp; settings</span>
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 group-hover/tile:text-teal-700 transition-colors block">
+                      My Profile
+                    </span>
+                    <span className="text-[11px] text-slate-400 group-hover/tile:text-slate-500 transition-colors mt-0.5 block leading-snug">
+                      Credentials &amp; settings
+                    </span>
+                  </div>
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3 mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-4">
                 {/* Admin Tile 1: Book Appointment */}
                 <Link
                   to="/admin/appointments/create"
-                  className="p-3.5 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/60 hover:from-blue-100/70 hover:to-indigo-100/70 border border-blue-100/80 transition-all flex flex-col items-start group cursor-pointer"
+                  className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-blue-300 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile relative overflow-hidden cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center mb-2 shadow-xs group-hover:scale-105 transition-transform">
-                    <CalendarPlus className="w-4 h-4" />
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-sm shadow-blue-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
+                      <CalendarPlus className="w-5 h-5 drop-shadow-xs" />
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-slate-300 opacity-40 group-hover/tile:opacity-100 group-hover/tile:text-blue-600 group-hover/tile:translate-x-0.5 group-hover/tile:-translate-y-0.5 transition-all" />
                   </div>
-                  <span className="text-xs font-bold text-slate-800 group-hover:text-blue-700 transition-colors">
-                    Book Appointment
-                  </span>
-                  <span className="text-[10px] text-slate-500 mt-0.5">New consultation slot</span>
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 group-hover/tile:text-blue-700 transition-colors block">
+                      Book Appointment
+                    </span>
+                    <span className="text-[11px] text-slate-400 group-hover/tile:text-slate-500 transition-colors mt-0.5 block leading-snug">
+                      New consultation slot
+                    </span>
+                  </div>
                 </Link>
 
                 {/* Admin Tile 2: Register Patient */}
                 <Link
                   to="/admin/customers/create"
-                  className="p-3.5 rounded-xl bg-gradient-to-br from-teal-50 to-emerald-50/60 hover:from-teal-100/70 hover:to-emerald-100/70 border border-teal-100/80 transition-all flex flex-col items-start group cursor-pointer"
+                  className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-emerald-300 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile relative overflow-hidden cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center mb-2 shadow-xs group-hover:scale-105 transition-transform">
-                    <UserPlus className="w-4 h-4" />
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-sm shadow-emerald-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
+                      <UserPlus className="w-5 h-5 drop-shadow-xs" />
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-slate-300 opacity-40 group-hover/tile:opacity-100 group-hover/tile:text-emerald-600 group-hover/tile:translate-x-0.5 group-hover/tile:-translate-y-0.5 transition-all" />
                   </div>
-                  <span className="text-xs font-bold text-slate-800 group-hover:text-teal-700 transition-colors">
-                    Register Patient
-                  </span>
-                  <span className="text-[10px] text-slate-500 mt-0.5">New clinical file</span>
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 group-hover/tile:text-emerald-700 transition-colors block">
+                      Register Patient
+                    </span>
+                    <span className="text-[11px] text-slate-400 group-hover/tile:text-slate-500 transition-colors mt-0.5 block leading-snug">
+                      New clinical file
+                    </span>
+                  </div>
                 </Link>
 
                 {/* Admin Tile 3: OPD Schedule Calendar */}
                 <Link
                   to="/admin/appointments/calendar"
-                  className="p-3.5 rounded-xl bg-gradient-to-br from-purple-50 to-violet-50/60 hover:from-purple-100/70 hover:to-violet-100/70 border border-purple-100/80 transition-all flex flex-col items-start group cursor-pointer"
+                  className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-purple-300 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile relative overflow-hidden cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-purple-600 text-white flex items-center justify-center mb-2 shadow-xs group-hover:scale-105 transition-transform">
-                    <Calendar className="w-4 h-4" />
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-violet-600 to-indigo-600 text-white flex items-center justify-center icon-3d shadow-sm shadow-purple-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
+                      <Calendar className="w-5 h-5 drop-shadow-xs" />
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-slate-300 opacity-40 group-hover/tile:opacity-100 group-hover/tile:text-purple-600 group-hover/tile:translate-x-0.5 group-hover/tile:-translate-y-0.5 transition-all" />
                   </div>
-                  <span className="text-xs font-bold text-slate-800 group-hover:text-purple-700 transition-colors">
-                    OPD Calendar
-                  </span>
-                  <span className="text-[10px] text-slate-500 mt-0.5">Doctor timeslots &amp; rooms</span>
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 group-hover/tile:text-purple-700 transition-colors block">
+                      OPD Calendar
+                    </span>
+                    <span className="text-[11px] text-slate-400 group-hover/tile:text-slate-500 transition-colors mt-0.5 block leading-snug">
+                      Doctor timeslots &amp; rooms
+                    </span>
+                  </div>
                 </Link>
 
                 {/* Admin Tile 4: Inventory & Supplies */}
                 <Link
                   to="/admin/inventory/stocks"
-                  className="p-3.5 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50/60 hover:from-amber-100/70 hover:to-orange-100/70 border border-amber-100/80 transition-all flex flex-col items-start group cursor-pointer"
+                  className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-amber-300 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile relative overflow-hidden cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center mb-2 shadow-xs group-hover:scale-105 transition-transform">
-                    <Boxes className="w-4 h-4" />
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-orange-500 to-yellow-500 text-white flex items-center justify-center icon-3d shadow-sm shadow-amber-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
+                      <Boxes className="w-5 h-5 drop-shadow-xs" />
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-slate-300 opacity-40 group-hover/tile:opacity-100 group-hover/tile:text-amber-600 group-hover/tile:translate-x-0.5 group-hover/tile:-translate-y-0.5 transition-all" />
                   </div>
-                  <span className="text-xs font-bold text-slate-800 group-hover:text-amber-700 transition-colors">
-                    Inventory Supplies
-                  </span>
-                  <span className="text-[10px] text-slate-500 mt-0.5">Stock audits &amp; reorders</span>
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 group-hover/tile:text-amber-700 transition-colors block">
+                      Inventory Supplies
+                    </span>
+                    <span className="text-[11px] text-slate-400 group-hover/tile:text-slate-500 transition-colors mt-0.5 block leading-snug">
+                      Stock audits &amp; reorders
+                    </span>
+                  </div>
                 </Link>
 
                 {/* Admin Tile 5: Treatment Catalog */}
                 <Link
                   to="/admin/appointments/services"
-                  className="p-3.5 rounded-xl bg-gradient-to-br from-cyan-50 to-sky-50/60 hover:from-cyan-100/70 hover:to-sky-100/70 border border-cyan-100/80 transition-all flex flex-col items-start group cursor-pointer"
+                  className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-cyan-300 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile relative overflow-hidden cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-cyan-600 text-white flex items-center justify-center mb-2 shadow-xs group-hover:scale-105 transition-transform">
-                    <FolderTree className="w-4 h-4" />
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-sky-500 to-blue-500 text-white flex items-center justify-center icon-3d shadow-sm shadow-cyan-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
+                      <FolderTree className="w-5 h-5 drop-shadow-xs" />
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-slate-300 opacity-40 group-hover/tile:opacity-100 group-hover/tile:text-cyan-600 group-hover/tile:translate-x-0.5 group-hover/tile:-translate-y-0.5 transition-all" />
                   </div>
-                  <span className="text-xs font-bold text-slate-800 group-hover:text-cyan-700 transition-colors">
-                    Services &amp; Pricing
-                  </span>
-                  <span className="text-[10px] text-slate-500 mt-0.5">Treatment package catalog</span>
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 group-hover/tile:text-cyan-700 transition-colors block">
+                      Services &amp; Pricing
+                    </span>
+                    <span className="text-[11px] text-slate-400 group-hover/tile:text-slate-500 transition-colors mt-0.5 block leading-snug">
+                      Treatment package catalog
+                    </span>
+                  </div>
                 </Link>
 
                 {/* Admin Tile 6: Clinical Reports */}
                 <Link
                   to="/admin/reports/sessions"
-                  className="p-3.5 rounded-xl bg-gradient-to-br from-rose-50 to-pink-50/60 hover:from-rose-100/70 hover:to-pink-100/70 border border-rose-100/80 transition-all flex flex-col items-start group cursor-pointer"
+                  className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-rose-300 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile relative overflow-hidden cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-rose-600 text-white flex items-center justify-center mb-2 shadow-xs group-hover:scale-105 transition-transform">
-                    <FileText className="w-4 h-4" />
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 via-pink-500 to-red-500 text-white flex items-center justify-center icon-3d shadow-sm shadow-rose-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
+                      <FileText className="w-5 h-5 drop-shadow-xs" />
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 text-slate-300 opacity-40 group-hover/tile:opacity-100 group-hover/tile:text-rose-600 group-hover/tile:translate-x-0.5 group-hover/tile:-translate-y-0.5 transition-all" />
                   </div>
-                  <span className="text-xs font-bold text-slate-800 group-hover:text-rose-700 transition-colors">
-                    Clinical Reports
-                  </span>
-                  <span className="text-[10px] text-slate-500 mt-0.5">Sessions, fees &amp; audits</span>
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 group-hover/tile:text-rose-700 transition-colors block">
+                      Clinical Reports
+                    </span>
+                    <span className="text-[11px] text-slate-400 group-hover/tile:text-slate-500 transition-colors mt-0.5 block leading-snug">
+                      Sessions, fees &amp; audits
+                    </span>
+                  </div>
                 </Link>
               </div>
             )}
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Role: {isStaff ? 'Staff Practitioner' : 'Clinic Administrator'}</span>
+          <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 relative z-10">
+            <span className="inline-flex items-center gap-1.5 font-medium">
+              <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span>Role: <strong className="text-slate-700">{isStaff ? 'Staff Practitioner' : 'Clinic Administrator'}</strong></span>
             </span>
-            <Link to="/admin/profile" className="font-semibold text-blue-600 hover:text-blue-700">
-              Profile Settings
+            <Link to="/admin/profile" className="font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 font-display group/link">
+              <span>Profile Settings</span>
+              <ChevronRight className="w-3.5 h-3.5 group-hover/link:translate-x-1 transition-transform" />
             </Link>
           </div>
         </div>
