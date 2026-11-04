@@ -6,7 +6,7 @@ import {
   Clock,
   CheckCircle2,
   FolderTree,
-  DollarSign,
+  IndianRupee,
   TrendingUp,
   UserPlus,
   Zap,
@@ -420,7 +420,7 @@ export default function AdminDashboardPage() {
                 title="Today's Commission"
                 value={todayStaffCommission > 0 ? `₹${todayStaffCommission.toLocaleString('en-IN')}` : '₹0'}
                 subtitle="Cleared from today's treatments"
-                icon={DollarSign}
+                icon={IndianRupee}
                 colorScheme="teal"
                 animateCount={false}
                 trend={todayStaffCommission > 0 ? `₹${todayStaffCommission.toLocaleString('en-IN')} Cleared` : '₹0 Today'}
@@ -508,7 +508,7 @@ export default function AdminDashboardPage() {
                 title="Collections Received"
                 value={totalPatientPaid > 0 ? `₹${totalPatientPaid.toLocaleString('en-IN')}` : '₹0'}
                 subtitle={`₹${todayPatientPaid.toLocaleString('en-IN')} collected today`}
-                icon={DollarSign}
+                icon={IndianRupee}
                 colorScheme="emerald"
                 animateCount={false}
                 trend={totalPatientPaid > 0 ? `₹${totalPatientPaid.toLocaleString('en-IN')} Received` : '₹0 Received'}

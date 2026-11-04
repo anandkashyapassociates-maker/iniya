@@ -26,7 +26,6 @@ import {
   UserPlus,
   ChevronDown,
   TrendingUp,
-  DollarSign,
   Award,
 } from 'lucide-react';
 import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
@@ -735,7 +734,7 @@ export default function SuperAdminDashboardPage() {
                   Collections Received
                 </span>
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-emerald-500/30 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 shrink-0">
-                  <DollarSign className="w-6 h-6 drop-shadow-sm" />
+                  <IndianRupee className="w-6 h-6 drop-shadow-sm" />
                 </div>
               </div>
 
