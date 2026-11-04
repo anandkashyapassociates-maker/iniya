@@ -27,16 +27,6 @@ class AdminAuthController extends Controller
      */
     public function login(Request $request): JsonResponse
     {
-        if ($request->bearerToken() && $tokenUser = auth('sanctum')->user()) {
-            if (($tokenUser instanceof Admin || $tokenUser instanceof Staff) && $tokenUser->is_active && $tokenUser->status !== 'blocked' && $tokenUser->status !== 'inactive') {
-                return response()->json([
-                    'message' => 'Already authenticated.',
-                    'token' => $request->bearerToken(),
-                    'user' => $tokenUser,
-                ], 200);
-            }
-        }
-
         $validated = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],

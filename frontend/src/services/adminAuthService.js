@@ -10,9 +10,9 @@ export const adminAuthService = {
     try {
       const response = await adminApi.post('/admin/logout');
       return response.data;
-    } finally {
-      localStorage.removeItem('admin_token');
-      localStorage.removeItem('admin_user');
+    } catch (err) {
+      console.warn('Admin logout API notice:', err);
+      return null;
     }
   },
 

@@ -54,6 +54,7 @@ superAdminApi.interceptors.response.use(
 
 /**
  * Admin API Axios Client
+ * Supports separate, isolated sessions for Admin and Staff across browser tabs.
  */
 export const adminApi = axios.create({
   baseURL: BASE_URL,
@@ -63,10 +64,37 @@ export const adminApi = axios.create({
 });
 
 adminApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('admin_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  const isAuthGuestRoute =
+    config.url?.includes('/admin/login') ||
+    config.url?.includes('/admin/forgot-password') ||
+    config.url?.includes('/admin/reset-password');
+
+  if (isAuthGuestRoute) {
+    if (config.headers) {
+      delete config.headers.Authorization;
+      delete config.headers.authorization;
+    }
+  } else {
+    // 1. Tab-specific session token takes first priority
+    const tabToken = sessionStorage.getItem('clinic_tab_token');
+    const tabRole = sessionStorage.getItem('clinic_tab_role');
+
+    let token = tabToken;
+    if (!token) {
+      if (tabRole === 'staff') {
+        token = localStorage.getItem('staff_token');
+      } else if (tabRole === 'admin') {
+        token = localStorage.getItem('admin_token');
+      } else {
+        token = localStorage.getItem('admin_token') || localStorage.getItem('staff_token');
+      }
+    }
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
+
   if (config.data instanceof FormData) {
     if (config.headers) {
       if (typeof config.headers.delete === 'function') {
@@ -86,8 +114,19 @@ adminApi.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('admin_token');
-      localStorage.removeItem('admin_user');
+      const tabRole = sessionStorage.getItem('clinic_tab_role');
+      sessionStorage.removeItem('clinic_tab_token');
+      sessionStorage.removeItem('clinic_tab_user');
+      sessionStorage.removeItem('clinic_tab_role');
+
+      if (tabRole === 'staff') {
+        localStorage.removeItem('staff_token');
+        localStorage.removeItem('staff_user');
+      } else {
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+      }
+
       // Only redirect if the current active tab is viewing an admin route
       if (
         window.location.pathname.startsWith('/admin') &&
