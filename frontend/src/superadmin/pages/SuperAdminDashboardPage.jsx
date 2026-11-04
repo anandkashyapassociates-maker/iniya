@@ -24,6 +24,7 @@ import {
   Layers,
   FileText,
   UserPlus,
+  ChevronDown,
 } from 'lucide-react';
 import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import superAdminDashboardService from '../services/superAdminDashboardService';
@@ -51,6 +52,7 @@ export default function SuperAdminDashboardPage() {
   const [dashboardData, setDashboardData] = useState(null);
   const [error, setError] = useState(null);
   const [activeChartPeriod, setActiveChartPeriod] = useState('Last 6 Months');
+  const [auditTrailOpen, setAuditTrailOpen] = useState(false);
 
   const fetchDashboard = useCallback(
     async (isRefresh = false) => {
@@ -1295,64 +1297,99 @@ export default function SuperAdminDashboardPage() {
       {/* ======================================================== */}
       {/* 9. Section D: Real Enterprise Audit & Activity Logs      */}
       {/* ======================================================== */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-2xs space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold shrink-0">
-              <Activity className="w-4.5 h-4.5" />
+      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs overflow-hidden transition-all duration-300">
+        {/* Dropdown Header Trigger */}
+        <button
+          type="button"
+          onClick={() => setAuditTrailOpen((prev) => !prev)}
+          className="w-full p-6 sm:p-7 flex items-center justify-between gap-4 text-left hover:bg-slate-50/70 transition-colors cursor-pointer group"
+          aria-expanded={auditTrailOpen}
+        >
+          <div className="flex items-center gap-3.5 min-w-0">
+            {/* 3D Blue Activity Icon */}
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-blue-500/25 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+              <Activity className="w-5 h-5 drop-shadow-sm" />
             </div>
-            <div>
-              <h2 className="text-base font-bold text-slate-900">
-                Real-Time Enterprise Audit Trail
-              </h2>
-              <p className="text-xs text-slate-500">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                  Real-Time Enterprise Audit Trail
+                </h2>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5 truncate">
                 Direct chronological logs of system logins, customer modifications, and administrative operations.
               </p>
             </div>
           </div>
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 shrink-0">
-            {recentActivity.length} Recent Events
-          </span>
-        </div>
 
-        {recentActivity && recentActivity.length > 0 ? (
-          <div className="divide-y divide-slate-100">
-            {recentActivity.map((log) => (
-              <div key={log.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50/60 px-3 rounded-xl transition-colors">
-                <div className="flex items-start gap-3 min-w-0">
-                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 shrink-0" />
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-bold text-slate-900 uppercase">
-                        {log.action ? log.action.replace('_', ' ') : 'SYSTEM EVENT'}
-                      </span>
-                      {log.ip_address && (
-                        <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
-                          {log.ip_address}
-                        </span>
-                      )}
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200/60 shadow-2xs hidden sm:inline-block">
+              <AnimatedCounter value={recentActivity.length} /> Recent Events
+            </span>
+            <div className={`w-9 h-9 rounded-xl bg-slate-100 text-slate-600 group-hover:bg-blue-50 group-hover:text-blue-600 flex items-center justify-center transition-all duration-300 ${auditTrailOpen ? 'rotate-180 bg-blue-50 text-blue-600' : ''}`}>
+              <ChevronDown className="w-4 h-4 transition-transform duration-300" />
+            </div>
+          </div>
+        </button>
+
+        {/* Dropdown Expandable Content */}
+        <div
+          className={`transition-all duration-300 ease-in-out ${
+            auditTrailOpen
+              ? 'max-h-[550px] opacity-100 border-t border-slate-100'
+              : 'max-h-0 opacity-0 pointer-events-none'
+          } overflow-hidden`}
+        >
+          <div className="p-6 sm:p-7 pt-4 space-y-3">
+            <div className="flex items-center justify-between text-xs text-slate-400 pb-2 border-b border-slate-100">
+              <span className="font-semibold uppercase tracking-wider text-[10px]">Recent Activity Stream</span>
+              <span>Showing last {recentActivity.length} events</span>
+            </div>
+
+            {recentActivity && recentActivity.length > 0 ? (
+              <div className="divide-y divide-slate-100 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                {recentActivity.map((log) => (
+                  <div
+                    key={log.id}
+                    className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50/80 px-3 rounded-xl transition-colors"
+                  >
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 shrink-0 shadow-xs shadow-blue-500/50" />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold text-slate-900 uppercase">
+                            {log.action ? log.action.replace('_', ' ') : 'SYSTEM EVENT'}
+                          </span>
+                          {log.ip_address && (
+                            <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200/60">
+                              {log.ip_address}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-600 mt-0.5 leading-relaxed break-words">
+                          {log.description || 'System operation executed.'}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-600 mt-0.5 leading-relaxed break-words">
-                      {log.description || 'System operation executed.'}
-                    </p>
+                    <div className="text-[11px] text-slate-400 font-mono shrink-0 sm:text-right pl-5 sm:pl-0">
+                      {log.created_at ? new Date(log.created_at).toLocaleString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      }) : 'Recently'}
+                    </div>
                   </div>
-                </div>
-                <div className="text-[11px] text-slate-400 font-mono shrink-0 sm:text-right pl-5 sm:pl-0">
-                  {log.created_at ? new Date(log.created_at).toLocaleString('en-IN', {
-                    day: '2-digit',
-                    month: 'short',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  }) : 'Recently'}
-                </div>
+                ))}
               </div>
-            ))}
+            ) : (
+              <div className="text-center py-8 text-xs text-slate-400 bg-slate-50/50 rounded-2xl border border-slate-100">
+                No system activity logs recorded yet.
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="text-center py-8 text-xs text-slate-400">
-            No system activity logs recorded yet.
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
