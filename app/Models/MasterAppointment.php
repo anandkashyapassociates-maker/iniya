@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class MasterAppointment extends Model
 {
@@ -39,6 +40,23 @@ class MasterAppointment extends Model
     protected $appends = [
         'image_url',
     ];
+
+    /**
+     * Boot the model.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (MasterAppointment $master) {
+            if ($master->image && Storage::disk('public')->exists($master->image)) {
+                Storage::disk('public')->delete($master->image);
+            }
+
+            // Ensure child sessions and their files & reschedule logs are cleaned up
+            foreach ($master->sessions()->get() as $session) {
+                $session->delete();
+            }
+        });
+    }
 
     /**
      * Accessor for full image URL.

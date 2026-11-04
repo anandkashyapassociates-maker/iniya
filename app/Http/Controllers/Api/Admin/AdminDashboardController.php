@@ -57,19 +57,20 @@ class AdminDashboardController extends Controller
         $totalMasterAppointments = MasterAppointment::count();
         $todayMasterAppointments = MasterAppointment::whereDate('appointment_date', $todayStr)->count();
 
-        $totalSessions = AppointmentSession::count();
-        $todaySessionsCount = AppointmentSession::whereDate('session_date', $todayStr)
+        $sessionsQuery = AppointmentSession::whereHas('masterAppointment');
+        $totalSessions = (clone $sessionsQuery)->count();
+        $todaySessionsCount = (clone $sessionsQuery)->whereDate('session_date', $todayStr)
             ->where('status', '!=', AppointmentSession::STATUS_CANCELLED)
             ->count();
 
         // Status Counts
-        $pendingSessions = AppointmentSession::where('status', AppointmentSession::STATUS_PENDING)->count();
-        $inProgressSessions = AppointmentSession::where('status', AppointmentSession::STATUS_IN_PROGRESS)->count();
-        $completedSessions = AppointmentSession::where('status', AppointmentSession::STATUS_COMPLETED)->count();
-        $cancelledSessions = AppointmentSession::where('status', AppointmentSession::STATUS_CANCELLED)->count();
+        $pendingSessions = (clone $sessionsQuery)->where('status', AppointmentSession::STATUS_PENDING)->count();
+        $inProgressSessions = (clone $sessionsQuery)->where('status', AppointmentSession::STATUS_IN_PROGRESS)->count();
+        $completedSessions = (clone $sessionsQuery)->where('status', AppointmentSession::STATUS_COMPLETED)->count();
+        $cancelledSessions = (clone $sessionsQuery)->where('status', AppointmentSession::STATUS_CANCELLED)->count();
 
         // Upcoming sessions (today or future dates that are pending or in progress)
-        $upcomingSessionsCount = AppointmentSession::where('session_date', '>=', $todayStr)
+        $upcomingSessionsCount = (clone $sessionsQuery)->where('session_date', '>=', $todayStr)
             ->whereIn('status', [AppointmentSession::STATUS_PENDING, AppointmentSession::STATUS_IN_PROGRESS])
             ->count();
 

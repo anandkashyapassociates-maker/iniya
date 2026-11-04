@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class AppointmentSession extends Model
 {
@@ -57,6 +58,19 @@ class AppointmentSession extends Model
         'selected_products',
         'image_url',
     ];
+
+    /**
+     * Boot the model.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (AppointmentSession $session) {
+            if ($session->image && Storage::disk('public')->exists($session->image)) {
+                Storage::disk('public')->delete($session->image);
+            }
+            $session->rescheduleHistories()->delete();
+        });
+    }
 
     /**
      * Accessor for full session image URL.
