@@ -165,33 +165,37 @@ export default function SuperAdminDashboardPage() {
       {/* ======================================================== */}
       {/* 1. Executive Greeting Banner                            */}
       {/* ======================================================== */}
-      <div className="border border-blue-200/80 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-xs min-h-[165px] flex items-center bg-gradient-to-r from-blue-900/10 via-white to-indigo-900/10">
+      <div className="border border-blue-200/80 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-xs min-h-[175px] flex items-center bg-gradient-to-r from-blue-100/90 via-sky-50/70 to-blue-50/20">
         <ClinicBannerBackground isSuperAdmin={true} />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between w-full gap-5">
-          <div className="min-w-0">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-700 text-xs font-bold tracking-wide uppercase mb-2">
-              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-              <span>Superadmin Executive Command</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight truncate">
-              {greeting}, {superAdminDisplayName}!
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
-              Comprehensive hospital administrative governance, clinical reports, inventory supplies, and payout settlements.
-            </p>
+        {/* Content strictly positioned on the left side - ZERO overlap with the right-side artwork */}
+        <div className="relative z-10 w-full max-w-sm sm:max-w-md lg:max-w-lg">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-700 text-xs font-bold tracking-wide uppercase mb-2">
+            <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+            <span>Superadmin Executive Command</span>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            {greeting}, {superAdminDisplayName}!
+          </h1>
+
+          <p className="text-xs sm:text-sm text-slate-600 mt-1.5 max-w-xs sm:max-w-sm leading-relaxed">
+            Hospital administrative governance, clinical reports, inventory supplies, and payout settlements.
+          </p>
+
+          <div className="mt-4 flex items-center gap-3 flex-wrap">
             <button
               onClick={() => fetchDashboard(true)}
               disabled={refreshing}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold text-xs shadow-xs hover:shadow transition-all cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-semibold text-xs shadow-xs hover:shadow transition-all cursor-pointer disabled:opacity-50"
               title="Refresh live metrics from database"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-blue-600 ${refreshing ? 'animate-spin' : ''}`} />
               <span>{refreshing ? 'Synchronizing...' : 'Sync Metrics'}</span>
             </button>
+            <span className="text-[11px] text-slate-500 font-medium hidden sm:inline">
+              Real-time database sync
+            </span>
           </div>
         </div>
       </div>
