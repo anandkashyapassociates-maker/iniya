@@ -1136,55 +1136,88 @@ export default function SuperAdminDashboardPage() {
       {/* ======================================================== */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-1">
-          <div>
-            <h2 className="text-base font-bold text-slate-900">
-              Payout Settlements &amp; Financial Ledger
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Staff salary disbursements, vendor supply invoices, and pending liability balance.
-            </p>
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 via-violet-600 to-indigo-600 text-white flex items-center justify-center icon-3d shadow-md shadow-purple-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+              <Receipt className="w-5 h-5 drop-shadow-sm" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-slate-900">
+                Payout Settlements &amp; Financial Ledger
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Staff salary disbursements, vendor supply invoices, and pending liability balance.
+              </p>
+            </div>
           </div>
           <Link
             to="/superadmin/payouts/ledger"
-            className="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors inline-flex items-center gap-1"
+            className="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors inline-flex items-center gap-1 group/headerlink"
           >
             <span>Complete Ledger Passbook</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
+            <ArrowUpRight className="w-3.5 h-3.5 group-hover/headerlink:translate-x-0.5 group-hover/headerlink:-translate-y-0.5 transition-transform" />
           </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Staff Payouts Card */}
-          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-2xs flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between gap-2 mb-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold shrink-0">
-                    <Receipt className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900">Staff Salary Payouts</h3>
-                    <p className="text-[11px] text-slate-500">Medical staff compensation vouchers</p>
-                  </div>
+          {/* Card 1: Staff Salary Payouts */}
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden">
+            <div className="absolute -top-12 -right-12 w-36 h-36 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-colors pointer-events-none" />
+
+            <div className="relative z-10">
+              {/* Top Row: 3D Purple Receipt Icon + Vouchers Pill */}
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 via-fuchsia-600 to-pink-500 text-white flex items-center justify-center icon-3d shadow-md shadow-purple-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+                  <Receipt className="w-6 h-6 drop-shadow-sm" />
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 text-[10px] font-extrabold shrink-0">
-                  {modules.payouts?.staff_count || 0} Vouchers
+                <span className="px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-bold border border-purple-200/60 shadow-2xs shrink-0">
+                  <AnimatedCounter value={modules.payouts?.staff_count || 0} /> Vouchers
                 </span>
               </div>
 
-              <div className="my-4">
-                <span className="text-[11px] uppercase font-bold text-slate-400 block">Total Disbursed to Staff</span>
-                <div className="text-3xl font-black text-slate-900 mt-1 tabular-numbers truncate">
+              {/* Title & Subtitle */}
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
+                Staff Salary Payouts
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Medical staff compensation vouchers &amp; payroll
+              </p>
+
+              {/* Primary Metric */}
+              <div className="mt-4">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                  Total Disbursed to Staff
+                </span>
+                <div className="text-3xl sm:text-4xl font-black text-slate-900 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
                   {formatCurrency(modules.payouts?.staff_disbursed || 0)}
+                </div>
+              </div>
+
+              {/* Operational Stat Chips */}
+              <div className="grid grid-cols-2 gap-2.5 mt-4">
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Settled</span>
+                  <span className="text-sm font-extrabold text-purple-700 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.payouts?.staff_count || 0} /> Paid
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Audit</span>
+                  <span className="text-sm font-extrabold text-emerald-600 tabular-numbers mt-0.5">
+                    TDS Logged
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span className="text-slate-500 font-medium">Automatic tax &amp; deduction logging</span>
+            {/* Bottom Actions */}
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs relative z-10">
+              <span className="text-slate-500 font-medium inline-flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                Automatic tax &amp; deduction logging
+              </span>
               <Link
                 to="/superadmin/payouts/staff"
-                className="text-purple-600 hover:text-purple-800 font-bold inline-flex items-center gap-1"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs transition-all hover:scale-105"
               >
                 <span>Staff Payouts</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -1192,37 +1225,64 @@ export default function SuperAdminDashboardPage() {
             </div>
           </div>
 
-          {/* Vendor Payouts Card */}
-          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-2xs flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between gap-2 mb-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold shrink-0">
-                    <Truck className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900">Vendor Supplier Invoices</h3>
-                    <p className="text-[11px] text-slate-500">Procurement &amp; clinic consumables</p>
-                  </div>
+          {/* Card 2: Vendor Supplier Invoices */}
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden">
+            <div className="absolute -top-12 -right-12 w-36 h-36 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition-colors pointer-events-none" />
+
+            <div className="relative z-10">
+              {/* Top Row: 3D Indigo Truck Icon + Invoices Pill */}
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-indigo-500/30 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 shrink-0">
+                  <Truck className="w-6 h-6 drop-shadow-sm" />
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[10px] font-extrabold shrink-0">
-                  {modules.payouts?.vendor_count || 0} Invoices
+                <span className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-200/60 shadow-2xs shrink-0">
+                  <AnimatedCounter value={modules.payouts?.vendor_count || 0} /> Invoices
                 </span>
               </div>
 
-              <div className="my-4">
-                <span className="text-[11px] uppercase font-bold text-slate-400 block">Total Settled to Suppliers</span>
-                <div className="text-3xl font-black text-slate-900 mt-1 tabular-numbers truncate">
+              {/* Title & Subtitle */}
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                Vendor Supplier Invoices
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Procurement, consumables &amp; clinic logistics
+              </p>
+
+              {/* Primary Metric */}
+              <div className="mt-4">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                  Total Settled to Suppliers
+                </span>
+                <div className="text-3xl sm:text-4xl font-black text-slate-900 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
                   {formatCurrency(modules.payouts?.vendor_disbursed || 0)}
+                </div>
+              </div>
+
+              {/* Operational Stat Chips */}
+              <div className="grid grid-cols-2 gap-2.5 mt-4">
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Settled</span>
+                  <span className="text-sm font-extrabold text-indigo-700 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.payouts?.vendor_count || 0} /> Invoices
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pending</span>
+                  <span className="text-sm font-extrabold text-amber-600 tabular-numbers mt-0.5">
+                    {formatCurrency(modules.payouts?.pending_liabilities || 0)}
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span className="text-slate-500 font-medium">Pending: {formatCurrency(modules.payouts?.pending_liabilities || 0)}</span>
+            {/* Bottom Actions */}
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs relative z-10">
+              <span className="text-slate-500 font-medium">
+                Pending balance: <strong className="text-slate-800">{formatCurrency(modules.payouts?.pending_liabilities || 0)}</strong>
+              </span>
               <Link
                 to="/superadmin/payouts/vendors"
-                className="text-indigo-600 hover:text-indigo-800 font-bold inline-flex items-center gap-1"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs transition-all hover:scale-105"
               >
                 <span>Vendor Payouts</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
