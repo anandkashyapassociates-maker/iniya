@@ -4,7 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\Admin;
 use App\Models\Appointment;
+use App\Models\AppointmentSession;
 use App\Models\Customer;
+use App\Models\MasterAppointment;
+use App\Models\SalesMember;
 use App\Models\Staff;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -241,6 +244,80 @@ class AdminAppointmentTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJsonPath('message', 'Cancelled appointments cannot be rescheduled.');
+    }
+
+    public function test_staff_cannot_reschedule_session_returns_403_forbidden(): void
+    {
+        Sanctum::actingAs($this->staff, ['role:staff']);
+
+        $sales = SalesMember::create([
+            'sales_code' => 'SLS-'.uniqid(),
+            'name' => 'Sales Person',
+            'email' => 'sales_'.uniqid().'@example.com',
+            'mobile' => '9876543210',
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+
+        // Attempting to reschedule master appointment session as staff
+        $masterApt = MasterAppointment::create([
+            'appointment_number' => 'MAPT-20261104-TEST',
+            'customer_id' => $this->customer->id,
+            'sales_team_id' => $sales->id,
+            'appointment_date' => now()->toDateString(),
+            'appointment_fees' => 2000.00,
+            'admin_id' => $this->admin->id,
+        ]);
+
+        $session = AppointmentSession::create([
+            'master_appointment_id' => $masterApt->id,
+            'session_number' => 1,
+            'treatment_details' => 'Full face laser toning',
+            'session_date' => now()->toDateString(),
+            'session_time' => '11:00 AM',
+            'staff_id' => $this->staff->id,
+            'status' => AppointmentSession::STATUS_PENDING,
+        ]);
+
+        $response = $this->postJson("/api/admin/sessions/{$session->id}/reschedule", [
+            'session_date' => now()->addDays(2)->toDateString(),
+            'session_time' => '12:00 PM',
+            'staff_id' => $this->staff->id,
+        ]);
+
+        $response->assertStatus(403)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Access denied. Administrative privileges required for this section.');
+    }
+
+    public function test_staff_cannot_reschedule_legacy_appointment_returns_403_forbidden(): void
+    {
+        Sanctum::actingAs($this->staff, ['role:staff']);
+
+        $appointment = Appointment::create([
+            'appointment_number' => 'APT-20261104-0099',
+            'customer_id' => $this->customer->id,
+            'staff_id' => $this->staff->id,
+            'admin_id' => $this->admin->id,
+            'appointment_date' => now()->addDay()->toDateString(),
+            'appointment_time' => '10:00 AM',
+            'session_slot' => 'Morning',
+            'session_number' => 1,
+            'total_sessions' => 1,
+            'treatment_name' => 'Consultation',
+            'status' => 'pending',
+        ]);
+
+        $response = $this->postJson("/api/admin/appointments/{$appointment->id}/reschedule", [
+            'appointment_date' => now()->addDays(2)->toDateString(),
+            'appointment_time' => '11:00 AM',
+            'session_slot' => 'Morning',
+            'reason' => 'Staff attempting reschedule',
+        ]);
+
+        $response->assertStatus(403)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Access denied. Administrative privileges required for this section.');
     }
 
     public function test_admin_can_cancel_appointment_with_reason(): void

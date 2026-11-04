@@ -88,7 +88,12 @@ export default function Sidebar({
     },
   ];
 
-  const isStaff = user?.role === 'staff';
+  const isStaff =
+    user?.role?.toLowerCase() === 'staff' ||
+    user?.user_type?.toLowerCase() === 'staff' ||
+    Boolean(user?.is_staff) ||
+    user?.role === 'Staff Practitioner' ||
+    Boolean(user?.staff_code);
 
   const adminNavItems = [
     {
@@ -484,7 +489,7 @@ export default function Sidebar({
                 <p className="text-xs font-semibold text-slate-200 truncate font-display tracking-tight">
                   {user?.name || (isSuperAdmin ? 'Super Administrator' : 'Administrator')}
                 </p>
-                {user?.role === 'staff' && (
+                {isStaff && (
                   <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-teal-500/20 text-teal-300 border border-teal-500/30 uppercase">
                     Staff
                   </span>

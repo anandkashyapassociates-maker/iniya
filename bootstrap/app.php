@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\EnsureAdminOnly;
 use App\Http\Middleware\EnsureSuperAdmin;
 use App\Models\SuperAdmin;
 use Illuminate\Foundation\Application;
@@ -40,6 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth.superadmin' => EnsureSuperAdmin::class,
             'auth.admin' => EnsureAdmin::class,
+            'auth.admin_only' => EnsureAdminOnly::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

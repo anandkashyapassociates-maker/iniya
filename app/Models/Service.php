@@ -42,6 +42,14 @@ class Service extends Model
     }
 
     /**
+     * Alias for appointment sessions
+     */
+    public function sessions(): HasMany
+    {
+        return $this->hasMany(AppointmentSession::class, 'service_id');
+    }
+
+    /**
      * Scope for active services
      */
     public function scopeActive($query)

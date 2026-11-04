@@ -39,6 +39,7 @@ import PayoutsLedgerPage from '../superadmin/payouts/PayoutsLedgerPage';
 import AdminLayout from '../layouts/AdminLayout';
 import AdminProtectedRoute from './AdminProtectedRoute';
 import AdminGuestRoute from './AdminGuestRoute';
+import AdminOnlyRoute from './AdminOnlyRoute';
 import AdminLoginPage from '../pages/admin/AdminLoginPage';
 import AdminForgotPasswordPage from '../pages/admin/AdminForgotPasswordPage';
 import AdminResetPasswordPage from '../pages/admin/AdminResetPasswordPage';
@@ -173,44 +174,54 @@ export default function AppRoutes() {
       {/* ======================================================== */}
       <Route element={<AdminProtectedRoute />}>
         <Route element={<AdminLayout />}>
+          {/* Shared Routes: Accessible to both Admin and Staff */}
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-          {/* Staff Personal Portal */}
-          <Route path="/admin/my-appointments" element={<StaffMyAppointmentsPage />} />
-          <Route path="/admin/my-appointments/:id" element={<StaffAppointmentDetailsPage />} />
-          <Route path="/admin/appointments" element={<AdminMasterAppointmentsPage />} />
-          <Route path="/admin/appointments/create" element={<AdminMasterAppointmentCreatePage />} />
-          <Route path="/admin/appointments/services" element={<AdminServicesManagementPage />} />
-          <Route path="/admin/services" element={<Navigate to="/admin/appointments/services" replace />} />
-          <Route path="/admin/appointments/calendar" element={<AdminAppointmentCalendarPage />} />
-          <Route path="/admin/appointments/:id" element={<AdminMasterAppointmentDetailsPage />} />
-          <Route path="/admin/appointments/:id/edit" element={<AdminMasterAppointmentEditPage />} />
-          <Route path="/admin/customers" element={<AdminCustomersPage />} />
-          <Route path="/admin/customers/create" element={<AdminCustomerCreatePage />} />
-          <Route path="/admin/customers/:id/edit" element={<AdminCustomerEditPage />} />
-          <Route path="/admin/categories" element={<Navigate to="/admin/inventory/categories" replace />} />
-
-          {/* Admin Inventory Management Module */}
-          <Route path="/admin/inventory" element={<Navigate to="/admin/inventory/stocks" replace />} />
-          <Route path="/admin/inventory/stocks" element={<AdminInventoryStocksPage />} />
-          <Route path="/admin/inventory/stocks/:id" element={<AdminStockDetailsPage />} />
-          <Route path="/admin/inventory/reports" element={<AdminInventoryReportsPage />} />
-          <Route path="/admin/reports/appointments" element={<AppointmentReportsPage role="admin" defaultTab="appointments" />} />
-          <Route path="/admin/reports/sessions" element={<AppointmentReportsPage role="admin" defaultTab="sessions" />} />
-          <Route path="/admin/reports/payouts" element={<AdminPayoutsReportsPage />} />
-          <Route path="/admin/reports" element={<Navigate to="/admin/reports/appointments" replace />} />
-          <Route path="/admin/inventory/low-stock" element={<Navigate to="/admin/inventory/stocks" replace />} />
-          <Route path="/admin/inventory/products" element={<AdminProductsPage />} />
-          <Route path="/admin/inventory/products/create" element={<AdminProductCreatePage />} />
-          <Route path="/admin/inventory/products/:id/edit" element={<AdminProductEditPage />} />
-          <Route path="/admin/inventory/categories" element={<AdminInventoryCategoryListPage />} />
-          <Route path="/admin/inventory/categories/create" element={<AdminInventoryCategoryCreatePage />} />
-          <Route path="/admin/inventory/categories/:id/edit" element={<AdminInventoryCategoryEditPage />} />
-          <Route path="/admin/inventory/brands" element={<AdminBrandsPage />} />
-          <Route path="/admin/inventory/brands/create" element={<AdminBrandCreatePage />} />
-          <Route path="/admin/inventory/brands/:id/edit" element={<AdminBrandEditPage />} />
-
           <Route path="/admin/profile" element={<AdminProfilePage />} />
           <Route path="/admin/change-password" element={<AdminChangePasswordPage />} />
+
+          {/* Staff Personal Portal: Accessible only to Staff */}
+          <Route path="/admin/my-appointments" element={<StaffMyAppointmentsPage />} />
+          <Route path="/admin/my-appointments/:id" element={<StaffAppointmentDetailsPage />} />
+
+          {/* ADMIN-ONLY MODULES: Staff cannot open via URL, direct navigation, or typing in address bar */}
+          <Route element={<AdminOnlyRoute />}>
+            {/* Appointments Management */}
+            <Route path="/admin/appointments" element={<AdminMasterAppointmentsPage />} />
+            <Route path="/admin/appointments/create" element={<AdminMasterAppointmentCreatePage />} />
+            <Route path="/admin/appointments/services" element={<AdminServicesManagementPage />} />
+            <Route path="/admin/services" element={<Navigate to="/admin/appointments/services" replace />} />
+            <Route path="/admin/appointments/calendar" element={<AdminAppointmentCalendarPage />} />
+            <Route path="/admin/appointments/:id" element={<AdminMasterAppointmentDetailsPage />} />
+            <Route path="/admin/appointments/:id/edit" element={<AdminMasterAppointmentEditPage />} />
+
+            {/* Patient Directory */}
+            <Route path="/admin/customers" element={<AdminCustomersPage />} />
+            <Route path="/admin/customers/create" element={<AdminCustomerCreatePage />} />
+            <Route path="/admin/customers/:id/edit" element={<AdminCustomerEditPage />} />
+
+            {/* Inventory Management & Stocks */}
+            <Route path="/admin/categories" element={<Navigate to="/admin/inventory/categories" replace />} />
+            <Route path="/admin/inventory" element={<Navigate to="/admin/inventory/stocks" replace />} />
+            <Route path="/admin/inventory/stocks" element={<AdminInventoryStocksPage />} />
+            <Route path="/admin/inventory/stocks/:id" element={<AdminStockDetailsPage />} />
+            <Route path="/admin/inventory/reports" element={<AdminInventoryReportsPage />} />
+            <Route path="/admin/inventory/low-stock" element={<Navigate to="/admin/inventory/stocks" replace />} />
+            <Route path="/admin/inventory/products" element={<AdminProductsPage />} />
+            <Route path="/admin/inventory/products/create" element={<AdminProductCreatePage />} />
+            <Route path="/admin/inventory/products/:id/edit" element={<AdminProductEditPage />} />
+            <Route path="/admin/inventory/categories" element={<AdminInventoryCategoryListPage />} />
+            <Route path="/admin/inventory/categories/create" element={<AdminInventoryCategoryCreatePage />} />
+            <Route path="/admin/inventory/categories/:id/edit" element={<AdminInventoryCategoryEditPage />} />
+            <Route path="/admin/inventory/brands" element={<AdminBrandsPage />} />
+            <Route path="/admin/inventory/brands/create" element={<AdminBrandCreatePage />} />
+            <Route path="/admin/inventory/brands/:id/edit" element={<AdminBrandEditPage />} />
+
+            {/* Reports Module */}
+            <Route path="/admin/reports/appointments" element={<AppointmentReportsPage role="admin" defaultTab="appointments" />} />
+            <Route path="/admin/reports/sessions" element={<AppointmentReportsPage role="admin" defaultTab="sessions" />} />
+            <Route path="/admin/reports/payouts" element={<AdminPayoutsReportsPage />} />
+            <Route path="/admin/reports" element={<Navigate to="/admin/reports/appointments" replace />} />
+          </Route>
         </Route>
       </Route>
 
