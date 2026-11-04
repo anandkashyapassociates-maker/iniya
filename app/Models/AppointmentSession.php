@@ -51,7 +51,10 @@ class AppointmentSession extends Model
         'inventory_product_id',
         'inventory_product_ids',
         'status',
-        'image',
+        'payment_amount',
+        'payment_date',
+        'payment_mode',
+        'payment_notes',
     ];
 
     protected $appends = [
@@ -87,6 +90,8 @@ class AppointmentSession extends Model
             'session_date' => 'date:Y-m-d',
             'staff_commission' => 'decimal:2',
             'inventory_product_ids' => 'array',
+            'payment_amount' => 'decimal:2',
+            'payment_date' => 'date:Y-m-d',
         ];
     }
 

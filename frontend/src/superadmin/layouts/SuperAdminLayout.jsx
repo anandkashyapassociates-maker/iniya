@@ -25,6 +25,8 @@ import {
   Wallet,
   CreditCard,
   Banknote,
+  Calendar,
+  Clock,
 } from 'lucide-react';
 import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import ToastNotifications from '../../components/ToastNotifications';
@@ -660,6 +662,36 @@ export default function SuperAdminLayout() {
               {/* Collapsible Reports Submenu */}
               {reportsMenuOpen && (
                 <div className="pl-6 pr-1 pt-1.5 pb-1 space-y-1">
+                  <NavLink
+                    to="/superadmin/reports/appointments"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-purple-600/20 text-purple-300 font-medium border border-purple-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <Calendar className="w-3.5 h-3.5 shrink-0" />
+                    <span>Appointments Report</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/superadmin/reports/sessions"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-purple-600/20 text-purple-300 font-medium border border-purple-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <Clock className="w-3.5 h-3.5 shrink-0" />
+                    <span>Sessions Report</span>
+                  </NavLink>
+
                   <NavLink
                     to="/superadmin/inventory/reports"
                     onClick={() => setMobileMenuOpen(false)}

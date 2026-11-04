@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import {
   ArrowLeft,
   UserPlus,
@@ -25,10 +25,16 @@ import {
 } from 'lucide-react';
 import adminService from '../../services/adminService';
 import { useToast } from '../../context/ToastContext';
+import { useAdminAuth } from '../../features/auth/AdminAuthContext';
 
 export default function AdminCustomerCreatePage() {
   const navigate = useNavigate();
   const toast = useToast();
+  const { user } = useAdminAuth();
+
+  if (user && user.role === 'staff') {
+    return <Navigate to="/admin/my-appointments" replace />;
+  }
 
   const [formData, setFormData] = useState({
     name: '',

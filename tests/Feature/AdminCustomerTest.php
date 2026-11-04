@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Admin;
 use App\Models\Customer;
+use App\Models\Staff;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
@@ -266,5 +267,28 @@ class AdminCustomerTest extends TestCase
             'id' => $customer->id,
             'name' => 'Original Customer',
         ]);
+    }
+
+    /**
+     * Test staff member cannot access patient directory API (403 Forbidden).
+     */
+    public function test_staff_member_cannot_access_customers_api(): void
+    {
+        $staff = Staff::create([
+            'staff_code' => 'STF-CUST-99',
+            'name' => 'Doctor Staff',
+            'email' => 'doc_cust_'.uniqid().'@example.com',
+            'mobile' => '9988771122',
+            'status' => 'active',
+            'is_active' => true,
+        ]);
+
+        Sanctum::actingAs($staff, ['role:staff']);
+
+        $response = $this->getJson('/api/admin/customers');
+        $response->assertStatus(403);
+
+        $statsResponse = $this->getJson('/api/admin/customers/stats');
+        $statsResponse->assertStatus(403);
     }
 }

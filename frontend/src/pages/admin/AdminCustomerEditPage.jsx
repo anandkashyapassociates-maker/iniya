@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link, Navigate } from 'react-router-dom';
 import {
   ArrowLeft,
   User,
@@ -29,6 +29,10 @@ export default function AdminCustomerEditPage() {
   const navigate = useNavigate();
   const toast = useToast();
   const { user } = useAdminAuth();
+
+  if (user && user.role === 'staff') {
+    return <Navigate to="/admin/my-appointments" replace />;
+  }
 
   const [formData, setFormData] = useState({
     name: '',

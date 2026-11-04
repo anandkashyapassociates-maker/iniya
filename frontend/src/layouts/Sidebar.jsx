@@ -24,6 +24,7 @@ import {
   Layers,
   FileText,
   Wallet,
+  Clock,
 } from 'lucide-react';
 
 export default function Sidebar({
@@ -96,6 +97,12 @@ export default function Sidebar({
       icon: LayoutDashboard,
       color: 'from-blue-600 to-indigo-600',
     },
+    {
+      to: '/admin/profile',
+      label: 'Profile',
+      icon: User,
+      color: 'from-rose-500 to-pink-600',
+    },
     // My Appointments: Only visible to logged-in Staff members (Admin ko show nahi honge)
     ...(isStaff
       ? [
@@ -107,21 +114,15 @@ export default function Sidebar({
           },
         ]
       : []),
-    {
-      to: '/admin/profile',
-      label: 'Profile',
-      icon: User,
-      color: 'from-rose-500 to-pink-600',
-    },
-    {
-      to: '/admin/customers',
-      label: 'Patient Directory',
-      icon: Users,
-      color: 'from-teal-500 to-emerald-600',
-    },
-    // Regular Appointments Management: Visible to Admin (Admin can manage all appointments)
+    // Patient Directory & Appointments Management: Visible ONLY to Admin (Staff ko show nahi honge)
     ...(!isStaff
       ? [
+          {
+            to: '/admin/customers',
+            label: 'Patient Directory',
+            icon: Users,
+            color: 'from-teal-500 to-emerald-600',
+          },
           {
             label: 'Appointments',
             icon: Calendar,
@@ -314,7 +315,7 @@ export default function Sidebar({
               );
             })}
 
-            {!isSuperAdmin && (
+            {!isSuperAdmin && !isStaff && (
               <>
                 {/* INVENTORY MANAGEMENT ACCORDION SECTION */}
                 <div className="pt-1.5 pb-1">
@@ -395,6 +396,38 @@ export default function Sidebar({
                   {/* Collapsible Submenu */}
                   {reportsOpen && (
                     <div className="pl-4 pr-1 pt-1.5 space-y-1">
+                      <NavLink
+                        to="/admin/reports/appointments"
+                        end
+                        onClick={onClose}
+                        className={({ isActive }) =>
+                          `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                            isActive
+                              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs font-semibold'
+                              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                          }`
+                        }
+                      >
+                        <Calendar className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">Appointment Reports</span>
+                      </NavLink>
+
+                      <NavLink
+                        to="/admin/reports/sessions"
+                        end
+                        onClick={onClose}
+                        className={({ isActive }) =>
+                          `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                            isActive
+                              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs font-semibold'
+                              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                          }`
+                        }
+                      >
+                        <Clock className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">Session Reports</span>
+                      </NavLink>
+
                       <NavLink
                         to="/admin/inventory/reports"
                         end

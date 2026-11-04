@@ -12,7 +12,9 @@ use App\Models\ServiceCategory;
 use App\Models\Staff;
 use App\Models\SuperAdmin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class StaffAppointmentTest extends TestCase
@@ -90,8 +92,6 @@ class StaffAppointmentTest extends TestCase
         $this->staff2Token = $this->staff2->createToken('staff-token', ['role:staff'])->plainTextToken;
 
         $this->customer = Customer::create([
-            'customer_code' => 'PAT-001',
-            'opd_number' => 'OPD-9988',
             'name' => 'Sunil Verma',
             'email' => 'sunil_'.uniqid().'@example.com',
             'mobile' => '9777712345',
@@ -122,16 +122,18 @@ class StaffAppointmentTest extends TestCase
     }
 
     /**
-     * Test staff can view only their assigned appointments with date and customer details.
+     * Test staff can view only their assigned appointment sessions with date and customer details.
      */
     public function test_staff_can_view_assigned_appointments_list(): void
     {
-        // 1. Appointment assigned to Staff 1
+        // 1. Master Appointment 1 with Session assigned to Staff 1
+        $today = now()->toDateString();
+
         $mapt1 = MasterAppointment::create([
             'appointment_number' => 'MAPT-20261103-0001',
             'customer_id' => $this->customer->id,
             'sales_team_id' => $this->salesMember->id,
-            'appointment_date' => '2026-11-03',
+            'appointment_date' => $today,
             'appointment_fees' => 2500.00,
             'notes' => 'Patient requires consultation for skin allergy',
             'image' => 'appointments/mapt1_presc.jpg',
@@ -143,7 +145,7 @@ class StaffAppointmentTest extends TestCase
             'session_number' => 1,
             'service_id' => $this->service->id,
             'treatment_details' => 'Initial laser consultation',
-            'session_date' => '2026-11-03',
+            'session_date' => $today,
             'session_time' => '10:00 AM',
             'staff_id' => $this->staff1->id,
             'staff_commission' => 500.00,
@@ -151,7 +153,7 @@ class StaffAppointmentTest extends TestCase
             'image' => 'sessions/session1_photo.jpg',
         ]);
 
-        // 2. Appointment assigned to Staff 2
+        // 2. Master Appointment 2 with Session assigned to Staff 2
         $mapt2 = MasterAppointment::create([
             'appointment_number' => 'MAPT-20261103-0002',
             'customer_id' => $this->customer->id,
@@ -179,19 +181,20 @@ class StaffAppointmentTest extends TestCase
             ->getJson('/api/admin/my-appointments');
 
         $res->assertStatus(200)
-            ->assertJsonPath('summary.total_appointments', 1)
             ->assertJsonPath('summary.total_sessions', 1)
             ->assertJsonPath('summary.pending_sessions', 1)
             ->assertJsonPath('summary.today_sessions', 1)
             ->assertJsonPath('summary.total_commission_earned', 500)
-            ->assertJsonPath('appointments.data.0.appointment_number', 'MAPT-20261103-0001')
-            ->assertJsonPath('appointments.data.0.customer.name', 'Sunil Verma')
+            ->assertJsonPath('sessions.data.0.session_number', 1)
+            ->assertJsonPath('sessions.data.0.treatment_details', 'Initial laser consultation')
+            ->assertJsonPath('sessions.data.0.master_appointment.appointment_number', 'MAPT-20261103-0001')
+            ->assertJsonPath('sessions.data.0.master_appointment.customer.name', 'Sunil Verma')
             ->assertJsonFragment(['appointment_number' => 'MAPT-20261103-0001'])
             ->assertJsonMissing(['appointment_number' => 'MAPT-20261103-0002']);
     }
 
     /**
-     * Test staff can view single appointment details with master image and session image.
+     * Test staff can view single appointment session details with master image and session image.
      */
     public function test_staff_can_view_single_appointment_details_with_images(): void
     {
@@ -220,16 +223,16 @@ class StaffAppointmentTest extends TestCase
         ]);
 
         $res = $this->withHeader('Authorization', 'Bearer '.$this->staff1Token)
-            ->getJson('/api/admin/my-appointments/'.$mapt->id);
+            ->getJson('/api/admin/my-appointments/'.$session->id);
 
         $res->assertStatus(200)
+            ->assertJsonPath('session.id', $session->id)
+            ->assertJsonPath('session.image', 'sessions/skin_lesion_01.jpg')
             ->assertJsonPath('appointment.appointment_number', 'MAPT-20261103-0005')
-            ->assertJsonPath('appointment.image', 'appointments/allergy_scan.png')
-            ->assertJsonPath('appointment.sessions.0.image', 'sessions/skin_lesion_01.jpg')
-            ->assertJsonPath('appointment.sessions.0.staff.name', 'Dr. Ayesha Khan');
+            ->assertJsonPath('appointment.image', 'appointments/allergy_scan.png');
 
+        $this->assertNotNull($res->json('session.image_url'));
         $this->assertNotNull($res->json('appointment.image_url'));
-        $this->assertNotNull($res->json('appointment.sessions.0.image_url'));
     }
 
     /**
@@ -246,7 +249,7 @@ class StaffAppointmentTest extends TestCase
             'admin_id' => $this->admin->id,
         ]);
 
-        AppointmentSession::create([
+        $session = AppointmentSession::create([
             'master_appointment_id' => $mapt->id,
             'session_number' => 1,
             'service_id' => $this->service->id,
@@ -257,12 +260,12 @@ class StaffAppointmentTest extends TestCase
             'status' => AppointmentSession::STATUS_PENDING,
         ]);
 
-        // Staff 1 tries to access Dr Vikram's appointment
+        // Staff 1 tries to access Dr Vikram's appointment session
         $res = $this->withHeader('Authorization', 'Bearer '.$this->staff1Token)
-            ->getJson('/api/admin/my-appointments/'.$mapt->id);
+            ->getJson('/api/admin/my-appointments/'.$session->id);
 
-        $res->assertStatus(403)
-            ->assertJsonPath('message', 'Unauthorized. You are not assigned to this appointment.');
+        $res->assertStatus(404)
+            ->assertJsonPath('message', 'Appointment session record not found or you are not assigned to it.');
     }
 
     /**
@@ -275,5 +278,106 @@ class StaffAppointmentTest extends TestCase
 
         $res->assertStatus(403)
             ->assertJsonPath('message', 'Access restricted to staff members only.');
+    }
+
+    /**
+     * Test staff can update session status (pending -> in_progress -> completed).
+     */
+    public function test_staff_can_update_session_status(): void
+    {
+        $mapt = MasterAppointment::create([
+            'appointment_number' => 'MAPT-20261103-0101',
+            'customer_id' => $this->customer->id,
+            'sales_team_id' => $this->salesMember->id,
+            'appointment_date' => now()->toDateString(),
+            'appointment_fees' => 2000.00,
+            'admin_id' => $this->admin->id,
+        ]);
+
+        $session = AppointmentSession::create([
+            'master_appointment_id' => $mapt->id,
+            'session_number' => 1,
+            'service_id' => $this->service->id,
+            'treatment_details' => 'Skin checkup session',
+            'session_date' => now()->toDateString(),
+            'session_time' => '11:00 AM',
+            'staff_id' => $this->staff1->id,
+            'staff_commission' => 400.00,
+            'status' => AppointmentSession::STATUS_PENDING,
+        ]);
+
+        // 1. Update to in_progress
+        $res1 = $this->withHeader('Authorization', 'Bearer '.$this->staff1Token)
+            ->patchJson('/api/admin/my-appointments/'.$session->id.'/status', [
+                'status' => 'in_progress',
+            ]);
+
+        $res1->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('session.status', 'in_progress');
+
+        $this->assertEquals('in_progress', $session->fresh()->status);
+
+        // 2. Update to completed (Session closed) and receive payment
+        $res2 = $this->withHeader('Authorization', 'Bearer '.$this->staff1Token)
+            ->patchJson('/api/admin/my-appointments/'.$session->id.'/status', [
+                'status' => 'completed',
+                'payment_amount' => 1500.00,
+                'payment_date' => now()->toDateString(),
+                'payment_mode' => 'cash',
+                'payment_notes' => 'Patient paid in cash at reception',
+            ]);
+
+        $res2->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('session.status', 'completed');
+
+        $fresh = $session->fresh();
+        $this->assertEquals('completed', $fresh->status);
+        $this->assertEquals(1500.00, (float) $fresh->payment_amount);
+        $this->assertEquals('cash', $fresh->payment_mode);
+        $this->assertEquals('Patient paid in cash at reception', $fresh->payment_notes);
+    }
+
+    /**
+     * Test staff can upload session clinical photo.
+     */
+    public function test_staff_can_upload_session_image(): void
+    {
+        Storage::fake('public');
+
+        $mapt = MasterAppointment::create([
+            'appointment_number' => 'MAPT-20261103-0102',
+            'customer_id' => $this->customer->id,
+            'sales_team_id' => $this->salesMember->id,
+            'appointment_date' => now()->toDateString(),
+            'appointment_fees' => 2000.00,
+            'admin_id' => $this->admin->id,
+        ]);
+
+        $session = AppointmentSession::create([
+            'master_appointment_id' => $mapt->id,
+            'session_number' => 1,
+            'service_id' => $this->service->id,
+            'treatment_details' => 'Skin checkup session',
+            'session_date' => now()->toDateString(),
+            'session_time' => '11:00 AM',
+            'staff_id' => $this->staff1->id,
+            'staff_commission' => 400.00,
+            'status' => AppointmentSession::STATUS_PENDING,
+        ]);
+
+        $file = UploadedFile::fake()->image('clinical_photo.jpg');
+
+        $res = $this->withHeader('Authorization', 'Bearer '.$this->staff1Token)
+            ->postJson('/api/admin/my-appointments/'.$session->id.'/image', [
+                'image' => $file,
+            ]);
+
+        $res->assertStatus(200)
+            ->assertJsonPath('success', true);
+
+        $this->assertNotNull($session->fresh()->image);
+        Storage::disk('public')->assertExists($session->fresh()->image);
     }
 }
