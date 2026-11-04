@@ -32,6 +32,7 @@ import SessionRescheduleHistoryModal from '../../components/admin/SessionResched
 import ConfirmDialog from '../../components/ConfirmDialog';
 import ProductMultiSelectDropdown from '../../components/admin/ProductMultiSelectDropdown';
 import AppointmentReceiptModal from '../../components/admin/AppointmentReceiptModal';
+import SessionProductsModal from '../../components/admin/SessionProductsModal';
 import { useToast } from '../../context/ToastContext';
 
 export default function AdminMasterAppointmentDetailsPage() {
@@ -51,6 +52,7 @@ export default function AdminMasterAppointmentDetailsPage() {
   const [deleteSessionId, setDeleteSessionId] = useState(null);
   const [deletingSession, setDeletingSession] = useState(false);
   const [receiptModal, setReceiptModal] = useState({ isOpen: false, type: 'master', session: null });
+  const [viewProductsSession, setViewProductsSession] = useState(null);
 
   // Receipt Handlers
   const handleOpenMasterReceipt = () => {
@@ -478,7 +480,7 @@ export default function AdminMasterAppointmentDetailsPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-y border-slate-200/70">
               <tr>
-                <th className="py-3 px-3.5 text-center w-12">#</th>
+                <th className="py-3 px-3.5 text-center w-16 whitespace-nowrap">S.NO.</th>
                 <th className="py-3 px-4">Treatment / Procedure</th>
                 <th className="py-3 px-4">Date & Time</th>
                 <th className="py-3 px-4">Assigned Staff</th>
@@ -541,27 +543,38 @@ export default function AdminMasterAppointmentDetailsPage() {
                     </td>
 
                     {/* Inventory Product */}
-                    <td className="py-3 px-4 text-xs">
-                      {ses.selected_products && ses.selected_products.length > 0 ? (
-                        <div className="flex flex-wrap gap-1 max-w-[200px]">
-                          {ses.selected_products.map((p) => (
-                            <span
-                              key={p.id}
-                              className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium text-[11px]"
-                            >
-                              <Package className="w-3 h-3 text-slate-400" />
-                              <span>{p.product_name}</span>
+                    <td className="py-3 px-4 text-xs whitespace-nowrap">
+                      {(() => {
+                        const productsList = ses.selected_products && ses.selected_products.length > 0
+                          ? ses.selected_products
+                          : (ses.inventory_product ? [ses.inventory_product] : []);
+
+                        if (productsList.length === 0) {
+                          return <span className="text-slate-300 font-mono text-xs">—</span>;
+                        }
+
+                        const firstProduct = productsList[0];
+                        const remainingCount = productsList.length - 1;
+
+                        return (
+                          <button
+                            type="button"
+                            onClick={() => setViewProductsSession(ses)}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-700 font-medium text-xs transition-all cursor-pointer group shadow-2xs"
+                            title="Click to view all allocated products"
+                          >
+                            <Package className="w-3.5 h-3.5 text-indigo-500 shrink-0 group-hover:scale-110 transition-transform" />
+                            <span className="truncate max-w-[130px] font-semibold text-slate-800 group-hover:text-indigo-700">
+                              {firstProduct.product_name}
                             </span>
-                          ))}
-                        </div>
-                      ) : ses.inventory_product ? (
-                        <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium text-[11px]">
-                          <Package className="w-3 h-3 text-slate-400" />
-                          <span>{ses.inventory_product.product_name}</span>
-                        </span>
-                      ) : (
-                        <span className="text-slate-400 text-xs italic">None</span>
-                      )}
+                            {remainingCount > 0 && (
+                              <span className="px-1.5 py-0.5 rounded-md bg-indigo-600 text-white font-bold text-[10px] font-mono shrink-0 shadow-2xs">
+                                +{remainingCount}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })()}
                     </td>
 
                     {/* Session Photo */}
@@ -581,7 +594,7 @@ export default function AdminMasterAppointmentDetailsPage() {
                           />
                         </a>
                       ) : (
-                        <span className="text-slate-300 text-xs font-mono">—</span>
+                        <span className="text-slate-900 font-bold text-sm font-mono select-none">—</span>
                       )}
                     </td>
 
@@ -1015,6 +1028,7 @@ export default function AdminMasterAppointmentDetailsPage() {
         onClose={() => setRescheduleSession(null)}
         session={rescheduleSession}
         staffList={staffList}
+        inventoryProducts={inventoryProducts}
         onSuccess={() => fetchDetails()}
       />
 
@@ -1043,6 +1057,13 @@ export default function AdminMasterAppointmentDetailsPage() {
         appointment={appointment}
         session={receiptModal.session}
         type={receiptModal.type}
+      />
+
+      {/* Allocated Products / Supplies Details Modal */}
+      <SessionProductsModal
+        isOpen={Boolean(viewProductsSession)}
+        onClose={() => setViewProductsSession(null)}
+        session={viewProductsSession}
       />
     </div>
   );
