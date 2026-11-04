@@ -25,7 +25,7 @@ export default function AdminResetPasswordPage() {
         role="admin"
         onSubmit={handleResetPassword}
         isLoading={isLoading}
-        loginPath="/admin"
+        loginPath="/"
       />
     </AuthLayout>
   );

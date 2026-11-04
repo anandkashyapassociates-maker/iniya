@@ -79,8 +79,11 @@ import LandingPage from '../pages/LandingPage';
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Root Portal Switcher (Redirects to dashboard if logged in) */}
-      <Route path="/" element={<LandingPage />} />
+      {/* Root Portal / Default Route -> Admin Login Page (Replaces old LandingPage) */}
+      {/* <Route path="/" element={<LandingPage />} /> */}
+      <Route element={<AdminGuestRoute />}>
+        <Route path="/" element={<AdminLoginPage />} />
+      </Route>
 
       {/* ======================================================== */}
       {/* 1. Super Admin Public / Guest Routes (Dedicated Auth)    */}
@@ -158,7 +161,8 @@ export default function AppRoutes() {
       {/* 3. Admin Public / Guest Routes (Panel 2 - Isolated)      */}
       {/* ======================================================== */}
       <Route element={<AdminGuestRoute />}>
-        <Route path="/admin" element={<AdminLoginPage />} />
+        {/* /admin route commented out as requested; default route '/' now serves AdminLoginPage */}
+        {/* <Route path="/admin" element={<AdminLoginPage />} /> */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/forgot-password" element={<AdminForgotPasswordPage />} />
         <Route path="/admin/reset-password" element={<AdminResetPasswordPage />} />

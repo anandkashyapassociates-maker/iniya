@@ -95,7 +95,7 @@ adminApi.interceptors.response.use(
         !window.location.pathname.startsWith('/admin/forgot-password') &&
         !window.location.pathname.startsWith('/admin/reset-password')
       ) {
-        window.location.href = '/admin';
+        window.location.href = '/';
       }
     }
     return Promise.reject(error);

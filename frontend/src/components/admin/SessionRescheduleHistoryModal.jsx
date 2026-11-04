@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { History, X, Calendar, Clock, User, ArrowRight, Loader2, FileText } from 'lucide-react';
+import { History, X, Calendar, Clock, User, ArrowRight, Loader2, FileText, Package } from 'lucide-react';
 import adminMasterAppointmentService from '../../services/adminMasterAppointmentService';
 
 export default function SessionRescheduleHistoryModal({
@@ -99,43 +99,105 @@ export default function SessionRescheduleHistoryModal({
                     {/* Change comparison */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                       {/* Old Slot */}
-                      <div className="p-2.5 bg-rose-50/60 rounded-lg border border-rose-100 text-rose-900">
-                        <span className="block font-semibold uppercase text-[10px] tracking-wider text-rose-700 mb-1">
+                      <div className="p-3 bg-rose-50/70 rounded-xl border border-rose-200/80 text-rose-950 space-y-2">
+                        <span className="block font-bold uppercase text-[10px] tracking-wider text-rose-700">
                           Previous Schedule
                         </span>
-                        <div className="space-y-1">
-                          <div className="flex items-center space-x-1.5 text-slate-700">
-                            <Calendar className="w-3.5 h-3.5 text-rose-500" />
-                            <span>{h.old_date ? String(h.old_date).slice(0, 10) : ''}</span>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center space-x-1.5 text-slate-800">
+                            <Calendar className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                            <span className="font-medium">{h.old_date ? String(h.old_date).slice(0, 10) : '—'}</span>
                           </div>
-                          <div className="flex items-center space-x-1.5 text-slate-700">
-                            <Clock className="w-3.5 h-3.5 text-rose-500" />
-                            <span>{h.old_time}</span>
+                          <div className="flex items-center space-x-1.5 text-slate-800">
+                            <Clock className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                            <span className="font-medium">{h.old_time || '—'}</span>
                           </div>
-                          <div className="flex items-center space-x-1.5 text-slate-700">
-                            <User className="w-3.5 h-3.5 text-rose-500" />
-                            <span>{h.old_staff?.name || `Staff #${h.old_staff_id}`}</span>
+                          <div className="flex items-center space-x-1.5 text-slate-800">
+                            <User className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                            <span className="font-medium">{h.old_staff?.name || `Staff #${h.old_staff_id}`}</span>
+                          </div>
+                          {h.old_commission !== null && h.old_commission !== undefined && (
+                            <div className="flex items-center space-x-1.5 text-slate-800 text-[11px]">
+                              <span className="font-bold text-rose-500 shrink-0">₹</span>
+                              <span className="font-mono">Commission: ₹{Number(h.old_commission).toFixed(2)}</span>
+                            </div>
+                          )}
+
+                          {/* Old Products / Supplies */}
+                          <div className="pt-2 border-t border-rose-200/60">
+                            <span className="block text-[10px] uppercase font-bold text-rose-700 tracking-wider mb-1 flex items-center gap-1">
+                              <Package className="w-3 h-3 text-rose-500 shrink-0" />
+                              <span>Supplies Used</span>
+                            </span>
+                            {h.old_products && h.old_products.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {h.old_products.map((p) => (
+                                  <span
+                                    key={p.id}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white text-rose-900 border border-rose-200 text-[11px] font-medium shadow-2xs"
+                                  >
+                                    <span>{p.product_name}</span>
+                                    {p.business_unit && (
+                                      <span className="text-[10px] text-rose-500 font-mono">({p.business_unit})</span>
+                                    )}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-slate-400 text-[11px] italic">No supplies allocated</span>
+                            )}
                           </div>
                         </div>
                       </div>
 
                       {/* New Slot */}
-                      <div className="p-2.5 bg-emerald-50/60 rounded-lg border border-emerald-100 text-emerald-900">
-                        <span className="block font-semibold uppercase text-[10px] tracking-wider text-emerald-700 mb-1">
+                      <div className="p-3 bg-emerald-50/70 rounded-xl border border-emerald-200/80 text-emerald-950 space-y-2">
+                        <span className="block font-bold uppercase text-[10px] tracking-wider text-emerald-700">
                           New Rescheduled Slot
                         </span>
-                        <div className="space-y-1">
-                          <div className="flex items-center space-x-1.5 text-slate-700">
-                            <Calendar className="w-3.5 h-3.5 text-emerald-500" />
-                            <span className="font-medium">{h.new_date ? String(h.new_date).slice(0, 10) : ''}</span>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center space-x-1.5 text-slate-800">
+                            <Calendar className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            <span className="font-medium">{h.new_date ? String(h.new_date).slice(0, 10) : '—'}</span>
                           </div>
-                          <div className="flex items-center space-x-1.5 text-slate-700">
-                            <Clock className="w-3.5 h-3.5 text-emerald-500" />
-                            <span className="font-medium">{h.new_time}</span>
+                          <div className="flex items-center space-x-1.5 text-slate-800">
+                            <Clock className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            <span className="font-medium">{h.new_time || '—'}</span>
                           </div>
-                          <div className="flex items-center space-x-1.5 text-slate-700">
-                            <User className="w-3.5 h-3.5 text-emerald-500" />
+                          <div className="flex items-center space-x-1.5 text-slate-800">
+                            <User className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                             <span className="font-medium">{h.new_staff?.name || `Staff #${h.new_staff_id}`}</span>
+                          </div>
+                          {h.new_commission !== null && h.new_commission !== undefined && (
+                            <div className="flex items-center space-x-1.5 text-slate-800 text-[11px]">
+                              <span className="font-bold text-emerald-500 shrink-0">₹</span>
+                              <span className="font-mono font-medium">Commission: ₹{Number(h.new_commission).toFixed(2)}</span>
+                            </div>
+                          )}
+
+                          {/* New Products / Supplies */}
+                          <div className="pt-2 border-t border-emerald-200/60">
+                            <span className="block text-[10px] uppercase font-bold text-emerald-700 tracking-wider mb-1 flex items-center gap-1">
+                              <Package className="w-3 h-3 text-emerald-500 shrink-0" />
+                              <span>Supplies Used</span>
+                            </span>
+                            {h.new_products && h.new_products.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {h.new_products.map((p) => (
+                                  <span
+                                    key={p.id}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white text-emerald-900 border border-emerald-200 text-[11px] font-medium shadow-2xs"
+                                  >
+                                    <span>{p.product_name}</span>
+                                    {p.business_unit && (
+                                      <span className="text-[10px] text-emerald-600 font-mono">({p.business_unit})</span>
+                                    )}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-slate-400 text-[11px] italic">No supplies allocated</span>
+                            )}
                           </div>
                         </div>
                       </div>
