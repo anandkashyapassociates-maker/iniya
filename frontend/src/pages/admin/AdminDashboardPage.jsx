@@ -1223,9 +1223,9 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* ======================================================== */}
-      {/* 6. OPERATIONAL HUB (Staff: 2 Cards | Admin: 3 Cards)    */}
+      {/* 6. OPERATIONAL HUB (Staff: 1 Full Row | Admin: 3 Cards)  */}
       {/* ======================================================== */}
-      <div className={`grid grid-cols-1 ${isStaff ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'} gap-5 sm:gap-6`}>
+      <div className={`grid grid-cols-1 ${isStaff ? '' : 'md:grid-cols-2 lg:grid-cols-3'} gap-5 sm:gap-6`}>
         {/* DOCTORS ON DUTY (Admin only) */}
         {!isStaff && (
           <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs hover:shadow-xl transition-all duration-300 relative overflow-hidden group flex flex-col justify-between">
@@ -1292,144 +1292,176 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* CRITICAL MEDICAL SUPPLIES & CONSUMABLES WATCHLIST */}
-        <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs hover:shadow-xl transition-all duration-300 relative overflow-hidden group flex flex-col justify-between">
-          {/* Ambient Background Glow */}
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl group-hover:bg-amber-500/10 transition-colors pointer-events-none" />
-
-          <div className="relative z-10">
-            {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100 gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-yellow-500 text-white flex items-center justify-center icon-3d shadow-md shadow-amber-500/25 ring-4 ring-amber-500/10 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 shrink-0">
-                  <Package className="w-5 h-5 drop-shadow-sm" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 font-display tracking-tight">
-                    {isStaff ? 'Clinical Supplies & Consumables' : 'Critical Medical Supplies'}
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium mt-0.5">Stock depletion watch list</p>
-                </div>
-              </div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200/80 text-[11px] font-bold font-mono shadow-2xs shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                <span>{low_stock_products.length} Alerts</span>
-              </span>
-            </div>
-
-            {/* Supplies List */}
-            <div className="divide-y divide-slate-100/70 mt-3">
-              {low_stock_products.length === 0 ? (
-                <div className="py-8 text-center text-xs text-emerald-600 font-medium">
-                  <CheckCircle2 className="w-7 h-7 mx-auto text-emerald-500 mb-1.5 drop-shadow-xs" />
-                  All clinical supplies are adequately stocked.
-                </div>
-              ) : (
-                low_stock_products.map((item) => {
-                  const isDepleted = item.quantity <= 0;
-                  return (
-                    <div key={item.id} className="py-2.5 px-2 rounded-xl flex items-center justify-between gap-3 hover:bg-amber-50/40 transition-colors group/item">
-                      <div className="min-w-0">
-                        <span className="font-bold text-xs text-slate-800 group-hover/item:text-amber-700 transition-colors block truncate" title={item.product_name}>
-                          {item.product_name}
-                        </span>
-                        <span className="text-[11px] text-slate-400 block truncate">
-                          Unit: {item.business_unit || 'Item'} • Threshold: {item.low_stock_threshold || 10}
-                        </span>
-                      </div>
-
-                      <span
-                        className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 font-mono shadow-2xs border ${
-                          isDepleted
-                            ? 'bg-rose-50 text-rose-700 border-rose-200'
-                            : 'bg-amber-50 text-amber-800 border-amber-200'
-                        }`}
-                      >
-                        {item.quantity} in stock
-                      </span>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-          <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between relative z-10">
-            <span className="text-xs text-slate-400 font-medium">Total {totalInventory} items</span>
-            {!isStaff ? (
-              <Link to="/admin/inventory/stocks" className="text-xs font-bold text-amber-700 hover:text-amber-800 flex items-center gap-1 font-display group/link">
-                <span>Inventory Reference</span>
-                <ChevronRight className="w-3.5 h-3.5 group-hover/link:translate-x-1 transition-transform" />
-              </Link>
-            ) : (
-              <span className="text-[11px] font-semibold text-slate-400 font-mono">
-                Supplies On Duty
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* STAFF VIEW: TODAY'S SCHEDULE OVERVIEW (Instead of Patient Directory) */}
-        {isStaff ? (
+        {/* CRITICAL MEDICAL SUPPLIES & CONSUMABLES WATCHLIST (Admin only) */}
+        {!isStaff && (
           <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs hover:shadow-xl transition-all duration-300 relative overflow-hidden group flex flex-col justify-between">
             {/* Ambient Background Glow */}
-            <div className="absolute -top-12 -right-12 w-32 h-32 bg-teal-500/5 rounded-full blur-2xl group-hover:bg-teal-500/10 transition-colors pointer-events-none" />
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl group-hover:bg-amber-500/10 transition-colors pointer-events-none" />
 
             <div className="relative z-10">
+              {/* Header */}
               <div className="flex items-center justify-between pb-4 border-b border-slate-100 gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-teal-500 via-emerald-500 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-teal-500/25 ring-4 ring-teal-500/10 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
-                    <Calendar className="w-5 h-5 drop-shadow-sm" />
+                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-yellow-500 text-white flex items-center justify-center icon-3d shadow-md shadow-amber-500/25 ring-4 ring-amber-500/10 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 shrink-0">
+                    <Package className="w-5 h-5 drop-shadow-sm" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900 font-display tracking-tight">My Today&apos;s Schedule</h3>
-                    <p className="text-xs text-slate-500 font-medium mt-0.5">{todaySessionsCount} consultations assigned today</p>
+                    <h3 className="text-sm font-bold text-slate-900 font-display tracking-tight">
+                      Critical Medical Supplies
+                    </h3>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">Stock depletion watch list</p>
                   </div>
                 </div>
-                <Link to="/admin/my-appointments" className="w-8 h-8 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-700 flex items-center justify-center transition-all hover:scale-105 shadow-2xs" title="View Full Queue">
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200/80 text-[11px] font-bold font-mono shadow-2xs shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                  <span>{low_stock_products.length} Alerts</span>
+                </span>
               </div>
 
+              {/* Supplies List */}
               <div className="divide-y divide-slate-100/70 mt-3">
-                {schedule_sessions.length === 0 ? (
-                  <div className="py-8 text-center text-xs text-slate-400">
-                    <Calendar className="w-6 h-6 mx-auto text-slate-300 mb-1.5" />
-                    No active consultations scheduled for today.
+                {low_stock_products.length === 0 ? (
+                  <div className="py-8 text-center text-xs text-emerald-600 font-medium">
+                    <CheckCircle2 className="w-7 h-7 mx-auto text-emerald-500 mb-1.5 drop-shadow-xs" />
+                    All clinical supplies are adequately stocked.
                   </div>
                 ) : (
-                  schedule_sessions.slice(0, 5).map((ses) => (
-                    <div key={ses.id} className="py-2.5 px-2 rounded-xl flex items-center justify-between gap-3 hover:bg-teal-50/40 transition-colors group/sched">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-700 font-mono font-bold flex items-center justify-center text-[10px] shrink-0 border border-indigo-100 shadow-2xs">
-                          {ses.time || '--'}
-                        </div>
+                  low_stock_products.map((item) => {
+                    const isDepleted = item.quantity <= 0;
+                    return (
+                      <div key={item.id} className="py-2.5 px-2 rounded-xl flex items-center justify-between gap-3 hover:bg-amber-50/40 transition-colors group/item">
                         <div className="min-w-0">
-                          <span className="font-bold text-xs text-slate-800 group-hover/sched:text-teal-700 transition-colors block truncate">
-                            {ses.patient_name}
+                          <span className="font-bold text-xs text-slate-800 group-hover/item:text-amber-700 transition-colors block truncate" title={item.product_name}>
+                            {item.product_name}
                           </span>
                           <span className="text-[11px] text-slate-400 block truncate">
-                            {ses.treatment_name || 'Treatment'} • Session #{ses.session_number || 1}
+                            Unit: {item.business_unit || 'Item'} • Threshold: {item.low_stock_threshold || 10}
                           </span>
                         </div>
-                      </div>
 
-                      <Link
-                        to={`/admin/my-appointments/${ses.id}`}
-                        className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white transition-all shadow-2xs shrink-0"
-                      >
-                        Open File
-                      </Link>
-                    </div>
-                  ))
+                        <span
+                          className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 font-mono shadow-2xs border ${
+                            isDepleted
+                              ? 'bg-rose-50 text-rose-700 border-rose-200'
+                              : 'bg-amber-50 text-amber-800 border-amber-200'
+                          }`}
+                        >
+                          {item.quantity} in stock
+                        </span>
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>
 
             <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between relative z-10">
-              <span className="text-xs text-slate-400 font-medium">{stats?.total_sessions || 0} total sessions</span>
-              <Link to="/admin/my-appointments" className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 font-display group/link">
-                <span>Open Appointments</span>
+              <span className="text-xs text-slate-400 font-medium">Total {totalInventory} items</span>
+              <Link to="/admin/inventory/stocks" className="text-xs font-bold text-amber-700 hover:text-amber-800 flex items-center gap-1 font-display group/link">
+                <span>Inventory Reference</span>
+                <ChevronRight className="w-3.5 h-3.5 group-hover/link:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* STAFF VIEW: TODAY'S SCHEDULE OVERVIEW (Full-Row Layout for Staff) */}
+        {isStaff ? (
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs hover:shadow-xl transition-all duration-300 relative overflow-hidden group flex flex-col justify-between w-full">
+            {/* Ambient Background Glow */}
+            <div className="absolute -top-12 -right-12 w-48 h-48 bg-teal-500/5 rounded-full blur-2xl group-hover:bg-teal-500/10 transition-colors pointer-events-none" />
+
+            <div className="relative z-10">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-500 via-emerald-500 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-teal-500/25 ring-4 ring-teal-500/10 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+                    <Calendar className="w-6 h-6 drop-shadow-sm" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900 font-display tracking-tight">My Today&apos;s Schedule</h3>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">{todaySessionsCount} consultations assigned today &bull; Full Clinical Feed</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 self-start sm:self-auto">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200/80 text-xs font-bold font-mono shadow-2xs shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+                    <span>{todaySessionsCount} Assigned Today</span>
+                  </span>
+                  <Link
+                    to="/admin/my-appointments"
+                    className="w-9 h-9 rounded-xl bg-teal-50 hover:bg-teal-600 text-teal-700 hover:text-white flex items-center justify-center transition-all hover:scale-105 shadow-2xs"
+                    title="View Full Queue"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                {schedule_sessions.length === 0 ? (
+                  <div className="py-12 text-center text-xs text-slate-400">
+                    <div className="w-14 h-14 rounded-2xl bg-teal-50 border border-teal-100 text-teal-600 flex items-center justify-center shadow-xs mx-auto mb-3 icon-3d">
+                      <Calendar className="w-7 h-7 drop-shadow-xs" />
+                    </div>
+                    <p className="text-sm font-bold text-slate-800">No active consultations scheduled for today.</p>
+                    <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">All consultations for today are cleared or awaiting appointment bookings.</p>
+                    <Link
+                      to="/admin/my-appointments"
+                      className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-xs font-bold shadow-md shadow-teal-500/20 hover:shadow-lg hover:shadow-teal-500/30 hover:-translate-y-0.5 transition-all duration-300"
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>View My Full Appointments Queue</span>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                    {schedule_sessions.map((ses) => (
+                      <div
+                        key={ses.id}
+                        className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-teal-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between group/sched relative overflow-hidden"
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-2.5">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-500 to-emerald-600 text-white font-bold flex items-center justify-center text-xs shrink-0 font-display icon-3d shadow-xs group-hover/sched:scale-105 transition-transform">
+                              {ses.patient_name ? ses.patient_name.substring(0, 2).toUpperCase() : 'PT'}
+                            </div>
+                            <div className="min-w-0">
+                              <span className="font-bold text-xs text-slate-800 group-hover/sched:text-teal-700 transition-colors block truncate" title={ses.patient_name}>
+                                {ses.patient_name}
+                              </span>
+                              <span className="text-[11px] text-slate-400 block truncate">
+                                Session #{ses.session_number || 1} &bull; {ses.appointment_number || '--'}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 font-mono font-bold text-[11px] border border-indigo-100 shadow-2xs shrink-0">
+                            {ses.time || '--'}
+                          </span>
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                          <span className="text-[11px] text-slate-500 font-medium truncate max-w-[170px]" title={ses.treatment_name}>
+                            {ses.treatment_name || 'Clinical Session'}
+                          </span>
+                          <Link
+                            to={`/admin/my-appointments/${ses.id}`}
+                            className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white transition-all shadow-2xs shrink-0 inline-flex items-center gap-1"
+                          >
+                            <span>Open File</span>
+                            <ArrowUpRight className="w-3 h-3" />
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between relative z-10 text-xs">
+              <span className="text-slate-400 font-medium">{stats?.total_sessions || 0} total sessions assigned</span>
+              <Link to="/admin/my-appointments" className="font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1 font-display group/link">
+                <span>Open All Appointments Queue</span>
                 <ChevronRight className="w-3.5 h-3.5 group-hover/link:translate-x-1 transition-transform" />
               </Link>
             </div>
