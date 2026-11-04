@@ -208,13 +208,19 @@ export default function AdminDashboardPage() {
         <div className="relative z-10 w-full flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="max-w-xl">
             {/* Top Operational Status Pill */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50/90 border border-blue-200/90 text-blue-800 text-xs font-bold mb-3 shadow-2xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>
-                {isStaff
-                  ? "PRACTITIONER CLINICAL DESK • TODAY'S OPD CONSULTATIONS"
-                  : 'OPD CLINICAL DESK ONLINE • ALL SYSTEMS OPERATIONAL'}
-              </span>
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50/90 border border-blue-200/90 text-blue-800 text-xs font-bold shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>
+                  {isStaff
+                    ? "PRACTITIONER CLINICAL DESK • TODAY'S OPD CONSULTATIONS"
+                    : 'OPD CLINICAL DESK ONLINE • ALL SYSTEMS OPERATIONAL'}
+                </span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/90 text-emerald-800 text-xs font-bold shadow-2xs font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span>100% Real Database Metrics</span>
+              </div>
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 font-display flex items-center gap-2">
@@ -332,7 +338,7 @@ export default function AdminDashboardPage() {
       )}
 
       {/* ======================================================== */}
-      {/* 3. EXECUTIVE FINANCIAL & CLINICAL KPI MATRIX (Role-Tailored) */}
+      {/* 3. EXECUTIVE FINANCIAL & CLINICAL KPI MATRIX (100% Real DB) */}
       {/* ======================================================== */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {isStaff ? (
@@ -345,8 +351,9 @@ export default function AdminDashboardPage() {
                 subtitle={`${todaySessionsCount} scheduled for today`}
                 icon={Calendar}
                 colorScheme="blue"
-                trend="My Queue"
-                sparklineData={[4, 8, 12, 10, 14, 18, (stats?.total_sessions || 0) > 0 ? 24 : 6]}
+                trend={stats?.total_sessions > 0 ? `${stats.total_sessions} Assigned` : '0 Assigned'}
+                trendColor={stats?.total_sessions > 0 ? 'blue' : 'slate'}
+                actionText="My Queue ↗"
               />
             </Link>
 
@@ -358,8 +365,9 @@ export default function AdminDashboardPage() {
                 subtitle={`${inProgressCount} active • ${pendingCount} pending`}
                 icon={Clock}
                 colorScheme="emerald"
-                trend="Live"
-                sparklineData={[2, 6, 8, 12, 10, 14, todaySessionsCount > 0 ? 18 : 4]}
+                trend={todaySessionsCount > 0 ? `${todaySessionsCount} Today` : '0 Active Queue'}
+                trendColor={todaySessionsCount > 0 ? 'emerald' : 'slate'}
+                actionText="Live Sessions ↗"
               />
             </Link>
 
@@ -371,8 +379,9 @@ export default function AdminDashboardPage() {
                 subtitle="Currently undergoing therapy"
                 icon={Activity}
                 colorScheme="indigo"
-                trend="Active"
-                sparklineData={[1, 3, 2, 5, 4, 6, inProgressCount > 0 ? 8 : 2]}
+                trend={inProgressCount > 0 ? `${inProgressCount} In Therapy` : '0 In Progress'}
+                trendColor={inProgressCount > 0 ? 'blue' : 'slate'}
+                actionText="Active Cases ↗"
               />
             </Link>
 
@@ -384,8 +393,9 @@ export default function AdminDashboardPage() {
                 subtitle={`${sessionCompletionRate}% personal completion rate`}
                 icon={CheckCircle2}
                 colorScheme="emerald"
-                trend="Closed"
-                sparklineData={[3, 6, 8, 12, 10, 16, completedCount > 0 ? 20 : 5]}
+                trend={completedCount > 0 ? `${completedCount} Closed` : '0 Closed'}
+                trendColor={completedCount > 0 ? 'emerald' : 'slate'}
+                actionText="Completed ↗"
               />
             </Link>
 
@@ -398,8 +408,9 @@ export default function AdminDashboardPage() {
                 icon={Award}
                 colorScheme="purple"
                 animateCount={false}
-                trend="Payout"
-                sparklineData={[5, 10, 8, 15, 12, 18, totalStaffCommission > 0 ? 22 : 5]}
+                trend={totalStaffCommission > 0 ? `₹${totalStaffCommission.toLocaleString('en-IN')} Earned` : '₹0 Earned'}
+                trendColor={totalStaffCommission > 0 ? 'purple' : 'slate'}
+                actionText="Earnings ↗"
               />
             </div>
 
@@ -412,8 +423,9 @@ export default function AdminDashboardPage() {
                 icon={DollarSign}
                 colorScheme="teal"
                 animateCount={false}
-                trend="Cleared"
-                sparklineData={[2, 4, 6, 8, 10, 12, todayStaffCommission > 0 ? 16 : 4]}
+                trend={todayStaffCommission > 0 ? `₹${todayStaffCommission.toLocaleString('en-IN')} Cleared` : '₹0 Today'}
+                trendColor={todayStaffCommission > 0 ? 'emerald' : 'slate'}
+                actionText="Daily Payout ↗"
               />
             </div>
 
@@ -425,8 +437,9 @@ export default function AdminDashboardPage() {
                 subtitle="Upcoming patient appointments"
                 icon={Clock}
                 colorScheme="amber"
-                trend="Awaiting"
-                sparklineData={[4, 3, 5, 4, 6, 5, pendingCount > 0 ? 8 : 2]}
+                trend={pendingCount > 0 ? `${pendingCount} Awaiting` : '0 Pending'}
+                trendColor={pendingCount > 0 ? 'amber' : 'slate'}
+                actionText="Patient Queue ↗"
               />
             </Link>
 
@@ -438,8 +451,9 @@ export default function AdminDashboardPage() {
                 subtitle={lowStockCount > 0 ? `${lowStockCount} items depleted` : 'Adequate supply'}
                 icon={Boxes}
                 colorScheme={lowStockCount > 0 ? 'amber' : 'emerald'}
-                trend={lowStockCount > 0 ? 'Low Stock' : 'Stocked'}
-                sparklineData={[6, 5, 4, 3, 4, 3, totalInventory > 0 ? 12 : 2]}
+                trend={lowStockCount > 0 ? `${lowStockCount} Alerts Depleted` : 'Stock Healthy'}
+                trendColor={lowStockCount > 0 ? 'amber' : 'emerald'}
+                actionText="Supplies ↗"
               />
             </div>
           </>
@@ -453,8 +467,9 @@ export default function AdminDashboardPage() {
                 subtitle={`${newPatientsThisMonth} registered this month`}
                 icon={Users}
                 colorScheme="blue"
-                trend="Directory"
-                sparklineData={[10, 16, 14, 22, 20, 26, totalPatients > 0 ? 30 : 5]}
+                trend={totalPatients > 0 ? `${totalPatients} Verified Profiles` : '0 Registered'}
+                trendColor={totalPatients > 0 ? 'blue' : 'slate'}
+                actionText="Patient Directory ↗"
               />
             </Link>
 
@@ -466,8 +481,9 @@ export default function AdminDashboardPage() {
                 subtitle={`${upcomingQueueCount} in active queue today`}
                 icon={Calendar}
                 colorScheme="emerald"
-                trend="Live Queue"
-                sparklineData={[4, 8, 12, 10, 14, 18, todaySessionsCount > 0 ? 24 : 6]}
+                trend={todaySessionsCount > 0 ? `${todaySessionsCount} In Queue Today` : '0 In Active Queue'}
+                trendColor={todaySessionsCount > 0 ? 'emerald' : 'slate'}
+                actionText="Live Queue ↗"
               />
             </Link>
 
@@ -480,8 +496,9 @@ export default function AdminDashboardPage() {
                 icon={TrendingUp}
                 colorScheme="violet"
                 animateCount={false}
-                trend="Bookings"
-                sparklineData={[12, 18, 15, 24, 22, 30, totalRevenue > 0 ? 38 : 10]}
+                trend={totalRevenue > 0 ? `₹${totalRevenue.toLocaleString('en-IN')} Booked` : '₹0 Booked'}
+                trendColor={totalRevenue > 0 ? 'purple' : 'slate'}
+                actionText="OPD Ledger ↗"
               />
             </div>
 
@@ -494,8 +511,9 @@ export default function AdminDashboardPage() {
                 icon={DollarSign}
                 colorScheme="emerald"
                 animateCount={false}
-                trend="Paid"
-                sparklineData={[8, 14, 12, 20, 18, 25, totalPatientPaid > 0 ? 32 : 8]}
+                trend={totalPatientPaid > 0 ? `₹${totalPatientPaid.toLocaleString('en-IN')} Received` : '₹0 Received'}
+                trendColor={totalPatientPaid > 0 ? 'emerald' : 'slate'}
+                actionText="Collections ↗"
               />
             </div>
 
@@ -508,8 +526,9 @@ export default function AdminDashboardPage() {
                 icon={Award}
                 colorScheme="purple"
                 animateCount={false}
-                trend="Payouts"
-                sparklineData={[5, 10, 8, 15, 12, 18, totalStaffCommission > 0 ? 22 : 5]}
+                trend={totalStaffCommission > 0 ? `₹${totalStaffCommission.toLocaleString('en-IN')} Cleared` : '₹0 Cleared'}
+                trendColor={totalStaffCommission > 0 ? 'purple' : 'slate'}
+                actionText="Staff Payouts ↗"
               />
             </div>
 
@@ -522,8 +541,9 @@ export default function AdminDashboardPage() {
                 icon={CheckCircle2}
                 colorScheme="amber"
                 animateCount={false}
-                trend="Closed"
-                sparklineData={[10, 15, 14, 22, 20, 26, sessionCompletionRate > 0 ? 30 : 5]}
+                trend={completedCount > 0 ? `${completedCount} Closed` : '0 Sessions Closed'}
+                trendColor={completedCount > 0 ? 'emerald' : 'slate'}
+                actionText="Reports ↗"
               />
             </Link>
 
@@ -535,8 +555,9 @@ export default function AdminDashboardPage() {
                 subtitle="Treatments & Procedures Active"
                 icon={FolderTree}
                 colorScheme="cyan"
-                trend="Catalog"
-                sparklineData={[4, 8, 6, 12, 10, 14, activePackages > 0 ? 16 : 4]}
+                trend={`${activePackages} Active Treatments`}
+                trendColor="cyan"
+                actionText="Catalog ↗"
               />
             </Link>
 
@@ -548,8 +569,9 @@ export default function AdminDashboardPage() {
                 subtitle={lowStockCount > 0 ? `${lowStockCount} items depleted` : 'Adequate supply'}
                 icon={Boxes}
                 colorScheme={lowStockCount > 0 ? 'amber' : 'emerald'}
-                trend={lowStockCount > 0 ? 'Low Stock' : 'Normal'}
-                sparklineData={[6, 5, 4, 3, 4, 3, totalInventory > 0 ? 12 : 2]}
+                trend={lowStockCount > 0 ? `${lowStockCount} Alerts Depleted` : 'Stock Healthy'}
+                trendColor={lowStockCount > 0 ? 'amber' : 'emerald'}
+                actionText="Supplies Radar ↗"
               />
             </Link>
           </>
@@ -787,8 +809,8 @@ export default function AdminDashboardPage() {
                       return (
                         <tr key={ses.id} className="hover:bg-slate-50/70 transition-colors">
                           <td className="py-3 px-3 font-mono font-medium text-slate-600 whitespace-nowrap">
-                            <div className="font-bold text-slate-800">{ses.time || '10:00 AM'}</div>
-                            <div className="text-[10px] text-slate-400 font-sans">{ses.date || 'Today'}</div>
+                            <div className="font-bold text-slate-800">{ses.time || '--'}</div>
+                            <div className="text-[10px] text-slate-400 font-sans">{ses.date || '--'}</div>
                           </td>
                           <td className="py-3 px-3">
                             <div className="flex items-center gap-2.5">
@@ -1230,7 +1252,7 @@ export default function AdminDashboardPage() {
                     <div key={ses.id} className="py-2.5 flex items-center justify-between gap-3 hover:bg-slate-50/60 px-1 rounded-xl transition-colors">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 font-mono font-bold flex items-center justify-center text-[10px] shrink-0">
-                          {ses.time || 'OPD'}
+                          {ses.time || '--'}
                         </div>
                         <div className="min-w-0">
                           <span className="font-bold text-xs text-slate-800 block truncate">
