@@ -4,42 +4,34 @@ import {
   Shield,
   Users,
   Truck,
-  TrendingUp,
-  UserCheck,
   Briefcase,
-  Clock,
-  FolderTree,
-  DollarSign,
-  AlertCircle,
-  PlusCircle,
+  Boxes,
+  AlertTriangle,
+  CheckCircle2,
   RefreshCw,
   Eye,
-  ChevronRight,
-  ShieldAlert,
-  ShieldCheck,
-  Zap,
+  PlusCircle,
+  Calendar,
+  Stethoscope,
+  IndianRupee,
+  Receipt,
   Activity,
-  UserPlus,
-  AlertTriangle,
-  Boxes,
+  ArrowUpRight,
+  UserCheck,
+  FolderTree,
+  Building2,
+  Clock,
+  Layers,
+  FileText,
+  UserX,
+  ExternalLink,
 } from 'lucide-react';
 import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import superAdminDashboardService from '../services/superAdminDashboardService';
-import superAdminCategoryService from '../services/superAdminCategoryService';
 import { useToast } from '../../context/ToastContext';
-import StatCard from '../../components/StatCard';
 import DashboardSkeleton from '../../components/DashboardSkeleton';
-import {
-  ClinicBannerBackground,
-  ClinicDashboardBannerIllustration,
-  ClinicHeartbeatLine,
-  ClinicStethoscopeCardIllustration,
-} from '../../components/ClinicArtwork';
+import { ClinicBannerBackground } from '../../components/ClinicArtwork';
 import { getIndianGreeting } from '../../utils/timeGreeting';
-import {
-  SplineAreaChart,
-  MultiSegmentDonut,
-} from '../../components/MiniCharts';
 
 export default function SuperAdminDashboardPage() {
   const { user } = useSuperAdminAuth();
@@ -48,7 +40,6 @@ export default function SuperAdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
-  const [categoryStats, setCategoryStats] = useState(null);
   const [error, setError] = useState(null);
 
   const fetchDashboard = useCallback(
@@ -61,36 +52,23 @@ export default function SuperAdminDashboardPage() {
       setError(null);
 
       try {
-        const [dashRes, catRes] = await Promise.allSettled([
-          superAdminDashboardService.getDashboard(),
-          superAdminCategoryService.getCategoryStats(),
-        ]);
-
-        if (dashRes.status === 'fulfilled') {
-          setDashboardData(dashRes.value);
-        } else {
-          throw dashRes.reason;
-        }
-
-        if (catRes.status === 'fulfilled') {
-          setCategoryStats(catRes.value);
-        }
-
+        const data = await superAdminDashboardService.getDashboard();
+        setDashboardData(data);
         if (isRefresh) {
-          toast.success('Executive dashboard metrics updated.');
+          toast.success('Live dashboard metrics refreshed from database.');
         }
       } catch (err) {
-        console.error('Failed to load dashboard metrics:', err);
-        setError('Failed to fetch dashboard data. Please try again.');
+        console.error('Failed to load superadmin dashboard metrics:', err);
+        setError('Failed to fetch dashboard data. Please check your network and try again.');
         if (isRefresh) {
-          toast.error('Could not refresh dashboard data.');
+          toast.error('Could not refresh dashboard metrics.');
         }
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    []
+    [toast]
   );
 
   useEffect(() => {
@@ -98,612 +76,1069 @@ export default function SuperAdminDashboardPage() {
   }, [fetchDashboard]);
 
   if (loading) {
-    return <DashboardSkeleton title="Loading Executive Command Center..." />;
+    return <DashboardSkeleton title="Loading Executive Hospital Command Center..." />;
   }
 
   const summary = dashboardData?.summary || {
-    total_personnel: 7,
-    total_active: 7,
+    total_personnel: 0,
+    total_active: 0,
     total_inactive: 0,
     total_blocked: 0,
     active_rate: 100,
+    total_inventory_products: 0,
+    total_inventory_units: 0,
+    total_inventory_valuation: 0,
+    low_stock_products_count: 0,
+    total_customers: 0,
+    total_master_appointments: 0,
+    total_appointment_sessions: 0,
+    total_services: 0,
+    total_payouts: 0,
+    total_disbursed: 0,
+    pending_payout_liabilities: 0,
   };
 
   const modules = dashboardData?.modules || {
-    admins: { total: 4, active: 4, inactive: 0, blocked: 0, active_rate: 100, recent: [] },
-    staff: { total: 3, active: 3, inactive: 0, blocked: 0, departments_count: 3, active_rate: 100, recent: [] },
+    admins: { total: 0, active: 0, inactive: 0, blocked: 0, active_rate: 100, recent: [] },
+    staff: { total: 0, active: 0, inactive: 0, blocked: 0, departments_count: 0, active_rate: 100, recent: [] },
     vendors: { total: 0, active: 0, inactive: 0, blocked: 0, types_count: 0, active_rate: 100, recent: [] },
     sales_team: { total: 0, active: 0, inactive: 0, blocked: 0, territories_count: 0, active_rate: 100, recent: [] },
+    inventory: { total_products: 0, total_units: 0, total_valuation: 0, low_stock_count: 0, categories_count: 0, brands_count: 0, stock_logs_count: 0, low_stock_items: [] },
+    clinical: { total_customers: 0, total_master_appointments: 0, total_sessions: 0, total_services: 0, sessions_pending: 0, sessions_in_progress: 0, sessions_completed: 0, sessions_cancelled: 0, recent_appointments: [] },
+    payouts: { total_payouts: 0, staff_disbursed: 0, staff_count: 0, vendor_disbursed: 0, vendor_count: 0, total_disbursed: 0, pending_liabilities: 0, recent_payouts: [] },
   };
 
   const recentActivity = dashboardData?.recent_activity || [];
-  const totalCategories = categoryStats?.total ?? 15;
+  const greeting = getIndianGreeting();
+  const superAdminDisplayName = user?.name || 'Super Admin';
 
-  // Real, mathematically accurate status calculations
-  const totalActive = summary.total_active ?? (modules.admins.active + modules.staff.active + modules.vendors.active + modules.sales_team.active);
-  const totalInactive = summary.total_inactive ?? (modules.admins.inactive + modules.staff.inactive + modules.vendors.inactive + modules.sales_team.inactive);
-  const totalBlocked = summary.total_blocked ?? (modules.admins.blocked + modules.staff.blocked + modules.vendors.blocked + modules.sales_team.blocked);
-  const totalPersonnel = summary.total_personnel ?? (totalActive + totalInactive + totalBlocked);
-  const activeRate = summary.active_rate ?? (totalPersonnel > 0 ? Math.round((totalActive / totalPersonnel) * 100) : 100);
-  const lowStockCount = summary.low_stock_products_count ?? 0;
-  const totalInventory = summary.total_inventory_products ?? 0;
-
-  // Dynamic growth datasets for SplineAreaChart linked to real backend records
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const now = new Date();
-  const trailing6Months = Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
-    return monthNames[d.getMonth()];
-  });
-
-  const growthDataByPeriod = {
-    'Last 6 Months': [
-      { label: trailing6Months[0], value: 0, display: '0 Accounts' },
-      { label: trailing6Months[1], value: 0, display: '0 Accounts' },
-      { label: trailing6Months[2], value: 1, display: '1 Account' },
-      { label: trailing6Months[3], value: 2, display: '2 Accounts' },
-      { label: trailing6Months[4], value: 4, display: '4 Accounts' },
-      { label: trailing6Months[5], value: totalPersonnel, display: `${totalPersonnel} Accounts` },
-    ],
-    'By Department': [
-      { label: 'Admins', value: modules.admins.total, display: `${modules.admins.total} Admins` },
-      { label: 'Staff', value: modules.staff.total, display: `${modules.staff.total} Staff` },
-      { label: 'Vendors', value: modules.vendors.total, display: `${modules.vendors.total} Vendors` },
-      { label: 'Sales', value: modules.sales_team.total, display: `${modules.sales_team.total} Reps` },
-      { label: 'Services', value: totalCategories, display: `${totalCategories} Categories` },
-    ],
-    'This Month': [
-      { label: 'Week 1', value: 1, display: '1 Account' },
-      { label: 'Week 2', value: 2, display: '2 Accounts' },
-      { label: 'Week 3', value: 4, display: '4 Accounts' },
-      { label: 'Week 4', value: totalPersonnel, display: `${totalPersonnel} Accounts` },
-    ],
+  const formatCurrency = (val) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 2,
+    }).format(val || 0);
   };
 
-  // Recent administrators list for table
-  const adminRows = modules.admins.recent && modules.admins.recent.length > 0
-    ? modules.admins.recent.map((adm, i) => ({
-        id: adm.id || i,
-        name: adm.name || 'Admin',
-        email: adm.email || 'admin@clinic.com',
-        role: adm.role || 'Administrator',
-        status: adm.status || 'active',
-        initial: adm.name ? adm.name.charAt(0).toUpperCase() : 'A',
-      }))
-    : [
-        {
-          id: 1,
-          name: 'Auditor Admin',
-          email: 'test_audit@example.com',
-          role: 'System Auditor',
-          status: 'active',
-          initial: 'A',
-        },
-        {
-          id: 2,
-          name: 'General Admin',
-          email: 'admin@example.com',
-          role: 'Operations Lead',
-          status: 'active',
-          initial: 'G',
-        },
-        {
-          id: 3,
-          name: 'Finance Officer',
-          email: 'finance@example.com',
-          role: 'Accounts Admin',
-          status: 'active',
-          initial: 'F',
-        },
-        {
-          id: 4,
-          name: 'Admin User',
-          email: 'admin@gmail.com',
-          role: 'Hospital Admin',
-          status: 'active',
-          initial: 'A',
-        },
-      ];
-
-  // Formatted audit items
-  const auditItems = recentActivity.length > 0
-    ? recentActivity.slice(0, 4).map((act, idx) => ({
-        id: act.id || idx,
-        title: act.action ? act.action.replace('_', ' ').toUpperCase() : 'SYSTEM AUDIT',
-        desc: act.details || `Admin performed ${act.action || 'system update'}`,
-        time: act.created_at ? new Date(act.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : `${idx * 4 + 2} min ago`,
-        ip: act.ip_address || '127.0.0.1',
-      }))
-    : [
-        {
-          id: 1,
-          title: 'CUSTOMER UPDATED',
-          desc: "Admin 'Admin User' updated customer 'Lifeleads India' (ID: 2)",
-          time: '03:31 PM',
-          ip: '127.0.0.1',
-        },
-        {
-          id: 2,
-          title: 'CUSTOMER CREATED',
-          desc: "Admin 'Admin User' created customer 'Lifeleads India' (ID: 2)",
-          time: '03:19 PM',
-          ip: '127.0.0.1',
-        },
-        {
-          id: 3,
-          title: 'CUSTOMER DELETED',
-          desc: "Admin 'Admin User' deleted customer 'Lifeleads India' (ID: 1)",
-          time: '03:00 PM',
-          ip: '127.0.0.1',
-        },
-        {
-          id: 4,
-          title: 'CUSTOMER UPDATED',
-          desc: "Admin 'Admin User' updated customer 'Lifeleads India' (ID: 1)",
-          time: '02:59 PM',
-          ip: '127.0.0.1',
-        },
-      ];
-
-  const superAdminDisplayName = user?.name || 'Super Administrator';
-  const greeting = getIndianGreeting();
-
   return (
-    <div className="space-y-6 pb-12 animate-fade-in font-sans">
+    <div className="space-y-7 pb-16 animate-fade-in font-sans text-slate-800">
       {/* ======================================================== */}
-      {/* 1. Executive Greeting Banner with Animated Clinic Room   */}
+      {/* 1. Executive Greeting Banner                            */}
       {/* ======================================================== */}
-      <div className="border border-blue-200/80 rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-xs min-h-[165px] flex items-center">
-        {/* Animated Clinic Room Panoramic Background with protective readability scrim */}
+      <div className="border border-blue-200/80 rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-xs min-h-[160px] flex items-center bg-gradient-to-r from-blue-900/10 via-white to-indigo-900/10">
         <ClinicBannerBackground isSuperAdmin={true} />
 
-
-
-        <div className="relative z-10 w-full flex flex-col md:flex-row md:items-center justify-between gap-5">
-          <div className="max-w-xl">
-            <h1 className="text-xl sm:text-2xl lg:text-[26px] font-bold tracking-tight text-slate-900 font-display flex items-center gap-2">
-              <span>{greeting}, {superAdminDisplayName}!</span>
-              <span className="text-xl sm:text-2xl animate-bounce">🛡️</span>
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-600 font-normal mt-1 leading-relaxed max-w-md">
-              Here&apos;s what&apos;s happening across the enterprise hospital network today.
-            </p>
-
-            {/* Quick sync action button */}
-            <div className="flex items-center gap-2 mt-4">
-              <button
-                type="button"
-                onClick={() => fetchDashboard(true)}
-                disabled={refreshing}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/95 hover:bg-white text-slate-700 hover:text-blue-700 text-xs font-semibold border border-blue-200/80 shadow-2xs hover:shadow-xs transition-all cursor-pointer backdrop-blur-xs"
-                title="Refresh live metrics"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 text-blue-600 ${refreshing ? 'animate-spin' : ''}`} />
-                <span>{refreshing ? 'Syncing...' : 'Sync System Metrics'}</span>
-              </button>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between w-full gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-700 text-xs font-bold tracking-wide uppercase mb-2">
+              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+              <span>Superadmin Executive Command</span>
             </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              {greeting}, {superAdminDisplayName}!
+            </h1>
+            <p className="text-sm text-slate-600 mt-1 max-w-2xl">
+              Real-time administrative governance, clinical reports, inventory supplies, and payout settlements across the enterprise network.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              onClick={() => fetchDashboard(true)}
+              disabled={refreshing}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold text-xs shadow-xs hover:shadow transition-all cursor-pointer disabled:opacity-50"
+              title="Refresh live metrics from database"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-blue-600 ${refreshing ? 'animate-spin' : ''}`} />
+              <span>{refreshing ? 'Synchronizing...' : 'Sync System Metrics'}</span>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Error alert if any */}
-      {error && (
-        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between gap-3 shadow-xs">
-          <div className="flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
-            <span className="font-medium">{error}</span>
-          </div>
-          <button
-            onClick={() => fetchDashboard(true)}
-            className="px-3 py-1 bg-rose-600 text-white font-bold rounded-lg hover:bg-rose-500 transition-colors text-xs cursor-pointer"
-          >
-            Retry Connection
-          </button>
+      {/* ======================================================== */}
+      {/* 2. Executive Quick Action Strip (Sidebar Shortcuts)       */}
+      {/* ======================================================== */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3 px-1">
+          Sidebar Quick Actions
         </div>
-      )}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Link
+            to="/superadmin/admin-management/create"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition-colors"
+          >
+            <PlusCircle className="w-3.5 h-3.5 text-blue-600" />
+            <span>Add Admin</span>
+          </Link>
 
-      {/* Low Inventory Alert Banner (if any products depleted / low) */}
-      {lowStockCount > 0 && (
-        <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-amber-500/10 border border-amber-300 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm">
-              <AlertTriangle className="w-5 h-5 animate-pulse" />
+          <Link
+            to="/superadmin/staff-management/create"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold transition-colors"
+          >
+            <PlusCircle className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Add Staff</span>
+          </Link>
+
+          <Link
+            to="/superadmin/vendors/create"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-semibold transition-colors"
+          >
+            <PlusCircle className="w-3.5 h-3.5 text-amber-600" />
+            <span>Add Vendor</span>
+          </Link>
+
+          <Link
+            to="/superadmin/sales-members/create"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-semibold transition-colors"
+          >
+            <PlusCircle className="w-3.5 h-3.5 text-purple-600" />
+            <span>Add Sales Member</span>
+          </Link>
+
+          <Link
+            to="/superadmin/inventory/stocks"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors"
+          >
+            <Boxes className="w-3.5 h-3.5 text-slate-600" />
+            <span>Stock Inventory</span>
+          </Link>
+
+          <Link
+            to="/superadmin/reports/appointments"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors"
+          >
+            <Calendar className="w-3.5 h-3.5 text-slate-600" />
+            <span>Appointment Reports</span>
+          </Link>
+
+          <Link
+            to="/superadmin/payouts/ledger"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors"
+          >
+            <Receipt className="w-3.5 h-3.5 text-slate-600" />
+            <span>Financial Ledger</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* ======================================================== */}
+      {/* 3. Low Stock Alert Oversight Banner                       */}
+      {/* ======================================================== */}
+      {summary.low_stock_products_count > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <AlertTriangle className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <span>Low Inventory Alert Oversight</span>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700">
-                  {lowStockCount} item{lowStockCount > 1 ? 's' : ''} depleted
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-amber-900">
+                  Low Inventory Alert Oversight
+                </h3>
+                <span className="px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 text-xs font-extrabold">
+                  {summary.low_stock_products_count} items depleted
                 </span>
-              </h4>
-              <p className="text-xs text-slate-600 mt-0.5">
+              </div>
+              <p className="text-xs text-amber-700 mt-1">
                 Hospital supplies require replenishment. Notify branch administrators to restock depleting medical items.
               </p>
             </div>
           </div>
           <Link
             to="/superadmin/inventory/stocks?status=low_stock"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-xs transition-colors shrink-0"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-xs transition-colors shrink-0"
           >
             <span>Review Low Stock List</span>
-            <ChevronRight className="w-4 h-4" />
+            <ArrowUpRight className="w-4 h-4" />
           </Link>
         </div>
       )}
 
       {/* ======================================================== */}
-      {/* 2. Primary KPI Stat Cards (4 by 2 Grid)                   */}
+      {/* 4. Core Enterprise KPI Pillars (Mirroring Sidebar Groups) */}
       {/* ======================================================== */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        {/* ROW 1 - CARD 1: Total Administrators */}
-        <Link to="/superadmin/admins" className="block group">
-          <StatCard
-            title="Total Administrators"
-            value={modules.admins.total || 4}
-            subtitle="Branch & Portal Admins"
-            icon={Shield}
-            colorScheme="blue"
-            trend="100% Active"
-            sparklineData={[2, 3, 3, 4, 4, 4, 5]}
-          />
-        </Link>
-
-        {/* ROW 1 - CARD 2: Total Staff Workforce */}
-        <Link to="/superadmin/staff-management/details" className="block group">
-          <StatCard
-            title="Medical Staff Workforce"
-            value={modules.staff.total || 24}
-            subtitle={`${modules.staff.departments_count || 5} Active Departments`}
-            icon={UserCheck}
-            colorScheme="emerald"
-            trend="8% MoM"
-            sparklineData={[8, 12, 14, 18, 16, 22, 24]}
-          />
-        </Link>
-
-        {/* ROW 1 - CARD 3: Vendors & Suppliers */}
-        <Link to="/superadmin/vendor-management/details" className="block group">
-          <StatCard
-            title="Vendors & Suppliers"
-            value={modules.vendors.total || 12}
-            subtitle="Verified Hospital Supply"
-            icon={Truck}
-            colorScheme="amber"
-            trend="6% MoM"
-            sparklineData={[4, 6, 8, 7, 9, 11, 12]}
-          />
-        </Link>
-
-        {/* ROW 1 - CARD 4: Sales Representatives */}
-        <Link to="/superadmin/sales-management/details" className="block group">
-          <StatCard
-            title="Sales Representatives"
-            value={modules.sales_team.total || 18}
-            subtitle={`${modules.sales_team.territories_count || 6} Coverage Zones`}
-            icon={Briefcase}
-            colorScheme="purple"
-            trend="5% Growth"
-            sparklineData={[6, 8, 10, 12, 14, 16, 18]}
-          />
-        </Link>
-
-        {/* ROW 2 - CARD 5: Active Service Categories */}
-        <Link to="/superadmin/inventory/categories" className="block group">
-          <StatCard
-            title="Active Service Categories"
-            value={totalCategories || 15}
-            subtitle="Clinical Treatments Catalog"
-            icon={FolderTree}
-            colorScheme="cyan"
-            trend="12% MoM"
-            sparklineData={[5, 7, 8, 11, 12, 14, 15]}
-          />
-        </Link>
-
-        {/* ROW 2 - CARD 6: System & Security Health */}
-        <div className="block">
-          <StatCard
-            title="System & Security Health"
-            value="99.9%"
-            subtitle="Zero-Trust Architecture"
-            icon={ShieldCheck}
-            colorScheme="rose"
-            animateCount={false}
-            trend="Normal"
-            sparklineData={[98, 99, 99, 99, 100, 99, 100]}
-          />
+      <div>
+        <div className="flex items-center justify-between mb-3 px-1">
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            Hospital Operations Overview
+          </h2>
+          <span className="text-xs text-slate-500">100% Real Database Metrics</span>
         </div>
 
-        {/* ROW 2 - CARD 7: Total Inventory Products */}
-        <Link to="/superadmin/inventory/stocks" className="block group">
-          <StatCard
-            title="Total Inventory Products"
-            value={totalInventory}
-            subtitle="Catalog Medical Supplies"
-            icon={Boxes}
-            colorScheme="blue"
-            trend="Catalog"
-            sparklineData={[4, 8, 12, 10, 14, 16, 18]}
-          />
-        </Link>
-
-        {/* ROW 2 - CARD 8: Low Stock Alerts */}
-        <Link to="/superadmin/inventory/stocks?status=low_stock" className="block group">
-          <StatCard
-            title="Low Inventory Alerts"
-            value={lowStockCount}
-            subtitle={lowStockCount > 0 ? 'Depleted Hospital Supplies' : 'Adequate Supply'}
-            icon={AlertTriangle}
-            colorScheme={lowStockCount > 0 ? 'amber' : 'emerald'}
-            trend={lowStockCount > 0 ? 'Depleted' : 'Normal'}
-            sparklineData={[5, 4, 3, 2, 4, 3, lowStockCount]}
-          />
-        </Link>
-      </div>
-
-      {/* ======================================================== */}
-      {/* 3. Section 1: Growth Chart + Spacious Donut (7 : 5 Grid) */}
-      {/* ======================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
-        {/* Left (Col 1-7): System Activity & Growth Spline Chart */}
-        <div className="lg:col-span-7 xl:col-span-7 flex flex-col">
-          <SplineAreaChart
-            title="System Activity & Account Growth"
-            icon={TrendingUp}
-            headline={`${totalPersonnel} Active Profiles`}
-            trendBadge={`↑ ${activeRate}% Active Rate`}
-            periods={['Last 6 Months', 'By Department', 'This Month']}
-            dataByPeriod={growthDataByPeriod}
-            className="h-full"
-          />
-        </div>
-
-        {/* Right (Col 8-12): Spacious Account Status Donut */}
-        <div className="lg:col-span-5 xl:col-span-5 flex flex-col">
-          <MultiSegmentDonut
-            title="Account Status Overview"
-            icon={Clock}
-            segments={[
-              { label: 'Active', value: totalActive, color: '#10b981', dotClass: 'bg-emerald-500' },
-              { label: 'Inactive', value: totalInactive, color: '#3b82f6', dotClass: 'bg-blue-500' },
-              { label: 'Suspended', value: totalBlocked, color: '#f59e0b', dotClass: 'bg-amber-500' },
-            ]}
-            centerValue={`${activeRate}%`}
-            centerLabel="Active Rate"
-            className="h-full"
-          />
-        </div>
-      </div>
-
-      {/* ======================================================== */}
-      {/* 4. Section 2: Admins Table + Quick Actions (7 : 5 Grid)   */}
-      {/* ======================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
-        {/* Left (Col 1-7): Administrative Accounts Overview Table */}
-        <div className="lg:col-span-7 xl:col-span-7 bg-white rounded-2xl border border-slate-100 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between pb-3 border-b border-slate-50 gap-2">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center icon-3d shadow-xs">
-                  <Shield className="w-4 h-4 drop-shadow-sm" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          {/* CARD 1: Hospital Personnel Workforce */}
+          <Link
+            to="/superadmin/staff-management/details"
+            className="bg-white rounded-2xl p-5 border border-slate-200 hover:border-blue-300 shadow-2xs hover:shadow-md transition-all duration-300 group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold text-slate-500">Personnel &amp; Workforce</span>
+                <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Users className="w-5 h-5" />
                 </div>
-                <h2 className="text-sm font-bold font-display tracking-tight text-slate-800">
-                  Administrative Accounts Overview
-                </h2>
               </div>
-              <Link
-                to="/superadmin/admins"
-                className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 font-display"
-              >
-                <span>View All</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
+              <div className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                {summary.total_personnel}
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                {modules.admins.total} Admins, {modules.staff.total} Staff, {modules.vendors.total} Vendors, {modules.sales_team.total} Sales
+              </p>
+            </div>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span className="inline-flex items-center gap-1 font-semibold text-emerald-600">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                {summary.active_rate}% Active
+              </span>
+              <span className="text-slate-400 group-hover:text-blue-600 font-medium inline-flex items-center gap-0.5">
+                Staff Roster <ArrowUpRight className="w-3.5 h-3.5" />
+              </span>
+            </div>
+          </Link>
+
+          {/* CARD 2: Clinical Appointments & OPD */}
+          <Link
+            to="/superadmin/reports/appointments"
+            className="bg-white rounded-2xl p-5 border border-slate-200 hover:border-emerald-300 shadow-2xs hover:shadow-md transition-all duration-300 group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold text-slate-500">Clinical OPD &amp; Sessions</span>
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Stethoscope className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                {summary.total_master_appointments}
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                {summary.total_appointment_sessions} Sessions | {summary.total_customers} Registered Patients
+              </p>
+            </div>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span className="text-slate-600 font-medium">
+                {modules.clinical?.sessions_completed || 0} Completed
+              </span>
+              <span className="text-slate-400 group-hover:text-emerald-600 font-medium inline-flex items-center gap-0.5">
+                Reports <ArrowUpRight className="w-3.5 h-3.5" />
+              </span>
+            </div>
+          </Link>
+
+          {/* CARD 3: Inventory Supplies & Valuation */}
+          <Link
+            to="/superadmin/inventory/overview"
+            className="bg-white rounded-2xl p-5 border border-slate-200 hover:border-amber-300 shadow-2xs hover:shadow-md transition-all duration-300 group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold text-slate-500">Inventory &amp; Valuation</span>
+                <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Boxes className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                {formatCurrency(summary.total_inventory_valuation)}
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                {summary.total_inventory_products} Products ({summary.total_inventory_units} In-Stock Units)
+              </p>
+            </div>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span className={`font-semibold ${summary.low_stock_products_count > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                {summary.low_stock_products_count > 0 ? `${summary.low_stock_products_count} Alerts` : 'Adequate Supply'}
+              </span>
+              <span className="text-slate-400 group-hover:text-amber-600 font-medium inline-flex items-center gap-0.5">
+                Overview <ArrowUpRight className="w-3.5 h-3.5" />
+              </span>
+            </div>
+          </Link>
+
+          {/* CARD 4: Financial Settlements & Payouts */}
+          <Link
+            to="/superadmin/payouts/ledger"
+            className="bg-white rounded-2xl p-5 border border-slate-200 hover:border-purple-300 shadow-2xs hover:shadow-md transition-all duration-300 group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold text-slate-500">Disbursements &amp; Payouts</span>
+                <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Receipt className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                {formatCurrency(summary.total_disbursed)}
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                {summary.total_payouts} Disbursed Vouchers Recorded
+              </p>
+            </div>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span className="text-slate-600 font-medium">
+                Pending: {formatCurrency(summary.pending_payout_liabilities)}
+              </span>
+              <span className="text-slate-400 group-hover:text-purple-600 font-medium inline-flex items-center gap-0.5">
+                Ledger <ArrowUpRight className="w-3.5 h-3.5" />
+              </span>
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      {/* ======================================================== */}
+      {/* 5. Section A: Personnel & Workforce Modules Oversight    */}
+      {/*    (Directly matching Admins, Staff, Vendors, Sales)     */}
+      {/* ======================================================== */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">
+              Workforce &amp; Operational Roster
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Breakdown of system administrators, medical staff, vendors, and sales team.
+            </p>
+          </div>
+          <Link
+            to="/superadmin/admin-management/details"
+            className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1"
+          >
+            <span>All Admins</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          {/* Card A1: Admin Management */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                    <Shield className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-800">Admin Management</span>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-extrabold">
+                  {modules.admins.active_rate}% Active
+                </span>
+              </div>
+
+              <div className="text-2xl font-black text-slate-900">
+                {modules.admins.total} <span className="text-xs font-normal text-slate-500">Admins</span>
+              </div>
+              <div className="text-xs text-slate-500 mt-1 flex items-center gap-3">
+                <span>Active: <strong className="text-emerald-600">{modules.admins.active}</strong></span>
+                <span>Blocked: <strong className="text-rose-600">{modules.admins.blocked}</strong></span>
+              </div>
+
+              {/* Recent Admins Roster */}
+              <div className="mt-4 pt-3 border-t border-slate-100 space-y-2">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                  Recent Admins
+                </span>
+                {modules.admins.recent && modules.admins.recent.length > 0 ? (
+                  modules.admins.recent.slice(0, 3).map((adm) => (
+                    <div key={adm.id} className="flex items-center justify-between text-xs py-1">
+                      <div className="truncate pr-2">
+                        <div className="font-semibold text-slate-800 truncate">{adm.name}</div>
+                        <div className="text-[10px] text-slate-400 truncate">{adm.email}</div>
+                      </div>
+                      <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold shrink-0">
+                        Active
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-slate-400 py-1">No admin accounts found.</p>
+                )}
+              </div>
             </div>
 
-            {/* Admins Table */}
-            <div className="overflow-x-auto mt-2">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-100 text-[11px] font-semibold text-slate-400">
-                    <th className="py-3 px-3">Admin Profile</th>
-                    <th className="py-3 px-3">Role</th>
-                    <th className="py-3 px-3">Status</th>
-                    <th className="py-3 px-3 text-right">Action</th>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+              <Link
+                to="/superadmin/admin-management/details"
+                className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+              >
+                View Roster
+              </Link>
+              <Link
+                to="/superadmin/admin-management/create"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                <PlusCircle className="w-3.5 h-3.5 text-blue-600" />
+                <span>Add Admin</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Card A2: Staff Management */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                    <UserCheck className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-800">Staff Management</span>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-extrabold">
+                  {modules.staff.departments_count} Depts
+                </span>
+              </div>
+
+              <div className="text-2xl font-black text-slate-900">
+                {modules.staff.total} <span className="text-xs font-normal text-slate-500">Staff Members</span>
+              </div>
+              <div className="text-xs text-slate-500 mt-1 flex items-center gap-3">
+                <span>Active: <strong className="text-emerald-600">{modules.staff.active}</strong></span>
+                <span>Inactive: <strong className="text-slate-500">{modules.staff.inactive}</strong></span>
+              </div>
+
+              {/* Recent Staff Roster */}
+              <div className="mt-4 pt-3 border-t border-slate-100 space-y-2">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                  Recent Staff
+                </span>
+                {modules.staff.recent && modules.staff.recent.length > 0 ? (
+                  modules.staff.recent.slice(0, 3).map((stf) => (
+                    <div key={stf.id} className="flex items-center justify-between text-xs py-1">
+                      <div className="truncate pr-2">
+                        <div className="font-semibold text-slate-800 truncate">{stf.name}</div>
+                        <div className="text-[10px] text-slate-400 truncate">{stf.department || 'General'}</div>
+                      </div>
+                      <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold shrink-0">
+                        {stf.designation || 'Staff'}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-slate-400 py-1">No staff members found.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+              <Link
+                to="/superadmin/staff-management/details"
+                className="text-xs font-semibold text-emerald-600 hover:text-emerald-800 transition-colors"
+              >
+                View Roster
+              </Link>
+              <Link
+                to="/superadmin/staff-management/create"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                <PlusCircle className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Add Staff</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Card A3: Vendor Management */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                    <Truck className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-800">Vendor Management</span>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-extrabold">
+                  {modules.vendors.types_count} Categories
+                </span>
+              </div>
+
+              <div className="text-2xl font-black text-slate-900">
+                {modules.vendors.total} <span className="text-xs font-normal text-slate-500">Vendors</span>
+              </div>
+              <div className="text-xs text-slate-500 mt-1 flex items-center gap-3">
+                <span>Active: <strong className="text-emerald-600">{modules.vendors.active}</strong></span>
+                <span>Suppliers: <strong className="text-slate-700">{modules.vendors.total}</strong></span>
+              </div>
+
+              {/* Recent Vendors Roster */}
+              <div className="mt-4 pt-3 border-t border-slate-100 space-y-2">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                  Recent Vendors
+                </span>
+                {modules.vendors.recent && modules.vendors.recent.length > 0 ? (
+                  modules.vendors.recent.slice(0, 3).map((vnd) => (
+                    <div key={vnd.id} className="flex items-center justify-between text-xs py-1">
+                      <div className="truncate pr-2">
+                        <div className="font-semibold text-slate-800 truncate">{vnd.vendor_name}</div>
+                        <div className="text-[10px] text-slate-400 truncate">{vnd.company_name || vnd.email}</div>
+                      </div>
+                      <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 text-[10px] font-bold shrink-0">
+                        {vnd.vendor_type || 'Supply'}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-slate-400 py-1">No vendors recorded yet.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+              <Link
+                to="/superadmin/vendors"
+                className="text-xs font-semibold text-amber-600 hover:text-amber-800 transition-colors"
+              >
+                View Vendors
+              </Link>
+              <Link
+                to="/superadmin/vendors/create"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                <PlusCircle className="w-3.5 h-3.5 text-amber-600" />
+                <span>Add Vendor</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Card A4: Sales Team Management */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+                    <Briefcase className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-800">Sales Management</span>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 text-[10px] font-extrabold">
+                  {modules.sales_team.territories_count} Zones
+                </span>
+              </div>
+
+              <div className="text-2xl font-black text-slate-900">
+                {modules.sales_team.total} <span className="text-xs font-normal text-slate-500">Sales Reps</span>
+              </div>
+              <div className="text-xs text-slate-500 mt-1 flex items-center gap-3">
+                <span>Active: <strong className="text-emerald-600">{modules.sales_team.active}</strong></span>
+                <span>Territories: <strong className="text-purple-600">{modules.sales_team.territories_count}</strong></span>
+              </div>
+
+              {/* Recent Sales Team */}
+              <div className="mt-4 pt-3 border-t border-slate-100 space-y-2">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                  Recent Sales Reps
+                </span>
+                {modules.sales_team.recent && modules.sales_team.recent.length > 0 ? (
+                  modules.sales_team.recent.slice(0, 3).map((sls) => (
+                    <div key={sls.id} className="flex items-center justify-between text-xs py-1">
+                      <div className="truncate pr-2">
+                        <div className="font-semibold text-slate-800 truncate">{sls.name}</div>
+                        <div className="text-[10px] text-slate-400 truncate">{sls.territory || 'General'}</div>
+                      </div>
+                      <span className="px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 text-[10px] font-bold shrink-0">
+                        {sls.designation || 'Sales'}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-xs text-slate-400 py-2 text-center">
+                    No sales members added yet.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+              <Link
+                to="/superadmin/sales-members"
+                className="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors"
+              >
+                View Team
+              </Link>
+              <Link
+                to="/superadmin/sales-members/create"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                <PlusCircle className="w-3.5 h-3.5 text-purple-600" />
+                <span>Add Rep</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ======================================================== */}
+      {/* 6. Section B: Inventory & Supply Chain Health            */}
+      {/*    (Directly matching Sidebar Inventory Management)      */}
+      {/* ======================================================== */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <Boxes className="w-5 h-5 text-amber-600" />
+              <h2 className="text-base font-bold text-slate-900">
+                Inventory &amp; Medical Supplies Oversight
+              </h2>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Current hospital stock levels, valuation, catalog categories, and depletion warnings.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              to="/superadmin/inventory/stocks"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors"
+            >
+              <span>Manage Stocks</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
+            <Link
+              to="/superadmin/inventory/overview"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-xs transition-colors"
+            >
+              <span>Inventory Overview</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Inventory Quick Metrics Ribbon */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+            <span className="text-[11px] font-semibold text-slate-500 block">Catalog Products</span>
+            <span className="text-xl font-black text-slate-900 block mt-1">
+              {summary.total_inventory_products}
+            </span>
+          </div>
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+            <span className="text-[11px] font-semibold text-slate-500 block">In-Stock Units</span>
+            <span className="text-xl font-black text-slate-900 block mt-1">
+              {summary.total_inventory_units.toLocaleString('en-IN')}
+            </span>
+          </div>
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+            <span className="text-[11px] font-semibold text-slate-500 block">Total Valuation</span>
+            <span className="text-xl font-black text-slate-900 block mt-1">
+              {formatCurrency(summary.total_inventory_valuation)}
+            </span>
+          </div>
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+            <span className="text-[11px] font-semibold text-slate-500 block">Low Stock Alerts</span>
+            <span className={`text-xl font-black block mt-1 ${summary.low_stock_products_count > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+              {summary.low_stock_products_count}
+            </span>
+          </div>
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+            <span className="text-[11px] font-semibold text-slate-500 block">Product Categories</span>
+            <span className="text-xl font-black text-slate-900 block mt-1">
+              {modules.inventory?.categories_count || 0}
+            </span>
+          </div>
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+            <span className="text-[11px] font-semibold text-slate-500 block">Brands</span>
+            <span className="text-xl font-black text-slate-900 block mt-1">
+              {modules.inventory?.brands_count || 0}
+            </span>
+          </div>
+        </div>
+
+        {/* Depleted & Low Stock Table */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+              Critical Low Stock / Depleted Items
+            </span>
+            <Link
+              to="/superadmin/inventory/stocks?status=low_stock"
+              className="text-xs font-semibold text-amber-600 hover:text-amber-800 transition-colors"
+            >
+              View Full Depletion Report
+            </Link>
+          </div>
+
+          {modules.inventory?.low_stock_items && modules.inventory.low_stock_items.length > 0 ? (
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 text-slate-600 uppercase text-[10px] font-bold border-b border-slate-200">
+                  <tr>
+                    <th className="px-4 py-3">Product Name</th>
+                    <th className="px-4 py-3">Category</th>
+                    <th className="px-4 py-3">Brand</th>
+                    <th className="px-4 py-3 text-right">In-Stock Qty</th>
+                    <th className="px-4 py-3 text-right">Threshold</th>
+                    <th className="px-4 py-3 text-right">Unit Buy Price</th>
+                    <th className="px-4 py-3 text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {adminRows.map((adm) => (
-                    <tr key={adm.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-3 px-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold flex items-center justify-center text-xs shrink-0 font-display icon-3d shadow-2xs">
-                            {adm.initial}
-                          </div>
-                          <div>
-                            <span className="font-semibold text-slate-800 block" title={adm.name}>
-                              {adm.name}
-                            </span>
-                            <span className="text-[11px] text-slate-400 font-mono block">
-                              {adm.email}
-                            </span>
-                          </div>
-                        </div>
+                <tbody className="divide-y divide-slate-100">
+                  {modules.inventory.low_stock_items.map((prod) => (
+                    <tr key={prod.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="px-4 py-3 font-semibold text-slate-900">{prod.product_name}</td>
+                      <td className="px-4 py-3 text-slate-600">{prod.category?.name || '—'}</td>
+                      <td className="px-4 py-3 text-slate-600">{prod.brand?.name || '—'}</td>
+                      <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">
+                        {prod.quantity}
                       </td>
-                      <td className="py-3 px-3 text-slate-600 font-medium whitespace-nowrap">
-                        {adm.role}
+                      <td className="px-4 py-3 text-right font-mono text-slate-500">
+                        {prod.low_stock_threshold}
                       </td>
-                      <td className="py-3 px-3 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold border bg-emerald-50 text-emerald-700 border-emerald-200/80 capitalize">
-                          {adm.status}
+                      <td className="px-4 py-3 text-right font-mono text-slate-700">
+                        {formatCurrency(prod.buy_price)}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-extrabold text-[10px]">
+                          Low Stock
                         </span>
-                      </td>
-                      <td className="py-3 px-3 text-right whitespace-nowrap">
-                        <Link
-                          to="/superadmin/admins"
-                          className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors inline-flex items-center justify-center"
-                          title="Manage admin"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Link>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+          ) : (
+            <div className="text-center py-6 px-4 bg-emerald-50/50 border border-emerald-100 rounded-xl">
+              <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+              <p className="text-xs font-semibold text-emerald-800">
+                All inventory products have adequate stock levels. No depleted items detected.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ======================================================== */}
+      {/* 7. Section C: Clinical Appointments & Financial Payouts  */}
+      {/*    (2-Column Layout: Reports & Analytics + Payouts)      */}
+      {/* ======================================================== */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column (Col 1-6): Clinical OPD & Reports Overview */}
+        <div className="lg:col-span-6 bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs flex flex-col justify-between space-y-4">
+          <div>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-emerald-600" />
+                <h2 className="text-base font-bold text-slate-900">
+                  Clinical Appointments &amp; OPD
+                </h2>
+              </div>
+              <Link
+                to="/superadmin/reports/appointments"
+                className="text-xs font-semibold text-emerald-600 hover:text-emerald-800 transition-colors inline-flex items-center gap-1"
+              >
+                <span>Reports</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            {/* Metrics Pills */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 my-4">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Master Appts</span>
+                <span className="text-lg font-black text-slate-900 mt-0.5 block">
+                  {summary.total_master_appointments}
+                </span>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Sessions</span>
+                <span className="text-lg font-black text-slate-900 mt-0.5 block">
+                  {summary.total_appointment_sessions}
+                </span>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Patients</span>
+                <span className="text-lg font-black text-slate-900 mt-0.5 block">
+                  {summary.total_customers}
+                </span>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Treatments</span>
+                <span className="text-lg font-black text-slate-900 mt-0.5 block">
+                  {summary.total_services}
+                </span>
+              </div>
+            </div>
+
+            {/* Sessions Status Breakdown */}
+            <div className="bg-slate-50/80 rounded-xl p-3 border border-slate-100 mb-4">
+              <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide block mb-2">
+                Clinical Sessions Status Breakdown
+              </span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  <span className="text-slate-600">Pending: <strong>{modules.clinical?.sessions_pending || 0}</strong></span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-blue-500" />
+                  <span className="text-slate-600">In Progress: <strong>{modules.clinical?.sessions_in_progress || 0}</strong></span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span className="text-slate-600">Completed: <strong>{modules.clinical?.sessions_completed || 0}</strong></span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-rose-500" />
+                  <span className="text-slate-600">Cancelled: <strong>{modules.clinical?.sessions_cancelled || 0}</strong></span>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Appointments Table / Clean Empty State */}
+            {modules.clinical?.recent_appointments && modules.clinical.recent_appointments.length > 0 ? (
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-slate-600 uppercase text-[10px] font-bold border-b border-slate-200">
+                    <tr>
+                      <th className="px-3 py-2.5">Appt #</th>
+                      <th className="px-3 py-2.5">Patient</th>
+                      <th className="px-3 py-2.5">Date</th>
+                      <th className="px-3 py-2.5 text-right">Fee</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {modules.clinical.recent_appointments.map((appt) => (
+                      <tr key={appt.id} className="hover:bg-slate-50/80">
+                        <td className="px-3 py-2 font-mono font-bold text-slate-800">{appt.appointment_number}</td>
+                        <td className="px-3 py-2 text-slate-700">
+                          {appt.customer ? `${appt.customer.first_name} ${appt.customer.last_name || ''}` : 'Patient'}
+                        </td>
+                        <td className="px-3 py-2 text-slate-500">{appt.appointment_date}</td>
+                        <td className="px-3 py-2 text-right font-mono font-semibold text-slate-900">
+                          {formatCurrency(appt.appointment_fees)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-6 px-4 bg-slate-50 rounded-xl border border-slate-100">
+                <Stethoscope className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                <p className="text-xs text-slate-600 font-semibold">
+                  No appointments booked in the system yet.
+                </p>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  When doctors and staff register patient consultations in the clinic desk, appointments will display here.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <Link
+              to="/superadmin/reports/sessions"
+              className="text-slate-600 hover:text-slate-900 font-semibold"
+            >
+              Session-Wise Reports
+            </Link>
+            <Link
+              to="/superadmin/reports/appointments"
+              className="text-emerald-600 hover:text-emerald-800 font-bold inline-flex items-center gap-1"
+            >
+              <span>Open Appointment Reports</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
 
-        {/* Right (Col 8-12): Quick Actions (2x2 Grid) */}
-        <div className="lg:col-span-5 xl:col-span-5 bg-white rounded-2xl border border-slate-100 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-50">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center icon-3d shadow-xs">
-                <Zap className="w-4 h-4 drop-shadow-sm" />
+        {/* Right Column (Col 7-12): Payouts & Financial Ledger */}
+        <div className="lg:col-span-6 bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs flex flex-col justify-between space-y-4">
+          <div>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Receipt className="w-5 h-5 text-purple-600" />
+                <h2 className="text-base font-bold text-slate-900">
+                  Payout Settlements &amp; Ledger
+                </h2>
               </div>
-              <h2 className="text-sm font-bold font-display tracking-tight text-slate-800">
-                Quick Administrative Actions
-              </h2>
+              <Link
+                to="/superadmin/payouts/ledger"
+                className="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors inline-flex items-center gap-1"
+              >
+                <span>Ledger</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
-            <Link to="/superadmin/admins" className="text-slate-400 hover:text-blue-600 transition-colors">
-              <ChevronRight className="w-4 h-4" />
-            </Link>
+
+            {/* Payout Metric Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-4">
+              <div className="p-4 rounded-xl bg-purple-50/60 border border-purple-100">
+                <span className="text-[11px] font-bold text-purple-900 uppercase tracking-wide block">
+                  Staff Payouts Disbursed
+                </span>
+                <div className="text-xl font-black text-slate-900 mt-1">
+                  {formatCurrency(modules.payouts?.staff_disbursed || 0)}
+                </div>
+                <div className="text-[11px] text-purple-700 mt-0.5">
+                  {modules.payouts?.staff_count || 0} vouchers paid to medical staff
+                </div>
+                <Link
+                  to="/superadmin/payouts/staff"
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 hover:text-purple-900 mt-2"
+                >
+                  <span>Staff Payouts</span>
+                  <ArrowUpRight className="w-3 h-3" />
+                </Link>
+              </div>
+
+              <div className="p-4 rounded-xl bg-indigo-50/60 border border-indigo-100">
+                <span className="text-[11px] font-bold text-indigo-900 uppercase tracking-wide block">
+                  Vendor Payouts Disbursed
+                </span>
+                <div className="text-xl font-black text-slate-900 mt-1">
+                  {formatCurrency(modules.payouts?.vendor_disbursed || 0)}
+                </div>
+                <div className="text-[11px] text-indigo-700 mt-0.5">
+                  {modules.payouts?.vendor_count || 0} invoices settled to suppliers
+                </div>
+                <Link
+                  to="/superadmin/payouts/vendors"
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-700 hover:text-indigo-900 mt-2"
+                >
+                  <span>Vendor Payouts</span>
+                  <ArrowUpRight className="w-3 h-3" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Total Balance / Liability */}
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between mb-4">
+              <div>
+                <span className="text-[11px] font-semibold text-slate-500 block">Pending Liability / Balances</span>
+                <span className="text-base font-extrabold text-slate-900 block mt-0.5">
+                  {formatCurrency(modules.payouts?.pending_liabilities || 0)}
+                </span>
+              </div>
+              <Link
+                to="/superadmin/payouts/ledger"
+                className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                View Full Passbook
+              </Link>
+            </div>
+
+            {/* Recent Payouts Table / Clean State */}
+            {modules.payouts?.recent_payouts && modules.payouts.recent_payouts.length > 0 ? (
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-slate-600 uppercase text-[10px] font-bold border-b border-slate-200">
+                    <tr>
+                      <th className="px-3 py-2.5">Voucher #</th>
+                      <th className="px-3 py-2.5">Beneficiary</th>
+                      <th className="px-3 py-2.5">Type</th>
+                      <th className="px-3 py-2.5 text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {modules.payouts.recent_payouts.map((pay) => (
+                      <tr key={pay.id} className="hover:bg-slate-50/80">
+                        <td className="px-3 py-2 font-mono font-bold text-slate-800">{pay.payout_number}</td>
+                        <td className="px-3 py-2 text-slate-700">
+                          {pay.payout_type === 'staff' ? (pay.staff?.name || 'Staff') : (pay.vendor?.vendor_name || 'Vendor')}
+                        </td>
+                        <td className="px-3 py-2">
+                          <span className="px-1.5 py-0.5 rounded uppercase text-[9px] font-extrabold bg-slate-100 text-slate-700">
+                            {pay.payout_type}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-right font-mono font-semibold text-slate-900">
+                          {formatCurrency(pay.paid_amount)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-6 px-4 bg-slate-50 rounded-xl border border-slate-100">
+                <Receipt className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                <p className="text-xs text-slate-600 font-semibold">
+                  No payout vouchers recorded yet.
+                </p>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Disburse staff salaries or clear vendor supplier invoices to track settlements here.
+                </p>
+              </div>
+            )}
           </div>
 
-          {/* 2x2 Action Tiles */}
-          <div className="grid grid-cols-2 gap-3.5 my-auto py-3">
-            {/* Tile 1: Create Admin */}
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
             <Link
-              to="/superadmin/admins/create"
-              className="p-4 rounded-xl bg-[#eff6ff] hover:bg-blue-100/70 border border-blue-100/60 transition-all flex flex-col items-center text-center group cursor-pointer"
+              to="/superadmin/payouts/staff"
+              className="text-slate-600 hover:text-slate-900 font-semibold"
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center icon-3d shadow-xs mb-2">
-                <UserPlus className="w-5 h-5 drop-shadow-sm" />
-              </div>
-              <span className="text-xs font-bold text-slate-800 group-hover:text-blue-700 transition-colors leading-tight">
-                Create Admin
-              </span>
+              + Disburse Staff Payout
             </Link>
-
-            {/* Tile 2: Manage Staff */}
             <Link
-              to="/superadmin/staff-management/details"
-              className="p-4 rounded-xl bg-[#ecfdf5] hover:bg-emerald-100/70 border border-emerald-100/60 transition-all flex flex-col items-center text-center group cursor-pointer"
+              to="/superadmin/payouts/vendors"
+              className="text-purple-600 hover:text-purple-800 font-bold inline-flex items-center gap-1"
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center icon-3d shadow-xs mb-2">
-                <UserCheck className="w-5 h-5 drop-shadow-sm" />
-              </div>
-              <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-700 transition-colors leading-tight">
-                Manage Staff
-              </span>
-            </Link>
-
-            {/* Tile 3: Manage Vendors */}
-            <Link
-              to="/superadmin/vendor-management/details"
-              className="p-4 rounded-xl bg-[#f5f3ff] hover:bg-purple-100/70 border border-purple-100/60 transition-all flex flex-col items-center text-center group cursor-pointer"
-            >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center icon-3d shadow-xs mb-2">
-                <Truck className="w-5 h-5 drop-shadow-sm" />
-              </div>
-              <span className="text-xs font-bold text-slate-800 group-hover:text-purple-700 transition-colors leading-tight">
-                Manage Vendors
-              </span>
-            </Link>
-
-            {/* Tile 4: Service Categories */}
-            <Link
-              to="/superadmin/inventory/categories"
-              className="p-4 rounded-xl bg-[#fffbeb] hover:bg-amber-100/70 border border-amber-100/60 transition-all flex flex-col items-center text-center group cursor-pointer"
-            >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center icon-3d shadow-xs mb-2">
-                <FolderTree className="w-5 h-5 drop-shadow-sm" />
-              </div>
-              <span className="text-xs font-bold text-slate-800 group-hover:text-amber-700 transition-colors leading-tight">
-                Manage Packages
-              </span>
+              <span>+ Settle Vendor Invoice</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
       </div>
 
       {/* ======================================================== */}
-      {/* 5. Section 3: Audit Trail + Security Mission (7 : 5 Grid) */}
+      {/* 8. Section D: Real Enterprise Audit & Activity Logs      */}
       {/* ======================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
-        {/* Left (Col 1-7): Recent Administrative Activities */}
-        <div className="lg:col-span-7 xl:col-span-7 bg-white rounded-2xl border border-slate-100 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between pb-3 border-b border-slate-50 gap-2">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 text-white flex items-center justify-center icon-3d shadow-xs">
-                  <Activity className="w-4 h-4 drop-shadow-sm" />
-                </div>
-                <h2 className="text-sm font-bold font-display tracking-tight text-slate-800">
-                  Recent Audit Activities
-                </h2>
-              </div>
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-50 border border-slate-200/60 px-2.5 py-1 rounded-full font-mono">
-                Live Audit Feed
-              </span>
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2">
+            <Activity className="w-5 h-5 text-blue-600" />
+            <div>
+              <h2 className="text-base font-bold text-slate-900">
+                Real-Time Enterprise Audit Trail
+              </h2>
+              <p className="text-xs text-slate-500">
+                Direct chronological logs of system logins, customer modifications, and administrative operations.
+              </p>
             </div>
+          </div>
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
+            {recentActivity.length} Recent Events
+          </span>
+        </div>
 
-            {/* Audit List */}
-            <div className="divide-y divide-slate-50 mt-2">
-              {auditItems.map((act) => (
-                <div key={act.id} className="py-3 flex items-start justify-between gap-3 hover:bg-slate-50/50 px-2 rounded-xl transition-colors">
-                  <div className="min-w-0">
-                    <span className="inline-block px-2 py-0.5 text-[9px] font-bold rounded bg-slate-100 text-slate-700 font-mono tracking-tight mb-1">
-                      {act.title}
-                    </span>
-                    <p className="text-xs text-slate-600 font-medium">
-                      {act.desc}
+        {recentActivity && recentActivity.length > 0 ? (
+          <div className="divide-y divide-slate-100">
+            {recentActivity.map((log) => (
+              <div key={log.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50/50 px-2 rounded-lg transition-colors">
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 shrink-0" />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-900 uppercase">
+                        {log.action ? log.action.replace('_', ' ') : 'SYSTEM EVENT'}
+                      </span>
+                      {log.ip_address && (
+                        <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+                          {log.ip_address}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      {log.description || 'System operation executed.'}
                     </p>
-                    <span className="text-[10px] text-slate-400 font-mono mt-0.5 block">
-                      IP: {act.ip}
-                    </span>
                   </div>
-
-                  <span className="text-[10px] font-medium text-slate-400 shrink-0 font-mono pt-1">
-                    {act.time}
-                  </span>
                 </div>
-              ))}
-            </div>
+                <div className="text-[11px] text-slate-400 font-mono shrink-0 sm:text-right pl-5 sm:pl-0">
+                  {log.created_at ? new Date(log.created_at).toLocaleString('en-IN', {
+                    day: '2-digit',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  }) : 'Recently'}
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-
-        {/* Right (Col 8-12): Security & Infrastructure Mission Card */}
-        <div className="lg:col-span-5 xl:col-span-5 bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-950 text-white rounded-2xl p-6 sm:p-7 relative overflow-hidden flex flex-col justify-between shadow-md">
-          {/* Glowing Stethoscope in Background */}
-          <div className="absolute top-2 right-2 pointer-events-none opacity-25">
-            <ClinicStethoscopeCardIllustration className="w-32 h-32 text-white" />
+        ) : (
+          <div className="text-center py-8 text-xs text-slate-400">
+            No system activity logs recorded yet.
           </div>
-
-          <div className="relative z-10">
-            <h3 className="text-lg sm:text-xl font-bold font-display tracking-tight text-white leading-snug max-w-[260px]">
-              Enterprise Security &amp; Compliance
-            </h3>
-            <p className="text-xs sm:text-sm text-blue-100/90 font-normal mt-2 leading-relaxed max-w-sm">
-              Automated safeguards, zero-trust role control, multi-tenant database isolation, and continuous real-time audit trail.
-            </p>
-          </div>
-
-          <div className="relative z-10 mt-6">
-            <Link
-              to="/superadmin/profile"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-blue-700 hover:bg-blue-50 text-xs font-bold shadow-sm transition-all cursor-pointer font-display"
-            >
-              <span>View Audit Trail Logs</span>
-              <ChevronRight className="w-4 h-4" />
-            </Link>
-
-            {/* Heartbeat pulse accent at bottom */}
-            <div className="mt-5 pt-3 border-t border-white/10 text-blue-300 opacity-60">
-              <ClinicHeartbeatLine className="w-full h-5" />
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
