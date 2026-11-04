@@ -29,8 +29,14 @@ import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import superAdminDashboardService from '../services/superAdminDashboardService';
 import { useToast } from '../../context/ToastContext';
 import DashboardSkeleton from '../../components/DashboardSkeleton';
-import { ClinicBannerBackground } from '../../components/ClinicArtwork';
+import { ClinicBannerBackground, ClinicHeartbeatLine } from '../../components/ClinicArtwork';
 import { getIndianGreeting } from '../../utils/timeGreeting';
+import useCountUp from '../../hooks/useCountUp';
+
+function AnimatedCounter({ value, duration = 850 }) {
+  const animated = useCountUp(value, duration);
+  return <span>{animated}</span>;
+}
 import {
   SplineAreaChart,
   MultiSegmentDonut,
@@ -402,48 +408,57 @@ export default function SuperAdminDashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* CARD: Today's Appointments Spotlight */}
-          <div className="bg-gradient-to-br from-emerald-500 via-teal-600 to-teal-700 text-white rounded-3xl p-6 shadow-md flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-36 h-36 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+          {/* CARD 1: Today's Appointments Spotlight (3D & Animated) */}
+          <div className="bg-gradient-to-br from-emerald-500 via-teal-600 to-teal-700 text-white rounded-3xl p-6 sm:p-7 shadow-lg shadow-emerald-600/25 flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1.5 hover:shadow-xl hover:shadow-emerald-600/35 transition-all duration-300">
+            {/* Ambient Background Glowing Orb & Animated Heartbeat */}
+            <div className="absolute -top-14 -right-14 w-44 h-44 bg-white/20 rounded-full blur-2xl pointer-events-none animate-pulse" />
+            <div className="absolute -bottom-1 left-0 right-0 opacity-20 pointer-events-none">
+              <ClinicHeartbeatLine className="w-full h-8 text-white" />
+            </div>
 
-            <div>
+            <div className="relative z-10">
               <div className="flex items-center justify-between gap-2 mb-3">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-extrabold uppercase tracking-wide">
-                  <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                  Today &bull; {todayFormatted}
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-extrabold uppercase tracking-wide border border-white/25 shadow-xs">
+                  <span className="w-2 h-2 rounded-full bg-emerald-200 animate-ping" />
+                  <span>TODAY &bull; {todayFormatted}</span>
                 </span>
-                <Calendar className="w-5 h-5 text-white/80" />
+
+                {/* 3D Glassmorphic Floating Calendar Icon */}
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-white/35 via-white/20 to-white/10 backdrop-blur-md border border-white/30 text-white flex items-center justify-center icon-3d shadow-md group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                  <Calendar className="w-5 h-5 drop-shadow-sm" />
+                </div>
               </div>
 
               <div className="mt-2">
-                <div className="text-4xl sm:text-5xl font-black tracking-tight tabular-numbers">
-                  {summary.today_appointments_count}
+                <div className="text-4xl sm:text-5xl font-black tracking-tight tabular-numbers text-white drop-shadow-sm">
+                  <AnimatedCounter value={summary.today_appointments_count} />
                 </div>
-                <div className="text-xs text-white/90 font-semibold mt-1">
+                <div className="text-xs text-emerald-100 font-semibold mt-1">
                   Patient Appointments Scheduled Today
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 mt-5 pt-4 border-t border-white/20 text-xs">
-                <div className="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs">
+              {/* 3D Glass Mini Metric Tiles */}
+              <div className="grid grid-cols-2 gap-2.5 mt-5 pt-4 border-t border-white/20 text-xs">
+                <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl p-3.5 hover:bg-white/25 hover:scale-[1.02] transition-all duration-300 shadow-xs">
                   <span className="text-[10px] text-white/80 uppercase font-bold block">Today Sessions</span>
-                  <span className="text-lg font-extrabold text-white block mt-0.5">
-                    {summary.today_sessions_count}
+                  <span className="text-xl font-extrabold text-white block mt-0.5 tabular-numbers">
+                    <AnimatedCounter value={summary.today_sessions_count} />
                   </span>
                 </div>
-                <div className="bg-white/10 rounded-xl p-2.5 backdrop-blur-xs">
+                <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl p-3.5 hover:bg-white/25 hover:scale-[1.02] transition-all duration-300 shadow-xs">
                   <span className="text-[10px] text-white/80 uppercase font-bold block">Completed Today</span>
-                  <span className="text-lg font-extrabold text-white block mt-0.5">
-                    {summary.today_completed_sessions}
+                  <span className="text-xl font-extrabold text-white block mt-0.5 tabular-numbers">
+                    <AnimatedCounter value={summary.today_completed_sessions} />
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="mt-5 pt-3">
+            <div className="mt-5 pt-3 relative z-10">
               <Link
                 to="/superadmin/reports/appointments"
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-emerald-800 hover:bg-emerald-50 font-bold text-xs shadow-xs transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-emerald-800 hover:bg-emerald-50 font-bold text-xs shadow-md hover:shadow-lg transition-all duration-300 group-hover:translate-x-0.5"
               >
                 <span>View Today's Appointment Roster</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -451,18 +466,22 @@ export default function SuperAdminDashboardPage() {
             </div>
           </div>
 
-          {/* CARD: Total Clinical Pipeline & Sessions Status */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between">
+          {/* CARD 2: Total Clinical Pipeline & Sessions Status (3D & Animated) */}
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-md hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group">
             <div>
               <div className="flex items-center justify-between gap-2 mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-                    <Stethoscope className="w-4 h-4" />
+                <div className="flex items-center gap-3 min-w-0">
+                  {/* 3D Emerald Stethoscope Icon */}
+                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-emerald-500/25 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+                    <Stethoscope className="w-5 h-5 drop-shadow-sm" />
                   </div>
-                  <span className="text-xs font-bold text-slate-800">Clinical Sessions Status</span>
+                  <div className="min-w-0">
+                    <span className="text-sm font-bold text-slate-800 block truncate">Clinical Sessions Status</span>
+                    <span className="text-[11px] text-slate-400 font-medium block">OPD consultation tokens</span>
+                  </div>
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-extrabold">
-                  {summary.total_appointment_sessions} Total Sessions
+                <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-extrabold font-mono border border-slate-200/60 shadow-2xs shrink-0">
+                  <AnimatedCounter value={summary.total_appointment_sessions} /> Total
                 </span>
               </div>
 
@@ -470,79 +489,100 @@ export default function SuperAdminDashboardPage() {
                 Breakdown of active treatments and clinical sessions conducted by medical staff.
               </p>
 
-              {/* Status Breakdown Badges */}
+              {/* Status Breakdown with 3D glowing status dots and hover states */}
               <div className="space-y-2.5">
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
-                  <span className="flex items-center gap-2 font-medium text-slate-700">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50/80 border border-slate-100/80 hover:bg-amber-50/50 hover:border-amber-200/70 hover:translate-x-1 transition-all duration-200 group/row">
+                  <span className="flex items-center gap-2.5 font-medium text-xs text-slate-700">
+                    <span className="w-3 h-3 rounded-full bg-amber-400 shadow-sm shadow-amber-400/50 group-hover/row:scale-125 transition-transform" />
                     Pending Sessions
                   </span>
-                  <strong className="font-mono text-slate-900">{modules.clinical?.sessions_pending || 0}</strong>
+                  <strong className="font-mono text-xs font-bold text-slate-900 tabular-numbers">
+                    <AnimatedCounter value={modules.clinical?.sessions_pending || 0} />
+                  </strong>
                 </div>
 
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
-                  <span className="flex items-center gap-2 font-medium text-slate-700">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50/80 border border-slate-100/80 hover:bg-blue-50/50 hover:border-blue-200/70 hover:translate-x-1 transition-all duration-200 group/row">
+                  <span className="flex items-center gap-2.5 font-medium text-xs text-slate-700">
+                    <span className="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-500/50 group-hover/row:scale-125 transition-transform" />
                     In-Progress Treatments
                   </span>
-                  <strong className="font-mono text-slate-900">{modules.clinical?.sessions_in_progress || 0}</strong>
+                  <strong className="font-mono text-xs font-bold text-slate-900 tabular-numbers">
+                    <AnimatedCounter value={modules.clinical?.sessions_in_progress || 0} />
+                  </strong>
                 </div>
 
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
-                  <span className="flex items-center gap-2 font-medium text-slate-700">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50/80 border border-slate-100/80 hover:bg-emerald-50/50 hover:border-emerald-200/70 hover:translate-x-1 transition-all duration-200 group/row">
+                  <span className="flex items-center gap-2.5 font-medium text-xs text-slate-700">
+                    <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50 group-hover/row:scale-125 transition-transform" />
                     Completed Sessions
                   </span>
-                  <strong className="font-mono text-slate-900">{modules.clinical?.sessions_completed || 0}</strong>
+                  <strong className="font-mono text-xs font-bold text-slate-900 tabular-numbers">
+                    <AnimatedCounter value={modules.clinical?.sessions_completed || 0} />
+                  </strong>
                 </div>
 
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
-                  <span className="flex items-center gap-2 font-medium text-slate-700">
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50/80 border border-slate-100/80 hover:bg-rose-50/50 hover:border-rose-200/70 hover:translate-x-1 transition-all duration-200 group/row">
+                  <span className="flex items-center gap-2.5 font-medium text-xs text-slate-700">
+                    <span className="w-3 h-3 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50 group-hover/row:scale-125 transition-transform" />
                     Cancelled Sessions
                   </span>
-                  <strong className="font-mono text-slate-900">{modules.clinical?.sessions_cancelled || 0}</strong>
+                  <strong className="font-mono text-xs font-bold text-slate-900 tabular-numbers">
+                    <AnimatedCounter value={modules.clinical?.sessions_cancelled || 0} />
+                  </strong>
                 </div>
               </div>
             </div>
 
             <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span className="text-slate-400 font-medium">Auto-updated via staff desk</span>
               <Link
                 to="/superadmin/reports/sessions"
-                className="text-xs font-semibold text-emerald-600 hover:text-emerald-800 transition-colors inline-flex items-center gap-1"
+                className="text-xs font-bold text-emerald-600 hover:text-emerald-800 transition-colors inline-flex items-center gap-1 group/link"
               >
                 <span>Session Analytics</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
+                <ArrowUpRight className="w-3.5 h-3.5 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
               </Link>
             </div>
           </div>
 
-          {/* CARD: Patient Directory & Treatment Services */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between">
+          {/* CARD 3: Patient Directory & Treatment Services (3D & Animated) */}
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-md hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group">
             <div>
               <div className="flex items-center justify-between gap-2 mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                    <Users className="w-4 h-4" />
+                <div className="flex items-center gap-3 min-w-0">
+                  {/* 3D Blue Users Icon */}
+                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-blue-500/25 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 shrink-0">
+                    <Users className="w-5 h-5 drop-shadow-sm" />
                   </div>
-                  <span className="text-xs font-bold text-slate-800">Patients &amp; Treatments</span>
+                  <div className="min-w-0">
+                    <span className="text-sm font-bold text-slate-800 block truncate">Patients &amp; Treatments</span>
+                    <span className="text-[11px] text-slate-400 font-medium block">Hospital registry</span>
+                  </div>
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-extrabold">
+                <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-[10px] font-extrabold uppercase tracking-wide border border-blue-200/60 shadow-2xs shrink-0">
                   Hospital Catalog
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 my-3">
-                <div className="p-3.5 rounded-2xl bg-blue-50/60 border border-blue-100 text-center">
-                  <span className="text-[10px] uppercase font-bold text-blue-600 block">Registered Patients</span>
-                  <span className="text-2xl font-black text-slate-900 mt-1 block">
-                    {summary.total_customers}
+              {/* 3D Floating Interactive Metric Tiles */}
+              <div className="grid grid-cols-2 gap-3.5 my-3.5">
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-50/80 to-sky-50/40 border border-blue-100/90 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 text-center relative overflow-hidden group/tile">
+                  <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center mx-auto mb-1.5 icon-3d shadow-2xs">
+                    <Users className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[10px] uppercase font-bold text-blue-700 block tracking-wider">Registered Patients</span>
+                  <span className="text-3xl font-black text-slate-900 mt-1 block tabular-numbers">
+                    <AnimatedCounter value={summary.total_customers} />
                   </span>
                 </div>
-                <div className="p-3.5 rounded-2xl bg-indigo-50/60 border border-indigo-100 text-center">
-                  <span className="text-[10px] uppercase font-bold text-indigo-600 block">Active Treatments</span>
-                  <span className="text-2xl font-black text-slate-900 mt-1 block">
-                    {summary.total_services}
+
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-50/80 to-purple-50/40 border border-indigo-100/90 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 text-center relative overflow-hidden group/tile">
+                  <div className="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-600 flex items-center justify-center mx-auto mb-1.5 icon-3d shadow-2xs">
+                    <Sparkles className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[10px] uppercase font-bold text-indigo-700 block tracking-wider">Active Treatments</span>
+                  <span className="text-3xl font-black text-slate-900 mt-1 block tabular-numbers">
+                    <AnimatedCounter value={summary.total_services} />
                   </span>
                 </div>
               </div>
@@ -553,13 +593,16 @@ export default function SuperAdminDashboardPage() {
             </div>
 
             <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span className="text-slate-400 font-medium">Daily OPD Desk Active</span>
+              <span className="text-slate-500 font-medium inline-flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                Daily OPD Desk Active
+              </span>
               <Link
                 to="/superadmin/reports/appointments"
-                className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1"
+                className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1 group/link"
               >
                 <span>Open Reports</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
+                <ArrowUpRight className="w-3.5 h-3.5 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
               </Link>
             </div>
           </div>
