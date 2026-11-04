@@ -699,6 +699,7 @@ export function MultiSegmentDonut({
 }) {
   const [isMounted, setIsMounted] = useState(false);
   const [hoveredIdx, setHoveredIdx] = useState(null);
+  const [selectedIdx, setSelectedIdx] = useState(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsMounted(true), 80);
@@ -711,39 +712,69 @@ export function MultiSegmentDonut({
   const strokeWidth = 14;
   const circumference = 2 * Math.PI * radius;
 
-  // Animate center numeric counter
-  const parsedCenterNum = typeof centerValue === 'number'
+  // Active item is hovered OR selected
+  const activeIdx = hoveredIdx !== null ? hoveredIdx : selectedIdx;
+  const activeSegment = activeIdx !== null && segments[activeIdx] ? segments[activeIdx] : null;
+
+  // Active values for display in center
+  const displayVal = activeSegment
+    ? parseFloat(activeSegment.value) || 0
+    : typeof centerValue === 'number'
     ? centerValue
-    : parseFloat(String(centerValue).replace(/[^0-9.]/g, '')) || 0;
-  const hasPercent = String(centerValue).includes('%');
-  const animatedCenter = useCountUp(parsedCenterNum, 950);
+    : total;
+
+  const displayLabel = activeSegment ? activeSegment.label : centerLabel;
+  const displayPercent = activeSegment
+    ? total > 0
+      ? Math.round(((parseFloat(activeSegment.value) || 0) / total) * 100)
+      : 0
+    : null;
+
+  const animatedVal = useCountUp(displayVal, 400);
 
   let cumulativePercent = 0;
   const nonZeroSegments = segments.filter((s) => (parseFloat(s.value) || 0) > 0);
 
+  const handleSelect = (idx) => {
+    setSelectedIdx((prev) => (prev === idx ? null : idx));
+  };
+
   return (
-    <div className={`bg-white rounded-2xl border border-slate-100 p-5 sm:p-6 shadow-xs flex flex-col justify-between ${className}`}>
+    <div
+      className={`bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs flex flex-col justify-between overflow-hidden ${className}`}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-50">
-        <div className="flex items-center gap-2.5">
+      <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 gap-2">
+        <div className="flex items-center gap-2.5 min-w-0">
           {Icon && (
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center icon-3d shadow-xs">
-              <Icon className="w-4 h-4 drop-shadow-sm" />
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-blue-500/25 shrink-0">
+              <Icon className="w-5 h-5 drop-shadow-sm" />
             </div>
           )}
-          <h2 className="text-sm font-bold font-display tracking-tight text-slate-800">
+          <h2 className="text-sm font-bold font-display tracking-tight text-slate-800 truncate">
             {title}
           </h2>
         </div>
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full font-mono">
-          Distribution
-        </span>
+
+        {selectedIdx !== null ? (
+          <button
+            onClick={() => setSelectedIdx(null)}
+            className="text-[10px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-full transition-colors cursor-pointer shrink-0"
+            title="Click to view full distribution"
+          >
+            Reset View
+          </button>
+        ) : (
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 border border-slate-200/80 px-2.5 py-0.5 rounded-full font-mono shrink-0">
+            Click to Filter
+          </span>
+        )}
       </div>
 
-      {/* Donut and Legend row */}
-      <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-around gap-6 py-4 my-auto w-full">
+      {/* Donut and Legend row - No overflow, properly bounded */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-5 py-4 my-auto w-full min-w-0">
         {/* Donut circle */}
-        <div className="relative w-36 h-36 flex items-center justify-center shrink-0">
+        <div className="relative w-36 h-36 sm:w-40 sm:h-40 flex items-center justify-center shrink-0">
           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 130 130">
             {/* Background ring */}
             <circle
@@ -779,8 +810,10 @@ export function MultiSegmentDonut({
                 const strokeOffset = -((cumulativePercent / 100) * circumference);
                 cumulativePercent += segPercent;
 
+                const isSelected = selectedIdx === idx;
                 const isHovered = hoveredIdx === idx;
-                const isDimmed = hoveredIdx !== null && hoveredIdx !== idx;
+                const isActive = isSelected || isHovered;
+                const isDimmed = activeIdx !== null && !isActive;
 
                 return (
                   <circle
@@ -789,15 +822,17 @@ export function MultiSegmentDonut({
                     cy="65"
                     r={radius}
                     stroke={seg.color}
-                    strokeWidth={isHovered ? strokeWidth + 3 : strokeWidth}
+                    strokeWidth={isActive ? strokeWidth + 4 : strokeWidth}
                     strokeDasharray={`${Math.max(strokeDash - (nonZeroSegments.length > 1 ? 2 : 0), 0)} ${circumference}`}
                     strokeDashoffset={strokeOffset}
                     strokeLinecap="round"
                     fill="none"
+                    onClick={() => handleSelect(idx)}
                     onMouseEnter={() => setHoveredIdx(idx)}
                     onMouseLeave={() => setHoveredIdx(null)}
                     style={{
-                      opacity: isDimmed ? 0.45 : 1,
+                      opacity: isDimmed ? 0.35 : 1,
+                      filter: isActive ? 'drop-shadow(0 2px 6px rgba(0,0,0,0.25))' : 'none',
                       transition:
                         'stroke-dasharray 1.2s cubic-bezier(0.16, 1, 0.3, 1), stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1), stroke-width 0.25s ease, opacity 0.25s ease',
                       cursor: 'pointer',
@@ -807,49 +842,65 @@ export function MultiSegmentDonut({
               })}
           </svg>
 
-          {/* Centered label */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-            <span className="text-2xl sm:text-3xl font-black font-display text-slate-900 tracking-tight leading-none tabular-numbers">
-              {animatedCenter}{hasPercent ? '%' : ''}
+          {/* Centered label with smooth animation */}
+          <div
+            onClick={() => setSelectedIdx(null)}
+            className="absolute inset-0 flex flex-col items-center justify-center text-center cursor-pointer select-none px-2"
+            title="Click to reset view"
+          >
+            <span className="text-3xl font-black font-display text-slate-900 tracking-tight leading-none tabular-numbers transition-all">
+              {animatedVal}
             </span>
-            <span className="text-xs font-semibold text-slate-400 mt-1">
-              {centerLabel}
+            <span className="text-[11px] font-bold text-slate-500 mt-1 truncate max-w-[85px] leading-tight transition-colors">
+              {displayPercent !== null ? `${displayPercent}%` : displayLabel}
             </span>
+            {displayPercent !== null && (
+              <span className="text-[9px] font-semibold text-slate-400 truncate max-w-[90px] mt-0.5">
+                {displayLabel}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Legend */}
-        <div className="space-y-2.5 w-full sm:w-auto min-w-[150px] shrink-0">
+        {/* Legend - Responsive, properly wrapped with zero overflow */}
+        <div className="space-y-1.5 w-full sm:flex-1 min-w-0 pr-1">
           {segments.map((seg, idx) => {
             const segVal = parseFloat(seg.value) || 0;
             const pct = total > 0 ? Math.round((segVal / total) * 100) : 0;
+            const isSelected = selectedIdx === idx;
             const isHovered = hoveredIdx === idx;
-            const isDimmed = hoveredIdx !== null && hoveredIdx !== idx;
+            const isActive = isSelected || isHovered;
+            const isDimmed = activeIdx !== null && !isActive;
 
             return (
               <div
                 key={idx}
+                onClick={() => handleSelect(idx)}
                 onMouseEnter={() => setHoveredIdx(idx)}
                 onMouseLeave={() => setHoveredIdx(null)}
-                className={`flex items-center justify-between gap-4 text-xs px-2.5 py-1.5 rounded-xl cursor-pointer transition-all ${
-                  isHovered
-                    ? 'bg-slate-100 shadow-2xs scale-[1.02]'
+                className={`flex items-center justify-between gap-2.5 text-xs px-2.5 py-1.5 rounded-xl cursor-pointer transition-all duration-200 border ${
+                  isSelected
+                    ? 'bg-blue-50/90 border-blue-200/90 shadow-2xs font-bold text-blue-900'
+                    : isHovered
+                    ? 'bg-slate-100/90 border-slate-200 shadow-2xs scale-[1.01]'
                     : isDimmed
-                    ? 'opacity-40'
-                    : 'hover:bg-slate-50'
+                    ? 'opacity-40 border-transparent hover:opacity-80'
+                    : 'hover:bg-slate-50/80 border-transparent'
                 }`}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
                   <span
-                    className={`w-3 h-3 rounded-full ${seg.dotClass} shrink-0 shadow-2xs transition-transform ${
-                      isHovered ? 'scale-125' : ''
+                    className={`w-2.5 h-2.5 rounded-full ${seg.dotClass} shrink-0 shadow-2xs transition-transform ${
+                      isActive ? 'scale-125' : ''
                     }`}
                   />
-                  <span className="text-slate-700 font-semibold whitespace-nowrap">{seg.label}</span>
+                  <span className="text-slate-700 font-semibold truncate leading-tight">
+                    {seg.label}
+                  </span>
                 </div>
-                <div className="flex items-center gap-1.5 font-mono tabular-numbers pl-2">
+                <div className="flex items-center gap-1.5 font-mono tabular-numbers shrink-0">
                   <span className="font-bold text-slate-900">{segVal}</span>
-                  <span className="text-[11px] text-slate-400 font-medium">({pct}%)</span>
+                  <span className="text-[10px] text-slate-400 font-medium">({pct}%)</span>
                 </div>
               </div>
             );

@@ -323,7 +323,7 @@ class SuperAdminDashboardController extends Controller
                     ['label' => 'Administrators', 'value' => $totalAdmins, 'color' => '#3b82f6', 'dotClass' => 'bg-blue-500'],
                     ['label' => 'Medical Staff', 'value' => $totalStaff, 'color' => '#10b981', 'dotClass' => 'bg-emerald-500'],
                     ['label' => 'Vendors & Suppliers', 'value' => $totalVendors, 'color' => '#f59e0b', 'dotClass' => 'bg-amber-500'],
-                    ['label' => 'Sales Representatives', 'value' => $totalSales, 'color' => '#8b5cf6', 'dotClass' => 'bg-purple-500'],
+                    ['label' => 'Sales Team', 'value' => $totalSales, 'color' => '#8b5cf6', 'dotClass' => 'bg-purple-500'],
                 ],
                 'stock_health_donut' => [
                     ['label' => 'Optimal Stock', 'value' => max(0, $totalInventoryProducts - $lowStockProductsCount), 'color' => '#10b981', 'dotClass' => 'bg-emerald-500'],

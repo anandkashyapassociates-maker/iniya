@@ -166,7 +166,7 @@ export default function SuperAdminDashboardPage() {
     { label: 'Administrators', value: modules.admins.total || 4, color: '#3b82f6', dotClass: 'bg-blue-500' },
     { label: 'Medical Staff', value: modules.staff.total || 3, color: '#10b981', dotClass: 'bg-emerald-500' },
     { label: 'Vendors & Suppliers', value: modules.vendors.total || 2, color: '#f59e0b', dotClass: 'bg-amber-500' },
-    { label: 'Sales Representatives', value: modules.sales_team.total || 0, color: '#8b5cf6', dotClass: 'bg-purple-500' },
+    { label: 'Sales Team', value: modules.sales_team.total || 0, color: '#8b5cf6', dotClass: 'bg-purple-500' },
   ];
 
   return (
