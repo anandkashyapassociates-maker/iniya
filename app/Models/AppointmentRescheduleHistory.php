@@ -25,13 +25,25 @@ class AppointmentRescheduleHistory extends Model
         'old_time',
         'old_staff_id',
         'old_commission',
+        'old_inventory_product_ids',
         'new_date',
         'new_time',
         'new_staff_id',
         'new_commission',
+        'new_inventory_product_ids',
         'reschedule_reason',
         'rescheduled_by',
         'created_at',
+    ];
+
+    /**
+     * Appends to JSON representation.
+     *
+     * @var list<string>
+     */
+    protected $appends = [
+        'old_products',
+        'new_products',
     ];
 
     /**
@@ -46,8 +58,42 @@ class AppointmentRescheduleHistory extends Model
             'new_date' => 'date:Y-m-d',
             'old_commission' => 'decimal:2',
             'new_commission' => 'decimal:2',
+            'old_inventory_product_ids' => 'array',
+            'new_inventory_product_ids' => 'array',
             'created_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Associated old products list.
+     */
+    public function getOldProductsAttribute(): array
+    {
+        $ids = $this->old_inventory_product_ids;
+        if (! empty($ids) && is_array($ids)) {
+            return InventoryProduct::whereIn('id', $ids)
+                ->select('id', 'product_name', 'business_unit')
+                ->get()
+                ->toArray();
+        }
+
+        return [];
+    }
+
+    /**
+     * Associated new products list.
+     */
+    public function getNewProductsAttribute(): array
+    {
+        $ids = $this->new_inventory_product_ids;
+        if (! empty($ids) && is_array($ids)) {
+            return InventoryProduct::whereIn('id', $ids)
+                ->select('id', 'product_name', 'business_unit')
+                ->get()
+                ->toArray();
+        }
+
+        return [];
     }
 
     /**
