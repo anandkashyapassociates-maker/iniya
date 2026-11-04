@@ -76,19 +76,25 @@ export default function StatCard({
 
   return (
     <div
-      className={`bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between relative overflow-hidden group min-h-[165px] ${current.border} ${className}`}
+      className={`bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between relative overflow-hidden group min-h-[160px] ${current.border} ${className}`}
     >
       {/* Top Section: Title & Value on Left, 3D Icon on Right */}
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-2.5">
         <div className="min-w-0 flex-1">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block truncate font-mono">
+          <span
+            className="text-[11px] sm:text-xs font-bold text-slate-500 block truncate font-display leading-tight tracking-normal group-hover:text-slate-800 transition-colors"
+            title={title}
+          >
             {title}
           </span>
-          <div className="text-2xl sm:text-3xl font-black font-display text-slate-900 tracking-tight mt-2 tabular-numbers leading-tight group-hover:text-blue-600 transition-colors">
+          <div className="text-2xl sm:text-[26px] xl:text-3xl font-black font-display text-slate-900 tracking-tight mt-1.5 tabular-numbers leading-tight group-hover:text-blue-600 transition-colors truncate">
             {displayValue}
           </div>
           {subtitle && (
-            <p className="text-[11px] text-slate-500 mt-1 font-medium leading-relaxed truncate">
+            <p
+              className="text-[11px] text-slate-400 mt-1 font-medium leading-relaxed truncate"
+              title={subtitle}
+            >
               {subtitle}
             </p>
           )}
@@ -96,26 +102,29 @@ export default function StatCard({
 
         {Icon && (
           <div
-            className={`w-12 h-12 rounded-2xl ${current.gradient} text-white flex items-center justify-center shrink-0 icon-3d shadow-md group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}
+            className={`w-11 h-11 rounded-2xl ${current.gradient} text-white flex items-center justify-center shrink-0 icon-3d shadow-md group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}
           >
-            <Icon className="w-6 h-6 drop-shadow-sm" />
+            <Icon className="w-5 h-5 drop-shadow-sm" />
           </div>
         )}
       </div>
 
       {/* Bottom Section: Real Status Pill on Left, Action Link on Right */}
-      <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between gap-2">
+      <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between gap-1.5 min-w-0">
         {trend ? (
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border shadow-2xs font-mono shrink-0 ${badgeClass}`}>
-            <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />
-            <span>{trend}</span>
+          <span
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold border shadow-2xs font-mono shrink min-w-0 ${badgeClass}`}
+            title={trend}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80 shrink-0" />
+            <span className="truncate">{trend}</span>
           </span>
         ) : (
-          <span className="text-[11px] text-slate-400 font-semibold font-mono">100% Real DB</span>
+          <span className="text-[10px] sm:text-[11px] text-slate-400 font-semibold font-mono shrink-0">100% Real DB</span>
         )}
 
         {actionText && (
-          <span className="text-xs font-bold text-slate-500 group-hover:text-blue-600 transition-colors inline-flex items-center gap-1 font-display shrink-0">
+          <span className="text-[11px] sm:text-xs font-bold text-slate-500 group-hover:text-blue-600 transition-colors inline-flex items-center gap-0.5 font-display shrink-0 whitespace-nowrap ml-auto">
             <span>{actionText}</span>
           </span>
         )}

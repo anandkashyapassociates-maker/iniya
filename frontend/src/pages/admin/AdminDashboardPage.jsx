@@ -351,42 +351,42 @@ export default function AdminDashboardPage() {
             {/* STAFF CARD 1: My Total Consultations */}
             <Link to="/admin/my-appointments" className="block group">
               <StatCard
-                title="My Total Consultations"
+                title="My Consultations"
                 value={stats?.total_sessions ?? 0}
                 subtitle={`${todaySessionsCount} scheduled for today`}
                 icon={Calendar}
                 colorScheme="blue"
                 trend={stats?.total_sessions > 0 ? `${stats.total_sessions} Assigned` : '0 Assigned'}
                 trendColor={stats?.total_sessions > 0 ? 'blue' : 'slate'}
-                actionText="My Queue ↗"
+                actionText="Queue ↗"
               />
             </Link>
 
             {/* STAFF CARD 2: Today's Active Consultations */}
             <Link to="/admin/my-appointments" className="block group">
               <StatCard
-                title="Today's Active Sessions"
+                title="Today's Sessions"
                 value={todaySessionsCount}
                 subtitle={`${inProgressCount} active • ${pendingCount} pending`}
                 icon={Clock}
                 colorScheme="emerald"
-                trend={todaySessionsCount > 0 ? `${todaySessionsCount} Today` : '0 Active Queue'}
+                trend={todaySessionsCount > 0 ? `${todaySessionsCount} Today` : '0 Active'}
                 trendColor={todaySessionsCount > 0 ? 'emerald' : 'slate'}
-                actionText="Live Sessions ↗"
+                actionText="Live ↗"
               />
             </Link>
 
             {/* STAFF CARD 3: In-Progress Treatments */}
             <Link to="/admin/my-appointments" className="block group">
               <StatCard
-                title="In-Progress Treatments"
+                title="In-Progress Cases"
                 value={inProgressCount}
                 subtitle="Currently undergoing therapy"
                 icon={Activity}
                 colorScheme="indigo"
-                trend={inProgressCount > 0 ? `${inProgressCount} In Therapy` : '0 In Progress'}
+                trend={inProgressCount > 0 ? `${inProgressCount} Active` : '0 Active'}
                 trendColor={inProgressCount > 0 ? 'blue' : 'slate'}
-                actionText="Active Cases ↗"
+                actionText="Cases ↗"
               />
             </Link>
 
@@ -400,20 +400,20 @@ export default function AdminDashboardPage() {
                 colorScheme="emerald"
                 trend={completedCount > 0 ? `${completedCount} Closed` : '0 Closed'}
                 trendColor={completedCount > 0 ? 'emerald' : 'slate'}
-                actionText="Completed ↗"
+                actionText="Reports ↗"
               />
             </Link>
 
             {/* STAFF CARD 5: Total Earned Commission */}
             <div className="block">
               <StatCard
-                title="My Total Commission"
+                title="Total Commission"
                 value={totalStaffCommission > 0 ? `₹${totalStaffCommission.toLocaleString('en-IN')}` : '₹0'}
                 subtitle="Earned across completed sessions"
                 icon={Award}
                 colorScheme="purple"
                 animateCount={false}
-                trend={totalStaffCommission > 0 ? `₹${totalStaffCommission.toLocaleString('en-IN')} Earned` : '₹0 Earned'}
+                trend={totalStaffCommission > 0 ? `₹${totalStaffCommission.toLocaleString('en-IN')}` : '₹0 Earned'}
                 trendColor={totalStaffCommission > 0 ? 'purple' : 'slate'}
                 actionText="Earnings ↗"
               />
@@ -428,35 +428,35 @@ export default function AdminDashboardPage() {
                 icon={IndianRupee}
                 colorScheme="teal"
                 animateCount={false}
-                trend={todayStaffCommission > 0 ? `₹${todayStaffCommission.toLocaleString('en-IN')} Cleared` : '₹0 Today'}
+                trend={todayStaffCommission > 0 ? `₹${todayStaffCommission.toLocaleString('en-IN')}` : '₹0 Today'}
                 trendColor={todayStaffCommission > 0 ? 'emerald' : 'slate'}
-                actionText="Daily Payout ↗"
+                actionText="Payout ↗"
               />
             </div>
 
             {/* STAFF CARD 7: Pending Patient Queue */}
             <Link to="/admin/my-appointments" className="block group">
               <StatCard
-                title="Pending Consultations"
+                title="Pending Queue"
                 value={pendingCount}
                 subtitle="Upcoming patient appointments"
                 icon={Clock}
                 colorScheme="amber"
                 trend={pendingCount > 0 ? `${pendingCount} Awaiting` : '0 Pending'}
                 trendColor={pendingCount > 0 ? 'amber' : 'slate'}
-                actionText="Patient Queue ↗"
+                actionText="Queue ↗"
               />
             </Link>
 
             {/* STAFF CARD 8: Medical Inventory Stock (Information-only, managed by Admin) */}
             <div className="block">
               <StatCard
-                title="Hospital Supplies Stock"
+                title="Supplies Stock"
                 value={totalInventory}
                 subtitle={lowStockCount > 0 ? `${lowStockCount} items depleted` : 'Adequate supply'}
                 icon={Boxes}
                 colorScheme={lowStockCount > 0 ? 'amber' : 'emerald'}
-                trend={lowStockCount > 0 ? `${lowStockCount} Alerts Depleted` : 'Stock Healthy'}
+                trend={lowStockCount > 0 ? `${lowStockCount} Depleted` : 'Healthy'}
                 trendColor={lowStockCount > 0 ? 'amber' : 'emerald'}
                 actionText="Supplies ↗"
               />
@@ -472,9 +472,9 @@ export default function AdminDashboardPage() {
                 subtitle={`${newPatientsThisMonth} registered this month`}
                 icon={Users}
                 colorScheme="blue"
-                trend={totalPatients > 0 ? `${totalPatients} Verified Profiles` : '0 Registered'}
+                trend={totalPatients > 0 ? `${totalPatients} Verified` : '0 Registered'}
                 trendColor={totalPatients > 0 ? 'blue' : 'slate'}
-                actionText="Patient Directory ↗"
+                actionText="Directory ↗"
               />
             </Link>
 
@@ -486,9 +486,9 @@ export default function AdminDashboardPage() {
                 subtitle={`${upcomingQueueCount} in active queue today`}
                 icon={Calendar}
                 colorScheme="emerald"
-                trend={todaySessionsCount > 0 ? `${todaySessionsCount} In Queue Today` : '0 In Active Queue'}
+                trend={todaySessionsCount > 0 ? `${todaySessionsCount} In Queue` : '0 In Queue'}
                 trendColor={todaySessionsCount > 0 ? 'emerald' : 'slate'}
-                actionText="Live Queue ↗"
+                actionText="Queue ↗"
               />
             </Link>
 
@@ -503,7 +503,7 @@ export default function AdminDashboardPage() {
                 animateCount={false}
                 trend={totalRevenue > 0 ? `₹${totalRevenue.toLocaleString('en-IN')} Booked` : '₹0 Booked'}
                 trendColor={totalRevenue > 0 ? 'purple' : 'slate'}
-                actionText="OPD Ledger ↗"
+                actionText="Ledger ↗"
               />
             </div>
 
@@ -533,7 +533,7 @@ export default function AdminDashboardPage() {
                 animateCount={false}
                 trend={totalStaffCommission > 0 ? `₹${totalStaffCommission.toLocaleString('en-IN')} Cleared` : '₹0 Cleared'}
                 trendColor={totalStaffCommission > 0 ? 'purple' : 'slate'}
-                actionText="Staff Payouts ↗"
+                actionText="Payouts ↗"
               />
             </div>
 
@@ -546,7 +546,7 @@ export default function AdminDashboardPage() {
                 icon={CheckCircle2}
                 colorScheme="amber"
                 animateCount={false}
-                trend={completedCount > 0 ? `${completedCount} Closed` : '0 Sessions Closed'}
+                trend={completedCount > 0 ? `${completedCount} Closed` : '0 Closed'}
                 trendColor={completedCount > 0 ? 'emerald' : 'slate'}
                 actionText="Reports ↗"
               />
@@ -560,7 +560,7 @@ export default function AdminDashboardPage() {
                 subtitle="Treatments & Procedures Active"
                 icon={FolderTree}
                 colorScheme="cyan"
-                trend={`${activePackages} Active Treatments`}
+                trend={`${activePackages} Active`}
                 trendColor="cyan"
                 actionText="Catalog ↗"
               />
@@ -574,9 +574,9 @@ export default function AdminDashboardPage() {
                 subtitle={lowStockCount > 0 ? `${lowStockCount} items depleted` : 'Adequate supply'}
                 icon={Boxes}
                 colorScheme={lowStockCount > 0 ? 'amber' : 'emerald'}
-                trend={lowStockCount > 0 ? `${lowStockCount} Alerts Depleted` : 'Stock Healthy'}
+                trend={lowStockCount > 0 ? `${lowStockCount} Depleted` : 'Healthy'}
                 trendColor={lowStockCount > 0 ? 'amber' : 'emerald'}
-                actionText="Supplies Radar ↗"
+                actionText="Supplies ↗"
               />
             </Link>
           </>
@@ -659,7 +659,7 @@ export default function AdminDashboardPage() {
                       <span className="text-[10px] text-slate-400 block font-medium">Counter Desk</span>
                     </div>
                   </div>
-                  <span className="font-mono font-black text-slate-900 text-sm tabular-numbers">
+                  <span className="font-mono font-black text-slate-900 text-sm tabular-numbers shrink-0 ml-2 text-right">
                     ₹{(payment_modes.cash || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
@@ -693,7 +693,7 @@ export default function AdminDashboardPage() {
                       <span className="text-[10px] text-slate-400 block font-medium">Instant Pay</span>
                     </div>
                   </div>
-                  <span className="font-mono font-black text-slate-900 text-sm tabular-numbers">
+                  <span className="font-mono font-black text-slate-900 text-sm tabular-numbers shrink-0 ml-2 text-right">
                     ₹{(payment_modes.upi || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
@@ -727,7 +727,7 @@ export default function AdminDashboardPage() {
                       <span className="text-[10px] text-slate-400 block font-medium">Terminal Swipe</span>
                     </div>
                   </div>
-                  <span className="font-mono font-black text-slate-900 text-sm tabular-numbers">
+                  <span className="font-mono font-black text-slate-900 text-sm tabular-numbers shrink-0 ml-2 text-right">
                     ₹{(payment_modes.card || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
@@ -761,7 +761,7 @@ export default function AdminDashboardPage() {
                       <span className="text-[10px] text-slate-400 block font-medium">NEFT / RTGS</span>
                     </div>
                   </div>
-                  <span className="font-mono font-black text-slate-900 text-sm tabular-numbers">
+                  <span className="font-mono font-black text-slate-900 text-sm tabular-numbers shrink-0 ml-2 text-right">
                     ₹{(payment_modes.bank || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
