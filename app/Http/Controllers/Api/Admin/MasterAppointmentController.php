@@ -123,17 +123,18 @@ class MasterAppointmentController extends Controller
         $todayStr = Carbon::today()->toDateString();
         $totalMasterAppointments = MasterAppointment::count();
         $todayMasterAppointments = MasterAppointment::whereDate('appointment_date', $todayStr)->count();
-        $totalSessions = AppointmentSession::count();
-        $todaySessions = AppointmentSession::whereDate('session_date', $todayStr)
+        $sessionsQuery = AppointmentSession::whereHas('masterAppointment');
+        $totalSessions = (clone $sessionsQuery)->count();
+        $todaySessions = (clone $sessionsQuery)->whereDate('session_date', $todayStr)
             ->where('status', '!=', AppointmentSession::STATUS_CANCELLED)
             ->count();
-        $upcomingSessions = AppointmentSession::where('session_date', '>=', $todayStr)
+        $upcomingSessions = (clone $sessionsQuery)->where('session_date', '>=', $todayStr)
             ->whereIn('status', [AppointmentSession::STATUS_PENDING, AppointmentSession::STATUS_IN_PROGRESS])
             ->count();
-        $pendingSessions = AppointmentSession::where('status', AppointmentSession::STATUS_PENDING)->count();
-        $inProgressSessions = AppointmentSession::where('status', AppointmentSession::STATUS_IN_PROGRESS)->count();
-        $completedSessions = AppointmentSession::where('status', AppointmentSession::STATUS_COMPLETED)->count();
-        $cancelledSessions = AppointmentSession::where('status', AppointmentSession::STATUS_CANCELLED)->count();
+        $pendingSessions = (clone $sessionsQuery)->where('status', AppointmentSession::STATUS_PENDING)->count();
+        $inProgressSessions = (clone $sessionsQuery)->where('status', AppointmentSession::STATUS_IN_PROGRESS)->count();
+        $completedSessions = (clone $sessionsQuery)->where('status', AppointmentSession::STATUS_COMPLETED)->count();
+        $cancelledSessions = (clone $sessionsQuery)->where('status', AppointmentSession::STATUS_CANCELLED)->count();
         $todayRevenue = (float) MasterAppointment::whereDate('appointment_date', $todayStr)->sum('appointment_fees');
         $totalRevenue = (float) MasterAppointment::sum('appointment_fees');
 
@@ -453,12 +454,20 @@ class MasterAppointmentController extends Controller
             ]);
         }
 
-        if ($master->image && Storage::disk('public')->exists($master->image)) {
-            Storage::disk('public')->delete($master->image);
-        }
-
         DB::transaction(function () use ($master) {
-            $master->delete(); // cascades to sessions due to DB foreign key onDelete('cascade')
+            foreach ($master->sessions as $session) {
+                if ($session->image && Storage::disk('public')->exists($session->image)) {
+                    Storage::disk('public')->delete($session->image);
+                }
+                $session->rescheduleHistories()->delete();
+                $session->delete();
+            }
+
+            if ($master->image && Storage::disk('public')->exists($master->image)) {
+                Storage::disk('public')->delete($master->image);
+            }
+
+            $master->delete();
         });
 
         return response()->json([

@@ -100,19 +100,20 @@ class AppointmentController extends Controller
     {
         $today = Carbon::today()->toDateString();
         $masterCount = MasterAppointment::count();
-        $sessionCount = AppointmentSession::count();
+        $sessionsQuery = AppointmentSession::whereHas('masterAppointment');
+        $sessionCount = (clone $sessionsQuery)->count();
 
         if ($masterCount > 0 || $sessionCount > 0) {
             $stats = [
                 'total' => $masterCount,
                 'total_sessions' => $sessionCount,
-                'today' => AppointmentSession::whereDate('session_date', $today)->where('status', '!=', AppointmentSession::STATUS_CANCELLED)->count(),
-                'scheduled' => AppointmentSession::where('session_date', '>=', $today)->whereIn('status', [AppointmentSession::STATUS_PENDING, AppointmentSession::STATUS_IN_PROGRESS])->count(),
-                'pending' => AppointmentSession::where('status', AppointmentSession::STATUS_PENDING)->count(),
-                'in_progress' => AppointmentSession::where('status', AppointmentSession::STATUS_IN_PROGRESS)->count(),
-                'confirmed' => AppointmentSession::where('status', AppointmentSession::STATUS_IN_PROGRESS)->count(),
-                'completed' => AppointmentSession::where('status', AppointmentSession::STATUS_COMPLETED)->count(),
-                'cancelled' => AppointmentSession::where('status', AppointmentSession::STATUS_CANCELLED)->count(),
+                'today' => (clone $sessionsQuery)->whereDate('session_date', $today)->where('status', '!=', AppointmentSession::STATUS_CANCELLED)->count(),
+                'scheduled' => (clone $sessionsQuery)->where('session_date', '>=', $today)->whereIn('status', [AppointmentSession::STATUS_PENDING, AppointmentSession::STATUS_IN_PROGRESS])->count(),
+                'pending' => (clone $sessionsQuery)->where('status', AppointmentSession::STATUS_PENDING)->count(),
+                'in_progress' => (clone $sessionsQuery)->where('status', AppointmentSession::STATUS_IN_PROGRESS)->count(),
+                'confirmed' => (clone $sessionsQuery)->where('status', AppointmentSession::STATUS_IN_PROGRESS)->count(),
+                'completed' => (clone $sessionsQuery)->where('status', AppointmentSession::STATUS_COMPLETED)->count(),
+                'cancelled' => (clone $sessionsQuery)->where('status', AppointmentSession::STATUS_CANCELLED)->count(),
             ];
         } else {
             $stats = [
