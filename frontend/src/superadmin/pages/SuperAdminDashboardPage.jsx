@@ -172,7 +172,7 @@ export default function SuperAdminDashboardPage() {
   ];
 
   return (
-    <div className="space-y-8 pb-20 animate-fade-in font-sans text-slate-800">
+    <div className="space-y-8 pb-1 animate-fade-in font-sans text-slate-800">
       {/* ======================================================== */}
       {/* 1. Executive Greeting Banner                            */}
       {/* ======================================================== */}
