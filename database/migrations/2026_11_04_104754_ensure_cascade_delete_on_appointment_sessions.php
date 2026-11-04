@@ -36,17 +36,26 @@ return new class extends Migration
 
         // 2. Add ON DELETE CASCADE foreign key constraint to appointment_sessions table
         if (Schema::hasTable('appointment_sessions') && Schema::hasTable('master_appointments')) {
-            $fkExists = DB::select(
-                "SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'appointment_sessions' AND CONSTRAINT_NAME = 'fk_appts_master_id'"
-            );
+            $fkExists = false;
 
-            if (empty($fkExists)) {
-                Schema::table('appointment_sessions', function (Blueprint $table) {
-                    $table->foreign('master_appointment_id', 'fk_appts_master_id')
-                        ->references('id')
-                        ->on('master_appointments')
-                        ->cascadeOnDelete();
-                });
+            if (DB::getDriverName() === 'mysql') {
+                $fkRows = DB::select(
+                    "SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'appointment_sessions' AND CONSTRAINT_NAME = 'fk_appts_master_id'"
+                );
+                $fkExists = ! empty($fkRows);
+            }
+
+            if (! $fkExists) {
+                try {
+                    Schema::table('appointment_sessions', function (Blueprint $table) {
+                        $table->foreign('master_appointment_id', 'fk_appts_master_id')
+                            ->references('id')
+                            ->on('master_appointments')
+                            ->cascadeOnDelete();
+                    });
+                } catch (Throwable $e) {
+                    // Ignore if FK constraint cannot be added or already exists
+                }
             }
         }
     }
@@ -56,10 +65,14 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasTable('appointment_sessions')) {
-            Schema::table('appointment_sessions', function (Blueprint $table) {
-                $table->dropForeign('fk_appts_master_id');
-            });
+        if (Schema::hasTable('appointment_sessions') && DB::getDriverName() === 'mysql') {
+            try {
+                Schema::table('appointment_sessions', function (Blueprint $table) {
+                    $table->dropForeign('fk_appts_master_id');
+                });
+            } catch (Throwable $e) {
+                // Ignore
+            }
         }
     }
 };
