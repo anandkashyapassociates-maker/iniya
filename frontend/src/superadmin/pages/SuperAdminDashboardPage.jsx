@@ -176,7 +176,7 @@ export default function SuperAdminDashboardPage() {
       {/* ======================================================== */}
       {/* 1. Executive Greeting Banner                            */}
       {/* ======================================================== */}
-      <div className="border border-blue-200/80 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-xs min-h-[195px] sm:min-h-[215px] flex items-center bg-gradient-to-r from-blue-100/90 via-sky-50/70 to-blue-50/20">
+      <div className="border border-blue-200/80 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-xs min-h-[180px] sm:min-h-[195px] flex items-center bg-gradient-to-r from-blue-100/90 via-sky-50/70 to-blue-50/20">
         <ClinicBannerBackground isSuperAdmin={true} />
 
         {/* Content strictly positioned on the left side - ZERO overlap with the right-side artwork */}
