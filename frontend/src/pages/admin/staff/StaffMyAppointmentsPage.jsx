@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Calendar,
   Clock,
@@ -58,12 +58,28 @@ export default function StaffMyAppointmentsPage() {
   });
   const [isLoading, setIsLoading] = useState(true);
 
+  // URL Search Params
+  const [searchParams] = useSearchParams();
+  const urlStatus = searchParams.get('status');
+
   // Filters
   const [search, setSearch] = useState('');
   const [dateFilter, setDateFilter] = useState('all'); // all | today | upcoming | past | custom
   const [customDate, setCustomDate] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all'); // all | pending | in_progress | completed | cancelled
+  const [statusFilter, setStatusFilter] = useState(
+    urlStatus && ['all', 'pending', 'in_progress', 'completed', 'cancelled'].includes(urlStatus)
+      ? urlStatus
+      : 'all'
+  );
   const [page, setPage] = useState(1);
+
+  // Sync status if URL query changes
+  useEffect(() => {
+    const s = searchParams.get('status');
+    if (s && ['all', 'pending', 'in_progress', 'completed', 'cancelled'].includes(s)) {
+      setStatusFilter(s);
+    }
+  }, [searchParams]);
 
   // Fetch appointment sessions assigned to this staff member
   const fetchSessions = useCallback(async () => {

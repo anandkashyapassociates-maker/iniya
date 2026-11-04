@@ -1036,86 +1036,44 @@ export default function AdminDashboardPage() {
             {/* Role Action Tiles */}
             {isStaff ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-4">
-                {/* Staff Tile 1: My Appointments Queue */}
+                {/* Staff Tile 1: My Appointments Queue (Active Page) */}
                 <Link
                   to="/admin/my-appointments"
-                  className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-blue-300 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile relative overflow-hidden cursor-pointer"
+                  className="p-4 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-blue-300 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile relative overflow-hidden cursor-pointer"
                 >
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-sm shadow-blue-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-sm shadow-blue-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
                       <Calendar className="w-5 h-5 drop-shadow-xs" />
                     </div>
                     <ArrowUpRight className="w-4 h-4 text-slate-300 opacity-40 group-hover/tile:opacity-100 group-hover/tile:text-blue-600 group-hover/tile:translate-x-0.5 group-hover/tile:-translate-y-0.5 transition-all" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-slate-800 group-hover/tile:text-blue-700 transition-colors block">
+                    <span className="text-sm font-bold text-slate-800 group-hover/tile:text-blue-700 transition-colors block">
                       My Appointments Queue
                     </span>
-                    <span className="text-[11px] text-slate-400 group-hover/tile:text-slate-500 transition-colors mt-0.5 block leading-snug">
-                      Clinical session history
+                    <span className="text-xs text-slate-400 group-hover/tile:text-slate-500 transition-colors mt-0.5 block leading-snug">
+                      Assigned patient clinical sessions & records
                     </span>
                   </div>
                 </Link>
 
-                {/* Staff Tile 2: Active Treatments */}
-                <Link
-                  to="/admin/my-appointments"
-                  className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-indigo-300 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile relative overflow-hidden cursor-pointer"
-                >
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-violet-500 text-white flex items-center justify-center icon-3d shadow-sm shadow-indigo-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
-                      <Activity className="w-5 h-5 drop-shadow-xs" />
-                    </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-300 opacity-40 group-hover/tile:opacity-100 group-hover/tile:text-indigo-600 group-hover/tile:translate-x-0.5 group-hover/tile:-translate-y-0.5 transition-all" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-bold text-slate-800 group-hover/tile:text-indigo-700 transition-colors block">
-                      Active Consultations
-                    </span>
-                    <span className="text-[11px] text-slate-400 group-hover/tile:text-slate-500 transition-colors mt-0.5 block leading-snug">
-                      In-progress treatments
-                    </span>
-                  </div>
-                </Link>
-
-                {/* Staff Tile 3: Completed Consultations */}
-                <Link
-                  to="/admin/my-appointments"
-                  className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-emerald-300 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile relative overflow-hidden cursor-pointer"
-                >
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-sm shadow-emerald-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
-                      <CheckCircle2 className="w-5 h-5 drop-shadow-xs" />
-                    </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-300 opacity-40 group-hover/tile:opacity-100 group-hover/tile:text-emerald-600 group-hover/tile:translate-x-0.5 group-hover/tile:-translate-y-0.5 transition-all" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-bold text-slate-800 group-hover/tile:text-emerald-700 transition-colors block">
-                      Completed Sessions
-                    </span>
-                    <span className="text-[11px] text-slate-400 group-hover/tile:text-slate-500 transition-colors mt-0.5 block leading-snug">
-                      Commissions &amp; records
-                    </span>
-                  </div>
-                </Link>
-
-                {/* Staff Tile 4: My Profile & Credentials */}
+                {/* Staff Tile 2: My Profile & Credentials (Active Page) */}
                 <Link
                   to="/admin/profile"
-                  className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-teal-300 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile relative overflow-hidden cursor-pointer"
+                  className="p-4 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-teal-300 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile relative overflow-hidden cursor-pointer"
                 >
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-500 via-emerald-500 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-sm shadow-teal-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-teal-500 via-emerald-500 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-sm shadow-teal-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
                       <Stethoscope className="w-5 h-5 drop-shadow-xs" />
                     </div>
                     <ArrowUpRight className="w-4 h-4 text-slate-300 opacity-40 group-hover/tile:opacity-100 group-hover/tile:text-teal-600 group-hover/tile:translate-x-0.5 group-hover/tile:-translate-y-0.5 transition-all" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-slate-800 group-hover/tile:text-teal-700 transition-colors block">
-                      My Profile
+                    <span className="text-sm font-bold text-slate-800 group-hover/tile:text-teal-700 transition-colors block">
+                      My Profile & Credentials
                     </span>
-                    <span className="text-[11px] text-slate-400 group-hover/tile:text-slate-500 transition-colors mt-0.5 block leading-snug">
-                      Credentials &amp; settings
+                    <span className="text-xs text-slate-400 group-hover/tile:text-slate-500 transition-colors mt-0.5 block leading-snug">
+                      Doctor details, schedule timeslots & settings
                     </span>
                   </div>
                 </Link>
