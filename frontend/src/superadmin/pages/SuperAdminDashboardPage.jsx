@@ -137,11 +137,14 @@ export default function SuperAdminDashboardPage() {
   const superAdminDisplayName = user?.name || 'Super Admin';
 
   const formatCurrency = (val) => {
+    const num = Number(val || 0);
+    const hasDecimals = num % 1 !== 0;
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
-      maximumFractionDigits: 2,
-    }).format(val || 0);
+      maximumFractionDigits: hasDecimals ? 2 : 0,
+      minimumFractionDigits: 0,
+    }).format(num);
   };
 
   // Real chart data mapped from backend
@@ -242,7 +245,7 @@ export default function SuperAdminDashboardPage() {
       {/* ======================================================== */}
       {/* 3. Primary Executive KPI Pillars (4 Major Domains)       */}
       {/* ======================================================== */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="flex items-center justify-between px-1">
           <div>
             <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
@@ -252,7 +255,7 @@ export default function SuperAdminDashboardPage() {
               High-level status across hospital workforce, clinical desk, inventory, and payouts.
             </p>
           </div>
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700">
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 shadow-2xs">
             100% Real Database Metrics
           </span>
         </div>
@@ -261,31 +264,37 @@ export default function SuperAdminDashboardPage() {
           {/* CARD 1: Hospital Personnel Workforce */}
           <Link
             to="/superadmin/staff-management/details"
-            className="bg-white rounded-2xl p-6 border border-slate-200/90 hover:border-blue-400 shadow-2xs hover:shadow-md transition-all duration-300 group flex flex-col justify-between"
+            className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden"
           >
-            <div>
-              <div className="flex items-center justify-between gap-3 mb-3">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-colors pointer-events-none" />
+
+            <div className="relative z-10">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                   Personnel &amp; Workforce
                 </span>
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0">
-                  <Users className="w-5 h-5" />
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-blue-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+                  <Users className="w-6 h-6 drop-shadow-sm" />
                 </div>
               </div>
-              <div className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight tabular-numbers">
-                {summary.total_personnel}
+
+              <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers whitespace-nowrap">
+                <AnimatedCounter value={summary.total_personnel} />
               </div>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+
+              <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
                 {modules.admins.total} Admins &bull; {modules.staff.total} Staff &bull; {modules.vendors.total} Vendors &bull; {modules.sales_team.total} Sales
               </p>
             </div>
-            <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
+
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs relative z-10">
               <span className="inline-flex items-center gap-1.5 font-bold text-emerald-600">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 {summary.active_rate}% Active
               </span>
-              <span className="text-slate-400 group-hover:text-blue-600 font-semibold inline-flex items-center gap-0.5 transition-colors">
-                View Roster <ArrowUpRight className="w-3.5 h-3.5" />
+              <span className="text-slate-400 group-hover:text-blue-600 font-bold inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-all">
+                <span>View Roster</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
               </span>
             </div>
           </Link>
@@ -293,30 +302,36 @@ export default function SuperAdminDashboardPage() {
           {/* CARD 2: Clinical Appointments & OPD */}
           <Link
             to="/superadmin/reports/appointments"
-            className="bg-white rounded-2xl p-6 border border-slate-200/90 hover:border-emerald-400 shadow-2xs hover:shadow-md transition-all duration-300 group flex flex-col justify-between"
+            className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden"
           >
-            <div>
-              <div className="flex items-center justify-between gap-3 mb-3">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-colors pointer-events-none" />
+
+            <div className="relative z-10">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                   Clinical Appointments
                 </span>
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0">
-                  <Stethoscope className="w-5 h-5" />
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-emerald-500/30 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 shrink-0">
+                  <Stethoscope className="w-6 h-6 drop-shadow-sm" />
                 </div>
               </div>
-              <div className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight tabular-numbers">
-                {summary.total_master_appointments}
+
+              <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers whitespace-nowrap">
+                <AnimatedCounter value={summary.total_master_appointments} />
               </div>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+
+              <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
                 {summary.total_appointment_sessions} Clinical Sessions &bull; {summary.total_customers} Registered Patients
               </p>
             </div>
-            <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span className="text-slate-600 font-semibold">
+
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs relative z-10">
+              <span className="font-bold text-slate-700">
                 {summary.today_appointments_count} Booked Today
               </span>
-              <span className="text-slate-400 group-hover:text-emerald-600 font-semibold inline-flex items-center gap-0.5 transition-colors">
-                Reports <ArrowUpRight className="w-3.5 h-3.5" />
+              <span className="text-slate-400 group-hover:text-emerald-600 font-bold inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-all">
+                <span>Reports</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
               </span>
             </div>
           </Link>
@@ -324,30 +339,37 @@ export default function SuperAdminDashboardPage() {
           {/* CARD 3: Inventory Supplies & Valuation */}
           <Link
             to="/superadmin/inventory/overview"
-            className="bg-white rounded-2xl p-6 border border-slate-200/90 hover:border-amber-400 shadow-2xs hover:shadow-md transition-all duration-300 group flex flex-col justify-between"
+            className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden"
           >
-            <div>
-              <div className="flex items-center justify-between gap-3 mb-3">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl group-hover:bg-amber-500/10 transition-colors pointer-events-none" />
+
+            <div className="relative z-10">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                   Inventory Valuation
                 </span>
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0">
-                  <Boxes className="w-5 h-5" />
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-yellow-500 text-white flex items-center justify-center icon-3d shadow-md shadow-amber-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+                  <Boxes className="w-6 h-6 drop-shadow-sm" />
                 </div>
               </div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight tabular-numbers truncate">
+
+              {/* Full amount rendered clearly without truncate or dots */}
+              <div className="text-2xl sm:text-[28px] lg:text-3xl font-black text-slate-900 tracking-tight tabular-numbers whitespace-nowrap">
                 {formatCurrency(summary.total_inventory_valuation)}
               </div>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+
+              <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
                 {summary.total_inventory_products} Products &bull; {summary.total_inventory_units.toLocaleString('en-IN')} In-Stock Units
               </p>
             </div>
-            <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
+
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs relative z-10">
               <span className={`font-bold ${summary.low_stock_products_count > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
                 {summary.low_stock_products_count > 0 ? `${summary.low_stock_products_count} Alerts Depleted` : 'Optimal Stock'}
               </span>
-              <span className="text-slate-400 group-hover:text-amber-600 font-semibold inline-flex items-center gap-0.5 transition-colors">
-                Overview <ArrowUpRight className="w-3.5 h-3.5" />
+              <span className="text-slate-400 group-hover:text-amber-600 font-bold inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-all">
+                <span>Overview</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
               </span>
             </div>
           </Link>
@@ -355,30 +377,37 @@ export default function SuperAdminDashboardPage() {
           {/* CARD 4: Financial Settlements & Payouts */}
           <Link
             to="/superadmin/payouts/ledger"
-            className="bg-white rounded-2xl p-6 border border-slate-200/90 hover:border-purple-400 shadow-2xs hover:shadow-md transition-all duration-300 group flex flex-col justify-between"
+            className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden"
           >
-            <div>
-              <div className="flex items-center justify-between gap-3 mb-3">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-colors pointer-events-none" />
+
+            <div className="relative z-10">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                   Disbursements &amp; Payouts
                 </span>
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0">
-                  <Receipt className="w-5 h-5" />
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 via-violet-600 to-indigo-600 text-white flex items-center justify-center icon-3d shadow-md shadow-purple-500/30 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 shrink-0">
+                  <Receipt className="w-6 h-6 drop-shadow-sm" />
                 </div>
               </div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight tabular-numbers truncate">
+
+              {/* Full amount rendered clearly without truncate or dots */}
+              <div className="text-2xl sm:text-[28px] lg:text-3xl font-black text-slate-900 tracking-tight tabular-numbers whitespace-nowrap">
                 {formatCurrency(summary.total_disbursed)}
               </div>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+
+              <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
                 {summary.total_payouts} Disbursed Vouchers &bull; Staff &amp; Vendors
               </p>
             </div>
-            <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span className="text-slate-600 font-semibold">
+
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs relative z-10">
+              <span className="font-bold text-slate-700">
                 Pending: {formatCurrency(summary.pending_payout_liabilities)}
               </span>
-              <span className="text-slate-400 group-hover:text-purple-600 font-semibold inline-flex items-center gap-0.5 transition-colors">
-                Passbook <ArrowUpRight className="w-3.5 h-3.5" />
+              <span className="text-slate-400 group-hover:text-purple-600 font-bold inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-all">
+                <span>Passbook</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
               </span>
             </div>
           </Link>
