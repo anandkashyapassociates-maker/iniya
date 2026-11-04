@@ -959,30 +959,40 @@ export default function SuperAdminDashboardPage() {
       {/* 7. Section B: Inventory & Supply Chain Health (Cards)    */}
       {/* ======================================================== */}
       <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-2xs space-y-6">
+        {/* Header with 3D Amber Box Icon and Action Buttons */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
-          <div>
-            <div className="flex items-center gap-2">
-              <Boxes className="w-5 h-5 text-amber-600" />
-              <h2 className="text-base font-bold text-slate-900">
-                Inventory &amp; Medical Supplies Oversight
-              </h2>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-yellow-400 text-white flex items-center justify-center icon-3d shadow-md shadow-amber-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+              <Boxes className="w-6 h-6 drop-shadow-sm" />
             </div>
-            <p className="text-xs text-slate-500 mt-1">
-              Current hospital stock levels, valuation, catalog categories, and depletion warnings.
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-slate-900">
+                  Inventory &amp; Medical Supplies Oversight
+                </h2>
+                {summary.low_stock_products_count > 0 && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 text-[11px] font-extrabold border border-rose-200/60 shadow-2xs">
+                    {summary.low_stock_products_count} Alerts
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Current hospital stock levels, valuation, catalog categories, and depletion warnings.
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap shrink-0">
             <Link
               to="/superadmin/inventory/stocks"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-all hover:scale-105"
             >
               <span>Manage Stocks</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
             <Link
               to="/superadmin/inventory/overview"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-xs transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-xs transition-all hover:scale-105"
             >
               <span>Inventory Overview</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
@@ -990,101 +1000,172 @@ export default function SuperAdminDashboardPage() {
           </div>
         </div>
 
-        {/* Inventory Quick Metric Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100/90">
-            <span className="text-[11px] font-semibold text-slate-500 block">Catalog Products</span>
-            <span className="text-xl sm:text-2xl font-black text-slate-900 block mt-1 tabular-numbers">
-              {summary.total_inventory_products}
-            </span>
-          </div>
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100/90">
-            <span className="text-[11px] font-semibold text-slate-500 block">In-Stock Units</span>
-            <span className="text-xl sm:text-2xl font-black text-slate-900 block mt-1 tabular-numbers">
-              {summary.total_inventory_units.toLocaleString('en-IN')}
-            </span>
-          </div>
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100/90">
-            <span className="text-[11px] font-semibold text-slate-500 block">Total Valuation</span>
-            <span className="text-xl sm:text-2xl font-black text-slate-900 block mt-1 tabular-numbers truncate">
-              {formatCurrency(summary.total_inventory_valuation)}
-            </span>
-          </div>
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100/90">
-            <span className="text-[11px] font-semibold text-slate-500 block">Low Stock Alerts</span>
-            <span className={`text-xl sm:text-2xl font-black block mt-1 tabular-numbers ${summary.low_stock_products_count > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
-              {summary.low_stock_products_count}
-            </span>
-          </div>
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100/90">
-            <span className="text-[11px] font-semibold text-slate-500 block">Product Categories</span>
-            <span className="text-xl sm:text-2xl font-black text-slate-900 block mt-1 tabular-numbers">
-              {modules.inventory?.categories_count || 0}
-            </span>
-          </div>
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100/90">
-            <span className="text-[11px] font-semibold text-slate-500 block">Brands Catalog</span>
-            <span className="text-xl sm:text-2xl font-black text-slate-900 block mt-1 tabular-numbers">
-              {modules.inventory?.brands_count || 0}
-            </span>
-          </div>
-        </div>
-
-        {/* Depleted & Low Stock List */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              Critical Low Stock / Depleted Supplies
-            </span>
-            <Link
-              to="/superadmin/inventory/stocks?status=low_stock"
-              className="text-xs font-semibold text-amber-600 hover:text-amber-800 transition-colors"
-            >
-              View Full Depletion List
-            </Link>
-          </div>
-
-          {modules.inventory?.low_stock_items && modules.inventory.low_stock_items.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {modules.inventory.low_stock_items.map((prod) => (
-                <div key={prod.id} className="p-4 rounded-2xl border border-amber-200/80 bg-amber-50/40 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="font-bold text-slate-900 text-sm">{prod.product_name}</span>
-                      <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-extrabold text-[10px] shrink-0">
-                        Low Stock
-                      </span>
-                    </div>
-                    <div className="text-xs text-slate-500 mt-1">
-                      {prod.category?.name || 'Category'} &bull; {prod.brand?.name || 'Brand'}
-                    </div>
+        {/* 2-Column Executive Layout: Left (4 KPI Cards in 2x2 grid) | Right (Priority Restock Radar) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          {/* Left Column (Cols 1-7): 4 Executive Inventory Metrics */}
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* KPI 1: Total Valuation (No Truncation) */}
+            <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-50/60 via-slate-50/40 to-white border border-emerald-100/90 shadow-2xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-emerald-500/25 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                    <IndianRupee className="w-5 h-5 drop-shadow-sm" />
                   </div>
-
-                  <div className="mt-4 pt-3 border-t border-amber-200/50 flex items-center justify-between text-xs">
-                    <div>
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Stock Level</span>
-                      <span className="font-mono font-bold text-slate-900">
-                        {prod.quantity} / {prod.low_stock_threshold} units
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Unit Cost</span>
-                      <span className="font-mono font-semibold text-slate-800">
-                        {formatCurrency(prod.buy_price)}
-                      </span>
-                    </div>
-                  </div>
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase tracking-wider">
+                    Total Valuation
+                  </span>
                 </div>
-              ))}
+                <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight tabular-numbers whitespace-nowrap">
+                  {formatCurrency(summary.total_inventory_valuation)}
+                </div>
+              </div>
+              <div className="mt-3 pt-2.5 border-t border-emerald-100/60 flex items-center justify-between text-xs text-slate-500">
+                <span>In-Stock Assets</span>
+                <span className="font-bold text-slate-800">
+                  <AnimatedCounter value={summary.total_inventory_units} /> Units
+                </span>
+              </div>
             </div>
-          ) : (
-            <div className="text-center py-7 px-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl">
-              <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-              <p className="text-xs font-semibold text-emerald-800">
-                All inventory products have adequate stock levels. No depleted items detected.
-              </p>
+
+            {/* KPI 2: Supply Health & Low Stock Alerts */}
+            <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-50/60 via-slate-50/40 to-white border border-amber-100/90 shadow-2xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-orange-500 to-rose-500 text-white flex items-center justify-center icon-3d shadow-md shadow-amber-500/25 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
+                    <AlertTriangle className="w-5 h-5 drop-shadow-sm" />
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${summary.low_stock_products_count > 0 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                    {summary.low_stock_products_count > 0 ? 'Depleted Warnings' : 'Healthy Stock'}
+                  </span>
+                </div>
+                <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight tabular-numbers flex items-baseline gap-2">
+                  <span className={summary.low_stock_products_count > 0 ? 'text-amber-600' : 'text-emerald-600'}>
+                    <AnimatedCounter value={summary.low_stock_products_count} />
+                  </span>
+                  <span className="text-xs font-semibold text-slate-400">Products Low</span>
+                </div>
+              </div>
+              <div className="mt-3 pt-2.5 border-t border-amber-100/60 flex items-center justify-between text-xs text-slate-500">
+                <span>Restock Status</span>
+                <span className={`font-bold ${summary.low_stock_products_count > 0 ? 'text-amber-700' : 'text-emerald-700'}`}>
+                  {summary.low_stock_products_count > 0 ? 'Action Recommended' : 'Optimal'}
+                </span>
+              </div>
             </div>
-          )}
+
+            {/* KPI 3: Catalog Products (SKUs) */}
+            <div className="p-5 rounded-2xl bg-gradient-to-br from-blue-50/60 via-slate-50/40 to-white border border-blue-100/90 shadow-2xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-blue-500/25 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                    <Boxes className="w-5 h-5 drop-shadow-sm" />
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-[10px] font-extrabold uppercase tracking-wider">
+                    Catalog SKUs
+                  </span>
+                </div>
+                <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight tabular-numbers flex items-baseline gap-2">
+                  <AnimatedCounter value={summary.total_inventory_products} />
+                  <span className="text-xs font-semibold text-slate-400">Registered</span>
+                </div>
+              </div>
+              <div className="mt-3 pt-2.5 border-t border-blue-100/60 flex items-center justify-between text-xs text-slate-500">
+                <span>Clinical Supplies</span>
+                <span className="font-bold text-blue-700">Medical Catalog</span>
+              </div>
+            </div>
+
+            {/* KPI 4: Classification (Categories & Brands) */}
+            <div className="p-5 rounded-2xl bg-gradient-to-br from-purple-50/60 via-slate-50/40 to-white border border-purple-100/90 shadow-2xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-fuchsia-600 to-pink-500 text-white flex items-center justify-center icon-3d shadow-md shadow-purple-500/25 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
+                    <Layers className="w-5 h-5 drop-shadow-sm" />
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 text-[10px] font-extrabold uppercase tracking-wider">
+                    Classification
+                  </span>
+                </div>
+                <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight tabular-numbers flex items-baseline gap-2">
+                  <AnimatedCounter value={modules.inventory?.categories_count || 0} />
+                  <span className="text-xs font-semibold text-slate-400">Categories</span>
+                </div>
+              </div>
+              <div className="mt-3 pt-2.5 border-t border-purple-100/60 flex items-center justify-between text-xs text-slate-500">
+                <span>Certified Brands</span>
+                <span className="font-bold text-purple-700">
+                  <AnimatedCounter value={modules.inventory?.brands_count || 0} /> Brands
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column (Cols 8-12): Priority Restock Radar (Short, Sleek, Compact) */}
+          <div className="lg:col-span-5 p-5 rounded-2xl bg-gradient-to-br from-amber-50/40 via-slate-50/30 to-white border border-slate-200/90 shadow-2xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                    Priority Restock Radar
+                  </span>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[10px]">
+                  Top Depleted
+                </span>
+              </div>
+
+              {modules.inventory?.low_stock_items && modules.inventory.low_stock_items.length > 0 ? (
+                <div className="space-y-2.5">
+                  {modules.inventory.low_stock_items.slice(0, 3).map((prod) => (
+                    <div
+                      key={prod.id}
+                      className="p-3 rounded-xl bg-white border border-slate-200/80 hover:border-amber-300 hover:shadow-xs transition-all duration-200 flex items-center justify-between gap-3 group/item"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-bold text-xs text-slate-900 truncate group-hover/item:text-amber-700 transition-colors">
+                          {prod.product_name}
+                        </h4>
+                        <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                          {prod.category?.name || 'Medical'} &bull; {prod.brand?.name || 'General'}
+                        </p>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <span className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 text-[10px] font-extrabold font-mono block">
+                          {prod.quantity} / {prod.low_stock_threshold} units
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono mt-0.5 block">
+                          {formatCurrency(prod.buy_price)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-8 text-center bg-emerald-50/40 rounded-xl border border-emerald-100">
+                  <CheckCircle2 className="w-7 h-7 text-emerald-500 mx-auto mb-1.5" />
+                  <p className="text-xs font-semibold text-emerald-800">
+                    All hospital inventory items are currently optimal.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Bottom link to full list */}
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span className="text-slate-400 text-[11px]">
+                Showing top 3 critical supplies
+              </span>
+              <Link
+                to="/superadmin/inventory/stocks?status=low_stock"
+                className="text-xs font-bold text-amber-600 hover:text-amber-800 transition-colors inline-flex items-center gap-1 group/link"
+              >
+                <span>View Full List ({summary.low_stock_products_count})</span>
+                <ArrowUpRight className="w-3.5 h-3.5 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
 
