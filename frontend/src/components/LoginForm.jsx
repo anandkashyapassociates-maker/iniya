@@ -58,7 +58,7 @@ export default function LoginForm({
       } else if (err.response?.data?.message) {
         setErrors({ general: err.response.data.message });
       } else if (!err.response) {
-        setErrors({ general: 'Cannot connect to backend server. Please make sure the Laravel server is running on http://127.0.0.1:8000' });
+        setErrors({ general: 'Cannot connect to backend server. Please check your network connection or server availability.' });
       } else {
         setErrors({ general: 'Login failed. Please check your credentials and try again.' });
       }
