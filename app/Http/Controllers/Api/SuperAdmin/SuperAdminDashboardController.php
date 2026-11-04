@@ -107,7 +107,17 @@ class SuperAdminDashboardController extends Controller
         $sessionsCompleted = AppointmentSession::where('status', AppointmentSession::STATUS_COMPLETED)->count();
         $sessionsCancelled = AppointmentSession::where('status', AppointmentSession::STATUS_CANCELLED)->count();
 
-        // 7. Payout Management Metrics
+        // 7. Clinical Revenue & Financial Ledger Metrics (Real Database Computations)
+        $totalBookedValue = (float) (MasterAppointment::sum('appointment_fees') ?? 0);
+        $todayBookedValue = (float) (MasterAppointment::whereDate('appointment_date', $today)->sum('appointment_fees') ?? 0);
+
+        $totalCollectionsReceived = (float) (AppointmentSession::whereNotNull('payment_amount')->sum('payment_amount') ?? 0);
+        $todayCollectionsReceived = (float) (AppointmentSession::whereDate('payment_date', $today)->whereNotNull('payment_amount')->sum('payment_amount') ?? 0);
+
+        $totalStaffCommission = (float) (AppointmentSession::sum('staff_commission') ?? 0);
+        $todayStaffCommission = (float) (AppointmentSession::whereDate('session_date', $today)->where('status', AppointmentSession::STATUS_COMPLETED)->sum('staff_commission') ?? 0);
+
+        // 8. Payout Management Metrics
         $totalPayouts = Payout::count();
         $staffPayoutsCount = Payout::where('payout_type', Payout::TYPE_STAFF)->count();
         $staffPayoutsDisbursed = (float) (Payout::where('payout_type', Payout::TYPE_STAFF)->where('status', Payout::STATUS_COMPLETED)->sum('paid_amount') ?? 0);
@@ -217,6 +227,12 @@ class SuperAdminDashboardController extends Controller
                 'today_completed_sessions' => $todayCompletedSessions,
                 'today_pending_sessions' => $todayPendingSessions,
                 'total_services' => $totalServices,
+                'total_booked_value' => $totalBookedValue,
+                'today_booked_value' => $todayBookedValue,
+                'total_collections_received' => $totalCollectionsReceived,
+                'today_collections_received' => $todayCollectionsReceived,
+                'total_staff_commission' => $totalStaffCommission,
+                'today_staff_commission' => $todayStaffCommission,
                 'total_payouts' => $totalPayouts,
                 'total_disbursed' => $totalDisbursed,
                 'pending_payout_liabilities' => $pendingPayoutLiabilities,
@@ -293,6 +309,12 @@ class SuperAdminDashboardController extends Controller
                     'today_completed' => $todayCompletedSessions,
                     'today_pending' => $todayPendingSessions,
                     'total_services' => $totalServices,
+                    'total_booked_value' => $totalBookedValue,
+                    'today_booked_value' => $todayBookedValue,
+                    'total_collections_received' => $totalCollectionsReceived,
+                    'today_collections_received' => $todayCollectionsReceived,
+                    'total_staff_commission' => $totalStaffCommission,
+                    'today_staff_commission' => $todayStaffCommission,
                     'sessions_pending' => $sessionsPending,
                     'sessions_in_progress' => $sessionsInProgress,
                     'sessions_completed' => $sessionsCompleted,
