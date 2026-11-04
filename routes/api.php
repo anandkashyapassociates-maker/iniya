@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Admin\AdminAuthController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminProfileController;
 use App\Http\Controllers\Api\Admin\AppointmentController;
+use App\Http\Controllers\Api\Admin\AppointmentReportController;
 use App\Http\Controllers\Api\Admin\AppointmentSessionController;
 use App\Http\Controllers\Api\Admin\CategoryController;
 use App\Http\Controllers\Api\Admin\CustomerController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Api\Admin\MasterAppointmentController;
 use App\Http\Controllers\Api\Admin\ProductController;
 use App\Http\Controllers\Api\Admin\ServiceManagementController;
 use App\Http\Controllers\Api\Admin\SessionRescheduleController;
+use App\Http\Controllers\Api\Admin\StaffAppointmentController;
 use App\Http\Controllers\Api\SuperAdmin\AdminManagementController;
 use App\Http\Controllers\Api\SuperAdmin\PayoutController;
 use App\Http\Controllers\Api\SuperAdmin\SalesMemberManagementController;
@@ -151,6 +153,14 @@ Route::prefix('superadmin')
             Route::get('/{id}', [PayoutController::class, 'show']);
             Route::delete('/{id}', [PayoutController::class, 'destroy']);
         });
+
+        // Appointment & Session Reports (SuperAdmin Oversight)
+        Route::prefix('reports/appointments')->group(function () {
+            Route::get('/', [AppointmentReportController::class, 'appointmentsReport']);
+            Route::get('/sessions', [AppointmentReportController::class, 'sessionsReport']);
+            Route::get('/filter-options', [AppointmentReportController::class, 'filterOptions']);
+        });
+        Route::get('/reports/sessions', [AppointmentReportController::class, 'sessionsReport']);
     });
 
 /*
@@ -305,6 +315,16 @@ Route::prefix('admin')
         });
 
         // ==========================================
+        // APPOINTMENT & SESSION REPORTS (CLINIC-WIDE)
+        // ==========================================
+        Route::prefix('reports/appointments')->group(function () {
+            Route::get('/', [AppointmentReportController::class, 'appointmentsReport']);
+            Route::get('/sessions', [AppointmentReportController::class, 'sessionsReport']);
+            Route::get('/filter-options', [AppointmentReportController::class, 'filterOptions']);
+        });
+        Route::get('/reports/sessions', [AppointmentReportController::class, 'sessionsReport']);
+
+        // ==========================================
         // PAYOUTS REPORTS & AUDIT STATEMENT (READ-ONLY)
         // ==========================================
         Route::prefix('reports/payouts')->group(function () {
@@ -314,4 +334,14 @@ Route::prefix('admin')
             Route::get('/{id}', [PayoutController::class, 'show']);
         });
         Route::get('/payouts/ledger', [PayoutController::class, 'ledger']);
+
+        // ==========================================
+        // STAFF PERSONAL PORTAL: MY APPOINTMENTS
+        // ==========================================
+        Route::prefix('my-appointments')->group(function () {
+            Route::get('/', [StaffAppointmentController::class, 'index']);
+            Route::get('/{id}', [StaffAppointmentController::class, 'show']);
+            Route::patch('/{id}/status', [StaffAppointmentController::class, 'updateStatus']);
+            Route::post('/{id}/image', [StaffAppointmentController::class, 'uploadImage']);
+        });
     });

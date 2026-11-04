@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminActivityLog;
 use App\Models\Customer;
+use App\Models\Staff;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -14,10 +15,29 @@ use Illuminate\Validation\Rule;
 class CustomerController extends Controller
 {
     /**
+     * Enforce that staff cannot access the patient directory.
+     */
+    protected function ensureNotStaff(Request $request): ?JsonResponse
+    {
+        $user = $request->user();
+        if ($user instanceof Staff || (isset($user->role) && $user->role === 'staff')) {
+            return response()->json([
+                'message' => 'Staff members are not authorized to access patient directory.',
+            ], 403);
+        }
+
+        return null;
+    }
+
+    /**
      * Display a listing of customers.
      */
     public function index(Request $request): JsonResponse
     {
+        if ($restricted = $this->ensureNotStaff($request)) {
+            return $restricted;
+        }
+
         $admin = $request->user();
         $query = Customer::with('admin:id,name,email');
 
@@ -54,6 +74,10 @@ class CustomerController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        if ($restricted = $this->ensureNotStaff($request)) {
+            return $restricted;
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'mobile' => ['required', 'string', 'max:30'],
@@ -120,8 +144,12 @@ class CustomerController extends Controller
     /**
      * Display the specified customer.
      */
-    public function show(int $id): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
+        if ($restricted = $this->ensureNotStaff($request)) {
+            return $restricted;
+        }
+
         $customer = Customer::with('admin:id,name,email')->findOrFail($id);
 
         return response()->json($customer);
@@ -132,6 +160,10 @@ class CustomerController extends Controller
      */
     public function update(Request $request, int $id): JsonResponse
     {
+        if ($restricted = $this->ensureNotStaff($request)) {
+            return $restricted;
+        }
+
         $customer = Customer::findOrFail($id);
 
         if ($customer->admin_id && (int) $customer->admin_id !== (int) $request->user()->id) {
@@ -220,6 +252,10 @@ class CustomerController extends Controller
      */
     public function destroy(Request $request, int $id): JsonResponse
     {
+        if ($restricted = $this->ensureNotStaff($request)) {
+            return $restricted;
+        }
+
         $customer = Customer::findOrFail($id);
 
         if ($customer->admin_id && (int) $customer->admin_id !== (int) $request->user()->id) {
@@ -253,8 +289,12 @@ class CustomerController extends Controller
     /**
      * Quick statistics for customers.
      */
-    public function stats(): JsonResponse
+    public function stats(Request $request): JsonResponse
     {
+        if ($restricted = $this->ensureNotStaff($request)) {
+            return $restricted;
+        }
+
         $total = Customer::count();
         $active = Customer::where('is_active', true)->count();
         $inactive = Customer::where('is_active', false)->count();

@@ -69,6 +69,9 @@ import AdminInventoryStocksPage from '../pages/admin/inventory/AdminInventorySto
 import AdminStockDetailsPage from '../pages/admin/inventory/AdminStockDetailsPage';
 import AdminInventoryReportsPage from '../pages/admin/inventory/AdminInventoryReportsPage';
 import AdminPayoutsReportsPage from '../pages/admin/reports/AdminPayoutsReportsPage';
+import AppointmentReportsPage from '../pages/admin/reports/AppointmentReportsPage';
+import StaffMyAppointmentsPage from '../pages/admin/staff/StaffMyAppointmentsPage';
+import StaffAppointmentDetailsPage from '../pages/admin/staff/StaffAppointmentDetailsPage';
 
 // Portal Root
 import LandingPage from '../pages/LandingPage';
@@ -134,6 +137,9 @@ export default function AppRoutes() {
           <Route path="/superadmin/inventory/stocks" element={<SuperAdminInventoryStocksPage />} />
           <Route path="/superadmin/inventory/stocks/:id" element={<SuperAdminStockDetailsPage />} />
           <Route path="/superadmin/inventory/reports" element={<SuperAdminInventoryReportsPage />} />
+          <Route path="/superadmin/reports/appointments" element={<AppointmentReportsPage role="superadmin" defaultTab="appointments" />} />
+          <Route path="/superadmin/reports/sessions" element={<AppointmentReportsPage role="superadmin" defaultTab="sessions" />} />
+          <Route path="/superadmin/reports" element={<Navigate to="/superadmin/reports/appointments" replace />} />
           <Route path="/superadmin/inventory/low-stock" element={<Navigate to="/superadmin/inventory/stocks" replace />} />
           <Route path="/superadmin/inventory/categories" element={<SuperAdminInventoryCategoriesPage />} />
           <Route path="/superadmin/inventory/brands" element={<SuperAdminInventoryBrandsPage />} />
@@ -164,6 +170,9 @@ export default function AppRoutes() {
       <Route element={<AdminProtectedRoute />}>
         <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+          {/* Staff Personal Portal */}
+          <Route path="/admin/my-appointments" element={<StaffMyAppointmentsPage />} />
+          <Route path="/admin/my-appointments/:id" element={<StaffAppointmentDetailsPage />} />
           <Route path="/admin/appointments" element={<AdminMasterAppointmentsPage />} />
           <Route path="/admin/appointments/create" element={<AdminMasterAppointmentCreatePage />} />
           <Route path="/admin/appointments/services" element={<AdminServicesManagementPage />} />
@@ -181,8 +190,10 @@ export default function AppRoutes() {
           <Route path="/admin/inventory/stocks" element={<AdminInventoryStocksPage />} />
           <Route path="/admin/inventory/stocks/:id" element={<AdminStockDetailsPage />} />
           <Route path="/admin/inventory/reports" element={<AdminInventoryReportsPage />} />
+          <Route path="/admin/reports/appointments" element={<AppointmentReportsPage role="admin" defaultTab="appointments" />} />
+          <Route path="/admin/reports/sessions" element={<AppointmentReportsPage role="admin" defaultTab="sessions" />} />
           <Route path="/admin/reports/payouts" element={<AdminPayoutsReportsPage />} />
-          <Route path="/admin/reports" element={<Navigate to="/admin/reports/payouts" replace />} />
+          <Route path="/admin/reports" element={<Navigate to="/admin/reports/appointments" replace />} />
           <Route path="/admin/inventory/low-stock" element={<Navigate to="/admin/inventory/stocks" replace />} />
           <Route path="/admin/inventory/products" element={<AdminProductsPage />} />
           <Route path="/admin/inventory/products/create" element={<AdminProductCreatePage />} />
