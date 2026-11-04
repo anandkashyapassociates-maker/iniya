@@ -265,12 +265,12 @@ export function ClinicBannerBackground({ isSuperAdmin = false }) {
       <div className="absolute top-0 right-10 w-72 h-48 bg-gradient-to-br from-white/40 to-transparent rotate-12 blur-2xl animate-sunbeam" />
 
       {/* 3. Modern Clinic Interior Architectural SVG (Anchored Right) */}
-      <div className="absolute inset-y-0 right-0 w-2/5 sm:w-5/12 lg:w-4/12 flex items-center justify-end pr-2 sm:pr-6 pointer-events-none">
+      <div className="absolute inset-y-0 right-0 w-3/5 sm:w-7/12 md:w-1/2 lg:w-[48%] flex items-center justify-end pr-1 sm:pr-4 lg:pr-8 pointer-events-none">
         <svg
           viewBox="0 0 460 180"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="w-full h-full max-h-[170px] object-contain drop-shadow-sm"
+          className="w-full h-full max-h-[220px] scale-115 sm:scale-125 lg:scale-140 origin-right object-contain drop-shadow-md transition-transform duration-300"
           preserveAspectRatio="xMidYMid meet"
         >
           <defs>
