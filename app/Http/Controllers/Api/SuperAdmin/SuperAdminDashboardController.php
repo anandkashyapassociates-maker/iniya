@@ -17,6 +17,7 @@ use App\Models\SalesMember;
 use App\Models\Service;
 use App\Models\Staff;
 use App\Models\Vendor;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -89,11 +90,17 @@ class SuperAdminDashboardController extends Controller
         $totalBrands = InventoryBrand::count();
         $totalStockLogs = InventoryStockLog::count();
 
-        // 6. Clinical Appointments & OPD Metrics (Reports & Analytics)
+        // 6. Clinical Appointments & OPD Metrics (Including Today's Real Appointments)
         $totalCustomers = Customer::count();
         $totalMasterAppointments = MasterAppointment::count();
         $totalAppointmentSessions = AppointmentSession::count();
         $totalServices = Service::count();
+
+        $today = Carbon::today();
+        $todayAppointmentsCount = MasterAppointment::whereDate('appointment_date', $today)->count();
+        $todaySessionsCount = AppointmentSession::whereDate('session_date', $today)->count();
+        $todayCompletedSessions = AppointmentSession::whereDate('session_date', $today)->where('status', AppointmentSession::STATUS_COMPLETED)->count();
+        $todayPendingSessions = AppointmentSession::whereDate('session_date', $today)->where('status', AppointmentSession::STATUS_PENDING)->count();
 
         $sessionsPending = AppointmentSession::where('status', AppointmentSession::STATUS_PENDING)->count();
         $sessionsInProgress = AppointmentSession::where('status', AppointmentSession::STATUS_IN_PROGRESS)->count();
@@ -109,7 +116,35 @@ class SuperAdminDashboardController extends Controller
         $totalDisbursed = $staffPayoutsDisbursed + $vendorPayoutsDisbursed;
         $pendingPayoutLiabilities = (float) (Payout::whereIn('status', [Payout::STATUS_PENDING, Payout::STATUS_PARTIAL])->sum('balance_amount') ?? 0);
 
-        // 8. Recent Records for Each Module (Real DB Data)
+        // 8. Dynamic Growth Trend Data (Computed 100% from real database timestamps)
+        $monthlyGrowthTrend = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $monthObj = Carbon::now()->subMonths($i);
+            $monthStart = $monthObj->copy()->startOfMonth();
+            $monthEnd = $monthObj->copy()->endOfMonth();
+            $monthLabel = $monthObj->format('M');
+
+            $personnelCount = Admin::whereBetween('created_at', [$monthStart, $monthEnd])->count()
+                + Staff::whereBetween('created_at', [$monthStart, $monthEnd])->count()
+                + Vendor::whereBetween('created_at', [$monthStart, $monthEnd])->count()
+                + SalesMember::whereBetween('created_at', [$monthStart, $monthEnd])->count();
+
+            $monthlyGrowthTrend[] = [
+                'label' => $monthLabel,
+                'value' => $personnelCount,
+                'display' => "{$personnelCount} accounts",
+            ];
+        }
+
+        $departmentBreakdown = [
+            ['label' => 'Admins', 'value' => $totalAdmins, 'display' => "{$totalAdmins} Admins"],
+            ['label' => 'Staff', 'value' => $totalStaff, 'display' => "{$totalStaff} Staff"],
+            ['label' => 'Vendors', 'value' => $totalVendors, 'display' => "{$totalVendors} Vendors"],
+            ['label' => 'Sales', 'value' => $totalSales, 'display' => "{$totalSales} Reps"],
+            ['label' => 'Products', 'value' => $totalInventoryProducts, 'display' => "{$totalInventoryProducts} Products"],
+        ];
+
+        // 9. Recent Records for Each Module (Real DB Data)
         $recentAdmins = Admin::latest()
             ->take(5)
             ->get(['id', 'name', 'email', 'status', 'is_active', 'created_at']);
@@ -177,6 +212,10 @@ class SuperAdminDashboardController extends Controller
                 'total_customers' => $totalCustomers,
                 'total_master_appointments' => $totalMasterAppointments,
                 'total_appointment_sessions' => $totalAppointmentSessions,
+                'today_appointments_count' => $todayAppointmentsCount,
+                'today_sessions_count' => $todaySessionsCount,
+                'today_completed_sessions' => $todayCompletedSessions,
+                'today_pending_sessions' => $todayPendingSessions,
                 'total_services' => $totalServices,
                 'total_payouts' => $totalPayouts,
                 'total_disbursed' => $totalDisbursed,
@@ -249,6 +288,10 @@ class SuperAdminDashboardController extends Controller
                     'total_customers' => $totalCustomers,
                     'total_master_appointments' => $totalMasterAppointments,
                     'total_sessions' => $totalAppointmentSessions,
+                    'today_appointments' => $todayAppointmentsCount,
+                    'today_sessions' => $todaySessionsCount,
+                    'today_completed' => $todayCompletedSessions,
+                    'today_pending' => $todayPendingSessions,
                     'total_services' => $totalServices,
                     'sessions_pending' => $sessionsPending,
                     'sessions_in_progress' => $sessionsInProgress,
@@ -271,6 +314,20 @@ class SuperAdminDashboardController extends Controller
                     'vendor_payouts_url' => '/superadmin/payouts/vendors',
                     'ledger_url' => '/superadmin/payouts/ledger',
                     'recent_payouts' => $recentPayouts,
+                ],
+            ],
+            'charts' => [
+                'growth_trend' => $monthlyGrowthTrend,
+                'department_breakdown' => $departmentBreakdown,
+                'workforce_donut' => [
+                    ['label' => 'Administrators', 'value' => $totalAdmins, 'color' => '#3b82f6', 'dotClass' => 'bg-blue-500'],
+                    ['label' => 'Medical Staff', 'value' => $totalStaff, 'color' => '#10b981', 'dotClass' => 'bg-emerald-500'],
+                    ['label' => 'Vendors & Suppliers', 'value' => $totalVendors, 'color' => '#f59e0b', 'dotClass' => 'bg-amber-500'],
+                    ['label' => 'Sales Representatives', 'value' => $totalSales, 'color' => '#8b5cf6', 'dotClass' => 'bg-purple-500'],
+                ],
+                'stock_health_donut' => [
+                    ['label' => 'Optimal Stock', 'value' => max(0, $totalInventoryProducts - $lowStockProductsCount), 'color' => '#10b981', 'dotClass' => 'bg-emerald-500'],
+                    ['label' => 'Low Stock / Alert', 'value' => $lowStockProductsCount, 'color' => '#f59e0b', 'dotClass' => 'bg-amber-500'],
                 ],
             ],
             // Backward compatibility
