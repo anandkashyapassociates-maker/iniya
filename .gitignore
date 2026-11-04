@@ -25,6 +25,7 @@
 
 # General logs and OS
 *.log
+*.zip
 .DS_Store
 Thumbs.db
 .vscode/
