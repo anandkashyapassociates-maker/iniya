@@ -25,6 +25,8 @@ import {
   FileText,
   UserPlus,
   ChevronDown,
+  TrendingUp,
+  Award,
 } from 'lucide-react';
 import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import superAdminDashboardService from '../services/superAdminDashboardService';
@@ -656,6 +658,138 @@ export default function SuperAdminDashboardPage() {
               </span>
               <span className="text-slate-400 group-hover:text-purple-600 font-bold inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-all">
                 <span>Passbook</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </span>
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      {/* ======================================================== */}
+      {/* 5. CLINICAL REVENUE & FINANCIAL COLLECTIONS (1 Row)      */}
+      {/* ======================================================== */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">
+              Clinical Revenue &amp; Financial Ledger
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Live consultation bookings, verified patient collections, and doctor payouts.
+            </p>
+          </div>
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 shadow-2xs font-mono">
+            100% Real Database Ledger
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* CARD 1: Total Booked Value */}
+          <Link
+            to="/superadmin/reports/appointments"
+            className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden"
+          >
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-colors pointer-events-none" />
+
+            <div className="relative z-10">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">
+                  Total Booked Value
+                </span>
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-violet-500 text-white flex items-center justify-center icon-3d shadow-md shadow-purple-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+                  <TrendingUp className="w-6 h-6 drop-shadow-sm" />
+                </div>
+              </div>
+
+              <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers whitespace-nowrap group-hover:text-purple-600 transition-colors">
+                {formatCurrency(summary.total_booked_value ?? 0)}
+              </div>
+
+              <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
+                {formatCurrency(summary.today_booked_value ?? 0)} booked today
+              </p>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs relative z-10">
+              <span className={`px-2.5 py-1 rounded-full font-bold font-mono text-[11px] border ${(summary.total_booked_value ?? 0) > 0 ? 'bg-purple-50 text-purple-700 border-purple-200/70' : 'bg-slate-50 text-slate-600 border-slate-200/70'}`}>
+                Bookings
+              </span>
+              <span className="text-slate-400 group-hover:text-purple-600 font-bold inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-all">
+                <span>OPD Ledger</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </span>
+            </div>
+          </Link>
+
+          {/* CARD 2: Collections Received */}
+          <Link
+            to="/superadmin/reports/sessions"
+            className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden"
+          >
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-colors pointer-events-none" />
+
+            <div className="relative z-10">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">
+                  Collections Received
+                </span>
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-emerald-500/30 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 shrink-0">
+                  <IndianRupee className="w-6 h-6 drop-shadow-sm" />
+                </div>
+              </div>
+
+              <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers whitespace-nowrap group-hover:text-emerald-600 transition-colors">
+                {formatCurrency(summary.total_collections_received ?? 0)}
+              </div>
+
+              <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
+                {formatCurrency(summary.today_collections_received ?? 0)} collected today
+              </p>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs relative z-10">
+              <span className={`px-2.5 py-1 rounded-full font-bold font-mono text-[11px] border ${(summary.total_collections_received ?? 0) > 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200/70' : 'bg-slate-50 text-slate-600 border-slate-200/70'}`}>
+                Paid
+              </span>
+              <span className="text-slate-400 group-hover:text-emerald-600 font-bold inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-all">
+                <span>Collections</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </span>
+            </div>
+          </Link>
+
+          {/* CARD 3: Staff Commissions */}
+          <Link
+            to="/superadmin/payouts/staff"
+            className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden"
+          >
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-violet-500/5 rounded-full blur-2xl group-hover:bg-violet-500/10 transition-colors pointer-events-none" />
+
+            <div className="relative z-10">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">
+                  Staff Commissions
+                </span>
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-600 via-purple-600 to-pink-500 text-white flex items-center justify-center icon-3d shadow-md shadow-violet-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+                  <Award className="w-6 h-6 drop-shadow-sm" />
+                </div>
+              </div>
+
+              <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers whitespace-nowrap group-hover:text-purple-600 transition-colors">
+                {formatCurrency(summary.total_staff_commission ?? 0)}
+              </div>
+
+              <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
+                {formatCurrency(summary.today_staff_commission ?? 0)} cleared today
+              </p>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs relative z-10">
+              <span className={`px-2.5 py-1 rounded-full font-bold font-mono text-[11px] border ${(summary.total_staff_commission ?? 0) > 0 ? 'bg-purple-50 text-purple-700 border-purple-200/70' : 'bg-slate-50 text-slate-600 border-slate-200/70'}`}>
+                Payouts
+              </span>
+              <span className="text-slate-400 group-hover:text-purple-600 font-bold inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-all">
+                <span>Staff Payouts</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </span>
             </div>

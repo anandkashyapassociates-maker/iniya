@@ -6,7 +6,7 @@ import {
   Clock,
   CheckCircle2,
   FolderTree,
-  DollarSign,
+  IndianRupee,
   TrendingUp,
   UserPlus,
   Zap,
@@ -420,7 +420,7 @@ export default function AdminDashboardPage() {
                 title="Today's Commission"
                 value={todayStaffCommission > 0 ? `₹${todayStaffCommission.toLocaleString('en-IN')}` : '₹0'}
                 subtitle="Cleared from today's treatments"
-                icon={DollarSign}
+                icon={IndianRupee}
                 colorScheme="teal"
                 animateCount={false}
                 trend={todayStaffCommission > 0 ? `₹${todayStaffCommission.toLocaleString('en-IN')} Cleared` : '₹0 Today'}
@@ -508,7 +508,7 @@ export default function AdminDashboardPage() {
                 title="Collections Received"
                 value={totalPatientPaid > 0 ? `₹${totalPatientPaid.toLocaleString('en-IN')}` : '₹0'}
                 subtitle={`₹${todayPatientPaid.toLocaleString('en-IN')} collected today`}
-                icon={DollarSign}
+                icon={IndianRupee}
                 colorScheme="emerald"
                 animateCount={false}
                 trend={totalPatientPaid > 0 ? `₹${totalPatientPaid.toLocaleString('en-IN')} Received` : '₹0 Received'}
@@ -612,91 +612,167 @@ export default function AdminDashboardPage() {
             className="h-auto"
           />
 
-          {/* Payment Mode Distribution Card */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-xs">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-50">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <CreditCard className="w-4 h-4" />
+          {/* Payment Mode Distribution Card (Redesigned with 3D Animated Icons) */}
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
+            {/* Ambient Background Glow */}
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-colors pointer-events-none" />
+
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 gap-3 relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-emerald-500/25 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 shrink-0">
+                  <CreditCard className="w-6 h-6 drop-shadow-sm" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold text-slate-800 font-display">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 font-display">
                     {isStaff ? 'Patient Payments in My Sessions' : 'Collections by Payment Mode'}
                   </h3>
-                  <p className="text-[10px] text-slate-400">Total ₹{(totalPatientPaid || 0).toLocaleString('en-IN')} Received</p>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    Total ₹{(totalPatientPaid || 0).toLocaleString('en-IN')} Received &bull; Reconciled
+                  </p>
                 </div>
               </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60 font-mono">
-                Verified
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-xs font-bold font-mono shadow-2xs shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Verified</span>
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mt-3">
-              {/* Cash */}
-              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100/80">
-                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 mb-1">
-                  <span className="flex items-center gap-1.5">
-                    <Wallet className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>Cash</span>
+            {/* 4 Payment Tiles Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-4 relative z-10">
+              {/* Tile 1: Cash */}
+              <div className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-emerald-200 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center icon-3d shadow-sm shadow-emerald-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
+                      <Wallet className="w-4 h-4 drop-shadow-xs" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-xs font-bold text-slate-800 block truncate group-hover/tile:text-emerald-700 transition-colors">
+                        Cash
+                      </span>
+                      <span className="text-[10px] text-slate-400 block font-medium">Counter Desk</span>
+                    </div>
+                  </div>
+                  <span className="font-mono font-black text-slate-900 text-sm tabular-numbers">
+                    ₹{(payment_modes.cash || 0).toLocaleString('en-IN')}
                   </span>
-                  <span className="font-mono font-bold text-slate-800">₹{(payment_modes.cash || 0).toLocaleString('en-IN')}</span>
                 </div>
-                <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                  <div
-                    className="h-full bg-emerald-500 rounded-full transition-all duration-700"
-                    style={{ width: `${Math.round(((payment_modes.cash || 0) / totalCollections) * 100)}%` }}
-                  />
+                <div className="mt-3">
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono mb-1">
+                    <span>Share</span>
+                    <span className="font-bold text-slate-600">
+                      {totalPatientPaid > 0 ? Math.round(((payment_modes.cash || 0) / totalPatientPaid) * 100) : 0}%
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-slate-200/80 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-1000 ease-out"
+                      style={{ width: `${totalPatientPaid > 0 ? Math.round(((payment_modes.cash || 0) / totalPatientPaid) * 100) : 0}%` }}
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* UPI */}
-              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100/80">
-                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 mb-1">
-                  <span className="flex items-center gap-1.5">
-                    <Smartphone className="w-3.5 h-3.5 text-blue-500" />
-                    <span>UPI / QR</span>
+              {/* Tile 2: UPI / QR */}
+              <div className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-blue-200 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-500 via-indigo-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-sm shadow-blue-500/20 group-hover/tile:scale-110 group-hover/tile:-rotate-6 transition-all duration-300 shrink-0">
+                      <Smartphone className="w-4 h-4 drop-shadow-xs" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-xs font-bold text-slate-800 block truncate group-hover/tile:text-blue-700 transition-colors">
+                        UPI / QR
+                      </span>
+                      <span className="text-[10px] text-slate-400 block font-medium">Instant Pay</span>
+                    </div>
+                  </div>
+                  <span className="font-mono font-black text-slate-900 text-sm tabular-numbers">
+                    ₹{(payment_modes.upi || 0).toLocaleString('en-IN')}
                   </span>
-                  <span className="font-mono font-bold text-slate-800">₹{(payment_modes.upi || 0).toLocaleString('en-IN')}</span>
                 </div>
-                <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                  <div
-                    className="h-full bg-blue-500 rounded-full transition-all duration-700"
-                    style={{ width: `${Math.round(((payment_modes.upi || 0) / totalCollections) * 100)}%` }}
-                  />
+                <div className="mt-3">
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono mb-1">
+                    <span>Share</span>
+                    <span className="font-bold text-slate-600">
+                      {totalPatientPaid > 0 ? Math.round(((payment_modes.upi || 0) / totalPatientPaid) * 100) : 0}%
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-slate-200/80 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-400 via-indigo-500 to-cyan-500 rounded-full transition-all duration-1000 ease-out"
+                      style={{ width: `${totalPatientPaid > 0 ? Math.round(((payment_modes.upi || 0) / totalPatientPaid) * 100) : 0}%` }}
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Card */}
-              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100/80">
-                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 mb-1">
-                  <span className="flex items-center gap-1.5">
-                    <CreditCard className="w-3.5 h-3.5 text-indigo-500" />
-                    <span>Card POS</span>
+              {/* Tile 3: Card POS */}
+              <div className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-indigo-200 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-600 to-violet-600 text-white flex items-center justify-center icon-3d shadow-sm shadow-indigo-500/20 group-hover/tile:scale-110 group-hover/tile:rotate-6 transition-all duration-300 shrink-0">
+                      <CreditCard className="w-4 h-4 drop-shadow-xs" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-xs font-bold text-slate-800 block truncate group-hover/tile:text-indigo-700 transition-colors">
+                        Card POS
+                      </span>
+                      <span className="text-[10px] text-slate-400 block font-medium">Terminal Swipe</span>
+                    </div>
+                  </div>
+                  <span className="font-mono font-black text-slate-900 text-sm tabular-numbers">
+                    ₹{(payment_modes.card || 0).toLocaleString('en-IN')}
                   </span>
-                  <span className="font-mono font-bold text-slate-800">₹{(payment_modes.card || 0).toLocaleString('en-IN')}</span>
                 </div>
-                <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                  <div
-                    className="h-full bg-indigo-500 rounded-full transition-all duration-700"
-                    style={{ width: `${Math.round(((payment_modes.card || 0) / totalCollections) * 100)}%` }}
-                  />
+                <div className="mt-3">
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono mb-1">
+                    <span>Share</span>
+                    <span className="font-bold text-slate-600">
+                      {totalPatientPaid > 0 ? Math.round(((payment_modes.card || 0) / totalPatientPaid) * 100) : 0}%
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-slate-200/80 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-indigo-400 via-purple-500 to-violet-500 rounded-full transition-all duration-1000 ease-out"
+                      style={{ width: `${totalPatientPaid > 0 ? Math.round(((payment_modes.card || 0) / totalPatientPaid) * 100) : 0}%` }}
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Bank */}
-              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100/80">
-                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 mb-1">
-                  <span className="flex items-center gap-1.5">
-                    <Landmark className="w-3.5 h-3.5 text-purple-500" />
-                    <span>Bank Transfer</span>
+              {/* Tile 4: Bank Transfer */}
+              <div className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-purple-200 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group/tile">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-500 via-violet-600 to-pink-500 text-white flex items-center justify-center icon-3d shadow-sm shadow-purple-500/20 group-hover/tile:scale-110 group-hover/tile:-rotate-6 transition-all duration-300 shrink-0">
+                      <Landmark className="w-4 h-4 drop-shadow-xs" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-xs font-bold text-slate-800 block truncate group-hover/tile:text-purple-700 transition-colors">
+                        Bank Transfer
+                      </span>
+                      <span className="text-[10px] text-slate-400 block font-medium">NEFT / RTGS</span>
+                    </div>
+                  </div>
+                  <span className="font-mono font-black text-slate-900 text-sm tabular-numbers">
+                    ₹{(payment_modes.bank || 0).toLocaleString('en-IN')}
                   </span>
-                  <span className="font-mono font-bold text-slate-800">₹{(payment_modes.bank || 0).toLocaleString('en-IN')}</span>
                 </div>
-                <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                  <div
-                    className="h-full bg-purple-500 rounded-full transition-all duration-700"
-                    style={{ width: `${Math.round(((payment_modes.bank || 0) / totalCollections) * 100)}%` }}
-                  />
+                <div className="mt-3">
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono mb-1">
+                    <span>Share</span>
+                    <span className="font-bold text-slate-600">
+                      {totalPatientPaid > 0 ? Math.round(((payment_modes.bank || 0) / totalPatientPaid) * 100) : 0}%
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-slate-200/80 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-purple-400 via-pink-500 to-rose-500 rounded-full transition-all duration-1000 ease-out"
+                      style={{ width: `${totalPatientPaid > 0 ? Math.round(((payment_modes.bank || 0) / totalPatientPaid) * 100) : 0}%` }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
