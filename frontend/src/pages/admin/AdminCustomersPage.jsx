@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import {
   Users,
   UserPlus,
@@ -70,6 +70,11 @@ function CustomerAvatar({ customer, size = 'sm' }) {
 export default function AdminCustomersPage() {
   const toast = useToast();
   const { user } = useAdminAuth();
+
+  // Patients section is restricted to Admin only (Staff ko show nahi hoga)
+  if (user && user.role === 'staff') {
+    return <Navigate to="/admin/my-appointments" replace />;
+  }
 
   const [customers, setCustomers] = useState([]);
   const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0 });
