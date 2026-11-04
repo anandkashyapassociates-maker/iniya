@@ -922,12 +922,12 @@ export default function SuperAdminLayout() {
       </header>
 
         {/* Page View Body */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-3 sm:pb-4 lg:pb-5 max-w-7xl w-full mx-auto">
           <Outlet />
         </main>
 
         {/* Global Footer */}
-        <footer className="py-4 px-8 text-center text-xs text-slate-400 border-t border-slate-200 bg-white">
+        <footer className="py-3 px-8 text-center text-xs text-slate-400 border-t border-slate-200 bg-white">
           Iniya ERP Systems • Superadmin Authentication &amp; Admin Management Module
         </footer>
       </div>
