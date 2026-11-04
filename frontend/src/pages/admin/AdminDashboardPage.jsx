@@ -27,6 +27,7 @@ import {
   FileText,
   Package,
   ArrowUpRight,
+  ChevronDown,
 } from 'lucide-react';
 import StatCard from '../../components/StatCard';
 import DashboardSkeleton from '../../components/DashboardSkeleton';
@@ -56,6 +57,9 @@ export default function AdminDashboardPage() {
 
   // Live Queue Tab Filter: 'all' | 'in_progress' | 'pending' | 'completed'
   const [queueTab, setQueueTab] = useState('all');
+
+  // Collapsible Dropdown for System Audit & Activity Feed
+  const [activityFeedOpen, setActivityFeedOpen] = useState(false);
 
   const loadAllDashboardData = useCallback(async (refresh = false) => {
     if (refresh) {
@@ -1551,46 +1555,105 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* ======================================================== */}
-      {/* 7. SYSTEM AUDIT FEED & RECENT ACTIVITY LOG               */}
+      {/* 7. SYSTEM AUDIT FEED & RECENT ACTIVITY LOG (DROPDOWN)    */}
       {/* ======================================================== */}
-      {recent_activity.length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-xs">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                <Activity className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-xs font-bold text-slate-800 font-display">
+      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs hover:shadow-xl transition-all duration-300 relative overflow-hidden group">
+        {/* Ambient Background Glow */}
+        <div className="absolute -top-12 -right-12 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition-colors pointer-events-none" />
+
+        {/* Dropdown Header Trigger */}
+        <button
+          type="button"
+          onClick={() => setActivityFeedOpen((prev) => !prev)}
+          className="w-full p-5 sm:p-6 flex items-center justify-between gap-4 text-left hover:bg-slate-50/70 transition-colors cursor-pointer group/btn"
+          aria-expanded={activityFeedOpen}
+        >
+          <div className="flex items-center gap-3.5 min-w-0">
+            {/* 3D Animated Activity Logo */}
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-indigo-500/25 ring-4 ring-indigo-500/10 group-hover/btn:scale-110 group-hover/btn:rotate-3 transition-all duration-300 shrink-0">
+              <Activity className="w-5 h-5 drop-shadow-sm" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover/btn:text-indigo-600 transition-colors font-display tracking-tight">
                   {isStaff ? 'My Recent Activity Log' : 'System Audit & Clinical Activity Feed'}
                 </h3>
-                <p className="text-[10px] text-slate-400">Security event logging and staff interaction logs</p>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
               </div>
+              <p className="text-xs text-slate-500 font-medium mt-0.5 truncate">
+                Security event logging and staff interaction logs
+              </p>
             </div>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">
-              Live Logs
-            </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-            {recent_activity.slice(0, 6).map((act) => (
-              <div key={act.id} className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 flex items-start gap-2.5">
-                <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-slate-700 leading-snug break-words">
-                    {act.description}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1 text-[10px] text-slate-400 font-mono">
-                    <span>IP: {act.ip_address || '127.0.0.1'}</span>
-                    <span>•</span>
-                    <span>{act.created_at ? new Date(act.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : 'Recent'}</span>
-                  </div>
-                </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200/60 shadow-2xs font-mono hidden sm:inline-block">
+              {recent_activity.length} Recent Events
+            </span>
+            <div
+              className={`w-9 h-9 rounded-xl bg-slate-100 text-slate-600 group-hover/btn:bg-indigo-50 group-hover/btn:text-indigo-600 flex items-center justify-center transition-all duration-300 ${
+                activityFeedOpen ? 'rotate-180 bg-indigo-50 text-indigo-600' : ''
+              }`}
+            >
+              <ChevronDown className="w-4 h-4 transition-transform duration-300" />
+            </div>
+          </div>
+        </button>
+
+        {/* Dropdown Expandable Content */}
+        <div
+          className={`transition-all duration-300 ease-in-out ${
+            activityFeedOpen
+              ? 'max-h-[600px] opacity-100 border-t border-slate-100'
+              : 'max-h-0 opacity-0 pointer-events-none'
+          } overflow-hidden`}
+        >
+          <div className="p-5 sm:p-6 pt-4 space-y-3 relative z-10">
+            <div className="flex items-center justify-between text-xs text-slate-400 pb-2 border-b border-slate-100 font-mono">
+              <span className="font-semibold uppercase tracking-wider text-[10px]">Recent Activity Stream</span>
+              <span>Showing {Math.min(recent_activity.length, 6)} latest events</span>
+            </div>
+
+            {recent_activity.length === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-400">
+                <Activity className="w-6 h-6 mx-auto text-slate-300 mb-1.5" />
+                No security or activity logs recorded yet.
               </div>
-            ))}
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {recent_activity.slice(0, 6).map((act) => (
+                  <div
+                    key={act.id}
+                    className="p-3.5 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/70 hover:border-indigo-200 hover:shadow-sm transition-all duration-200 flex items-start gap-3 group/log"
+                  >
+                    <div className="w-2 h-2 rounded-full bg-indigo-500 mt-2 shrink-0 shadow-xs shadow-indigo-500/50" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium text-slate-700 leading-snug break-words group-hover/log:text-slate-900 transition-colors">
+                        {act.description}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1.5 text-[10px] text-slate-400 font-mono">
+                        <span className="bg-slate-100/90 px-1.5 py-0.5 rounded border border-slate-200/60 text-slate-500">
+                          IP: {act.ip_address || '127.0.0.1'}
+                        </span>
+                        <span>•</span>
+                        <span>
+                          {act.created_at
+                            ? new Date(act.created_at).toLocaleTimeString('en-IN', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: true,
+                              })
+                            : 'Recent'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
