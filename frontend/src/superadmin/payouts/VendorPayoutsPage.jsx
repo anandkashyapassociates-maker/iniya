@@ -7,7 +7,7 @@ import {
   RefreshCw,
   Calendar,
   Building2,
-  DollarSign,
+  IndianRupee,
   FileText,
   CheckCircle2,
   Edit,
@@ -278,7 +278,7 @@ export default function VendorPayoutsPage() {
               <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
                 Total Payout
               </span>
-              <DollarSign className="w-4 h-4 text-blue-600" />
+              <IndianRupee className="w-4 h-4 text-blue-600" />
             </div>
             <p
               className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 mt-2 truncate"
