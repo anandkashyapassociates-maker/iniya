@@ -243,7 +243,292 @@ export default function SuperAdminDashboardPage() {
       )}
 
       {/* ======================================================== */}
-      {/* 3. Primary Executive KPI Pillars (4 Major Domains)       */}
+      {/* 3. Workforce & Operational Governance (4 Upper Cards)    */}
+      {/* ======================================================== */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">
+              Workforce &amp; Operational Roster
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Administrators, clinical medical staff, vendors, and sales team.
+            </p>
+          </div>
+          <Link
+            to="/superadmin/admin-management/details"
+            className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1 group/headerlink"
+          >
+            <span>All Admins</span>
+            <ArrowUpRight className="w-3.5 h-3.5 group-hover/headerlink:translate-x-0.5 group-hover/headerlink:-translate-y-0.5 transition-transform" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          {/* Card A1: Hospital Admins */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group">
+            <div>
+              {/* Top Row: 3D Royal Blue Shield + Active Rate Pill */}
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-blue-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+                  <Shield className="w-6 h-6 drop-shadow-sm" />
+                </div>
+                <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200/60 shadow-2xs shrink-0">
+                  {modules.admins.active_rate}% Active
+                </span>
+              </div>
+
+              {/* Title & Subtitle */}
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                Hospital Admins
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Branch governance &amp; security
+              </p>
+
+              {/* Primary Metric */}
+              <div className="mt-4 flex items-baseline gap-2">
+                <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers">
+                  <AnimatedCounter value={modules.admins.total} />
+                </span>
+                <span className="text-xs font-semibold text-slate-500">Admins</span>
+              </div>
+
+              {/* Key Operational Highlight Chips */}
+              <div className="grid grid-cols-2 gap-2.5 mt-4">
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active</span>
+                  <span className="text-sm font-extrabold text-emerald-600 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.admins.active} /> Live
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Blocked</span>
+                  <span className="text-sm font-extrabold text-slate-600 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.admins.blocked} /> Restr.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+              <Link
+                to="/superadmin/admin-management/details"
+                className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1 group/btn"
+              >
+                <span>View Roster</span>
+                <ArrowUpRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+              </Link>
+              <Link
+                to="/superadmin/admin-management/create"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold transition-all hover:scale-105"
+              >
+                <PlusCircle className="w-3.5 h-3.5 text-blue-600" />
+                <span>Add Admin</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Card A2: Medical Staff */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group">
+            <div>
+              {/* Top Row: 3D Emerald Stethoscope + Depts Pill */}
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-emerald-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+                  <UserCheck className="w-6 h-6 drop-shadow-sm" />
+                </div>
+                <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200/60 shadow-2xs shrink-0">
+                  {modules.staff.departments_count} Depts
+                </span>
+              </div>
+
+              {/* Title & Subtitle */}
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
+                Medical Staff
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Doctors, therapists &amp; OPD clinicians
+              </p>
+
+              {/* Primary Metric */}
+              <div className="mt-4 flex items-baseline gap-2">
+                <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers">
+                  <AnimatedCounter value={modules.staff.total} />
+                </span>
+                <span className="text-xs font-semibold text-slate-500">Staff</span>
+              </div>
+
+              {/* Key Operational Highlight Chips */}
+              <div className="grid grid-cols-2 gap-2.5 mt-4">
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active</span>
+                  <span className="text-sm font-extrabold text-emerald-600 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.staff.active} /> On Duty
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Inactive</span>
+                  <span className="text-sm font-extrabold text-slate-600 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.staff.inactive} /> Inactive
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+              <Link
+                to="/superadmin/staff-management/details"
+                className="text-xs font-bold text-emerald-600 hover:text-emerald-800 transition-colors inline-flex items-center gap-1 group/btn"
+              >
+                <span>View Roster</span>
+                <ArrowUpRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+              </Link>
+              <Link
+                to="/superadmin/staff-management/create"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold transition-all hover:scale-105"
+              >
+                <PlusCircle className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Add Staff</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Card A3: Vendors & Suppliers */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group">
+            <div>
+              {/* Top Row: 3D Amber Truck + Types Pill */}
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-yellow-400 text-white flex items-center justify-center icon-3d shadow-md shadow-amber-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+                  <Truck className="w-6 h-6 drop-shadow-sm" />
+                </div>
+                <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200/60 shadow-2xs shrink-0">
+                  {modules.vendors.types_count} Types
+                </span>
+              </div>
+
+              {/* Title & Subtitle */}
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
+                Vendors &amp; Suppliers
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Pharma &amp; consumables supply
+              </p>
+
+              {/* Primary Metric */}
+              <div className="mt-4 flex items-baseline gap-2">
+                <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers">
+                  <AnimatedCounter value={modules.vendors.total} />
+                </span>
+                <span className="text-xs font-semibold text-slate-500">Vendors</span>
+              </div>
+
+              {/* Key Operational Highlight Chips */}
+              <div className="grid grid-cols-2 gap-2.5 mt-4">
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active</span>
+                  <span className="text-sm font-extrabold text-emerald-600 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.vendors.active} /> Live
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Verified</span>
+                  <span className="text-sm font-extrabold text-amber-600 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.vendors.total} /> Partners
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+              <Link
+                to="/superadmin/vendors"
+                className="text-xs font-bold text-amber-600 hover:text-amber-800 transition-colors inline-flex items-center gap-1 group/btn"
+              >
+                <span>View Vendors</span>
+                <ArrowUpRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+              </Link>
+              <Link
+                to="/superadmin/vendors/create"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-semibold transition-all hover:scale-105"
+              >
+                <PlusCircle className="w-3.5 h-3.5 text-amber-600" />
+                <span>Add Vendor</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Card A4: Sales Team */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group">
+            <div>
+              {/* Top Row: 3D Purple Briefcase + Zones Pill */}
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 via-fuchsia-600 to-pink-500 text-white flex items-center justify-center icon-3d shadow-md shadow-purple-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+                  <Briefcase className="w-6 h-6 drop-shadow-sm" />
+                </div>
+                <span className="px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-bold border border-purple-200/60 shadow-2xs shrink-0">
+                  {modules.sales_team.territories_count} Zones
+                </span>
+              </div>
+
+              {/* Title & Subtitle */}
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
+                Sales Team
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Territory leads &amp; client outreach
+              </p>
+
+              {/* Primary Metric */}
+              <div className="mt-4 flex items-baseline gap-2">
+                <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers">
+                  <AnimatedCounter value={modules.sales_team.total} />
+                </span>
+                <span className="text-xs font-semibold text-slate-500">Reps</span>
+              </div>
+
+              {/* Key Operational Highlight Chips */}
+              <div className="grid grid-cols-2 gap-2.5 mt-4">
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active</span>
+                  <span className="text-sm font-extrabold text-emerald-600 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.sales_team.active} /> Active
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Zones</span>
+                  <span className="text-sm font-extrabold text-purple-600 tabular-numbers mt-0.5">
+                    <AnimatedCounter value={modules.sales_team.territories_count} /> Coverage
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+              <Link
+                to="/superadmin/sales-members"
+                className="text-xs font-bold text-purple-600 hover:text-purple-800 transition-colors inline-flex items-center gap-1 group/btn"
+              >
+                <span>View Team</span>
+                <ArrowUpRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+              </Link>
+              <Link
+                to="/superadmin/sales-members/create"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-semibold transition-all hover:scale-105"
+              >
+                <PlusCircle className="w-3.5 h-3.5 text-purple-600" />
+                <span>Add Rep</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ======================================================== */}
+      {/* 4. Primary Executive Domain Overview (Adjusted 3 Cards)  */}
       {/* ======================================================== */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-1">
@@ -252,7 +537,7 @@ export default function SuperAdminDashboardPage() {
               Executive Domain Overview
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              High-level status across hospital workforce, clinical desk, inventory, and payouts.
+              High-level status across hospital clinical desk, inventory assets, and payout settlements.
             </p>
           </div>
           <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 shadow-2xs">
@@ -260,46 +545,8 @@ export default function SuperAdminDashboardPage() {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {/* CARD 1: Hospital Personnel Workforce */}
-          <Link
-            to="/superadmin/staff-management/details"
-            className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden"
-          >
-            <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-colors pointer-events-none" />
-
-            <div className="relative z-10">
-              <div className="flex items-center justify-between gap-3 mb-4">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Personnel &amp; Workforce
-                </span>
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-blue-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
-                  <Users className="w-6 h-6 drop-shadow-sm" />
-                </div>
-              </div>
-
-              <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers whitespace-nowrap">
-                <AnimatedCounter value={summary.total_personnel} />
-              </div>
-
-              <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
-                {modules.admins.total} Admins &bull; {modules.staff.total} Staff &bull; {modules.vendors.total} Vendors &bull; {modules.sales_team.total} Sales
-              </p>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs relative z-10">
-              <span className="inline-flex items-center gap-1.5 font-bold text-emerald-600">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                {summary.active_rate}% Active
-              </span>
-              <span className="text-slate-400 group-hover:text-blue-600 font-bold inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-all">
-                <span>View Roster</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </span>
-            </div>
-          </Link>
-
-          {/* CARD 2: Clinical Appointments & OPD */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* CARD 1: Clinical Appointments & OPD */}
           <Link
             to="/superadmin/reports/appointments"
             className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden"
@@ -336,7 +583,7 @@ export default function SuperAdminDashboardPage() {
             </div>
           </Link>
 
-          {/* CARD 3: Inventory Supplies & Valuation */}
+          {/* CARD 2: Inventory Supplies & Valuation */}
           <Link
             to="/superadmin/inventory/overview"
             className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden"
@@ -374,7 +621,7 @@ export default function SuperAdminDashboardPage() {
             </div>
           </Link>
 
-          {/* CARD 4: Financial Settlements & Payouts */}
+          {/* CARD 3: Financial Settlements & Payouts */}
           <Link
             to="/superadmin/payouts/ledger"
             className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden"
@@ -667,291 +914,6 @@ export default function SuperAdminDashboardPage() {
             centerLabel="Personnel"
             className="flex-1 shadow-2xs border border-slate-200/90 rounded-3xl"
           />
-        </div>
-      </div>
-
-      {/* ======================================================== */}
-      {/* 6. Section A: Personnel & Workforce Modules (4 Cards)    */}
-      {/* ======================================================== */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between px-1">
-          <div>
-            <h2 className="text-base font-bold text-slate-900">
-              Workforce &amp; Operational Roster
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Administrators, clinical medical staff, vendors, and sales team.
-            </p>
-          </div>
-          <Link
-            to="/superadmin/admin-management/details"
-            className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1 group/headerlink"
-          >
-            <span>All Admins</span>
-            <ArrowUpRight className="w-3.5 h-3.5 group-hover/headerlink:translate-x-0.5 group-hover/headerlink:-translate-y-0.5 transition-transform" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {/* Card A1: Hospital Admins */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group">
-            <div>
-              {/* Top Row: 3D Royal Blue Shield + Active Rate Pill */}
-              <div className="flex items-center justify-between gap-2 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-blue-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
-                  <Shield className="w-6 h-6 drop-shadow-sm" />
-                </div>
-                <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200/60 shadow-2xs shrink-0">
-                  {modules.admins.active_rate}% Active
-                </span>
-              </div>
-
-              {/* Title & Subtitle */}
-              <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                Hospital Admins
-              </h3>
-              <p className="text-xs text-slate-500 mt-1">
-                Branch governance &amp; security
-              </p>
-
-              {/* Primary Metric */}
-              <div className="mt-4 flex items-baseline gap-2">
-                <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers">
-                  <AnimatedCounter value={modules.admins.total} />
-                </span>
-                <span className="text-xs font-semibold text-slate-500">Admins</span>
-              </div>
-
-              {/* Key Operational Highlight Chips */}
-              <div className="grid grid-cols-2 gap-2.5 mt-4">
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active</span>
-                  <span className="text-sm font-extrabold text-emerald-600 tabular-numbers mt-0.5">
-                    <AnimatedCounter value={modules.admins.active} /> Live
-                  </span>
-                </div>
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Blocked</span>
-                  <span className="text-sm font-extrabold text-slate-600 tabular-numbers mt-0.5">
-                    <AnimatedCounter value={modules.admins.blocked} /> Restr.
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Actions */}
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
-              <Link
-                to="/superadmin/admin-management/details"
-                className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1 group/btn"
-              >
-                <span>View Roster</span>
-                <ArrowUpRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-              </Link>
-              <Link
-                to="/superadmin/admin-management/create"
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold transition-all hover:scale-105"
-              >
-                <PlusCircle className="w-3.5 h-3.5 text-blue-600" />
-                <span>Add Admin</span>
-              </Link>
-            </div>
-          </div>
-
-          {/* Card A2: Medical Staff */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group">
-            <div>
-              {/* Top Row: 3D Emerald Stethoscope + Depts Pill */}
-              <div className="flex items-center justify-between gap-2 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-emerald-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
-                  <UserCheck className="w-6 h-6 drop-shadow-sm" />
-                </div>
-                <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200/60 shadow-2xs shrink-0">
-                  {modules.staff.departments_count} Depts
-                </span>
-              </div>
-
-              {/* Title & Subtitle */}
-              <h3 className="text-base font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
-                Medical Staff
-              </h3>
-              <p className="text-xs text-slate-500 mt-1">
-                Doctors, therapists &amp; OPD clinicians
-              </p>
-
-              {/* Primary Metric */}
-              <div className="mt-4 flex items-baseline gap-2">
-                <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers">
-                  <AnimatedCounter value={modules.staff.total} />
-                </span>
-                <span className="text-xs font-semibold text-slate-500">Staff</span>
-              </div>
-
-              {/* Key Operational Highlight Chips */}
-              <div className="grid grid-cols-2 gap-2.5 mt-4">
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active</span>
-                  <span className="text-sm font-extrabold text-emerald-600 tabular-numbers mt-0.5">
-                    <AnimatedCounter value={modules.staff.active} /> On Duty
-                  </span>
-                </div>
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Inactive</span>
-                  <span className="text-sm font-extrabold text-slate-600 tabular-numbers mt-0.5">
-                    <AnimatedCounter value={modules.staff.inactive} /> Inactive
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Actions */}
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
-              <Link
-                to="/superadmin/staff-management/details"
-                className="text-xs font-bold text-emerald-600 hover:text-emerald-800 transition-colors inline-flex items-center gap-1 group/btn"
-              >
-                <span>View Roster</span>
-                <ArrowUpRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-              </Link>
-              <Link
-                to="/superadmin/staff-management/create"
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold transition-all hover:scale-105"
-              >
-                <PlusCircle className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Add Staff</span>
-              </Link>
-            </div>
-          </div>
-
-          {/* Card A3: Vendors & Suppliers */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group">
-            <div>
-              {/* Top Row: 3D Amber Truck + Types Pill */}
-              <div className="flex items-center justify-between gap-2 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-yellow-400 text-white flex items-center justify-center icon-3d shadow-md shadow-amber-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
-                  <Truck className="w-6 h-6 drop-shadow-sm" />
-                </div>
-                <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200/60 shadow-2xs shrink-0">
-                  {modules.vendors.types_count} Types
-                </span>
-              </div>
-
-              {/* Title & Subtitle */}
-              <h3 className="text-base font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
-                Vendors &amp; Suppliers
-              </h3>
-              <p className="text-xs text-slate-500 mt-1">
-                Pharma &amp; consumables supply
-              </p>
-
-              {/* Primary Metric */}
-              <div className="mt-4 flex items-baseline gap-2">
-                <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers">
-                  <AnimatedCounter value={modules.vendors.total} />
-                </span>
-                <span className="text-xs font-semibold text-slate-500">Vendors</span>
-              </div>
-
-              {/* Key Operational Highlight Chips */}
-              <div className="grid grid-cols-2 gap-2.5 mt-4">
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active</span>
-                  <span className="text-sm font-extrabold text-emerald-600 tabular-numbers mt-0.5">
-                    <AnimatedCounter value={modules.vendors.active} /> Live
-                  </span>
-                </div>
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Verified</span>
-                  <span className="text-sm font-extrabold text-amber-600 tabular-numbers mt-0.5">
-                    <AnimatedCounter value={modules.vendors.total} /> Partners
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Actions */}
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
-              <Link
-                to="/superadmin/vendors"
-                className="text-xs font-bold text-amber-600 hover:text-amber-800 transition-colors inline-flex items-center gap-1 group/btn"
-              >
-                <span>View Vendors</span>
-                <ArrowUpRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-              </Link>
-              <Link
-                to="/superadmin/vendors/create"
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-semibold transition-all hover:scale-105"
-              >
-                <PlusCircle className="w-3.5 h-3.5 text-amber-600" />
-                <span>Add Vendor</span>
-              </Link>
-            </div>
-          </div>
-
-          {/* Card A4: Sales Team */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group">
-            <div>
-              {/* Top Row: 3D Purple Briefcase + Zones Pill */}
-              <div className="flex items-center justify-between gap-2 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 via-fuchsia-600 to-pink-500 text-white flex items-center justify-center icon-3d shadow-md shadow-purple-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
-                  <Briefcase className="w-6 h-6 drop-shadow-sm" />
-                </div>
-                <span className="px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-bold border border-purple-200/60 shadow-2xs shrink-0">
-                  {modules.sales_team.territories_count} Zones
-                </span>
-              </div>
-
-              {/* Title & Subtitle */}
-              <h3 className="text-base font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
-                Sales Team
-              </h3>
-              <p className="text-xs text-slate-500 mt-1">
-                Territory leads &amp; client outreach
-              </p>
-
-              {/* Primary Metric */}
-              <div className="mt-4 flex items-baseline gap-2">
-                <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight tabular-numbers">
-                  <AnimatedCounter value={modules.sales_team.total} />
-                </span>
-                <span className="text-xs font-semibold text-slate-500">Reps</span>
-              </div>
-
-              {/* Key Operational Highlight Chips */}
-              <div className="grid grid-cols-2 gap-2.5 mt-4">
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active</span>
-                  <span className="text-sm font-extrabold text-emerald-600 tabular-numbers mt-0.5">
-                    <AnimatedCounter value={modules.sales_team.active} /> Active
-                  </span>
-                </div>
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Zones</span>
-                  <span className="text-sm font-extrabold text-purple-600 tabular-numbers mt-0.5">
-                    <AnimatedCounter value={modules.sales_team.territories_count} /> Coverage
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Actions */}
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
-              <Link
-                to="/superadmin/sales-members"
-                className="text-xs font-bold text-purple-600 hover:text-purple-800 transition-colors inline-flex items-center gap-1 group/btn"
-              >
-                <span>View Team</span>
-                <ArrowUpRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-              </Link>
-              <Link
-                to="/superadmin/sales-members/create"
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-semibold transition-all hover:scale-105"
-              >
-                <PlusCircle className="w-3.5 h-3.5 text-purple-600" />
-                <span>Add Rep</span>
-              </Link>
-            </div>
-          </div>
         </div>
       </div>
 
