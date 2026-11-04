@@ -5,17 +5,27 @@ namespace App\Http\Controllers\Api\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\AdminActivityLog;
+use App\Models\AppointmentSession;
+use App\Models\Customer;
+use App\Models\InventoryBrand;
+use App\Models\InventoryCategory;
 use App\Models\InventoryProduct;
+use App\Models\InventoryStockLog;
+use App\Models\MasterAppointment;
+use App\Models\Payout;
 use App\Models\SalesMember;
+use App\Models\Service;
 use App\Models\Staff;
 use App\Models\Vendor;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SuperAdminDashboardController extends Controller
 {
     /**
-     * Get comprehensive dashboard statistics and recent records for Super Admin.
+     * Get comprehensive dashboard statistics and recent records for Super Admin,
+     * fully mirroring all sidebar modules with 100% real database data.
      */
     public function index(Request $request): JsonResponse
     {
@@ -61,39 +71,123 @@ class SuperAdminDashboardController extends Controller
             ->distinct('territory')
             ->count('territory');
 
-        // High-level executive KPI aggregations
+        // High-level workforce aggregations
         $totalPersonnel = $totalAdmins + $totalStaff + $totalVendors + $totalSales;
         $totalActive = $activeAdmins + $activeStaff + $activeVendors + $activeSales;
         $totalInactive = $inactiveAdmins + $inactiveStaff + $inactiveVendors + $inactiveSales;
         $totalBlocked = $blockedAdmins + $blockedStaff + $blockedVendors + $blockedSales;
         $activeRate = $totalPersonnel > 0 ? round(($totalActive / $totalPersonnel) * 100, 1) : 100.0;
 
+        // 5. Inventory Management Metrics
+        $totalInventoryProducts = InventoryProduct::count();
+        $totalInventoryUnits = (int) InventoryProduct::sum('quantity');
+        $totalInventoryValuation = (float) (InventoryProduct::selectRaw('SUM(quantity * buy_price) as total_val')->value('total_val') ?? 0);
         $lowStockProductsCount = InventoryProduct::where(function ($q) {
             $q->whereColumn('quantity', '<=', 'low_stock_threshold')
                 ->orWhere('quantity', '<=', 0);
         })->count();
-        $totalInventoryProducts = InventoryProduct::count();
+        $totalCategories = InventoryCategory::count();
+        $totalBrands = InventoryBrand::count();
+        $totalStockLogs = InventoryStockLog::count();
 
-        // Recent Records from Each Module (Compact)
+        // 6. Clinical Appointments & OPD Metrics (Including Today's Real Appointments)
+        $totalCustomers = Customer::count();
+        $totalMasterAppointments = MasterAppointment::count();
+        $totalAppointmentSessions = AppointmentSession::count();
+        $totalServices = Service::count();
+
+        $today = Carbon::today();
+        $todayAppointmentsCount = MasterAppointment::whereDate('appointment_date', $today)->count();
+        $todaySessionsCount = AppointmentSession::whereDate('session_date', $today)->count();
+        $todayCompletedSessions = AppointmentSession::whereDate('session_date', $today)->where('status', AppointmentSession::STATUS_COMPLETED)->count();
+        $todayPendingSessions = AppointmentSession::whereDate('session_date', $today)->where('status', AppointmentSession::STATUS_PENDING)->count();
+
+        $sessionsPending = AppointmentSession::where('status', AppointmentSession::STATUS_PENDING)->count();
+        $sessionsInProgress = AppointmentSession::where('status', AppointmentSession::STATUS_IN_PROGRESS)->count();
+        $sessionsCompleted = AppointmentSession::where('status', AppointmentSession::STATUS_COMPLETED)->count();
+        $sessionsCancelled = AppointmentSession::where('status', AppointmentSession::STATUS_CANCELLED)->count();
+
+        // 7. Payout Management Metrics
+        $totalPayouts = Payout::count();
+        $staffPayoutsCount = Payout::where('payout_type', Payout::TYPE_STAFF)->count();
+        $staffPayoutsDisbursed = (float) (Payout::where('payout_type', Payout::TYPE_STAFF)->where('status', Payout::STATUS_COMPLETED)->sum('paid_amount') ?? 0);
+        $vendorPayoutsCount = Payout::where('payout_type', Payout::TYPE_VENDOR)->count();
+        $vendorPayoutsDisbursed = (float) (Payout::where('payout_type', Payout::TYPE_VENDOR)->where('status', Payout::STATUS_COMPLETED)->sum('paid_amount') ?? 0);
+        $totalDisbursed = $staffPayoutsDisbursed + $vendorPayoutsDisbursed;
+        $pendingPayoutLiabilities = (float) (Payout::whereIn('status', [Payout::STATUS_PENDING, Payout::STATUS_PARTIAL])->sum('balance_amount') ?? 0);
+
+        // 8. Dynamic Growth Trend Data (Computed 100% from real database timestamps)
+        $monthlyGrowthTrend = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $monthObj = Carbon::now()->subMonths($i);
+            $monthStart = $monthObj->copy()->startOfMonth();
+            $monthEnd = $monthObj->copy()->endOfMonth();
+            $monthLabel = $monthObj->format('M');
+
+            $personnelCount = Admin::whereBetween('created_at', [$monthStart, $monthEnd])->count()
+                + Staff::whereBetween('created_at', [$monthStart, $monthEnd])->count()
+                + Vendor::whereBetween('created_at', [$monthStart, $monthEnd])->count()
+                + SalesMember::whereBetween('created_at', [$monthStart, $monthEnd])->count();
+
+            $monthlyGrowthTrend[] = [
+                'label' => $monthLabel,
+                'value' => $personnelCount,
+                'display' => "{$personnelCount} accounts",
+            ];
+        }
+
+        $departmentBreakdown = [
+            ['label' => 'Admins', 'value' => $totalAdmins, 'display' => "{$totalAdmins} Admins"],
+            ['label' => 'Staff', 'value' => $totalStaff, 'display' => "{$totalStaff} Staff"],
+            ['label' => 'Vendors', 'value' => $totalVendors, 'display' => "{$totalVendors} Vendors"],
+            ['label' => 'Sales', 'value' => $totalSales, 'display' => "{$totalSales} Reps"],
+            ['label' => 'Products', 'value' => $totalInventoryProducts, 'display' => "{$totalInventoryProducts} Products"],
+        ];
+
+        // 9. Recent Records for Each Module (Real DB Data)
         $recentAdmins = Admin::latest()
-            ->take(4)
+            ->take(5)
             ->get(['id', 'name', 'email', 'status', 'is_active', 'created_at']);
 
         $recentStaff = Staff::latest()
-            ->take(4)
+            ->take(5)
             ->get(['id', 'staff_code', 'name', 'email', 'department', 'designation', 'status', 'created_at']);
 
         $recentVendors = Vendor::latest()
-            ->take(4)
+            ->take(5)
             ->get(['id', 'vendor_code', 'vendor_name', 'company_name', 'email', 'vendor_type', 'status', 'created_at']);
 
         $recentSales = SalesMember::latest()
-            ->take(4)
+            ->take(5)
             ->get(['id', 'sales_code', 'name', 'email', 'territory', 'designation', 'status', 'created_at']);
 
-        // Recent System Activities Log (Filtered & Compact)
+        $recentAppointments = MasterAppointment::with([
+            'customer:id,first_name,last_name,email,mobile_number',
+            'sessions:id,master_appointment_id,status,session_date,session_time',
+        ])
+            ->latest()
+            ->take(5)
+            ->get(['id', 'appointment_number', 'customer_id', 'appointment_date', 'appointment_fees', 'created_at']);
+
+        $lowStockProducts = InventoryProduct::where(function ($q) {
+            $q->whereColumn('quantity', '<=', 'low_stock_threshold')
+                ->orWhere('quantity', '<=', 0);
+        })
+            ->with(['category:id,name', 'brand:id,name'])
+            ->latest()
+            ->take(5)
+            ->get(['id', 'product_name', 'category_id', 'brand_id', 'quantity', 'low_stock_threshold', 'buy_price', 'status']);
+
+        $recentPayouts = Payout::with([
+            'staff:id,name,staff_code',
+            'vendor:id,vendor_name,company_name',
+        ])
+            ->latest()
+            ->take(5)
+            ->get(['id', 'payout_number', 'payout_type', 'staff_id', 'vendor_id', 'paid_amount', 'total_amount', 'balance_amount', 'status', 'payout_date']);
+
         $recentActivity = AdminActivityLog::latest()
-            ->take(4)
+            ->take(8)
             ->get([
                 'id',
                 'actor_type',
@@ -111,8 +205,21 @@ class SuperAdminDashboardController extends Controller
                 'total_inactive' => $totalInactive,
                 'total_blocked' => $totalBlocked,
                 'active_rate' => $activeRate,
-                'low_stock_products_count' => $lowStockProductsCount,
                 'total_inventory_products' => $totalInventoryProducts,
+                'total_inventory_units' => $totalInventoryUnits,
+                'total_inventory_valuation' => $totalInventoryValuation,
+                'low_stock_products_count' => $lowStockProductsCount,
+                'total_customers' => $totalCustomers,
+                'total_master_appointments' => $totalMasterAppointments,
+                'total_appointment_sessions' => $totalAppointmentSessions,
+                'today_appointments_count' => $todayAppointmentsCount,
+                'today_sessions_count' => $todaySessionsCount,
+                'today_completed_sessions' => $todayCompletedSessions,
+                'today_pending_sessions' => $todayPendingSessions,
+                'total_services' => $totalServices,
+                'total_payouts' => $totalPayouts,
+                'total_disbursed' => $totalDisbursed,
+                'pending_payout_liabilities' => $pendingPayoutLiabilities,
             ],
             'modules' => [
                 'admins' => [
@@ -161,6 +268,66 @@ class SuperAdminDashboardController extends Controller
                     'details_url' => '/superadmin/sales-members',
                     'create_url' => '/superadmin/sales-members/create',
                     'recent' => $recentSales,
+                ],
+                'inventory' => [
+                    'label' => 'Inventory Management',
+                    'total_products' => $totalInventoryProducts,
+                    'total_units' => $totalInventoryUnits,
+                    'total_valuation' => $totalInventoryValuation,
+                    'low_stock_count' => $lowStockProductsCount,
+                    'categories_count' => $totalCategories,
+                    'brands_count' => $totalBrands,
+                    'stock_logs_count' => $totalStockLogs,
+                    'overview_url' => '/superadmin/inventory/overview',
+                    'products_url' => '/superadmin/inventory/products',
+                    'stocks_url' => '/superadmin/inventory/stocks',
+                    'low_stock_items' => $lowStockProducts,
+                ],
+                'clinical' => [
+                    'label' => 'Appointments & Clinical Reports',
+                    'total_customers' => $totalCustomers,
+                    'total_master_appointments' => $totalMasterAppointments,
+                    'total_sessions' => $totalAppointmentSessions,
+                    'today_appointments' => $todayAppointmentsCount,
+                    'today_sessions' => $todaySessionsCount,
+                    'today_completed' => $todayCompletedSessions,
+                    'today_pending' => $todayPendingSessions,
+                    'total_services' => $totalServices,
+                    'sessions_pending' => $sessionsPending,
+                    'sessions_in_progress' => $sessionsInProgress,
+                    'sessions_completed' => $sessionsCompleted,
+                    'sessions_cancelled' => $sessionsCancelled,
+                    'appointment_reports_url' => '/superadmin/reports/appointments',
+                    'session_reports_url' => '/superadmin/reports/sessions',
+                    'recent_appointments' => $recentAppointments,
+                ],
+                'payouts' => [
+                    'label' => 'Payout Management',
+                    'total_payouts' => $totalPayouts,
+                    'staff_disbursed' => $staffPayoutsDisbursed,
+                    'staff_count' => $staffPayoutsCount,
+                    'vendor_disbursed' => $vendorPayoutsDisbursed,
+                    'vendor_count' => $vendorPayoutsCount,
+                    'total_disbursed' => $totalDisbursed,
+                    'pending_liabilities' => $pendingPayoutLiabilities,
+                    'staff_payouts_url' => '/superadmin/payouts/staff',
+                    'vendor_payouts_url' => '/superadmin/payouts/vendors',
+                    'ledger_url' => '/superadmin/payouts/ledger',
+                    'recent_payouts' => $recentPayouts,
+                ],
+            ],
+            'charts' => [
+                'growth_trend' => $monthlyGrowthTrend,
+                'department_breakdown' => $departmentBreakdown,
+                'workforce_donut' => [
+                    ['label' => 'Administrators', 'value' => $totalAdmins, 'color' => '#3b82f6', 'dotClass' => 'bg-blue-500'],
+                    ['label' => 'Medical Staff', 'value' => $totalStaff, 'color' => '#10b981', 'dotClass' => 'bg-emerald-500'],
+                    ['label' => 'Vendors & Suppliers', 'value' => $totalVendors, 'color' => '#f59e0b', 'dotClass' => 'bg-amber-500'],
+                    ['label' => 'Sales Team', 'value' => $totalSales, 'color' => '#8b5cf6', 'dotClass' => 'bg-purple-500'],
+                ],
+                'stock_health_donut' => [
+                    ['label' => 'Optimal Stock', 'value' => max(0, $totalInventoryProducts - $lowStockProductsCount), 'color' => '#10b981', 'dotClass' => 'bg-emerald-500'],
+                    ['label' => 'Low Stock / Alert', 'value' => $lowStockProductsCount, 'color' => '#f59e0b', 'dotClass' => 'bg-amber-500'],
                 ],
             ],
             // Backward compatibility

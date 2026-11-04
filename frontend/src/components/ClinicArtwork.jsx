@@ -265,7 +265,7 @@ export function ClinicBannerBackground({ isSuperAdmin = false }) {
       <div className="absolute top-0 right-10 w-72 h-48 bg-gradient-to-br from-white/40 to-transparent rotate-12 blur-2xl animate-sunbeam" />
 
       {/* 3. Modern Clinic Interior Architectural SVG (Anchored Right) */}
-      <div className="absolute inset-y-0 right-0 w-full md:w-3/5 lg:w-1/2 flex items-center justify-end pr-2 sm:pr-8">
+      <div className="absolute inset-y-0 right-0 w-2/5 sm:w-5/12 lg:w-4/12 flex items-center justify-end pr-2 sm:pr-6 pointer-events-none">
         <svg
           viewBox="0 0 460 180"
           fill="none"
@@ -392,7 +392,7 @@ export function ClinicBannerBackground({ isSuperAdmin = false }) {
       </div>
 
       {/* 5. Left-Side Readability Scrim (Protective glass veil ensuring text clarity) */}
-      <div className="absolute inset-y-0 left-0 w-full sm:w-3/5 lg:w-1/2 bg-gradient-to-r from-blue-100/98 via-sky-50/92 to-transparent z-[1] backdrop-blur-[0.5px]" />
+      <div className="absolute inset-y-0 left-0 w-3/5 lg:w-7/12 bg-gradient-to-r from-blue-100/98 via-sky-50/92 to-transparent z-[1] backdrop-blur-[0.5px]" />
     </div>
   );
 }
