@@ -178,7 +178,7 @@ export default function AdminProfilePage() {
   const currentAvatarSrc = imagePreview || user?.image_url;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-12 animate-fade-in font-sans">
+    <div className="w-full space-y-6 pb-12 animate-fade-in font-sans">
       {/* Premium Header Card */}
       <div className="relative overflow-hidden bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-5 sm:p-7 shadow-xs">
         {/* Subtle decorative background glow */}
