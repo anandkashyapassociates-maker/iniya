@@ -331,6 +331,11 @@ class StaffManagementController extends Controller
             }
         } elseif (array_key_exists('profile_photo', $validated) && is_string($validated['profile_photo']) && strlen($validated['profile_photo']) < 255) {
             $dataToUpdate['profile_photo'] = $validated['profile_photo'];
+        } elseif ($request->boolean('remove_photo') || ($request->has('profile_photo') && is_null($request->input('profile_photo')))) {
+            if ($staff->profile_photo && Storage::disk('public')->exists($staff->profile_photo)) {
+                Storage::disk('public')->delete($staff->profile_photo);
+            }
+            $dataToUpdate['profile_photo'] = null;
         }
 
         if (isset($validated['status'])) {

@@ -129,7 +129,7 @@ export default function StaffEditModal({ staff, isOpen, onClose, onSuccess }) {
         address: staff.address || '',
         status: initialStatus,
       });
-      setPreviewPhoto(staff.image_url || staff.profile_photo || null);
+      setPreviewPhoto(staff.image_url || staff.profile_photo || staff.image || null);
       setPhotoFile(null);
       setErrors({});
     }
@@ -271,6 +271,9 @@ export default function StaffEditModal({ staff, isOpen, onClose, onSuccess }) {
         formPayload.append('profile_photo', photoFile);
         response = await staffManagementService.updateStaff(staff.id, formPayload);
       } else {
+        if (!previewPhoto && (staff.profile_photo || staff.image || staff.image_url)) {
+          payload.remove_photo = 1;
+        }
         response = await staffManagementService.updateStaff(staff.id, payload);
       }
 

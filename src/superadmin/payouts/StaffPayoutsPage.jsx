@@ -33,6 +33,7 @@ import {
 import { payoutService } from '../services/payoutService';
 import clinicManagementService from '../services/clinicManagementService';
 import { useToast } from '../../context/ToastContext';
+import { getImageUrl } from '../../utils/imageUrl';
 
 export default function StaffPayoutsPage() {
   const toast = useToast();
@@ -525,11 +526,32 @@ export default function StaffPayoutsPage() {
                       </td>
                       <td className="py-3 px-4">
                         {item.staff ? (
-                          <div>
-                            <p className="font-semibold text-slate-900">{item.staff.name}</p>
-                            <p className="text-[11px] text-slate-500 font-mono">
-                              {item.staff.staff_code} &bull; {item.staff.department || 'General'}
-                            </p>
+                          <div className="flex items-center gap-2.5">
+                            {item.staff.image_url || item.staff.profile_photo || item.staff.image ? (
+                              <img
+                                src={getImageUrl(item.staff.image_url || item.staff.profile_photo || item.staff.image)}
+                                alt={item.staff.name}
+                                className="w-8 h-8 rounded-lg object-cover border border-slate-200 shrink-0"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                  if (e.currentTarget.nextElementSibling) {
+                                    e.currentTarget.nextElementSibling.style.display = 'flex';
+                                  }
+                                }}
+                              />
+                            ) : null}
+                            <div
+                              className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs shrink-0"
+                              style={{ display: item.staff.image_url || item.staff.profile_photo || item.staff.image ? 'none' : 'flex' }}
+                            >
+                              {item.staff.name ? item.staff.name.charAt(0).toUpperCase() : 'S'}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-semibold text-slate-900 truncate">{item.staff.name}</p>
+                              <p className="text-[11px] text-slate-500 font-mono truncate">
+                                {item.staff.staff_code} &bull; {item.staff.department || 'General'}
+                              </p>
+                            </div>
                           </div>
                         ) : (
                           <span className="text-slate-400 italic">Unknown Staff Member</span>
@@ -721,10 +743,35 @@ export default function StaffPayoutsPage() {
 
               <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-1.5">
                 <p className="text-[10px] uppercase font-semibold text-slate-400">Staff Beneficiary</p>
-                <p className="text-sm font-bold text-slate-900">{selectedPayout.staff?.name || 'Staff Member'}</p>
-                <p className="text-slate-600">
-                  Staff Code: <span className="font-mono font-semibold">{selectedPayout.staff?.staff_code || '-'}</span> &bull; {selectedPayout.staff?.department || 'General'}
-                </p>
+                <div className="flex items-center gap-3">
+                  {selectedPayout.staff?.image_url || selectedPayout.staff?.profile_photo || selectedPayout.staff?.image ? (
+                    <img
+                      src={getImageUrl(selectedPayout.staff.image_url || selectedPayout.staff.profile_photo || selectedPayout.staff.image)}
+                      alt={selectedPayout.staff.name}
+                      className="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        if (e.currentTarget.nextElementSibling) {
+                          e.currentTarget.nextElementSibling.style.display = 'flex';
+                        }
+                      }}
+                    />
+                  ) : null}
+                  <div
+                    className="w-10 h-10 rounded-xl bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm shrink-0"
+                    style={{
+                      display: selectedPayout.staff?.image_url || selectedPayout.staff?.profile_photo || selectedPayout.staff?.image ? 'none' : 'flex'
+                    }}
+                  >
+                    {selectedPayout.staff?.name ? selectedPayout.staff.name.charAt(0).toUpperCase() : 'S'}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-slate-900 truncate">{selectedPayout.staff?.name || 'Staff Member'}</p>
+                    <p className="text-slate-600 text-xs">
+                      Staff Code: <span className="font-mono font-semibold">{selectedPayout.staff?.staff_code || '-'}</span> &bull; {selectedPayout.staff?.department || 'General'}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Assigned Clinic Details */}

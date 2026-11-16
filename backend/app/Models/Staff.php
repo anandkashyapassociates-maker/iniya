@@ -51,7 +51,16 @@ class Staff extends Authenticatable
      */
     protected $appends = [
         'image_url',
+        'image',
     ];
+
+    /**
+     * Accessor for image attribute alias.
+     */
+    public function getImageAttribute(): ?string
+    {
+        return $this->profile_photo;
+    }
 
     /**
      * Accessor for full image URL.

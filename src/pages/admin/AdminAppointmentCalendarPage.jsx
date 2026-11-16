@@ -20,6 +20,7 @@ import SessionRescheduleModal from '../../components/admin/SessionRescheduleModa
 import SessionQuickDetailsModal from '../../components/admin/SessionQuickDetailsModal';
 import { useToast } from '../../context/ToastContext';
 import { useAdminAuth } from '../../features/auth/AdminAuthContext';
+import { getImageUrl } from '../../utils/imageUrl';
 
 // Safe local date formatting (YYYY-MM-DD) avoiding UTC timezone shifts
 const formatLocalDate = (d) => {
@@ -508,9 +509,27 @@ export default function AdminAppointmentCalendarPage() {
                                 <Clock className="w-3.5 h-3.5 text-slate-400" />
                                 <span>{ses.session_time}</span>
                               </span>
-                              <span className="flex items-center space-x-1 font-medium">
-                                <User className="w-3.5 h-3.5 text-slate-400" />
-                                <span>{ses.staff?.name || 'Unassigned'}</span>
+                              <span className="flex items-center space-x-1.5 font-medium truncate">
+                                {ses.staff?.image_url || ses.staff?.profile_photo || ses.staff?.image ? (
+                                  <img
+                                    src={getImageUrl(ses.staff.image_url || ses.staff.profile_photo || ses.staff.image)}
+                                    alt={ses.staff.name}
+                                    className="w-4 h-4 rounded-full object-cover border border-slate-200 shrink-0"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = 'none';
+                                      if (e.currentTarget.nextElementSibling) {
+                                        e.currentTarget.nextElementSibling.style.display = 'inline-block';
+                                      }
+                                    }}
+                                  />
+                                ) : null}
+                                <User
+                                  className="w-3.5 h-3.5 text-slate-400 shrink-0"
+                                  style={{
+                                    display: ses.staff?.image_url || ses.staff?.profile_photo || ses.staff?.image ? 'none' : 'inline-block'
+                                  }}
+                                />
+                                <span className="truncate">{ses.staff?.name || 'Unassigned'}</span>
                               </span>
                             </div>
 

@@ -549,6 +549,7 @@ class AdminAuthController extends Controller
             'department' => $staff->department,
             'designation' => $staff->designation,
             'employment_type' => $staff->employment_type,
+            'profile_photo' => $staff->profile_photo,
             'image' => $staff->profile_photo,
             'image_url' => $staff->image_url,
             'status' => $staff->status,
