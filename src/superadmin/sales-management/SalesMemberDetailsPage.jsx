@@ -34,8 +34,6 @@ export default function SalesMemberDetailsPage() {
 
   const [salesList, setSalesList] = useState([]);
   const [clinicsList, setClinicsList] = useState([]);
-  const [departmentsList, setDepartmentsList] = useState([]);
-  const [territoriesList, setTerritoriesList] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,8 +42,6 @@ export default function SalesMemberDetailsPage() {
   const [searchInput, setSearchInput] = useState('');
   const [activeSearch, setActiveSearch] = useState('');
   const [clinicFilter, setClinicFilter] = useState('all');
-  const [departmentFilter, setDepartmentFilter] = useState('all');
-  const [territoryFilter, setTerritoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -62,8 +58,6 @@ export default function SalesMemberDetailsPage() {
       const res = await salesMemberManagementService.getSalesMembers({
         search: activeSearch,
         clinic_id: clinicFilter !== 'all' ? clinicFilter : undefined,
-        department: departmentFilter !== 'all' ? departmentFilter : undefined,
-        territory: territoryFilter !== 'all' ? territoryFilter : undefined,
         status: statusFilter,
         page,
         per_page: perPage,
@@ -87,30 +81,14 @@ export default function SalesMemberDetailsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeSearch, clinicFilter, departmentFilter, territoryFilter, statusFilter, page, perPage, toast]);
+  }, [activeSearch, clinicFilter, statusFilter, page, perPage, toast]);
 
-  // Load clinics, departments and territories
+  // Load clinics
   useEffect(() => {
     clinicManagementService
       .getClinicOptions()
       .then((res) => {
         setClinicsList(res.clinics || []);
-      })
-      .catch(() => {});
-
-    salesMemberManagementService
-      .getDepartments()
-      .then((data) => {
-        if (Array.isArray(data)) setDepartmentsList(data);
-        else if (Array.isArray(data?.departments)) setDepartmentsList(data.departments);
-      })
-      .catch(() => {});
-
-    salesMemberManagementService
-      .getTerritories()
-      .then((data) => {
-        if (Array.isArray(data)) setTerritoriesList(data);
-        else if (Array.isArray(data?.territories)) setTerritoriesList(data.territories);
       })
       .catch(() => {});
   }, []);
@@ -135,22 +113,10 @@ export default function SalesMemberDetailsPage() {
     setClinicFilter(e.target.value);
   };
 
-  const handleDepartmentFilterChange = (e) => {
-    setPage(1);
-    setDepartmentFilter(e.target.value);
-  };
-
-  const handleTerritoryFilterChange = (e) => {
-    setPage(1);
-    setTerritoryFilter(e.target.value);
-  };
-
   const handleResetFilters = () => {
     setSearchInput('');
     setActiveSearch('');
     setClinicFilter('all');
-    setDepartmentFilter('all');
-    setTerritoryFilter('all');
     setStatusFilter('all');
     setPage(1);
   };
@@ -234,16 +200,16 @@ export default function SalesMemberDetailsPage() {
 
       {/* Filter and Search Bar Card - Clean 2-Row Layout */}
       <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs space-y-3.5">
-        {/* ROW 1: Search Form + Clinic Dropdown + Department Dropdown */}
+        {/* ROW 1: Search Form + Clinic Dropdown */}
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
           {/* Search Form */}
-          <form onSubmit={handleSearchSubmit} className="relative sm:col-span-12 md:col-span-6 lg:col-span-6 min-w-0">
+          <form onSubmit={handleSearchSubmit} className="relative sm:col-span-12 md:col-span-8 lg:col-span-8 min-w-0">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search code, name, email, territory, city..."
+              placeholder="Search code, name, email, city..."
               className="w-full pl-10 pr-20 py-2.5 text-xs bg-slate-50 text-slate-900 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium shadow-2xs"
             />
             <button
@@ -255,7 +221,7 @@ export default function SalesMemberDetailsPage() {
           </form>
 
           {/* Clinic Filter Dropdown */}
-          <div className="relative sm:col-span-6 md:col-span-3 lg:col-span-3 min-w-0">
+          <div className="relative sm:col-span-12 md:col-span-4 lg:col-span-4 min-w-0">
             <Building2 className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <select
               value={clinicFilter}
@@ -266,23 +232,6 @@ export default function SalesMemberDetailsPage() {
               {clinicsList.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name} ({c.clinic_code})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Department Filter Dropdown */}
-          <div className="relative sm:col-span-6 md:col-span-3 lg:col-span-3 min-w-0">
-            <Briefcase className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <select
-              value={departmentFilter}
-              onChange={handleDepartmentFilterChange}
-              className="w-full pl-10 pr-8 py-2.5 text-xs bg-slate-50 text-slate-800 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all cursor-pointer font-medium shadow-2xs"
-            >
-              <option value="all">All Departments</option>
-              {departmentsList.map((d) => (
-                <option key={d} value={d}>
-                  {d}
                 </option>
               ))}
             </select>
@@ -335,7 +284,7 @@ export default function SalesMemberDetailsPage() {
           </div>
 
           {/* Active Filter Indicators & Clear All */}
-          {(activeSearch || clinicFilter !== 'all' || departmentFilter !== 'all' || territoryFilter !== 'all' || statusFilter !== 'all') && (
+          {(activeSearch || clinicFilter !== 'all' || statusFilter !== 'all') && (
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs text-slate-500 font-medium">Filters active:</span>
               {clinicFilter !== 'all' && (
@@ -349,21 +298,6 @@ export default function SalesMemberDetailsPage() {
                       setPage(1);
                     }}
                     className="hover:text-purple-900 cursor-pointer ml-0.5"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              )}
-              {departmentFilter !== 'all' && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                  Dept: {departmentFilter}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDepartmentFilter('all');
-                      setPage(1);
-                    }}
-                    className="hover:text-blue-900 cursor-pointer ml-0.5"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -426,11 +360,7 @@ export default function SalesMemberDetailsPage() {
                 <th className="py-3 px-4">Name</th>
                 <th className="py-3 px-4">Email</th>
                 <th className="py-3 px-4">Mobile</th>
-                <th className="py-3 px-4">Designation</th>
-                <th className="py-3 px-4">Department</th>
-                <th className="py-3 px-4">Territory</th>
                 <th className="py-3 px-4">City</th>
-                <th className="py-3 px-4">Joining Date</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4">Created Date</th>
                 <th className="py-3 px-4 text-right">Actions</th>
@@ -439,7 +369,7 @@ export default function SalesMemberDetailsPage() {
             <tbody className="divide-y divide-slate-100 font-normal">
               {isLoading ? (
                 <tr>
-                  <td colSpan="16" className="py-12 text-center text-slate-400">
+                  <td colSpan="12" className="py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                       <span className="text-xs font-semibold text-slate-500">
@@ -450,18 +380,18 @@ export default function SalesMemberDetailsPage() {
                 </tr>
               ) : salesList.length === 0 ? (
                 <tr>
-                  <td colSpan="16" className="py-12 text-center text-slate-400">
+                  <td colSpan="12" className="py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center gap-2 max-w-sm mx-auto">
                       <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
                         <TrendingUp className="w-6 h-6" />
                       </div>
                       <span className="text-sm font-bold text-slate-700">No Sales Members Found</span>
                       <p className="text-xs text-slate-400">
-                        {activeSearch || clinicFilter !== 'all' || departmentFilter !== 'all' || territoryFilter !== 'all' || statusFilter !== 'all'
+                        {activeSearch || clinicFilter !== 'all' || statusFilter !== 'all'
                           ? 'No sales team members match the selected search or filter criteria.'
                           : 'No sales members have been provisioned in the system yet.'}
                       </p>
-                      {activeSearch || clinicFilter !== 'all' || departmentFilter !== 'all' || territoryFilter !== 'all' || statusFilter !== 'all' ? (
+                      {activeSearch || clinicFilter !== 'all' || statusFilter !== 'all' ? (
                         <button
                           onClick={handleResetFilters}
                           className="mt-2 text-xs font-bold text-blue-600 hover:text-blue-700 underline cursor-pointer"
@@ -576,53 +506,17 @@ export default function SalesMemberDetailsPage() {
                       </div>
                     </td>
 
-                    {/* 6. Designation */}
-                    <td className="py-3 px-4 text-slate-700">
-                      {member.designation || '—'}
-                    </td>
-
-                    {/* 7. Department */}
-                    <td className="py-3 px-4">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
-                        {member.department || 'General'}
-                      </span>
-                    </td>
-
-                    {/* 8. Territory */}
-                    <td className="py-3 px-4">
-                      {member.territory ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] text-slate-700 font-medium">
-                          <Compass className="w-3 h-3 text-sky-500 shrink-0" />
-                          <span>{member.territory}</span>
-                        </span>
-                      ) : (
-                        <span className="text-slate-400 text-[10px]">—</span>
-                      )}
-                    </td>
-
-                    {/* 9. City */}
+                    {/* City */}
                     <td className="py-3 px-4 text-slate-600">
                       {member.city || '—'}
                     </td>
 
-                    {/* 10. Joining Date */}
-                    <td className="py-3 px-4 text-slate-500 whitespace-nowrap text-[11px]">
-                      {member.joining_date ? (
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{new Date(member.joining_date).toLocaleDateString()}</span>
-                        </div>
-                      ) : (
-                        '—'
-                      )}
-                    </td>
-
-                    {/* 11. Status */}
+                    {/* Status */}
                     <td className="py-3 px-4">
                       <SalesMemberStatusBadge status={member.status} size="small" />
                     </td>
 
-                    {/* 12. Created Date */}
+                    {/* Created Date */}
                     <td className="py-3 px-4 text-slate-500 whitespace-nowrap text-[11px]">
                       {member.created_at
                         ? new Date(member.created_at).toLocaleDateString()
