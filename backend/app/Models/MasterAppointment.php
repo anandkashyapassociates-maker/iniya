@@ -27,6 +27,7 @@ class MasterAppointment extends Model
         'customer_id',
         'appointment_date',
         'sales_team_id',
+        'sales_commission',
         'appointment_fees',
         'notes',
         'image',
@@ -113,6 +114,7 @@ class MasterAppointment extends Model
         return [
             'appointment_date' => 'date:Y-m-d',
             'appointment_fees' => 'decimal:2',
+            'sales_commission' => 'decimal:2',
         ];
     }
 

@@ -313,6 +313,7 @@ class MasterAppointmentController extends Controller
             'customer_id' => ['required', 'exists:customers,id'],
             'appointment_date' => ['required', 'date', 'after_or_equal:today'],
             'sales_team_id' => ['required', 'exists:sales_members,id'],
+            'sales_commission' => ['nullable', 'numeric', 'min:0'],
             'appointment_fees' => ['required', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'sessions' => ['required', 'array', 'min:1'],
@@ -431,6 +432,7 @@ class MasterAppointmentController extends Controller
                 'customer_id' => $validated['customer_id'],
                 'appointment_date' => $validated['appointment_date'],
                 'sales_team_id' => $validated['sales_team_id'],
+                'sales_commission' => $validated['sales_commission'] ?? 0.00,
                 'appointment_fees' => $validated['appointment_fees'],
                 'notes' => $validated['notes'] ?? null,
                 'image' => $imagePath,
@@ -557,6 +559,7 @@ class MasterAppointmentController extends Controller
             'customer_id' => ['sometimes', 'required', 'exists:customers,id'],
             'appointment_date' => ['sometimes', 'required', 'date'],
             'sales_team_id' => ['sometimes', 'required', 'exists:sales_members,id'],
+            'sales_commission' => ['nullable', 'numeric', 'min:0'],
             'appointment_fees' => ['sometimes', 'required', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string', 'max:5000'],
         ]);

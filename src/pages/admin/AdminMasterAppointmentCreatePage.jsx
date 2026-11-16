@@ -4,6 +4,7 @@ import {
   Calendar,
   Clock,
   User,
+  Users,
   Plus,
   Trash2,
   ArrowLeft,
@@ -77,6 +78,7 @@ export default function AdminMasterAppointmentCreatePage() {
   const [customerId, setCustomerId] = useState('');
   const [appointmentDate, setAppointmentDate] = useState(todayStr);
   const [salesTeamId, setSalesTeamId] = useState('');
+  const [salesCommission, setSalesCommission] = useState('0');
   const [notes, setNotes] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -114,6 +116,11 @@ export default function AdminMasterAppointmentCreatePage() {
   const selectedCustomer = useMemo(() => {
     return customers.find((c) => String(c.id) === String(customerId)) || null;
   }, [customers, customerId]);
+
+  // Selected sales partner preview
+  const selectedSalesPartner = useMemo(() => {
+    return salesTeams.find((st) => String(st.id) === String(salesTeamId)) || null;
+  }, [salesTeams, salesTeamId]);
 
   // Dynamic Sessions state
   const [sessions, setSessions] = useState([
@@ -476,6 +483,7 @@ export default function AdminMasterAppointmentCreatePage() {
         customer_id: Number(customerId),
         appointment_date: appointmentDate,
         sales_team_id: Number(salesTeamId),
+        sales_commission: Number(salesCommission || 0),
         appointment_fees: totalAppointmentFees,
         image: imageBase64,
         notes: notes ? notes.trim() : undefined,
@@ -578,7 +586,7 @@ export default function AdminMasterAppointmentCreatePage() {
                   1. Patient &amp; Consultation Details
                 </h2>
                 <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
-                  Select patient, date and sales partner
+                  Select patient and consultation date
                 </p>
               </div>
             </div>
@@ -592,8 +600,8 @@ export default function AdminMasterAppointmentCreatePage() {
             </Link>
           </div>
 
-          {/* Form Fields: Patient, Date, Sales Team */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+          {/* Form Fields: Patient & Date */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {/* Customer Dropdown */}
             <div>
               <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
@@ -646,26 +654,6 @@ export default function AdminMasterAppointmentCreatePage() {
                 required
                 className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-xs"
               />
-            </div>
-
-            {/* Sales Team Member */}
-            <div>
-              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                Sales Partner <span className="text-rose-500">*</span>
-              </label>
-              <select
-                value={salesTeamId}
-                onChange={(e) => setSalesTeamId(e.target.value)}
-                required
-                className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-xs"
-              >
-                <option value="">-- Select Sales Partner --</option>
-                {salesTeams.map((st) => (
-                  <option key={st.id} value={st.id}>
-                    {st.name} ({st.sales_code})
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
 
@@ -760,7 +748,85 @@ export default function AdminMasterAppointmentCreatePage() {
           </div>
         </div>
 
-        {/* SECTION 2: INDIVIDUAL CLINICAL SESSIONS */}
+        {/* SECTION 2: SALES TEAMS DETAILS */}
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-7 lg:p-8 border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-6">
+          {/* Card Header */}
+          <div className="flex items-center justify-between pb-4 sm:pb-5 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 shadow-md shadow-teal-500/25 ring-2 ring-teal-50 flex items-center justify-center text-white shrink-0">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 drop-shadow-sm" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900 font-display">
+                  2. Sales Teams Details
+                </h2>
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+                  Select sales partner and set sales commission
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Form Fields: Sales Partner & Commission (2 columns) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            {/* Sales Partner Dropdown */}
+            <div>
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
+                Sales Partner <span className="text-rose-500">*</span>
+              </label>
+              <select
+                value={salesTeamId}
+                onChange={(e) => setSalesTeamId(e.target.value)}
+                required
+                className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer shadow-xs"
+              >
+                <option value="">-- Select Sales Partner --</option>
+                {salesTeams.map((st) => (
+                  <option key={st.id} value={st.id}>
+                    {st.name} ({st.sales_code}) {st.department ? `• ${st.department}` : ''}
+                  </option>
+                ))}
+              </select>
+
+              {/* Selected Sales Partner Compact Info */}
+              {selectedSalesPartner && (
+                <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-slate-600 bg-emerald-50/60 border border-emerald-100 rounded-xl px-2.5 py-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  <span className="font-semibold text-emerald-950 truncate max-w-[140px] sm:max-w-none">{selectedSalesPartner.name}</span>
+                  <span className="text-slate-500 font-mono">({selectedSalesPartner.sales_code})</span>
+                  {selectedSalesPartner.department && <span className="text-slate-500">• {selectedSalesPartner.department}</span>}
+                  {selectedSalesPartner.mobile && <span className="text-slate-400">• {selectedSalesPartner.mobile}</span>}
+                </div>
+              )}
+            </div>
+
+            {/* Sales Partner Commission */}
+            <div>
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
+                Sales Partner Commission
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 sm:pl-4 flex items-center pointer-events-none text-slate-400 font-bold text-xs sm:text-sm font-mono">
+                  ₹
+                </div>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={salesCommission}
+                  onChange={(e) => setSalesCommission(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full pl-8 sm:pl-9 pr-3.5 py-2.5 sm:pr-4 sm:py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-800 font-medium font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-xs"
+                />
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1.5">
+                Commission amount for the referring sales team member on this booking.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 3: INDIVIDUAL CLINICAL SESSIONS */}
         <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-7 lg:p-8 border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] space-y-4 sm:space-y-6">
           {/* Section Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 sm:pb-5 border-b border-slate-100 gap-3">
@@ -770,7 +836,7 @@ export default function AdminMasterAppointmentCreatePage() {
               </div>
               <div className="min-w-0 flex-1">
                 <h2 className="text-sm sm:text-base font-bold text-slate-900 font-display">
-                  2. Clinical Sessions
+                  3. Clinical Sessions
                 </h2>
                 <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
                   Procedures, doctor assignment, and schedules
