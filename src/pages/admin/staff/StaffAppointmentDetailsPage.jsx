@@ -441,6 +441,21 @@ export default function StaffAppointmentDetailsPage() {
               </p>
             )}
 
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-slate-500">Practitioner:</span>
+              <div className="flex items-center gap-1.5">
+                {(user?.image_url || user?.profile_photo || user?.image || session.staff?.image_url || session.staff?.profile_photo) ? (
+                  <img
+                    src={getImageUrl(user?.image_url || user?.profile_photo || user?.image || session.staff?.image_url || session.staff?.profile_photo)}
+                    alt={user?.name || session.staff?.name}
+                    className="w-5 h-5 rounded-md object-cover border border-slate-200 shrink-0"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                ) : null}
+                <span className="font-semibold text-slate-800">{user?.name || session.staff?.name || 'Assigned Staff'}</span>
+              </div>
+            </div>
+
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between bg-emerald-50/60 p-2.5 rounded-xl border border-emerald-200/60">
               <span className="text-xs font-semibold text-emerald-800 flex items-center gap-1.5">
                 <IndianRupee className="w-3.5 h-3.5 text-emerald-600" /> Your Commission:

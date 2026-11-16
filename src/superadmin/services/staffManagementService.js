@@ -21,7 +21,9 @@ export const staffManagementService = {
    * Create a new Staff member.
    */
   async createStaff(data) {
-    const response = await superAdminApiClient.post('/superadmin/staff', data);
+    const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+    const config = isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
+    const response = await superAdminApiClient.post('/superadmin/staff', data, config);
     return response.data;
   },
 
@@ -29,6 +31,16 @@ export const staffManagementService = {
    * Update an existing Staff member.
    */
   async updateStaff(id, data) {
+    const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+    if (isFormData) {
+      if (!data.has('_method')) {
+        data.append('_method', 'PUT');
+      }
+      const response = await superAdminApiClient.post(`/superadmin/staff/${id}`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    }
     const response = await superAdminApiClient.put(`/superadmin/staff/${id}`, data);
     return response.data;
   },

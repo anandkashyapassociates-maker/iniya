@@ -194,7 +194,7 @@ export default function AdminProfilePage() {
   const statusDisplay = isActive ? 'Yes' : 'Deactive';
 
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : 'A';
-  const currentAvatarSrc = imagePreview || getImageUrl(user?.image_url || user?.image);
+  const currentAvatarSrc = imagePreview || getImageUrl(user?.image_url || user?.profile_photo || user?.image);
 
   return (
     <div className="w-full space-y-6 pb-12 animate-fade-in font-sans min-w-0">

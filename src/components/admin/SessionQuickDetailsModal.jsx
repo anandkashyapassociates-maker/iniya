@@ -13,6 +13,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { useAdminAuth } from '../../features/auth/AdminAuthContext';
+import { getImageUrl } from '../../utils/imageUrl';
 
 export default function SessionQuickDetailsModal({
   isOpen,
@@ -120,11 +121,42 @@ export default function SessionQuickDetailsModal({
           {/* Staff & Commission Grid */}
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 bg-white border border-slate-200 rounded-xl">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
                 Assigned Practitioner
               </span>
-              <div className="font-semibold text-xs text-slate-800">{session.staff?.name || 'Unassigned'}</div>
-              <div className="text-[11px] text-slate-500">{session.staff?.department || ''}</div>
+              <div className="flex items-center gap-2.5">
+                {session.staff ? (
+                  <>
+                    {session.staff.image_url || session.staff.profile_photo || session.staff.image ? (
+                      <img
+                        src={getImageUrl(session.staff.image_url || session.staff.profile_photo || session.staff.image)}
+                        alt={session.staff.name}
+                        className="w-8 h-8 rounded-lg object-cover border border-slate-200 shrink-0"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          if (e.currentTarget.nextElementSibling) {
+                            e.currentTarget.nextElementSibling.style.display = 'flex';
+                          }
+                        }}
+                      />
+                    ) : null}
+                    <div
+                      className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center font-bold text-xs shrink-0"
+                      style={{
+                        display: session.staff.image_url || session.staff.profile_photo || session.staff.image ? 'none' : 'flex'
+                      }}
+                    >
+                      {session.staff.name ? session.staff.name.charAt(0).toUpperCase() : 'S'}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-semibold text-xs text-slate-800 truncate">{session.staff.name}</div>
+                      <div className="text-[11px] text-slate-500 truncate">{session.staff.department || 'Clinical Staff'}</div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-xs text-slate-400 italic">Unassigned</div>
+                )}
+              </div>
             </div>
 
             <div className="p-3 bg-white border border-slate-200 rounded-xl">

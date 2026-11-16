@@ -25,6 +25,7 @@ import {
 import { useAdminAuth } from '../../../features/auth/AdminAuthContext';
 import staffAppointmentService from '../../../services/staffAppointmentService';
 import { useToast } from '../../../context/ToastContext';
+import { getImageUrl } from '../../../utils/imageUrl';
 
 export default function StaffMyAppointmentsPage() {
   const navigate = useNavigate();
@@ -155,8 +156,24 @@ export default function StaffMyAppointmentsPage() {
       {/* Page Title & Staff Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-sm">
-            <CalendarCheck className="w-6 h-6" />
+          {user?.image_url || user?.profile_photo || user?.image ? (
+            <img
+              src={getImageUrl(user.image_url || user.profile_photo || user.image)}
+              alt={user.name}
+              className="w-12 h-12 rounded-xl object-cover border-2 border-emerald-500/30 shadow-sm shrink-0"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                if (e.currentTarget.nextElementSibling) {
+                  e.currentTarget.nextElementSibling.style.display = 'flex';
+                }
+              }}
+            />
+          ) : null}
+          <div
+            className="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0"
+            style={{ display: user?.image_url || user?.profile_photo || user?.image ? 'none' : 'flex' }}
+          >
+            {user?.name ? user.name.charAt(0).toUpperCase() : <CalendarCheck className="w-6 h-6" />}
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
