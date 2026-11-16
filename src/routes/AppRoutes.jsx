@@ -167,6 +167,9 @@ export default function AppRoutes() {
           <Route path="/superadmin/payouts/ledger" element={<PayoutsLedgerPage />} />
 
           <Route path="/superadmin/profile" element={<SuperAdminProfilePage />} />
+          <Route path="/superadmin/services" element={<AdminServicesManagementPage />} />
+          <Route path="/superadmin/create-services" element={<Navigate to="/superadmin/services" replace />} />
+          <Route path="/superadmin/appointments/services" element={<Navigate to="/superadmin/services" replace />} />
         </Route>
       </Route>
 
@@ -201,8 +204,8 @@ export default function AppRoutes() {
             {/* Appointments Management */}
             <Route path="/admin/appointments" element={<AdminMasterAppointmentsPage />} />
             <Route path="/admin/appointments/create" element={<AdminMasterAppointmentCreatePage />} />
-            <Route path="/admin/appointments/services" element={<AdminServicesManagementPage />} />
-            <Route path="/admin/services" element={<Navigate to="/admin/appointments/services" replace />} />
+            <Route path="/admin/appointments/services" element={<Navigate to="/admin/appointments" replace />} />
+            <Route path="/admin/services" element={<Navigate to="/admin/appointments" replace />} />
             <Route path="/admin/appointments/:id" element={<AdminMasterAppointmentDetailsPage />} />
             <Route path="/admin/appointments/:id/edit" element={<AdminMasterAppointmentEditPage />} />
 

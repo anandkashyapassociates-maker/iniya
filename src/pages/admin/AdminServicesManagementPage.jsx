@@ -30,6 +30,7 @@ import { useToast } from '../../context/ToastContext';
 export default function AdminServicesManagementPage() {
   const navigate = useNavigate();
   const toast = useToast();
+  const isSuperAdmin = typeof window !== 'undefined' && window.location.pathname.startsWith('/superadmin');
 
   // Data states
   const [categories, setCategories] = useState([]);
@@ -395,11 +396,11 @@ export default function AdminServicesManagementPage() {
           </button>
 
           <button
-            onClick={() => navigate('/admin/appointments')}
+            onClick={() => navigate(isSuperAdmin ? '/superadmin/dashboard' : '/admin/appointments')}
             className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl transition-all shadow-xs cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4 text-slate-500" />
-            <span>Appointments</span>
+            <span>{isSuperAdmin ? 'Dashboard' : 'Appointments'}</span>
           </button>
         </div>
       </div>
@@ -450,8 +451,8 @@ export default function AdminServicesManagementPage() {
           </span>
         </div>
 
-        {/* Quick Booking Button if Service is Selected */}
-        {activeServiceObj && (
+        {/* Quick Booking Button if Service is Selected (Admin only) */}
+        {!isSuperAdmin && activeServiceObj && (
           <button
             type="button"
             onClick={() => navigate(`/admin/appointments/create?service_id=${activeServiceObj.id}`)}
