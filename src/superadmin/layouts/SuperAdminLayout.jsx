@@ -28,6 +28,7 @@ import {
   Banknote,
   Calendar,
   Clock,
+  Sparkles,
 } from 'lucide-react';
 import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import ToastNotifications from '../../components/ToastNotifications';
@@ -256,6 +257,24 @@ export default function SuperAdminLayout() {
                 <User className="w-4 h-4 drop-shadow-sm" />
               </div>
               <span className="truncate group-hover:translate-x-0.5 transition-transform">Profile &amp; Security</span>
+            </NavLink>
+
+            {/* Create Services Link */}
+            <NavLink
+              to="/superadmin/services"
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group ${
+                  isActive
+                    ? 'bg-gradient-to-r from-blue-600/30 to-indigo-600/20 text-white border-l-4 border-blue-500 shadow-sm'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900/80'
+                }`
+              }
+            >
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-500 via-indigo-600 to-pink-500 text-white flex items-center justify-center shrink-0 icon-3d shadow-md group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-300">
+                <Sparkles className="w-4 h-4 drop-shadow-sm" />
+              </div>
+              <span className="truncate group-hover:translate-x-0.5 transition-transform">Create Services</span>
             </NavLink>
 
             {/* ======================================================== */}
