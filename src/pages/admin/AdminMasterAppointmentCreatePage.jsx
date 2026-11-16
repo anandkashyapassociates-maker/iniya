@@ -1046,10 +1046,10 @@ export default function AdminMasterAppointmentCreatePage() {
                       <p className="text-[10px] text-slate-400 mt-1">Filled when session is executed by staff.</p>
                     </div>
 
-                    {/* Doctor Commission */}
+                    {/* Staff Commission */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        Commission (₹) <span className="text-rose-500">*</span>
+                        Staff Commission (₹) <span className="text-rose-500">*</span>
                       </label>
                       <div className="relative">
                         <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 font-bold text-xs sm:text-sm pointer-events-none select-none">
