@@ -393,6 +393,11 @@ export default function AdminMasterAppointmentCreatePage() {
       return;
     }
 
+    if (salesCommission === '' || salesCommission === null || salesCommission === undefined || isNaN(salesCommission) || Number(salesCommission) < 0) {
+      setError('Please enter Sales Partner Commission (enter 0 if no commission).');
+      return;
+    }
+
     if (sessions.length === 0) {
       setError('Please add at least one session.');
       return;
@@ -409,6 +414,10 @@ export default function AdminMasterAppointmentCreatePage() {
       const s = sessions[i];
       if (!s.category_id || !s.sub_category_id || !s.service_id) {
         setError(`Session #${i + 1}: Please select Category, Sub-Category, and Service.`);
+        return;
+      }
+      if (s.service_price === '' || s.service_price === null || s.service_price === undefined || isNaN(s.service_price) || Number(s.service_price) < 0) {
+        setError(`Session #${i + 1}: Please enter Consultation Fee.`);
         return;
       }
       if (!s.treatment_details?.trim()) {
@@ -804,7 +813,7 @@ export default function AdminMasterAppointmentCreatePage() {
             {/* Sales Partner Commission */}
             <div>
               <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 sm:mb-2">
-                Sales Partner Commission
+                Sales Partner Commission <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 sm:pl-4 flex items-center pointer-events-none text-slate-400 font-bold text-xs sm:text-sm font-mono">
@@ -814,6 +823,7 @@ export default function AdminMasterAppointmentCreatePage() {
                   type="number"
                   min="0"
                   step="0.01"
+                  required
                   value={salesCommission}
                   onChange={(e) => setSalesCommission(e.target.value)}
                   placeholder="0.00"
@@ -970,7 +980,7 @@ export default function AdminMasterAppointmentCreatePage() {
                     {/* 4. Consultation Fee */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        Consultation Fee (₹)
+                        Consultation Fee (₹) <span className="text-rose-500">*</span>
                       </label>
                       <div className="relative">
                         <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 font-bold text-xs sm:text-sm pointer-events-none select-none">
@@ -980,6 +990,7 @@ export default function AdminMasterAppointmentCreatePage() {
                           type="number"
                           min="0"
                           step="0.01"
+                          required
                           value={session.service_price !== undefined ? session.service_price : ''}
                           onChange={(e) => handleSessionChange(index, 'service_price', e.target.value)}
                           placeholder="0.00"
