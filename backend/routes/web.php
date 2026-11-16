@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\StorageFileController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
@@ -20,21 +21,14 @@ Route::get('/fix-storage-link', function () {
     }
 });
 
-// 2. Fallback direct storage file server (in case symlink is missing or blocked on hosting)
-Route::get('/storage/{path}', function (string $path) {
-    $filePath = storage_path('app/public/'.ltrim($path, '/'));
+// 2. Storage diagnostic endpoint
+Route::get('/debug-storage', [StorageFileController::class, 'debug']);
 
-    if (! file_exists($filePath)) {
-        abort(404);
-    }
+// 3. Robust storage file streamer (matches GET, HEAD, OPTIONS)
+Route::match(['GET', 'HEAD', 'OPTIONS'], '/storage/{path?}', [StorageFileController::class, 'show'])
+    ->where('path', '.*');
 
-    return response()->file($filePath, [
-        'Access-Control-Allow-Origin' => '*',
-        'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
-    ]);
-})->where('path', '.*');
-
-// 3. SPA Fallback
+// 4. SPA Fallback (excludes api, sanctum, up, fix-storage-link, debug-storage, and storage)
 Route::get('/{any?}', function () {
     $indexPath = public_path('index.html');
     if (file_exists($indexPath)) {
@@ -44,4 +38,4 @@ Route::get('/{any?}', function () {
     }
 
     return view('welcome');
-})->where('any', '^(?!api|sanctum|up|fix-storage-link).*$');
+})->where('any', '^(?!api|sanctum|up|fix-storage-link|debug-storage|storage).*$');

@@ -26,8 +26,24 @@ use App\Http\Controllers\Api\SuperAdmin\SuperAdminCategoryController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminDashboardController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminInventoryController;
 use App\Http\Controllers\Api\SuperAdmin\VendorManagementController;
+use App\Http\Controllers\StorageFileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Public Storage / Media Serving Routes
+|--------------------------------------------------------------------------
+| Unauthenticated streaming of uploaded documents, clinic photos, and
+| assets with full CORS headers and host symlink-bypass guarantees.
+*/
+Route::match(['GET', 'HEAD', 'OPTIONS'], '/media/{path?}', [StorageFileController::class, 'show'])
+    ->where('path', '.*');
+
+Route::match(['GET', 'HEAD', 'OPTIONS'], '/storage/{path?}', [StorageFileController::class, 'show'])
+    ->where('path', '.*');
+
+Route::get('/debug-storage', [StorageFileController::class, 'debug']);
 
 /*
 |--------------------------------------------------------------------------
