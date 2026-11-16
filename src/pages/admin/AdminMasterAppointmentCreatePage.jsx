@@ -465,6 +465,7 @@ export default function AdminMasterAppointmentCreatePage() {
           }
           return {
             service_id: s.service_id ? Number(s.service_id) : null,
+            consultation_fee: s.service_price !== undefined && s.service_price !== '' ? Number(s.service_price) : null,
             treatment_details: (s.treatment_details || '').trim(),
             session_date: s.session_date,
             session_time: s.session_time,
@@ -976,15 +977,13 @@ export default function AdminMasterAppointmentCreatePage() {
                           ₹
                         </span>
                         <input
-                          type="text"
-                          readOnly
-                          disabled
-                          value={
-                            session.service_price !== undefined && session.service_price !== ''
-                              ? Number(session.service_price).toLocaleString('en-IN', { minimumFractionDigits: 2 })
-                              : '0.00'
-                          }
-                          className="w-full pl-8 pr-3 py-2 sm:pl-9 sm:pr-3.5 sm:py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 cursor-not-allowed select-none font-mono"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={session.service_price !== undefined ? session.service_price : ''}
+                          onChange={(e) => handleSessionChange(index, 'service_price', e.target.value)}
+                          placeholder="0.00"
+                          className="w-full pl-8 pr-3 py-2 sm:pl-9 sm:pr-3.5 sm:py-2.5 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                         />
                       </div>
                     </div>
@@ -998,7 +997,7 @@ export default function AdminMasterAppointmentCreatePage() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     {/* Treatment Details */}
-                    <div className="md:col-span-2">
+                    <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                         Procedure / Details <span className="text-rose-500">*</span>
                       </label>
@@ -1012,10 +1011,10 @@ export default function AdminMasterAppointmentCreatePage() {
                       />
                     </div>
 
-                    {/* Assigned Doctor / Staff */}
+                    {/* Assign to Doctor / Staff */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        Doctor / Staff <span className="text-rose-500">*</span>
+                        Assign to Doctor / Staff <span className="text-rose-500">*</span>
                       </label>
                       <select
                         value={session.staff_id}
@@ -1030,6 +1029,21 @@ export default function AdminMasterAppointmentCreatePage() {
                           </option>
                         ))}
                       </select>
+                    </div>
+
+                    {/* Executive by Doctor / Staff */}
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Executive by Doctor / Staff
+                      </label>
+                      <select
+                        disabled
+                        value=""
+                        className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-400 font-medium cursor-not-allowed select-none"
+                      >
+                        <option value="">-- Assigned on Execution --</option>
+                      </select>
+                      <p className="text-[10px] text-slate-400 mt-1">Filled when session is executed by staff.</p>
                     </div>
 
                     {/* Doctor Commission */}

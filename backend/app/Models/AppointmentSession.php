@@ -43,11 +43,13 @@ class AppointmentSession extends Model
         'master_appointment_id',
         'session_number',
         'service_id',
+        'consultation_fee',
         'treatment_details',
         'image',
         'session_date',
         'session_time',
         'staff_id',
+        'executed_by_staff_id',
         'staff_commission',
         'inventory_product_id',
         'inventory_product_ids',
@@ -128,6 +130,7 @@ class AppointmentSession extends Model
     {
         return [
             'session_number' => 'integer',
+            'consultation_fee' => 'decimal:2',
             'session_date' => 'date:Y-m-d',
             'staff_commission' => 'decimal:2',
             'inventory_product_ids' => 'array',
@@ -181,6 +184,14 @@ class AppointmentSession extends Model
     public function staff(): BelongsTo
     {
         return $this->belongsTo(Staff::class, 'staff_id');
+    }
+
+    /**
+     * Staff member who executed the session.
+     */
+    public function executedBy(): BelongsTo
+    {
+        return $this->belongsTo(Staff::class, 'executed_by_staff_id');
     }
 
     /**

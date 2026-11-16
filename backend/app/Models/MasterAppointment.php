@@ -75,7 +75,9 @@ class MasterAppointment extends Model
         $sessions = $this->sessions()->with('service')->get();
         $total = 0.0;
         foreach ($sessions as $session) {
-            if ($session->service && $session->service->price !== null) {
+            if ($session->consultation_fee !== null && (float) $session->consultation_fee >= 0) {
+                $total += (float) $session->consultation_fee;
+            } elseif ($session->service && $session->service->price !== null) {
                 $total += (float) $session->service->price;
             } elseif ($session->payment_amount !== null && (float) $session->payment_amount > 0) {
                 $total += (float) $session->payment_amount;
