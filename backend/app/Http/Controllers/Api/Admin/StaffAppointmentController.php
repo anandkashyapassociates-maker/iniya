@@ -205,6 +205,14 @@ class StaffAppointmentController extends Controller
             ], 404);
         }
 
+        // Only allow status updates when current status is pending or in_progress.
+        // Once marked completed or cancelled, staff cannot modify it.
+        if (in_array($session->status, [AppointmentSession::STATUS_COMPLETED, AppointmentSession::STATUS_CANCELLED], true)) {
+            return response()->json([
+                'message' => 'This session is already marked as ' . ucfirst($session->status) . ' and its status cannot be modified.',
+            ], 422);
+        }
+
         $validated = $request->validate([
             'status' => ['required', Rule::in(AppointmentSession::ALL_STATUSES)],
             'payment_amount' => ['nullable', 'numeric', 'min:0'],

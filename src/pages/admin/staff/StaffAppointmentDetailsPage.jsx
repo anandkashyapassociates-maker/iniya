@@ -26,6 +26,7 @@ import {
   Receipt,
   Wallet,
   Building2,
+  Lock,
 } from 'lucide-react';
 import { useAdminAuth } from '../../../features/auth/AdminAuthContext';
 import staffAppointmentService from '../../../services/staffAppointmentService';
@@ -106,9 +107,13 @@ export default function StaffAppointmentDetailsPage() {
     fetchDetails();
   }, [fetchDetails]);
 
-  // Open the Status & Payment Popup Modal
+  // Open the Status & Payment Popup Modal (Only allowed for pending or in_progress sessions)
   const handleOpenStatusModal = () => {
     const current = sessionData?.status || 'pending';
+    if (current === 'completed' || current === 'cancelled') {
+      toast.warning(`Session status is already ${current === 'completed' ? 'Completed' : 'Cancelled'} and cannot be modified.`);
+      return;
+    }
     setModalStatus(current);
     if (sessionData?.payment_amount) {
       setPaymentAmount(String(sessionData.payment_amount));
@@ -137,6 +142,12 @@ export default function StaffAppointmentDetailsPage() {
   const handleSaveStatusAndPayment = async (e) => {
     e.preventDefault();
     if (!sessionData?.id || isUpdatingStatus) return;
+
+    if (sessionData?.status === 'completed' || sessionData?.status === 'cancelled') {
+      toast.error(`This session is already ${sessionData.status} and cannot be modified.`);
+      setIsStatusModalOpen(false);
+      return;
+    }
 
     setIsUpdatingStatus(true);
     try {
@@ -248,6 +259,7 @@ export default function StaffAppointmentDetailsPage() {
   const customer = master.customer || session.customer || {};
   const sessionImage = getImageUrl(session.image_url || session.image);
   const masterImage = getImageUrl(master.image_url || master.image);
+  const isStatusLocked = session.status === 'completed' || session.status === 'cancelled';
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-6">
@@ -290,15 +302,29 @@ export default function StaffAppointmentDetailsPage() {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
-          {/* Action Button: Opens Status & Payment Popup */}
-          <button
-            type="button"
-            onClick={handleOpenStatusModal}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-xl transition-all shadow-sm cursor-pointer"
-          >
-            <CheckCircle2 className="w-4 h-4" />
-            <span>Update Status / Close Session</span>
-          </button>
+          {/* Action Button: Opens Status & Payment Popup or shows Finalized Locked Badge */}
+          {isStatusLocked ? (
+            <div
+              className={`inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl border shadow-xs ${
+                session.status === 'completed'
+                  ? 'bg-teal-50 text-teal-800 border-teal-200'
+                  : 'bg-rose-50 text-rose-800 border-rose-200'
+              }`}
+              title="This session has been finalized and cannot be modified."
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span>Status Finalized ({session.status === 'completed' ? 'Completed' : 'Cancelled'})</span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleOpenStatusModal}
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-xl transition-all shadow-sm cursor-pointer"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Update Status / Close Session</span>
+            </button>
+          )}
 
           <button
             onClick={fetchDetails}
@@ -500,13 +526,15 @@ export default function StaffAppointmentDetailsPage() {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleOpenStatusModal}
-            className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 hover:underline cursor-pointer self-start sm:self-auto"
-          >
-            Update Payment &amp; Status &rarr;
-          </button>
+          {!isStatusLocked && (
+            <button
+              type="button"
+              onClick={handleOpenStatusModal}
+              className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 hover:underline cursor-pointer self-start sm:self-auto"
+            >
+              Update Payment &amp; Status &rarr;
+            </button>
+          )}
         </div>
       )}
 
@@ -705,7 +733,7 @@ export default function StaffAppointmentDetailsPage() {
       <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
-            <Activity className="w-5 h-5" />
+            {isStatusLocked ? <Lock className="w-5 h-5 text-slate-500" /> : <Activity className="w-5 h-5" />}
           </div>
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
@@ -716,18 +744,30 @@ export default function StaffAppointmentDetailsPage() {
               <strong className="text-slate-800 capitalize">
                 {session.status === 'completed' ? 'Closed / Completed' : session.status}
               </strong>
+              {isStatusLocked && (
+                <span className="text-slate-400 ml-1.5 font-medium">
+                  (Finalized • Cannot be modified)
+                </span>
+              )}
             </p>
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={handleOpenStatusModal}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-xl transition-all shadow-sm cursor-pointer"
-        >
-          <CheckCircle2 className="w-4 h-4" />
-          <span>Update Status &amp; Receive Payment</span>
-        </button>
+        {isStatusLocked ? (
+          <div className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-xl bg-slate-100 text-slate-500 border border-slate-200 shadow-xs cursor-not-allowed">
+            <Lock className="w-4 h-4 text-slate-400" />
+            <span>Status Locked ({session.status === 'completed' ? 'Completed' : 'Cancelled'})</span>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={handleOpenStatusModal}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-xl transition-all shadow-sm cursor-pointer"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Update Status &amp; Receive Payment</span>
+          </button>
+        )}
       </div>
 
       {/* ======================================================== */}
@@ -827,6 +867,15 @@ export default function StaffAppointmentDetailsPage() {
                     <span>Cancelled</span>
                   </button>
                 </div>
+
+                {(modalStatus === 'completed' || modalStatus === 'cancelled') && (
+                  <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-[11px] flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>
+                      Note: Once saved as <strong>{modalStatus === 'completed' ? 'Completed' : 'Cancelled'}</strong>, this session will be finalized and its status cannot be modified again.
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* 2. Patient Payment Collection Section */}
