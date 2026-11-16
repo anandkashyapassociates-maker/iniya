@@ -15,8 +15,11 @@ export default function StaffCreationPage() {
     try {
       const response = await staffManagementService.createStaff(formData);
       const staffCode = response.staff?.staff_code || '';
+      const staffName = (typeof FormData !== 'undefined' && formData instanceof FormData)
+        ? (formData.get('name') || 'Staff Member')
+        : (formData.name || 'Staff Member');
       toast.success(
-        `Staff member '${formData.name}' (${staffCode}) provisioned successfully!`
+        `Staff member '${staffName}' (${staffCode}) provisioned successfully!`
       );
       navigate('/superadmin/staff-management/details');
     } finally {

@@ -75,8 +75,8 @@ export default function Topbar({
                   : 'bg-gradient-to-tr from-blue-600 to-cyan-500'
               }`}
             >
-              {user?.image_url || user?.image ? (
-                <img src={getImageUrl(user.image_url || user.image)} alt={user.name || 'User'} className="w-full h-full object-cover" />
+              {user?.image_url || user?.profile_photo || user?.image ? (
+                <img src={getImageUrl(user.image_url || user.profile_photo || user.image)} alt={user.name || 'User'} className="w-full h-full object-cover" />
               ) : (
                 user?.name ? user.name.charAt(0).toUpperCase() : 'U'
               )}

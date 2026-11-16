@@ -64,11 +64,6 @@ export default function SalesMemberForm({
     mobile: '',
     alternate_mobile: '',
     gender: 'Male',
-    designation: '',
-    department: 'Enterprise Sales',
-    employment_type: 'Full-Time',
-    joining_date: new Date().toISOString().split('T')[0],
-    territory: 'North Zone',
     city: '',
     state: '',
     country: 'India',
@@ -207,11 +202,6 @@ export default function SalesMemberForm({
         mobile: formData.mobile.trim(),
         alternate_mobile: formData.alternate_mobile.trim() || null,
         gender: formData.gender,
-        designation: formData.designation.trim() || null,
-        department: formData.department,
-        employment_type: formData.employment_type,
-        joining_date: formData.joining_date,
-        territory: formData.territory,
         city: formData.city.trim() || null,
         state: formData.state.trim() || null,
         country: formData.country.trim() || 'India',
@@ -241,11 +231,6 @@ export default function SalesMemberForm({
         mobile: '',
         alternate_mobile: '',
         gender: 'Male',
-        designation: '',
-        department: 'Enterprise Sales',
-        employment_type: 'Full-Time',
-        joining_date: new Date().toISOString().split('T')[0],
-        territory: 'North Zone',
         city: '',
         state: '',
         country: 'India',
@@ -645,135 +630,15 @@ export default function SalesMemberForm({
         </div>
       </div>
 
-      {/* SECTION 3: EMPLOYMENT INFORMATION */}
-      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-2xs hover:border-blue-200/80 transition-all duration-300 space-y-4 animate-slide-up stagger-2 group">
-        <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center shrink-0 icon-3d shadow-sm group-hover:scale-105 transition-transform duration-300">
-            <Briefcase className="w-4 h-4 drop-shadow-sm" />
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 font-mono text-[10px] font-bold flex items-center justify-center">
-              3
-            </span>
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              Employment &amp; Territory Assignment
-            </h3>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {/* Designation */}
-          <div className="min-w-0">
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Designation
-            </label>
-            <div className="relative">
-              <Briefcase className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="text"
-                value={formData.designation}
-                onChange={(e) => handleChange('designation', e.target.value)}
-                placeholder="e.g. Senior Area Sales Manager"
-                disabled={isLoading}
-                className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/70 hover:bg-slate-50 focus:bg-white text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all duration-200 shadow-2xs"
-              />
-            </div>
-          </div>
-
-          {/* Department */}
-          <div className="min-w-0">
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Department
-            </label>
-            <div className="relative">
-              <Building2 className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <select
-                value={formData.department}
-                onChange={(e) => handleChange('department', e.target.value)}
-                disabled={isLoading}
-                className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/70 hover:bg-slate-50 focus:bg-white text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all duration-200 shadow-2xs cursor-pointer"
-              >
-                {DEPARTMENTS.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Employment Type */}
-          <div className="min-w-0">
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Employment Type
-            </label>
-            <div className="relative">
-              <Layers className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <select
-                value={formData.employment_type}
-                onChange={(e) => handleChange('employment_type', e.target.value)}
-                disabled={isLoading}
-                className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/70 hover:bg-slate-50 focus:bg-white text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all duration-200 shadow-2xs cursor-pointer"
-              >
-                {EMPLOYMENT_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Joining Date */}
-          <div className="min-w-0">
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Joining Date
-            </label>
-            <div className="relative">
-              <Calendar className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="date"
-                value={formData.joining_date}
-                onChange={(e) => handleChange('joining_date', e.target.value)}
-                disabled={isLoading}
-                className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/70 hover:bg-slate-50 focus:bg-white text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all duration-200 shadow-2xs"
-              />
-            </div>
-          </div>
-
-          {/* Territory */}
-          <div className="sm:col-span-2 min-w-0">
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Territory / Sales Area
-            </label>
-            <div className="relative">
-              <Compass className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <select
-                value={formData.territory}
-                onChange={(e) => handleChange('territory', e.target.value)}
-                disabled={isLoading}
-                className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/70 hover:bg-slate-50 focus:bg-white text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all duration-200 shadow-2xs cursor-pointer"
-              >
-                {TERRITORIES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* SECTION 4: LOCATION INFORMATION */}
-      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-2xs hover:border-amber-200/80 transition-all duration-300 space-y-4 animate-slide-up stagger-3 group">
+      {/* SECTION 3: LOCATION INFORMATION */}
+      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-2xs hover:border-amber-200/80 transition-all duration-300 space-y-4 animate-slide-up stagger-2 group">
         <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-400 via-orange-500 to-amber-600 text-white flex items-center justify-center shrink-0 icon-3d shadow-sm group-hover:scale-105 transition-transform duration-300">
             <MapPin className="w-4 h-4 drop-shadow-sm" />
           </div>
           <div className="flex items-center gap-2">
             <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-700 font-mono text-[10px] font-bold flex items-center justify-center">
-              4
+              3
             </span>
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
               Location Details
@@ -857,15 +722,15 @@ export default function SalesMemberForm({
         </div>
       </div>
 
-      {/* SECTION 5: NOTES & STATUS */}
-      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-2xs hover:border-slate-300 transition-all duration-300 space-y-4 animate-slide-up stagger-4 group">
+      {/* SECTION 4: NOTES & STATUS */}
+      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-2xs hover:border-slate-300 transition-all duration-300 space-y-4 animate-slide-up stagger-3 group">
         <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-slate-700 via-slate-800 to-slate-900 text-white flex items-center justify-center shrink-0 icon-3d shadow-sm group-hover:scale-105 transition-transform duration-300">
             <FileText className="w-4 h-4 drop-shadow-sm" />
           </div>
           <div className="flex items-center gap-2">
             <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 font-mono text-[10px] font-bold flex items-center justify-center">
-              5
+              4
             </span>
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
               Notes &amp; Account Status
@@ -882,7 +747,7 @@ export default function SalesMemberForm({
               rows={2}
               value={formData.notes}
               onChange={(e) => handleChange('notes', e.target.value)}
-              placeholder="Enter special territory notes, performance targets or credentials..."
+              placeholder="Enter special notes, performance targets or credentials..."
               disabled={isLoading}
               className="w-full px-3.5 py-2.5 text-xs bg-slate-50/70 hover:bg-slate-50 focus:bg-white text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all duration-200 shadow-2xs resize-none"
             />
