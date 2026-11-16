@@ -8,6 +8,8 @@ use App\Models\Staff;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class StaffManagementController extends Controller
@@ -113,6 +115,10 @@ class StaffManagementController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        $photoRules = $request->hasFile('profile_photo') || $request->hasFile('image')
+            ? ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120']
+            : ['nullable', 'string'];
+
         $validated = $request->validate([
             'clinic_id' => ['nullable', 'integer', 'exists:clinics,id'],
             'name' => ['required', 'string', 'max:255'],
@@ -124,10 +130,44 @@ class StaffManagementController extends Controller
             'employment_type' => ['nullable', 'string', 'max:50'],
             'joining_date' => ['nullable', 'date'],
             'address' => ['nullable', 'string', 'max:1000'],
-            'profile_photo' => ['nullable', 'string', 'max:255'],
+            'profile_photo' => $photoRules,
+            'image' => $photoRules,
             'status' => ['sometimes', 'string', Rule::in(['active', 'inactive', 'blocked'])],
             'is_active' => ['sometimes', 'boolean'],
         ]);
+
+        $photoPath = null;
+        if ($request->hasFile('profile_photo')) {
+            $photoPath = $request->file('profile_photo')->store('staff', 'public');
+        } elseif ($request->hasFile('image')) {
+            $photoPath = $request->file('image')->store('staff', 'public');
+        } elseif ($request->filled('profile_photo') && str_starts_with($request->input('profile_photo'), 'data:image')) {
+            $dataUri = $request->input('profile_photo');
+            if (preg_match('/^data:image\/(\w+);base64,/', $dataUri, $type)) {
+                $data = substr($dataUri, strpos($dataUri, ',') + 1);
+                $type = strtolower($type[1]);
+                $data = base64_decode($data);
+                if ($data !== false) {
+                    $fileName = 'staff/'.Str::random(40).'.'.$type;
+                    Storage::disk('public')->put($fileName, $data);
+                    $photoPath = $fileName;
+                }
+            }
+        } elseif ($request->filled('image') && str_starts_with($request->input('image'), 'data:image')) {
+            $dataUri = $request->input('image');
+            if (preg_match('/^data:image\/(\w+);base64,/', $dataUri, $type)) {
+                $data = substr($dataUri, strpos($dataUri, ',') + 1);
+                $type = strtolower($type[1]);
+                $data = base64_decode($data);
+                if ($data !== false) {
+                    $fileName = 'staff/'.Str::random(40).'.'.$type;
+                    Storage::disk('public')->put($fileName, $data);
+                    $photoPath = $fileName;
+                }
+            }
+        } elseif (isset($validated['profile_photo']) && is_string($validated['profile_photo']) && strlen($validated['profile_photo']) < 255) {
+            $photoPath = $validated['profile_photo'];
+        }
 
         $status = $validated['status'] ?? (isset($validated['is_active']) ? ($validated['is_active'] ? 'active' : 'inactive') : 'active');
         $isActive = ($status === 'active');
@@ -152,7 +192,7 @@ class StaffManagementController extends Controller
             'employment_type' => $validated['employment_type'] ?? 'Full-Time',
             'joining_date' => $validated['joining_date'] ?? null,
             'address' => $validated['address'] ?? null,
-            'profile_photo' => $validated['profile_photo'] ?? null,
+            'profile_photo' => $photoPath,
             'status' => $status,
             'is_active' => $isActive,
         ]);
@@ -208,6 +248,10 @@ class StaffManagementController extends Controller
             ], 404);
         }
 
+        $photoRules = $request->hasFile('profile_photo') || $request->hasFile('image')
+            ? ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120']
+            : ['nullable', 'string'];
+
         $validated = $request->validate([
             'clinic_id' => ['sometimes', 'nullable', 'integer', 'exists:clinics,id'],
             'name' => ['required', 'string', 'max:255'],
@@ -219,7 +263,8 @@ class StaffManagementController extends Controller
             'employment_type' => ['nullable', 'string', 'max:50'],
             'joining_date' => ['nullable', 'date'],
             'address' => ['nullable', 'string', 'max:1000'],
-            'profile_photo' => ['nullable', 'string', 'max:255'],
+            'profile_photo' => $photoRules,
+            'image' => $photoRules,
             'status' => ['sometimes', 'string', Rule::in(['active', 'inactive', 'blocked'])],
             'is_active' => ['sometimes', 'boolean'],
         ]);
@@ -237,10 +282,55 @@ class StaffManagementController extends Controller
             $dataToUpdate['password'] = Hash::make($validated['password']);
         }
 
-        foreach (['mobile', 'department', 'designation', 'employment_type', 'joining_date', 'address', 'profile_photo'] as $field) {
+        foreach (['mobile', 'department', 'designation', 'employment_type', 'joining_date', 'address'] as $field) {
             if (array_key_exists($field, $validated)) {
                 $dataToUpdate[$field] = $validated[$field];
             }
+        }
+
+        // Handle photo file upload or data URL or string
+        if ($request->hasFile('profile_photo')) {
+            if ($staff->profile_photo && Storage::disk('public')->exists($staff->profile_photo)) {
+                Storage::disk('public')->delete($staff->profile_photo);
+            }
+            $dataToUpdate['profile_photo'] = $request->file('profile_photo')->store('staff', 'public');
+        } elseif ($request->hasFile('image')) {
+            if ($staff->profile_photo && Storage::disk('public')->exists($staff->profile_photo)) {
+                Storage::disk('public')->delete($staff->profile_photo);
+            }
+            $dataToUpdate['profile_photo'] = $request->file('image')->store('staff', 'public');
+        } elseif ($request->filled('profile_photo') && str_starts_with($request->input('profile_photo'), 'data:image')) {
+            $dataUri = $request->input('profile_photo');
+            if (preg_match('/^data:image\/(\w+);base64,/', $dataUri, $type)) {
+                $data = substr($dataUri, strpos($dataUri, ',') + 1);
+                $type = strtolower($type[1]);
+                $data = base64_decode($data);
+                if ($data !== false) {
+                    if ($staff->profile_photo && Storage::disk('public')->exists($staff->profile_photo)) {
+                        Storage::disk('public')->delete($staff->profile_photo);
+                    }
+                    $fileName = 'staff/'.Str::random(40).'.'.$type;
+                    Storage::disk('public')->put($fileName, $data);
+                    $dataToUpdate['profile_photo'] = $fileName;
+                }
+            }
+        } elseif ($request->filled('image') && str_starts_with($request->input('image'), 'data:image')) {
+            $dataUri = $request->input('image');
+            if (preg_match('/^data:image\/(\w+);base64,/', $dataUri, $type)) {
+                $data = substr($dataUri, strpos($dataUri, ',') + 1);
+                $type = strtolower($type[1]);
+                $data = base64_decode($data);
+                if ($data !== false) {
+                    if ($staff->profile_photo && Storage::disk('public')->exists($staff->profile_photo)) {
+                        Storage::disk('public')->delete($staff->profile_photo);
+                    }
+                    $fileName = 'staff/'.Str::random(40).'.'.$type;
+                    Storage::disk('public')->put($fileName, $data);
+                    $dataToUpdate['profile_photo'] = $fileName;
+                }
+            }
+        } elseif (array_key_exists('profile_photo', $validated) && is_string($validated['profile_photo']) && strlen($validated['profile_photo']) < 255) {
+            $dataToUpdate['profile_photo'] = $validated['profile_photo'];
         }
 
         if (isset($validated['status'])) {

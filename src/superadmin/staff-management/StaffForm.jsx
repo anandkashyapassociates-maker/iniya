@@ -14,6 +14,8 @@ import {
   Lock,
   Globe,
   Compass,
+  UploadCloud,
+  X,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import staffManagementService from '../services/staffManagementService';
@@ -67,7 +69,7 @@ export default function StaffForm({
     email: '',
     password: '',
     mobile: '',
-    department: 'Dental',
+    department: '',
     designation: '',
     employment_type: 'Full-Time',
     joining_date: new Date().toISOString().split('T')[0],
@@ -75,6 +77,8 @@ export default function StaffForm({
     status: 'active',
   });
 
+  const [photoFile, setPhotoFile] = useState(null);
+  const [previewPhoto, setPreviewPhoto] = useState(null);
   const [clinics, setClinics] = useState([]);
   const [isLoadingClinics, setIsLoadingClinics] = useState(true);
   const [previewCode, setPreviewCode] = useState('');
@@ -137,6 +141,37 @@ export default function StaffForm({
     }
   };
 
+  const handlePhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors((prev) => ({
+          ...prev,
+          profile_photo: 'Photo size must not exceed 5MB.',
+        }));
+        return;
+      }
+      setPhotoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewPhoto(reader.result);
+      };
+      reader.readAsDataURL(file);
+      if (errors.profile_photo) {
+        setErrors((prev) => {
+          const next = { ...prev };
+          delete next.profile_photo;
+          return next;
+        });
+      }
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoFile(null);
+    setPreviewPhoto(null);
+  };
+
   const validate = () => {
     const errs = {};
 
@@ -187,19 +222,32 @@ export default function StaffForm({
     }
 
     try {
-      await onSubmit({
+      const payloadData = {
         clinic_id: parseInt(formData.clinic_id, 10),
         name: formData.name.trim(),
         email: formData.email.trim().toLowerCase(),
         password: formData.password ? formData.password : undefined,
         mobile: formData.mobile.trim() || null,
-        department: formData.department,
+        department: formData.department.trim() || null,
         designation: formData.designation.trim() || null,
         employment_type: formData.employment_type,
         joining_date: formData.joining_date,
         address: formData.address.trim() || null,
         status: formData.status,
-      });
+      };
+
+      if (photoFile) {
+        const formPayload = new FormData();
+        Object.entries(payloadData).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            formPayload.append(key, value);
+          }
+        });
+        formPayload.append('profile_photo', photoFile);
+        await onSubmit(formPayload);
+      } else {
+        await onSubmit(payloadData);
+      }
 
       // Reset form on success (keep selected clinic if only 1 exists)
       setFormData({
@@ -208,13 +256,15 @@ export default function StaffForm({
         email: '',
         password: '',
         mobile: '',
-        department: 'Dental',
+        department: '',
         designation: '',
         employment_type: 'Full-Time',
         joining_date: new Date().toISOString().split('T')[0],
         address: '',
         status: 'active',
       });
+      setPhotoFile(null);
+      setPreviewPhoto(null);
       setErrors({});
 
       // Refresh code preview
@@ -564,6 +614,52 @@ export default function StaffForm({
               </p>
             )}
           </div>
+
+          {/* Profile Photo Upload */}
+          <div className="min-w-0 sm:col-span-2">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Staff Profile Photo <span className="text-slate-400 text-[10px] lowercase font-normal">(optional, max 5MB)</span>
+            </label>
+            <div className="flex items-center gap-3">
+              {previewPhoto ? (
+                <div className="relative group shrink-0">
+                  <img
+                    src={previewPhoto}
+                    alt="Preview"
+                    className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemovePhoto}
+                    disabled={isLoading}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center shadow-xs cursor-pointer transition-colors"
+                    title="Remove Photo"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 border border-slate-200 shrink-0">
+                  <UploadCloud className="w-5 h-5" />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/jpg"
+                  onChange={handlePhotoChange}
+                  disabled={isLoading}
+                  className="text-xs text-slate-600 file:mr-2.5 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer min-w-0 w-full"
+                />
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  Accepts JPG, PNG, WEBP up to 5MB. Photo will appear on staff appointments and lists.
+                </p>
+              </div>
+            </div>
+            {errors.profile_photo && (
+              <p className="text-[11px] text-rose-600 mt-1 font-medium">{errors.profile_photo}</p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -591,18 +687,14 @@ export default function StaffForm({
             </label>
             <div className="relative">
               <Building2 className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <select
+              <input
+                type="text"
                 value={formData.department}
                 onChange={(e) => handleChange('department', e.target.value)}
+                placeholder="e.g., Dental, Aesthetics, Dermatology"
                 disabled={isLoading}
-                className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/70 hover:bg-slate-50 focus:bg-white text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 transition-all duration-200 shadow-2xs cursor-pointer"
-              >
-                {COMMON_DEPARTMENTS.map((dept) => (
-                  <option key={dept} value={dept}>
-                    {dept}
-                  </option>
-                ))}
-              </select>
+                className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/70 hover:bg-slate-50 focus:bg-white text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 transition-all duration-200 shadow-2xs"
+              />
             </div>
           </div>
 
