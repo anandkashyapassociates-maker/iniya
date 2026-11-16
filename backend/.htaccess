@@ -1,4 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    Options +FollowSymLinks -Indexes
 
-RewriteEngine on
-RewriteCond %{REQUEST_URI} !^public
-RewriteRule ^(.*)$ public/$1 [L]
+    # Route storage requests directly through Laravel to bypass LiteSpeed Symlink Protection
+    RewriteRule ^public/storage/(.*)$ public/index.php [L,QSA]
+    RewriteRule ^storage/(.*)$ public/index.php [L,QSA]
+
+    RewriteCond %{REQUEST_URI} !^/public
+    RewriteCond %{REQUEST_URI} !^public
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
