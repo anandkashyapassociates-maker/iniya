@@ -35,6 +35,7 @@ class MasterAppointmentController extends Controller
             'sessions' => function ($q) {
                 $q->with([
                     'staff:id,staff_code,name,department,designation',
+                    'executedBy:id,staff_code,name,department,designation',
                     'inventoryProduct:id,product_name,business_unit',
                     'service:id,service_category_id,name,price',
                     'service.category:id,parent_id,name',
@@ -120,7 +121,7 @@ class MasterAppointmentController extends Controller
             // Self-heal: ensure appointment_fees matches current sessions sum
             if ($sessions->isNotEmpty()) {
                 $computedFee = $sessions->reduce(function ($sum, $s) {
-                    $price = $s->service?->price ?? $s->payment_amount ?? 0;
+                    $price = $s->consultation_fee ?? $s->service?->price ?? $s->payment_amount ?? 0;
                     return $sum + (float) $price;
                 }, 0.0);
                 if ($computedFee > 0 && abs((float) $appt->appointment_fees - $computedFee) > 0.001) {
@@ -313,14 +314,17 @@ class MasterAppointmentController extends Controller
             'customer_id' => ['required', 'exists:customers,id'],
             'appointment_date' => ['required', 'date', 'after_or_equal:today'],
             'sales_team_id' => ['required', 'exists:sales_members,id'],
+            'sales_commission' => ['required', 'numeric', 'min:0'],
             'appointment_fees' => ['required', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'sessions' => ['required', 'array', 'min:1'],
             'sessions.*.service_id' => ['required', 'exists:services,id'],
+            'sessions.*.consultation_fee' => ['required', 'numeric', 'min:0'],
             'sessions.*.treatment_details' => ['nullable', 'string', 'max:5000'],
             'sessions.*.session_date' => ['required', 'date', 'after_or_equal:today'],
             'sessions.*.session_time' => ['required', 'string', 'max:20'],
             'sessions.*.staff_id' => ['required', 'exists:staff,id'],
+            'sessions.*.executed_by_staff_id' => ['nullable', 'exists:staff,id'],
             'sessions.*.staff_commission' => ['required', 'numeric', 'min:0'],
             'sessions.*.inventory_product_id' => ['nullable'],
             'sessions.*.inventory_product_ids' => ['nullable', 'array'],
@@ -431,6 +435,7 @@ class MasterAppointmentController extends Controller
                 'customer_id' => $validated['customer_id'],
                 'appointment_date' => $validated['appointment_date'],
                 'sales_team_id' => $validated['sales_team_id'],
+                'sales_commission' => $validated['sales_commission'] ?? 0.00,
                 'appointment_fees' => $validated['appointment_fees'],
                 'notes' => $validated['notes'] ?? null,
                 'image' => $imagePath,
@@ -464,11 +469,13 @@ class MasterAppointmentController extends Controller
                     'master_appointment_id' => $master->id,
                     'session_number' => $i + 1,
                     'service_id' => ! empty($sData['service_id']) ? $sData['service_id'] : null,
+                    'consultation_fee' => isset($sData['consultation_fee']) && $sData['consultation_fee'] !== '' ? $sData['consultation_fee'] : (! empty($sData['service_price']) ? $sData['service_price'] : null),
                     'treatment_details' => $sData['treatment_details'] ?? '',
                     'image' => $sessionImagePath,
                     'session_date' => $sData['session_date'],
                     'session_time' => $sData['session_time'],
                     'staff_id' => $sData['staff_id'],
+                    'executed_by_staff_id' => ! empty($sData['executed_by_staff_id']) ? $sData['executed_by_staff_id'] : null,
                     'staff_commission' => $sData['staff_commission'],
                     'inventory_product_id' => ! empty($productIds) ? $productIds[0] : null,
                     'inventory_product_ids' => ! empty($productIds) ? $productIds : null,
@@ -482,6 +489,7 @@ class MasterAppointmentController extends Controller
                 'customer:id,name,mobile,email',
                 'salesTeam:id,sales_code,name,department',
                 'sessions.staff:id,staff_code,name,department',
+                'sessions.executedBy:id,staff_code,name,department',
                 'sessions.inventoryProduct:id,product_name',
                 'sessions.service.category.parent',
             ]);
@@ -507,6 +515,7 @@ class MasterAppointmentController extends Controller
             'sessions' => function ($q) {
                 $q->with([
                     'staff',
+                    'executedBy',
                     'inventoryProduct',
                     'service.category.parent',
                     'rescheduleHistories.oldStaff',
@@ -524,7 +533,7 @@ class MasterAppointmentController extends Controller
 
         if ($master->sessions->isNotEmpty()) {
             $computedFee = $master->sessions->reduce(function ($sum, $s) {
-                $price = $s->service?->price ?? $s->payment_amount ?? 0;
+                $price = $s->consultation_fee ?? $s->service?->price ?? $s->payment_amount ?? 0;
                 return $sum + (float) $price;
             }, 0.0);
             if ($computedFee > 0 && abs((float) $master->appointment_fees - $computedFee) > 0.001) {
@@ -557,6 +566,7 @@ class MasterAppointmentController extends Controller
             'customer_id' => ['sometimes', 'required', 'exists:customers,id'],
             'appointment_date' => ['sometimes', 'required', 'date'],
             'sales_team_id' => ['sometimes', 'required', 'exists:sales_members,id'],
+            'sales_commission' => ['nullable', 'numeric', 'min:0'],
             'appointment_fees' => ['sometimes', 'required', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string', 'max:5000'],
         ]);
@@ -654,6 +664,7 @@ class MasterAppointmentController extends Controller
             'sessions' => function ($q) {
                 $q->with([
                     'staff',
+                    'executedBy',
                     'inventoryProduct',
                     'service.category.parent',
                 ])->orderBy('session_number');
@@ -669,7 +680,7 @@ class MasterAppointmentController extends Controller
 
         if ($master->sessions->isNotEmpty()) {
             $computedFee = $master->sessions->reduce(function ($sum, $s) {
-                $price = $s->service?->price ?? $s->payment_amount ?? 0;
+                $price = $s->consultation_fee ?? $s->service?->price ?? $s->payment_amount ?? 0;
                 return $sum + (float) $price;
             }, 0.0);
             if ($computedFee > 0 && abs((float) $master->appointment_fees - $computedFee) > 0.001) {

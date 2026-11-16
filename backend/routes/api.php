@@ -190,6 +190,31 @@ Route::prefix('superadmin')
             Route::get('/filter-options', [AppointmentReportController::class, 'filterOptions']);
         });
         Route::get('/reports/sessions', [AppointmentReportController::class, 'sessionsReport']);
+
+        // ==========================================
+        // CATEGORY, SUB-CATEGORY & SERVICE MANAGEMENT (SUPERADMIN)
+        // ==========================================
+        Route::prefix('services-management')->group(function () {
+            Route::get('/tree', [ServiceManagementController::class, 'getTree']);
+
+            // Categories
+            Route::get('/categories', [ServiceManagementController::class, 'getCategories']);
+            Route::post('/categories', [ServiceManagementController::class, 'storeCategory']);
+            Route::put('/categories/{id}', [ServiceManagementController::class, 'updateCategory']);
+            Route::delete('/categories/{id}', [ServiceManagementController::class, 'deleteCategory']);
+
+            // Sub-Categories
+            Route::get('/sub-categories', [ServiceManagementController::class, 'getSubCategories']);
+            Route::post('/sub-categories', [ServiceManagementController::class, 'storeSubCategory']);
+            Route::put('/sub-categories/{id}', [ServiceManagementController::class, 'updateSubCategory']);
+            Route::delete('/sub-categories/{id}', [ServiceManagementController::class, 'deleteSubCategory']);
+
+            // Services
+            Route::get('/services', [ServiceManagementController::class, 'getServices']);
+            Route::post('/services', [ServiceManagementController::class, 'storeService']);
+            Route::put('/services/{id}', [ServiceManagementController::class, 'updateService']);
+            Route::delete('/services/{id}', [ServiceManagementController::class, 'deleteService']);
+        });
     });
 
 /*

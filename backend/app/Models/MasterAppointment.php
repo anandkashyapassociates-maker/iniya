@@ -27,6 +27,7 @@ class MasterAppointment extends Model
         'customer_id',
         'appointment_date',
         'sales_team_id',
+        'sales_commission',
         'appointment_fees',
         'notes',
         'image',
@@ -74,7 +75,9 @@ class MasterAppointment extends Model
         $sessions = $this->sessions()->with('service')->get();
         $total = 0.0;
         foreach ($sessions as $session) {
-            if ($session->service && $session->service->price !== null) {
+            if ($session->consultation_fee !== null && (float) $session->consultation_fee >= 0) {
+                $total += (float) $session->consultation_fee;
+            } elseif ($session->service && $session->service->price !== null) {
                 $total += (float) $session->service->price;
             } elseif ($session->payment_amount !== null && (float) $session->payment_amount > 0) {
                 $total += (float) $session->payment_amount;
@@ -113,6 +116,7 @@ class MasterAppointment extends Model
         return [
             'appointment_date' => 'date:Y-m-d',
             'appointment_fees' => 'decimal:2',
+            'sales_commission' => 'decimal:2',
         ];
     }
 

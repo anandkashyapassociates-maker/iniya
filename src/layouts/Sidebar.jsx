@@ -90,6 +90,12 @@ export default function Sidebar({
       icon: User,
       color: 'from-violet-600 to-fuchsia-600',
     },
+    {
+      to: '/superadmin/services',
+      label: 'Create Services',
+      icon: Sparkles,
+      color: 'from-purple-600 to-pink-600',
+    },
   ];
 
   const isStaff =
@@ -149,11 +155,6 @@ export default function Sidebar({
                 label: 'Appointments Directory',
                 icon: ListFilter,
                 end: true,
-              },
-              {
-                to: '/admin/appointments/services',
-                label: 'Create Services',
-                icon: Sparkles,
               },
               {
                 to: '/admin/appointments/calendar',
@@ -216,7 +217,7 @@ export default function Sidebar({
         <div className="flex-1 flex flex-col min-h-0">
           <div className="h-24 px-3.5 border-b border-slate-800/80 flex items-center justify-between shrink-0 bg-slate-950/40">
             <Link
-              to="/admin/dashboard"
+              to={isSuperAdmin ? "/superadmin/dashboard" : "/admin/dashboard"}
               className="flex-1 flex items-center justify-center py-1 group transition-all duration-300"
               title="Iniya Aesthetics &amp; Wellness"
             >
