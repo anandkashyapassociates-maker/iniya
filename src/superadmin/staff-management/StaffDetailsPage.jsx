@@ -15,14 +15,12 @@ import {
   Building2,
   Briefcase,
   Pencil,
-  Eye,
   Hash,
   MapPin,
   Compass,
 } from 'lucide-react';
 import StaffStatusBadge from './StaffStatusBadge';
 import StaffEditModal from './StaffEditModal';
-import StaffIdCardModal from './StaffIdCardModal';
 import StaffAvatar from '../../components/StaffAvatar';
 import staffManagementService from '../services/staffManagementService';
 import clinicManagementService from '../services/clinicManagementService';
@@ -107,9 +105,6 @@ export default function StaffDetailsPage() {
   // Edit modal state
   const [selectedStaffForEdit, setSelectedStaffForEdit] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
-  // Staff ID card modal state
-  const [selectedStaffForCard, setSelectedStaffForCard] = useState(null);
 
   const fetchStaff = useCallback(async () => {
     setIsLoading(true);
@@ -499,7 +494,7 @@ export default function StaffDetailsPage() {
                   <th className="py-3.5 px-4 whitespace-nowrap min-w-[120px]">Employment</th>
                   <th className="py-3.5 px-4 whitespace-nowrap min-w-[140px]">Joining Date</th>
                   <th className="py-3.5 px-4 whitespace-nowrap min-w-[110px]">Status</th>
-                  <th className="py-3.5 px-4 text-right whitespace-nowrap min-w-[150px]">Actions</th>
+                  <th className="py-3.5 px-4 text-right whitespace-nowrap min-w-[90px]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
@@ -627,28 +622,17 @@ export default function StaffDetailsPage() {
                       />
                     </td>
 
-                    {/* Actions: View ID Card & Edit button */}
+                    {/* Actions: Edit button */}
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedStaffForCard(member)}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-300 text-slate-700 hover:text-emerald-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer group/btn"
-                          title={`View Staff ID Card for ${member.name}`}
-                        >
-                          <Eye className="w-3.5 h-3.5 text-slate-400 group-hover/btn:text-emerald-600 transition-colors" />
-                          <span>View</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEditModal(member)}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-300 text-slate-700 hover:text-blue-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
-                          title={`Edit Staff ${member.name}`}
-                        >
-                          <Pencil className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Edit</span>
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditModal(member)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-300 text-slate-700 hover:text-blue-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+                        title={`Edit Staff ${member.name}`}
+                      >
+                        <Pencil className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Edit</span>
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -702,16 +686,6 @@ export default function StaffDetailsPage() {
           isOpen={isEditModalOpen}
           onClose={handleCloseEditModal}
           onSuccess={handleEditSuccess}
-        />
-      )}
-
-      {/* Staff ID Card Modal (Green & Red Theme, Downloadable) */}
-      {selectedStaffForCard && (
-        <StaffIdCardModal
-          key={selectedStaffForCard.id}
-          staff={selectedStaffForCard}
-          onClose={() => setSelectedStaffForCard(null)}
-          clinicName={selectedStaffForCard.clinic?.name || 'Iniya Aesthetics & Wellness'}
         />
       )}
     </div>
