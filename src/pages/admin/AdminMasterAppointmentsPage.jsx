@@ -259,6 +259,15 @@ export default function AdminMasterAppointmentsPage() {
       ),
     },
     {
+      header: 'SALES TEAM COMMISSION',
+      className: 'text-right whitespace-nowrap',
+      render: (row) => (
+        <span className="font-bold text-slate-900 text-sm font-mono">
+          ₹{Number(row.sales_commission || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+        </span>
+      ),
+    },
+    {
       header: 'FEES (₹)',
       className: 'text-right',
       render: (row) => {
