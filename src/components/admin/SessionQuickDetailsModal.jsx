@@ -118,13 +118,31 @@ export default function SessionQuickDetailsModal({
           </div>
 
           {/* Staff & Commission Grid */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="p-3 bg-white border border-slate-200 rounded-xl">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                Assigned Practitioner
+                Assigned Staff
               </span>
               <div className="font-semibold text-xs text-slate-800">{session.staff?.name || 'Unassigned'}</div>
               <div className="text-[11px] text-slate-500">{session.staff?.department || ''}</div>
+            </div>
+
+            <div className="p-3 bg-white border border-slate-200 rounded-xl">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                Executive Staff
+              </span>
+              {session.executed_by || session.executedBy ? (
+                <>
+                  <div className="font-semibold text-xs text-slate-800">
+                    {(session.executed_by || session.executedBy)?.name}
+                  </div>
+                  <div className="text-[11px] text-slate-500">
+                    {(session.executed_by || session.executedBy)?.department || ''}
+                  </div>
+                </>
+              ) : (
+                <div className="text-xs text-slate-400 font-medium italic">Pending Execution</div>
+              )}
             </div>
 
             <div className="p-3 bg-white border border-slate-200 rounded-xl">

@@ -225,6 +225,10 @@ class StaffAppointmentController extends Controller
             'status' => $validated['status'],
         ];
 
+        if (in_array($validated['status'], [AppointmentSession::STATUS_IN_PROGRESS, AppointmentSession::STATUS_COMPLETED], true)) {
+            $updateData['executed_by_staff_id'] = $user->id;
+        }
+
         if (array_key_exists('payment_amount', $validated) && $validated['payment_amount'] !== null && $validated['payment_amount'] !== '') {
             $updateData['payment_amount'] = (float) $validated['payment_amount'];
             $updateData['payment_date'] = $validated['payment_date'] ?? Carbon::today()->toDateString();
@@ -242,6 +246,7 @@ class StaffAppointmentController extends Controller
             'session' => $session->fresh([
                 'service:id,service_category_id,name,price',
                 'service.category:id,name',
+                'executedBy:id,name,staff_code,department',
                 'inventoryProduct:id,product_name,business_unit',
                 'masterAppointment.customer',
             ]),
@@ -320,6 +325,7 @@ class StaffAppointmentController extends Controller
             'session' => $session->fresh([
                 'service:id,service_category_id,name,price',
                 'service.category:id,name',
+                'executedBy:id,name,staff_code,department',
                 'inventoryProduct:id,product_name,business_unit',
                 'masterAppointment.customer',
             ]),

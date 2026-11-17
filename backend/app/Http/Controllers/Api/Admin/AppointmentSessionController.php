@@ -86,7 +86,7 @@ class AppointmentSessionController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'New session added successfully.',
-            'data' => $session->load(['staff', 'inventoryProduct', 'service.category.parent']),
+            'data' => $session->load(['staff', 'executedBy', 'inventoryProduct', 'service.category.parent']),
             'new_appointment_fees' => (float) $master->appointment_fees,
         ], 201);
     }
@@ -181,7 +181,7 @@ class AppointmentSessionController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Session status updated to '{$validated['status']}'.",
-            'data' => $session->fresh(['staff', 'inventoryProduct']),
+            'data' => $session->fresh(['staff', 'executedBy', 'inventoryProduct']),
         ]);
     }
 
