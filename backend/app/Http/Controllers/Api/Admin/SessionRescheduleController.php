@@ -142,11 +142,19 @@ class SessionRescheduleController extends Controller
                 'created_at' => Carbon::now(),
             ]);
 
+            // Preserve original booking staff in staff_id, and assign the newly chosen staff as executed_by_staff_id
+            $originalStaffId = $session->staff_id;
+            $firstHistory = AppointmentRescheduleHistory::where('session_id', $session->id)->orderBy('id')->first();
+            if ($firstHistory && $firstHistory->old_staff_id) {
+                $originalStaffId = $firstHistory->old_staff_id;
+            }
+
             // 2. Update session with new date, new time, new staff, commission, and supplies
             $sessionUpdateData = [
                 'session_date' => $validated['session_date'],
                 'session_time' => $validated['session_time'],
-                'staff_id' => $validated['staff_id'],
+                'staff_id' => $originalStaffId,
+                'executed_by_staff_id' => $validated['staff_id'],
                 'staff_commission' => $newCommission,
             ];
 
@@ -158,7 +166,7 @@ class SessionRescheduleController extends Controller
             $session->update($sessionUpdateData);
 
             return [
-                'session' => $session->fresh(['staff', 'inventoryProduct']),
+                'session' => $session->fresh(['staff', 'executedBy', 'inventoryProduct']),
                 'history' => $history->load(['oldStaff', 'newStaff']),
             ];
         });
