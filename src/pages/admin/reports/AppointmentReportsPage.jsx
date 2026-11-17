@@ -325,6 +325,7 @@ export default function AppointmentReportsPage({
           'Patient Gender',
           'Patient Age',
           'Referred By (Sales)',
+          'Sales Team Commission',
           'Consultation Fees',
           'Total Sessions',
           'Completed Sessions',
@@ -349,6 +350,7 @@ export default function AppointmentReportsPage({
             `"${item.customer?.gender || ''}"`,
             `"${item.customer?.age || ''}"`,
             `"${item.sales_team ? `${item.sales_team.name} (${item.sales_team.sales_code})` : 'Direct'}"`,
+            item.sales_commission || 0,
             item.appointment_fees || 0,
             stats.total || 0,
             stats.completed || 0,
@@ -396,9 +398,9 @@ export default function AppointmentReportsPage({
             `"${master.customer?.name || 'Walk-in'}"`,
             `"${master.customer?.mobile || ''}"`,
             `"${s.service?.name || s.treatment_details || ''}"`,
-            `"${s.staff?.name || 'Unassigned'}"`,
-            `"${s.staff?.staff_code || ''}"`,
-            `"${s.staff?.department || ''}"`,
+            `"${(s.executed_by || s.executedBy || s.staff)?.name || 'Unassigned'}"`,
+            `"${(s.executed_by || s.executedBy || s.staff)?.staff_code || ''}"`,
+            `"${(s.executed_by || s.executedBy || s.staff)?.department || ''}"`,
             s.staff_commission || 0,
             `"${s.status || 'pending'}"`,
             s.payment_amount || 0,
@@ -889,6 +891,7 @@ export default function AppointmentReportsPage({
                   <th className="py-3.5 px-4">Clinic &amp; Branch</th>
                   <th className="py-3.5 px-4">Patient Profile</th>
                   <th className="py-3.5 px-4">Referral Sales Member</th>
+                  <th className="py-3.5 px-4 text-right whitespace-nowrap">Sales Team Commission</th>
                   <th className="py-3.5 px-4 text-right">Consultation Fees</th>
                   <th className="py-3.5 px-4 text-center">Sessions Execution</th>
                   <th className="py-3.5 px-4 text-right">Patient Paid</th>
@@ -971,6 +974,11 @@ export default function AppointmentReportsPage({
                         ) : (
                           <span className="text-[11px] text-slate-400 italic">Direct / None</span>
                         )}
+                      </td>
+
+                      {/* Sales Team Commission */}
+                      <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
+                        {formatCurrency(item.sales_commission || 0)}
                       </td>
 
                       {/* Fees */}
@@ -1130,16 +1138,20 @@ export default function AppointmentReportsPage({
 
                       {/* Practitioner */}
                       <td className="py-3.5 px-4">
-                        {s.staff ? (
-                          <div>
-                            <p className="font-semibold text-slate-800">{s.staff.name}</p>
-                            <p className="text-[10px] text-slate-400 font-mono">
-                              {s.staff.staff_code} • {s.staff.department}
-                            </p>
-                          </div>
-                        ) : (
-                          <span className="text-[11px] text-slate-400 italic">Unassigned</span>
-                        )}
+                        {(() => {
+                          const activeStaff = s.executed_by || s.executedBy || s.staff;
+                          if (!activeStaff) {
+                            return <span className="text-[11px] text-slate-400 italic">Unassigned</span>;
+                          }
+                          return (
+                            <div>
+                              <p className="font-semibold text-slate-800">{activeStaff.name}</p>
+                              <p className="text-[10px] text-slate-400 font-mono">
+                                {activeStaff.staff_code} • {activeStaff.department}
+                              </p>
+                            </div>
+                          );
+                        })()}
                       </td>
 
                       {/* Status */}
@@ -1402,7 +1414,7 @@ export default function AppointmentReportsPage({
                             {ses.service?.name || ses.treatment_details || 'Treatment'} • {ses.session_date} ({formatTimeSlot(ses.session_time)})
                           </p>
                           <p className="text-[10px] text-slate-500">
-                            Practitioner: <strong>{ses.staff?.name || 'Unassigned'}</strong> • Commission:{' '}
+                            Practitioner: <strong>{(ses.executed_by || ses.executedBy || ses.staff)?.name || 'Unassigned'}</strong> • Commission:{' '}
                             <strong className="font-mono">{formatCurrency(ses.staff_commission)}</strong>
                           </p>
                         </div>
@@ -1454,7 +1466,7 @@ export default function AppointmentReportsPage({
                       </strong>
                     </p>
                     <p>
-                      Practitioner: <strong>{selectedRecord.staff?.name || 'Unassigned'}</strong>
+                      Practitioner: <strong>{(selectedRecord.executed_by || selectedRecord.executedBy || selectedRecord.staff)?.name || 'Unassigned'}</strong>
                     </p>
                     <p>
                       Commission:{' '}
