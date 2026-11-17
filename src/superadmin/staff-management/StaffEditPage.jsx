@@ -27,36 +27,6 @@ import LoadingState from '../../components/LoadingState';
 import { useToast } from '../../context/ToastContext';
 import { getImageUrl } from '../../utils/imageUrl';
 
-const COMMON_DEPARTMENTS = [
-  'Dental',
-  'Cosmetology',
-  'Dermatology',
-  'Aesthetics & Wellness',
-  'Physiotherapy',
-  'Trichology (Hair Care)',
-  'General Medicine / OPD',
-  'Plastic & Cosmetic Surgery',
-  'Nutrition & Dietetics',
-  'Ayurveda & Wellness',
-  'Orthopedics',
-  'Gynecology & Obstetrics',
-  'Pediatrics',
-  'Cardiology',
-  'ENT (Ear, Nose, Throat)',
-  'Ophthalmology',
-  'Psychiatry & Psychology',
-  'Radiology & Diagnostics',
-  'Pathology & Laboratory',
-  'Nursing & Patient Care',
-  'Pharmacy',
-  'Clinical Administration',
-  'Operations',
-  'Human Resources',
-  'Finance & Accounts',
-  'Sales & Marketing',
-  'Customer Support',
-];
-
 const EMPLOYMENT_TYPES = [
   'Full-Time',
   'Part-Time',
@@ -701,18 +671,12 @@ export default function StaffEditPage() {
                   </label>
                   <input
                     type="text"
-                    list="staff-departments-list"
                     value={formData.department}
                     onChange={(e) => handleChange('department', e.target.value)}
                     placeholder="e.g. Dental, Dermatology"
                     disabled={isSubmitting}
                     className="w-full px-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 transition-all duration-200"
                   />
-                  <datalist id="staff-departments-list">
-                    {COMMON_DEPARTMENTS.map((dept) => (
-                      <option key={dept} value={dept} />
-                    ))}
-                  </datalist>
                 </div>
 
                 {/* Designation */}
