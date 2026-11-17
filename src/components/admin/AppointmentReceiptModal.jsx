@@ -50,6 +50,28 @@ function numberToWords(amount) {
   return words.trim() + ' Rupees Only';
 }
 
+// Helper to resolve active doctor/practitioner for a session
+// Prioritizes executed_by / executedBy (rescheduled executive staff), falling back to original booking staff
+const getSessionPractitioner = (s) => {
+  if (!s) return null;
+  return s.executed_by || s.executedBy || s.staff || null;
+};
+
+// Check if a session has been rescheduled to a different practitioner
+const isPractitionerRescheduled = (s) => {
+  if (!s) return false;
+  const originalId = s.staff_id || s.staff?.id;
+  const executedId = s.executed_by_staff_id || s.executed_by?.id || s.executedBy?.id;
+  if (executedId && originalId && Number(executedId) !== Number(originalId)) {
+    return true;
+  }
+  const execStaff = s.executed_by || s.executedBy;
+  if (execStaff && s.staff && Number(execStaff.id) !== Number(s.staff.id)) {
+    return true;
+  }
+  return false;
+};
+
 export default function AppointmentReceiptModal({
   isOpen,
   onClose,
@@ -62,6 +84,8 @@ export default function AppointmentReceiptModal({
   if (!isOpen || !appointment) return null;
 
   const isSessionType = type === 'session' && session;
+  const activeSessionDoctor = isSessionType ? getSessionPractitioner(session) : null;
+  const sessionIsRescheduled = isSessionType ? isPractitionerRescheduled(session) : false;
   const customer = appointment.customer || {};
   const sessions = appointment.sessions || [];
   const salesTeam = appointment.sales_team || {};
@@ -408,12 +432,46 @@ export default function AppointmentReceiptModal({
                     <span className="text-slate-400">Issued By:</span>
                     <span className="text-slate-800 font-medium">{admin.name || 'Clinic Administrator'}</span>
                   </div>
-                  {isSessionType && (
+                  {isSessionType ? (
                     <div className="flex items-center justify-between pt-0.5 border-t border-slate-100">
                       <span className="text-slate-400">Assigned Doctor:</span>
-                      <span className="font-bold text-slate-900">{session.staff?.name || 'Assigned Specialist'}</span>
+                      <div className="text-right">
+                        <span className="font-bold text-slate-900 block">
+                          {activeSessionDoctor?.name || 'Assigned Specialist'}
+                        </span>
+                        {activeSessionDoctor?.department && (
+                          <span className="text-[10px] text-slate-500 block">
+                            {activeSessionDoctor.department}
+                            {activeSessionDoctor.staff_code ? ` • ${activeSessionDoctor.staff_code}` : ''}
+                          </span>
+                        )}
+                        {sessionIsRescheduled && (
+                          <span className="inline-block mt-0.5 text-[9px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded">
+                            Rescheduled
+                            {session.staff?.name ? ` (Prev: ${session.staff.name})` : ''}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  )}
+                  ) : sessions.length > 0 ? (
+                    <div className="flex items-center justify-between pt-0.5 border-t border-slate-100">
+                      <span className="text-slate-400">Assigned Doctor:</span>
+                      <div className="text-right">
+                        <span className="font-bold text-slate-900 block">
+                          {getSessionPractitioner(sessions[0])?.name || 'Assigned Specialist'}
+                        </span>
+                        {sessions.length > 1 ? (
+                          <span className="text-[10px] text-slate-400 block font-sans">
+                            +{sessions.length - 1} more session{sessions.length > 2 ? 's' : ''}
+                          </span>
+                        ) : getSessionPractitioner(sessions[0])?.department ? (
+                          <span className="text-[10px] text-slate-500 block">
+                            {getSessionPractitioner(sessions[0]).department}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -481,8 +539,18 @@ export default function AppointmentReceiptModal({
                           <div className="text-slate-500 font-mono text-[10px]">{session.session_time || ''}</div>
                         </td>
                         <td className="py-2 px-3">
-                          <div className="font-semibold text-slate-900">{session.staff?.name || 'Unassigned'}</div>
-                          <div className="text-slate-400 text-[9px]">{session.staff?.department || ''}</div>
+                          <div className="font-semibold text-slate-900">
+                            {activeSessionDoctor?.name || 'Unassigned'}
+                          </div>
+                          <div className="text-slate-400 text-[9px]">
+                            {[activeSessionDoctor?.department, activeSessionDoctor?.staff_code].filter(Boolean).join(' • ')}
+                          </div>
+                          {sessionIsRescheduled && (
+                            <span className="inline-block mt-0.5 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-200 rounded">
+                              Rescheduled
+                              {session.staff?.name ? ` (Prev: ${session.staff.name})` : ''}
+                            </span>
+                          )}
                         </td>
                         <td className="py-2 px-2.5 text-center">
                           <span
@@ -505,6 +573,8 @@ export default function AppointmentReceiptModal({
                       /* Full Master Appointment Sessions Breakdown */
                       sessions.map((ses) => {
                         const fee = ses.service?.price ? Number(ses.service.price) : 0;
+                        const sesDoctor = getSessionPractitioner(ses);
+                        const sesRescheduled = isPractitionerRescheduled(ses);
                         return (
                           <tr key={ses.id}>
                             <td className="py-2 px-2.5 text-center font-bold text-slate-700">
@@ -528,8 +598,17 @@ export default function AppointmentReceiptModal({
                               <div className="text-slate-500 font-mono text-[10px]">{ses.session_time || ''}</div>
                             </td>
                             <td className="py-2 px-3">
-                              <div className="font-medium text-slate-900">{ses.staff?.name || 'Unassigned'}</div>
-                              <div className="text-slate-400 text-[9px]">{ses.staff?.department || ''}</div>
+                              <div className="font-medium text-slate-900">
+                                {sesDoctor?.name || 'Unassigned'}
+                              </div>
+                              <div className="text-slate-400 text-[9px]">
+                                {[sesDoctor?.department, sesDoctor?.staff_code].filter(Boolean).join(' • ')}
+                              </div>
+                              {sesRescheduled && (
+                                <span className="inline-block mt-0.5 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-200 rounded">
+                                  Rescheduled
+                                </span>
+                              )}
                             </td>
                             <td className="py-2 px-2.5 text-center">
                               <span
