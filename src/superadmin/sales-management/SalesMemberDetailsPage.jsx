@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import SalesMemberStatusBadge from './SalesMemberStatusBadge';
 import SalesMemberEditModal from './SalesMemberEditModal';
+import SalesMemberAvatar from '../../components/SalesMemberAvatar';
 import salesMemberManagementService from '../services/salesMemberManagementService';
 import clinicManagementService from '../services/clinicManagementService';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -356,7 +357,6 @@ export default function SalesMemberDetailsPage() {
                 <th className="py-3 px-4">Sales Code</th>
                 <th className="py-3 px-4 min-w-[200px]">Clinic &amp; Branch</th>
                 <th className="py-3 px-4 min-w-[180px]">Location</th>
-                <th className="py-3 px-4">Profile</th>
                 <th className="py-3 px-4">Name</th>
                 <th className="py-3 px-4">Email</th>
                 <th className="py-3 px-4">Mobile</th>
@@ -461,31 +461,21 @@ export default function SalesMemberDetailsPage() {
                       )}
                     </td>
 
-                    {/* 3. Profile Photo / Avatar */}
-                    <td className="py-3 px-4">
-                      {member.profile_photo ? (
-                        <img
-                          src={getImageUrl(member.image_url || member.profile_photo)}
-                          alt={member.name}
-                          className="w-8 h-8 rounded-full object-cover border border-slate-200 shadow-2xs"
-                        />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 text-[11px] font-bold">
-                          {member.name ? member.name.charAt(0).toUpperCase() : 'S'}
+                    {/* Name with Avatar */}
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2.5">
+                        <SalesMemberAvatar member={member} size="md" />
+                        <div>
+                          <div className="font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
+                            {member.name}
+                          </div>
+                          {member.gender && (
+                            <span className="text-[10px] text-slate-400 capitalize">
+                              {member.gender}
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </td>
-
-                    {/* 4. Name */}
-                    <td className="py-3 px-4">
-                      <div className="font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
-                        {member.name}
                       </div>
-                      {member.gender && (
-                        <span className="text-[10px] text-slate-400 capitalize">
-                          {member.gender}
-                        </span>
-                      )}
                     </td>
 
                     {/* 4. Email */}
