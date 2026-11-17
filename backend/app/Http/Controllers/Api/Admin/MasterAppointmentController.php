@@ -665,6 +665,7 @@ class MasterAppointmentController extends Controller
     public function receipt(Request $request, int $id): JsonResponse
     {
         $master = MasterAppointment::with([
+            'clinic',
             'customer',
             'salesTeam',
             'admin:id,name,email',
@@ -674,6 +675,8 @@ class MasterAppointmentController extends Controller
                     'executedBy',
                     'inventoryProduct',
                     'service.category.parent',
+                    'rescheduleHistories.oldStaff',
+                    'rescheduleHistories.newStaff',
                 ])->orderBy('session_number');
             },
         ])->findOrFail($id);

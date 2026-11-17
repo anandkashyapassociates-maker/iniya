@@ -307,10 +307,14 @@ class AppointmentSessionController extends Controller
         $session = AppointmentSession::with([
             'masterAppointment.customer',
             'masterAppointment.salesTeam',
+            'masterAppointment.clinic',
             'masterAppointment.admin:id,name,email',
             'staff',
+            'executedBy',
             'inventoryProduct',
             'service.category.parent',
+            'rescheduleHistories.oldStaff',
+            'rescheduleHistories.newStaff',
         ])->findOrFail($id);
 
         $user = $request->user();
