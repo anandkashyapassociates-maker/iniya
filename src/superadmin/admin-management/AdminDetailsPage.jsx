@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import AdminStatusBadge from './AdminStatusBadge';
 import AdminEditModal from './AdminEditModal';
+import AdminAvatar from '../../components/AdminAvatar';
 import adminManagementService from '../services/adminManagementService';
 import clinicManagementService from '../services/clinicManagementService';
 import { useToast } from '../../context/ToastContext';
@@ -469,9 +470,7 @@ export default function AdminDetailsPage() {
                     {/* Full Name */}
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-200/60 text-blue-700 flex items-center justify-center font-bold text-[11px] shrink-0">
-                          {adm.name ? adm.name.charAt(0).toUpperCase() : 'A'}
-                        </div>
+                        <AdminAvatar admin={adm} size="md" />
                         <span className="font-bold text-slate-900">{adm.name}</span>
                       </div>
                     </td>
