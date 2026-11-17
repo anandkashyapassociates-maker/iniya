@@ -50,6 +50,18 @@ export function getImageUrl(pathOrUrl) {
       str = str.replace(/^http:\/\//i, 'https://');
     }
 
+    // If target has /storage/, and is on localhost or 127.0.0.1, return relative /storage/ path for clean same-origin loading
+    if (str.includes('/storage/')) {
+      try {
+        const parsed = new URL(str);
+        if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+          return `${parsed.pathname}${parsed.search}`;
+        }
+      } catch {
+        // fallback
+      }
+    }
+
     // If backend returned localhost / 127.0.0.1 (because backend APP_URL is unconfigured or default in Laravel .env)
     // and we have an online backendOrigin, rewrite it to the actual backend origin!
     if (backendOrigin && (str.includes('localhost') || str.includes('127.0.0.1'))) {
