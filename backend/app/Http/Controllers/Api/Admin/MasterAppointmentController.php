@@ -573,7 +573,7 @@ class MasterAppointmentController extends Controller
             'customer_id' => ['sometimes', 'required', 'exists:customers,id'],
             'appointment_date' => ['sometimes', 'required', 'date'],
             'sales_team_id' => ['sometimes', 'required', 'exists:sales_members,id'],
-            'sales_commission' => ['nullable', 'numeric', 'min:0'],
+            'sales_commission' => ['sometimes', 'required', 'numeric', 'min:0'],
             'appointment_fees' => ['sometimes', 'required', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string', 'max:5000'],
         ]);

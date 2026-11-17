@@ -37,6 +37,7 @@ export default function AdminMasterAppointmentEditPage() {
   const [customerId, setCustomerId] = useState('');
   const [appointmentDate, setAppointmentDate] = useState('');
   const [salesTeamId, setSalesTeamId] = useState('');
+  const [salesCommission, setSalesCommission] = useState('');
   const [appointmentFees, setAppointmentFees] = useState('');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
@@ -61,6 +62,7 @@ export default function AdminMasterAppointmentEditPage() {
           setCustomerId(String(appt.customer_id || ''));
           setAppointmentDate(appt.appointment_date ? String(appt.appointment_date).slice(0, 10) : '');
           setSalesTeamId(String(appt.sales_team_id || ''));
+          setSalesCommission(appt.sales_commission !== null && appt.sales_commission !== undefined ? String(appt.sales_commission) : '0');
           setAppointmentFees(String(appt.appointment_fees || ''));
           setNotes(appt.notes || '');
         }
@@ -90,6 +92,10 @@ export default function AdminMasterAppointmentEditPage() {
       setError('Please select a sales team member.');
       return;
     }
+    if (salesCommission === '' || salesCommission === null || isNaN(Number(salesCommission)) || Number(salesCommission) < 0) {
+      setError('Please enter a valid Sales Team Commission (enter 0 if no commission).');
+      return;
+    }
     if (appointmentFees === '' || Number(appointmentFees) < 0) {
       setError('Please enter a valid appointment fee.');
       return;
@@ -101,6 +107,7 @@ export default function AdminMasterAppointmentEditPage() {
         customer_id: Number(customerId),
         appointment_date: appointmentDate,
         sales_team_id: Number(salesTeamId),
+        sales_commission: Number(salesCommission),
         appointment_fees: Number(appointmentFees),
         notes: notes || undefined,
       };
@@ -222,7 +229,7 @@ export default function AdminMasterAppointmentEditPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
             {/* Customer Dropdown */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
@@ -275,6 +282,28 @@ export default function AdminMasterAppointmentEditPage() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Sales Team Commission */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                Sales Team Commission (₹) <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 font-bold text-sm pointer-events-none">
+                  ₹
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  required
+                  value={salesCommission}
+                  onChange={(e) => setSalesCommission(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full pl-8 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-colors font-mono"
+                />
+              </div>
             </div>
 
             {/* Total Appointment Fees (Read-Only) */}
