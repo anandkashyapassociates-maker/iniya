@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import StaffStatusBadge from './StaffStatusBadge';
 import StaffEditModal from './StaffEditModal';
+import StaffAvatar from '../../components/StaffAvatar';
 import staffManagementService from '../services/staffManagementService';
 import clinicManagementService from '../services/clinicManagementService';
 import { useToast } from '../../context/ToastContext';
@@ -554,25 +555,7 @@ export default function StaffDetailsPage() {
                     {/* Full Name */}
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <div className="flex items-center gap-2.5">
-                        {member.image_url || member.profile_photo || member.image ? (
-                          <img
-                            src={getImageUrl(member.image_url || member.profile_photo || member.image)}
-                            alt={member.name}
-                            className="w-7 h-7 rounded-lg object-cover border border-slate-200 shrink-0"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                              if (e.currentTarget.nextElementSibling) {
-                                e.currentTarget.nextElementSibling.style.display = 'flex';
-                              }
-                            }}
-                          />
-                        ) : null}
-                        <div
-                          className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center font-bold text-[11px] shrink-0"
-                          style={{ display: member.image_url || member.profile_photo || member.image ? 'none' : 'flex' }}
-                        >
-                          {member.name ? member.name.charAt(0).toUpperCase() : 'S'}
-                        </div>
+                        <StaffAvatar staff={member} size="md" />
                         <span className="font-bold text-slate-900">{member.name}</span>
                       </div>
                     </td>
