@@ -571,9 +571,39 @@ export default function AdminMasterAppointmentDetailsPage() {
                     </td>
 
                     {/* Staff */}
-                    <td className="py-3 px-4 text-xs">
-                      <div className="font-semibold text-slate-800">{ses.staff?.name || 'Unassigned'}</div>
-                      <div className="text-slate-400 text-[11px]">{ses.staff?.department || ''}</div>
+                    <td className="py-3 px-4 text-xs whitespace-nowrap">
+                      <div className="flex items-center gap-2.5">
+                        {ses.staff ? (
+                          ses.staff.image_url || ses.staff.profile_photo || ses.staff.image ? (
+                            <img
+                              src={getImageUrl(ses.staff.image_url || ses.staff.profile_photo || ses.staff.image)}
+                              alt={ses.staff.name}
+                              className="w-7 h-7 rounded-lg object-cover border border-slate-200 shadow-2xs shrink-0"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                if (e.currentTarget.nextElementSibling) {
+                                  e.currentTarget.nextElementSibling.style.display = 'flex';
+                                }
+                              }}
+                            />
+                          ) : null
+                        ) : null}
+                        <div
+                          className="w-7 h-7 rounded-lg bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center font-bold text-[10px] shrink-0"
+                          style={{
+                            display:
+                              ses.staff && (ses.staff.image_url || ses.staff.profile_photo || ses.staff.image)
+                                ? 'none'
+                                : 'flex',
+                          }}
+                        >
+                          {ses.staff?.name ? ses.staff.name.charAt(0).toUpperCase() : 'S'}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-slate-800">{ses.staff?.name || 'Unassigned'}</div>
+                          <div className="text-slate-400 text-[11px]">{ses.staff?.department || ''}</div>
+                        </div>
+                      </div>
                     </td>
 
                     {/* Executive Staff */}

@@ -64,11 +64,6 @@ export default function SalesMemberEditModal({ member, isOpen, onClose, onSucces
     mobile: '',
     alternate_mobile: '',
     gender: 'Male',
-    designation: '',
-    department: 'Enterprise Sales',
-    employment_type: 'Full-Time',
-    joining_date: '',
-    territory: 'North Zone',
     city: '',
     state: '',
     country: 'India',
@@ -108,11 +103,6 @@ export default function SalesMemberEditModal({ member, isOpen, onClose, onSucces
         mobile: member.mobile || '',
         alternate_mobile: member.alternate_mobile || '',
         gender: member.gender || 'Male',
-        designation: member.designation || '',
-        department: member.department || 'Enterprise Sales',
-        employment_type: member.employment_type || 'Full-Time',
-        joining_date: member.joining_date ? member.joining_date.split('T')[0] : '',
-        territory: member.territory || 'North Zone',
         city: member.city || '',
         state: member.state || '',
         country: member.country || 'India',
@@ -225,11 +215,6 @@ export default function SalesMemberEditModal({ member, isOpen, onClose, onSucces
         mobile: formData.mobile.trim(),
         alternate_mobile: formData.alternate_mobile.trim() || null,
         gender: formData.gender,
-        designation: formData.designation.trim() || null,
-        department: formData.department || null,
-        employment_type: formData.employment_type || null,
-        joining_date: formData.joining_date || null,
-        territory: formData.territory || null,
         city: formData.city.trim() || null,
         state: formData.state.trim() || null,
         country: formData.country.trim() || 'India',
@@ -527,104 +512,11 @@ export default function SalesMemberEditModal({ member, isOpen, onClose, onSucces
                 </div>
               </div>
 
-              {/* 3. Employment Details */}
-              <div className="space-y-2.5">
-                <div className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded-full bg-blue-100 text-blue-700 font-mono text-[9px] font-bold flex items-center justify-center">
-                    3
-                  </span>
-                  <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                    Employment &amp; Territory
-                  </h4>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-                  <div className="min-w-0">
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Designation
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.designation}
-                      onChange={(e) => handleChange('designation', e.target.value)}
-                      disabled={isSubmitting}
-                      className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
-                    />
-                  </div>
-
-                  <div className="min-w-0">
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Department
-                    </label>
-                    <select
-                      value={formData.department}
-                      onChange={(e) => handleChange('department', e.target.value)}
-                      disabled={isSubmitting}
-                      className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all duration-200 cursor-pointer"
-                    >
-                      {DEPARTMENTS.map((d) => (
-                        <option key={d} value={d}>
-                          {d}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="min-w-0">
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Employment Type
-                    </label>
-                    <select
-                      value={formData.employment_type}
-                      onChange={(e) => handleChange('employment_type', e.target.value)}
-                      disabled={isSubmitting}
-                      className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all duration-200 cursor-pointer"
-                    >
-                      {EMPLOYMENT_TYPES.map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="min-w-0">
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Joining Date
-                    </label>
-                    <input
-                      type="date"
-                      value={formData.joining_date}
-                      onChange={(e) => handleChange('joining_date', e.target.value)}
-                      disabled={isSubmitting}
-                      className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
-                    />
-                  </div>
-
-                  <div className="sm:col-span-2 min-w-0">
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Territory / Sales Area
-                    </label>
-                    <select
-                      value={formData.territory}
-                      onChange={(e) => handleChange('territory', e.target.value)}
-                      disabled={isSubmitting}
-                      className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all duration-200 cursor-pointer"
-                    >
-                      {TERRITORIES.map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* 4. Location */}
+              {/* 3. Location */}
               <div className="space-y-2.5">
                 <div className="flex items-center gap-2">
                   <span className="w-4 h-4 rounded-full bg-amber-100 text-amber-700 font-mono text-[9px] font-bold flex items-center justify-center">
-                    4
+                    3
                   </span>
                   <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                     Location &amp; Address
@@ -701,11 +593,11 @@ export default function SalesMemberEditModal({ member, isOpen, onClose, onSucces
                 </div>
               </div>
 
-              {/* 5. Notes & Status */}
+              {/* 4. Notes & Status */}
               <div className="space-y-2.5">
                 <div className="flex items-center gap-2">
                   <span className="w-4 h-4 rounded-full bg-slate-100 text-slate-700 font-mono text-[9px] font-bold flex items-center justify-center">
-                    5
+                    4
                   </span>
                   <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                     Notes &amp; Status

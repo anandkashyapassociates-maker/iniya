@@ -715,13 +715,13 @@ export default function SuperAdminDashboardPage() {
           {/* Card A4: Sales Team */}
           <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group">
             <div>
-              {/* Top Row: 3D Purple Briefcase + Zones Pill */}
+              {/* Top Row: 3D Purple Briefcase + Active Pill */}
               <div className="flex items-center justify-between gap-2 mb-4">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 via-fuchsia-600 to-pink-500 text-white flex items-center justify-center icon-3d shadow-md shadow-purple-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
                   <Briefcase className="w-6 h-6 drop-shadow-sm" />
                 </div>
                 <span className="px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-bold border border-purple-200/60 shadow-2xs shrink-0">
-                  {modules.sales_team.territories_count} Zones
+                  {modules.sales_team.active} Active
                 </span>
               </div>
 
@@ -730,7 +730,7 @@ export default function SuperAdminDashboardPage() {
                 Sales Team
               </h3>
               <p className="text-xs text-slate-500 mt-1">
-                Territory leads &amp; client outreach
+                Sales representatives &amp; client outreach
               </p>
 
               {/* Primary Metric */}
@@ -746,13 +746,13 @@ export default function SuperAdminDashboardPage() {
                 <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active</span>
                   <span className="text-sm font-extrabold text-emerald-600 tabular-numbers mt-0.5">
-                    <AnimatedCounter value={modules.sales_team.active} /> Active
+                    <AnimatedCounter value={modules.sales_team.active} /> Live
                   </span>
                 </div>
                 <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Zones</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total</span>
                   <span className="text-sm font-extrabold text-purple-600 tabular-numbers mt-0.5">
-                    <AnimatedCounter value={modules.sales_team.territories_count} /> Coverage
+                    <AnimatedCounter value={modules.sales_team.total} /> Members
                   </span>
                 </div>
               </div>
