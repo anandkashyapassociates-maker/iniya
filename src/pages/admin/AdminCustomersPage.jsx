@@ -10,23 +10,16 @@ import {
   Edit,
   Trash2,
   Eye,
-  CheckCircle2,
-  XCircle,
   Stethoscope,
   Activity,
   ShieldCheck,
-  HeartPulse,
   Clock,
-  X,
   FileText,
-  Search,
-  Filter,
   RefreshCw,
-  Sparkles,
-  Lock,
 } from 'lucide-react';
 import DataTable from '../../components/DataTable';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import PatientOpdCardModal from '../../components/admin/PatientOpdCardModal';
 import adminService from '../../services/adminService';
 import { useToast } from '../../context/ToastContext';
 import { useAdminAuth } from '../../features/auth/AdminAuthContext';
@@ -71,11 +64,6 @@ function CustomerAvatar({ customer, size = 'sm' }) {
 export default function AdminCustomersPage() {
   const toast = useToast();
   const { user } = useAdminAuth();
-
-  // Patients section is restricted to Admin only (Staff ko show nahi hoga)
-  if (user && user.role === 'staff') {
-    return <Navigate to="/admin/my-appointments" replace />;
-  }
 
   const [customers, setCustomers] = useState([]);
   const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0 });
@@ -334,8 +322,6 @@ export default function AdminCustomersPage() {
       accessor: 'actions',
       className: 'w-[140px] text-right',
       render: (c) => {
-        const isOwner = Number(c.admin_id) === Number(user?.id);
-
         return (
           <div className="flex items-center justify-end gap-1.5 py-1">
             <button
@@ -346,43 +332,37 @@ export default function AdminCustomersPage() {
             >
               <Eye className="w-4 h-4 text-slate-500 group-hover/btn:text-blue-600 transition-colors" />
             </button>
-            {isOwner ? (
-              <>
-                <Link
-                  to={`/admin/customers/${c.id}/edit`}
-                  className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-indigo-50 hover:border-indigo-200 text-slate-600 hover:text-indigo-600 transition-all shadow-2xs hover:shadow-xs cursor-pointer group/btn"
-                  title="Edit Patient Record"
-                >
-                  <Edit className="w-4 h-4 text-slate-500 group-hover/btn:text-indigo-600 transition-colors" />
-                </Link>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setDeleteDialog({
-                      isOpen: true,
-                      customer: c,
-                      isLoading: false,
-                    })
-                  }
-                  className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-rose-50 hover:border-rose-200 text-slate-400 hover:text-rose-600 transition-all shadow-2xs hover:shadow-xs cursor-pointer group/btn"
-                  title="Delete Patient Record"
-                >
-                  <Trash2 className="w-4 h-4 text-slate-400 group-hover/btn:text-rose-600 transition-colors" />
-                </button>
-              </>
-            ) : (
-              <span
-                className="p-2 rounded-xl border border-slate-100 bg-slate-50 text-slate-400 inline-flex items-center cursor-not-allowed shadow-2xs"
-                title={`Registered by ${c.admin?.name || 'another admin'} (Read-only)`}
-              >
-                <Lock className="w-4 h-4 text-slate-400" />
-              </span>
-            )}
+            <Link
+              to={`/admin/customers/${c.id}/edit`}
+              className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-indigo-50 hover:border-indigo-200 text-slate-600 hover:text-indigo-600 transition-all shadow-2xs hover:shadow-xs cursor-pointer group/btn"
+              title="Edit Patient Record"
+            >
+              <Edit className="w-4 h-4 text-slate-500 group-hover/btn:text-indigo-600 transition-colors" />
+            </Link>
+            <button
+              type="button"
+              onClick={() =>
+                setDeleteDialog({
+                  isOpen: true,
+                  customer: c,
+                  isLoading: false,
+                })
+              }
+              className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-rose-50 hover:border-rose-200 text-slate-400 hover:text-rose-600 transition-all shadow-2xs hover:shadow-xs cursor-pointer group/btn"
+              title="Delete Patient Record"
+            >
+              <Trash2 className="w-4 h-4 text-slate-400 group-hover/btn:text-rose-600 transition-colors" />
+            </button>
           </div>
         );
       },
     },
   ];
+
+  // Patients section is restricted to Admin only (Staff ko show nahi hoga)
+  if (user && user.role === 'staff') {
+    return <Navigate to="/admin/my-appointments" replace />;
+  }
 
   return (
     <div className="w-full space-y-6">
@@ -555,138 +535,14 @@ export default function AdminCustomersPage() {
         }
       />
 
-      {/* Patient Medical Chart Quick View Modal */}
+      {/* Patient Medical Chart & OPD Card Modal */}
       {selectedCustomer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/65 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 transform transition-all relative max-h-[92vh] overflow-y-auto">
-            <button
-              onClick={() => setSelectedCustomer(null)}
-              className="absolute top-5 right-5 p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-              title="Close Chart"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {/* Modal Clinical Header */}
-            <div className="flex items-center gap-2 mb-4">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium">
-                <HeartPulse className="w-3.5 h-3.5 text-rose-500 animate-pulse" />
-                <span>Patient Medical Chart</span>
-              </span>
-              <span className="font-mono text-xs font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
-                {formatRecordId(selectedCustomer.id)}
-              </span>
-            </div>
-
-            {/* Patient Hero Info */}
-            <div className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 border border-blue-100 mb-5">
-              <CustomerAvatar customer={selectedCustomer} size="lg" />
-              <div className="min-w-0">
-                <h3 className="text-base sm:text-lg font-bold font-display text-slate-800 tracking-tight truncate">
-                  {selectedCustomer.name}
-                </h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60">
-                    {formatRecordId(selectedCustomer.id)}
-                  </span>
-                  <span
-                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium ${
-                      selectedCustomer.is_active
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : 'bg-slate-100 text-slate-600'
-                    }`}
-                  >
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        selectedCustomer.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
-                      }`}
-                    />
-                    {selectedCustomer.is_active ? 'Active OPD Clearance' : 'Inactive Record'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Clinical Demographic Grid */}
-            <div className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3 p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80">
-                <div>
-                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">
-                    Mobile Phone
-                  </span>
-                  <a
-                    href={`tel:${selectedCustomer.mobile}`}
-                    className="font-mono font-medium text-slate-800 hover:text-blue-600 mt-1 block"
-                  >
-                    {selectedCustomer.mobile}
-                  </a>
-                </div>
-                <div>
-                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">
-                    Email Address
-                  </span>
-                  <span className="font-medium text-slate-700 mt-1 block truncate">
-                    {selectedCustomer.email || 'None on record'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">
-                    Gender
-                  </span>
-                  <span className="font-medium text-slate-800 mt-1 block capitalize">
-                    {selectedCustomer.gender === 'female' ? '👩 Female' : selectedCustomer.gender === 'male' ? '👨 Male' : '🧑 Other'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">
-                    Patient Age
-                  </span>
-                  <span className="font-medium text-slate-800 mt-1 block">
-                    {selectedCustomer.age ? `${selectedCustomer.age} Years` : 'Not specified'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Full Address */}
-              <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80">
-                <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider block mb-1">
-                  Full Residential Address
-                </span>
-                <p className="text-slate-700 leading-relaxed font-normal">
-                  {selectedCustomer.address || 'No residential address recorded.'}
-                </p>
-              </div>
-
-              {/* Audit Meta */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-slate-400 font-normal pt-2 border-t border-slate-100 gap-1">
-                <span>Enrolled: {new Date(selectedCustomer.created_at).toLocaleString()}</span>
-                {selectedCustomer.admin && (
-                  <span>Admin: {selectedCustomer.admin.name}</span>
-                )}
-              </div>
-            </div>
-
-            {/* Modal Actions */}
-            <div className="mt-6 flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setSelectedCustomer(null)}
-                className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
-              >
-                Close
-              </button>
-              {Number(selectedCustomer.admin_id) === Number(user?.id) && (
-                <Link
-                  to={`/admin/customers/${selectedCustomer.id}/edit`}
-                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-medium transition-all shadow-xs cursor-pointer"
-                >
-                  <Edit className="w-3.5 h-3.5" />
-                  <span>Edit Patient Record</span>
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
+        <PatientOpdCardModal
+          customer={selectedCustomer}
+          onClose={() => setSelectedCustomer(null)}
+          canEdit={true}
+          clinicName={user?.clinic?.name || 'Iniya Aesthetics & Wellness'}
+        />
       )}
 
       {/* Confirm Delete Dialog */}

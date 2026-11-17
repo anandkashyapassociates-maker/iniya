@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
 use App\Models\AdminActivityLog;
 use App\Models\Customer;
 use App\Models\Staff;
@@ -39,7 +40,7 @@ class CustomerController extends Controller
         }
 
         $admin = $request->user();
-        $query = Customer::with('admin:id,name,email');
+        $query = Customer::with('admin:id,name,email,clinic_id');
 
         // Search by name, mobile, or email
         if ($search = $request->input('search')) {
@@ -150,7 +151,7 @@ class CustomerController extends Controller
             return $restricted;
         }
 
-        $customer = Customer::with('admin:id,name,email')->findOrFail($id);
+        $customer = Customer::with('admin:id,name,email,clinic_id')->findOrFail($id);
 
         return response()->json($customer);
     }
@@ -166,9 +167,13 @@ class CustomerController extends Controller
 
         $customer = Customer::findOrFail($id);
 
-        if ($customer->admin_id && (int) $customer->admin_id !== (int) $request->user()->id) {
+        $admin = $request->user();
+        $creator = $customer->admin ?: ($customer->admin_id ? Admin::find($customer->admin_id) : null);
+        $isSameClinic = $admin->clinic_id && $creator && $creator->clinic_id && (int) $admin->clinic_id === (int) $creator->clinic_id;
+
+        if ($customer->admin_id && (int) $customer->admin_id !== (int) $admin->id && ! $isSameClinic) {
             return response()->json([
-                'message' => 'Unauthorized. You can only edit customers registered by you.',
+                'message' => 'Unauthorized. You can only edit customers registered by you or your clinic.',
             ], 403);
         }
 
@@ -258,9 +263,13 @@ class CustomerController extends Controller
 
         $customer = Customer::findOrFail($id);
 
-        if ($customer->admin_id && (int) $customer->admin_id !== (int) $request->user()->id) {
+        $admin = $request->user();
+        $creator = $customer->admin ?: ($customer->admin_id ? Admin::find($customer->admin_id) : null);
+        $isSameClinic = $admin->clinic_id && $creator && $creator->clinic_id && (int) $admin->clinic_id === (int) $creator->clinic_id;
+
+        if ($customer->admin_id && (int) $customer->admin_id !== (int) $admin->id && ! $isSameClinic) {
             return response()->json([
-                'message' => 'Unauthorized. You can only delete customers registered by you.',
+                'message' => 'Unauthorized. You can only delete customers registered by you or your clinic.',
             ], 403);
         }
 
