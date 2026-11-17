@@ -226,6 +226,19 @@ export default function AdminMasterAppointmentCreatePage() {
     };
   }, [preServiceId, preCategoryId, preSubCategoryId]);
 
+  // Consultation Date change handler: ensures sessions do not hold dates before consultation date
+  const handleAppointmentDateChange = (newDate) => {
+    setAppointmentDate(newDate);
+    if (newDate) {
+      setSessions((prev) =>
+        prev.map((s) => ({
+          ...s,
+          session_date: s.session_date && s.session_date < newDate ? newDate : (s.session_date || newDate),
+        }))
+      );
+    }
+  };
+
   // Session handler methods
   const handleAddSession = () => {
     const lastSession = sessions[sessions.length - 1];
@@ -238,6 +251,11 @@ export default function AdminMasterAppointmentCreatePage() {
       nextTime = getDefaultTime(sessions.length + 1);
     }
 
+    const defaultSessionDate =
+      lastSession?.session_date && lastSession.session_date >= (appointmentDate || todayStr)
+        ? lastSession.session_date
+        : (appointmentDate || todayStr);
+
     setSessions((prev) => [
       ...prev,
       {
@@ -246,7 +264,7 @@ export default function AdminMasterAppointmentCreatePage() {
         service_id: '',
         service_price: '0',
         treatment_details: lastSession?.treatment_details || '',
-        session_date: lastSession?.session_date || appointmentDate || todayStr,
+        session_date: defaultSessionDate,
         session_time: nextTime,
         staff_id: staffList[0]?.id ? String(staffList[0].id) : '',
         staff_commission: '0',
@@ -360,6 +378,15 @@ export default function AdminMasterAppointmentCreatePage() {
   };
 
   const handleSessionChange = (index, field, value) => {
+    if (field === 'session_date' && appointmentDate && value && value < appointmentDate) {
+      toast.error(`Session date cannot be earlier than Consultation Date (${appointmentDate}).`);
+      setSessions((prev) => {
+        const copy = [...prev];
+        copy[index] = { ...copy[index], session_date: appointmentDate };
+        return copy;
+      });
+      return;
+    }
     setSessions((prev) => {
       const copy = [...prev];
       copy[index] = { ...copy[index], [field]: value };
@@ -426,6 +453,10 @@ export default function AdminMasterAppointmentCreatePage() {
       }
       if (!s.session_date) {
         setError(`Session #${i + 1}: Please choose a date.`);
+        return;
+      }
+      if (s.session_date < appointmentDate) {
+        setError(`Session #${i + 1}: Session date (${s.session_date}) cannot be earlier than Consultation Date (${appointmentDate}).`);
         return;
       }
       if (!s.session_time) {
@@ -650,7 +681,7 @@ export default function AdminMasterAppointmentCreatePage() {
                 </label>
                 <button
                   type="button"
-                  onClick={() => setAppointmentDate(todayStr)}
+                  onClick={() => handleAppointmentDateChange(todayStr)}
                   className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
                 >
                   Set Today
@@ -660,7 +691,7 @@ export default function AdminMasterAppointmentCreatePage() {
                 type="date"
                 min={todayStr}
                 value={appointmentDate}
-                onChange={(e) => setAppointmentDate(e.target.value)}
+                onChange={(e) => handleAppointmentDateChange(e.target.value)}
                 required
                 className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/90 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-xs"
               />
@@ -1094,7 +1125,7 @@ export default function AdminMasterAppointmentCreatePage() {
                       </label>
                       <input
                         type="date"
-                        min={todayStr}
+                        min={appointmentDate || todayStr}
                         value={session.session_date}
                         onChange={(e) => handleSessionChange(index, 'session_date', e.target.value)}
                         required

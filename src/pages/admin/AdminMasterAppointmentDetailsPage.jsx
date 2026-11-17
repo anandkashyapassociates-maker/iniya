@@ -519,6 +519,7 @@ export default function AdminMasterAppointmentDetailsPage() {
                 <th className="py-3 px-4 whitespace-nowrap">Date & Time</th>
                 <th className="py-3 px-4 min-w-[200px]">Treatment / Procedure</th>
                 <th className="py-3 px-4 min-w-[140px]">Assigned Staff</th>
+                <th className="py-3 px-4 min-w-[140px]">Executive Staff</th>
                 <th className="py-3 px-4 min-w-[160px]">Clinic Branch</th>
                 <th className="py-3 px-4 whitespace-nowrap">Commission</th>
                 <th className="py-3 px-4 min-w-[140px]">Product Used</th>
@@ -603,6 +604,24 @@ export default function AdminMasterAppointmentDetailsPage() {
                           <div className="text-slate-400 text-[11px]">{ses.staff?.department || ''}</div>
                         </div>
                       </div>
+                    </td>
+
+                    {/* Executive Staff */}
+                    <td className="py-3 px-4 text-xs">
+                      {ses.executed_by || ses.executedBy ? (
+                        <>
+                          <div className="font-semibold text-slate-800">
+                            {(ses.executed_by || ses.executedBy)?.name}
+                          </div>
+                          <div className="text-slate-400 text-[11px]">
+                            {(ses.executed_by || ses.executedBy)?.department || ''}
+                          </div>
+                        </>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-400 text-[11px] font-medium">
+                          Pending Execution
+                        </span>
+                      )}
                     </td>
 
                     {/* Clinic Branch */}
@@ -929,10 +948,10 @@ export default function AdminMasterAppointmentDetailsPage() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1">
-                        Doctor / Staff <span className="text-rose-500">*</span>
+                        Assign to Doctor / Staff <span className="text-rose-500">*</span>
                       </label>
                       <select
                         required
@@ -953,7 +972,20 @@ export default function AdminMasterAppointmentDetailsPage() {
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1">
-                        Commission (₹) <span className="text-rose-500">*</span>
+                        Executive by Doctor / Staff
+                      </label>
+                      <select
+                        disabled
+                        value=""
+                        className="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-400 font-medium cursor-not-allowed select-none"
+                      >
+                        <option value="">-- Assigned on Execution --</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Staff Commission (₹) <span className="text-rose-500">*</span>
                       </label>
                       <div className="relative">
                         <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 font-bold text-xs pointer-events-none">

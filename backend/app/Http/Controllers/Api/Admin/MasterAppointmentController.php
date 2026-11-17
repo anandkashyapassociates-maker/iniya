@@ -321,7 +321,7 @@ class MasterAppointmentController extends Controller
             'sessions.*.service_id' => ['required', 'exists:services,id'],
             'sessions.*.consultation_fee' => ['required', 'numeric', 'min:0'],
             'sessions.*.treatment_details' => ['nullable', 'string', 'max:5000'],
-            'sessions.*.session_date' => ['required', 'date', 'after_or_equal:today'],
+            'sessions.*.session_date' => ['required', 'date', 'after_or_equal:today', 'after_or_equal:appointment_date'],
             'sessions.*.session_time' => ['required', 'string', 'max:20'],
             'sessions.*.staff_id' => ['required', 'exists:staff,id'],
             'sessions.*.executed_by_staff_id' => ['nullable', 'exists:staff,id'],
@@ -363,11 +363,18 @@ class MasterAppointmentController extends Controller
             ]);
         }
 
-        // Validate that session times for today are not in the past (with a 5-minute grace buffer)
+        // Validate session dates against appointment_date and session times against current time
         $today = Carbon::today()->toDateString();
         $now = Carbon::now()->subMinutes(5);
+        $apptDate = $validated['appointment_date'];
 
         foreach ($validated['sessions'] as $idx => $sessionData) {
+            if ($sessionData['session_date'] < $apptDate) {
+                throw ValidationException::withMessages([
+                    "sessions.{$idx}.session_date" => ['Session #'.($idx + 1)." date ({$sessionData['session_date']}) cannot be earlier than Consultation Date ({$apptDate})."],
+                ]);
+            }
+
             if ($sessionData['session_date'] === $today) {
                 try {
                     $timeClean = trim((string) $sessionData['session_time']);
@@ -566,7 +573,7 @@ class MasterAppointmentController extends Controller
             'customer_id' => ['sometimes', 'required', 'exists:customers,id'],
             'appointment_date' => ['sometimes', 'required', 'date'],
             'sales_team_id' => ['sometimes', 'required', 'exists:sales_members,id'],
-            'sales_commission' => ['nullable', 'numeric', 'min:0'],
+            'sales_commission' => ['sometimes', 'required', 'numeric', 'min:0'],
             'appointment_fees' => ['sometimes', 'required', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string', 'max:5000'],
         ]);
