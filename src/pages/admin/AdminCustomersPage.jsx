@@ -324,14 +324,6 @@ export default function AdminCustomersPage() {
       render: (c) => {
         return (
           <div className="flex items-center justify-end gap-1.5 py-1">
-            <button
-              type="button"
-              onClick={() => setSelectedCustomer(c)}
-              className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-200 text-slate-600 hover:text-blue-600 transition-all shadow-2xs hover:shadow-xs cursor-pointer group/btn"
-              title="View Patient Medical Chart"
-            >
-              <Eye className="w-4 h-4 text-slate-500 group-hover/btn:text-blue-600 transition-colors" />
-            </button>
             <Link
               to={`/admin/customers/${c.id}/edit`}
               className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-indigo-50 hover:border-indigo-200 text-slate-600 hover:text-indigo-600 transition-all shadow-2xs hover:shadow-xs cursor-pointer group/btn"
@@ -534,16 +526,6 @@ export default function AdminCustomersPage() {
           </div>
         }
       />
-
-      {/* Patient Medical Chart & OPD Card Modal */}
-      {selectedCustomer && (
-        <PatientOpdCardModal
-          customer={selectedCustomer}
-          onClose={() => setSelectedCustomer(null)}
-          canEdit={true}
-          clinicName={user?.clinic?.name || 'Iniya Aesthetics & Wellness'}
-        />
-      )}
 
       {/* Confirm Delete Dialog */}
       <ConfirmDialog

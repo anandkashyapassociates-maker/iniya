@@ -15,12 +15,14 @@ import {
   Building2,
   Briefcase,
   Pencil,
+  Eye,
   Hash,
   MapPin,
   Compass,
 } from 'lucide-react';
 import StaffStatusBadge from './StaffStatusBadge';
 import StaffEditModal from './StaffEditModal';
+import StaffIdCardModal from './StaffIdCardModal';
 import StaffAvatar from '../../components/StaffAvatar';
 import staffManagementService from '../services/staffManagementService';
 import clinicManagementService from '../services/clinicManagementService';
@@ -106,6 +108,9 @@ export default function StaffDetailsPage() {
   const [selectedStaffForEdit, setSelectedStaffForEdit] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+  // Staff ID card modal state
+  const [selectedStaffForCard, setSelectedStaffForCard] = useState(null);
+
   const fetchStaff = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -150,7 +155,7 @@ export default function StaffDetailsPage() {
           setDepartmentsList(merged);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
 
     clinicManagementService
       .getClinicOptions()
@@ -159,7 +164,7 @@ export default function StaffDetailsPage() {
           setClinicsList(res.clinics);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -340,22 +345,20 @@ export default function StaffDetailsPage() {
               <button
                 type="button"
                 onClick={() => handleStatusFilterChange('all')}
-                className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-                  statusFilter === 'all'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
+                className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${statusFilter === 'all'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-900'
+                  }`}
               >
                 All
               </button>
               <button
                 type="button"
                 onClick={() => handleStatusFilterChange('active')}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-                  statusFilter === 'active' || statusFilter === 'true'
-                    ? 'bg-white text-emerald-700 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${statusFilter === 'active' || statusFilter === 'true'
+                  ? 'bg-white text-emerald-700 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-900'
+                  }`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 <span>Active</span>
@@ -363,11 +366,10 @@ export default function StaffDetailsPage() {
               <button
                 type="button"
                 onClick={() => handleStatusFilterChange('inactive')}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-                  statusFilter === 'inactive' || statusFilter === 'false'
-                    ? 'bg-white text-amber-700 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${statusFilter === 'inactive' || statusFilter === 'false'
+                  ? 'bg-white text-amber-700 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-900'
+                  }`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                 <span>Inactive</span>
@@ -375,11 +377,10 @@ export default function StaffDetailsPage() {
               <button
                 type="button"
                 onClick={() => handleStatusFilterChange('blocked')}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-                  statusFilter === 'blocked'
-                    ? 'bg-white text-rose-700 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${statusFilter === 'blocked'
+                  ? 'bg-white text-rose-700 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-900'
+                  }`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                 <span>Blocked</span>
@@ -498,7 +499,7 @@ export default function StaffDetailsPage() {
                   <th className="py-3.5 px-4 whitespace-nowrap min-w-[120px]">Employment</th>
                   <th className="py-3.5 px-4 whitespace-nowrap min-w-[140px]">Joining Date</th>
                   <th className="py-3.5 px-4 whitespace-nowrap min-w-[110px]">Status</th>
-                  <th className="py-3.5 px-4 text-right whitespace-nowrap min-w-[90px]">Actions</th>
+                  <th className="py-3.5 px-4 text-right whitespace-nowrap min-w-[150px]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
@@ -626,17 +627,28 @@ export default function StaffDetailsPage() {
                       />
                     </td>
 
-                    {/* Actions: Edit button */}
+                    {/* Actions: View ID Card & Edit button */}
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEditModal(member)}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-300 text-slate-700 hover:text-blue-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
-                        title={`Edit Staff ${member.name}`}
-                      >
-                        <Pencil className="w-3.5 h-3.5 text-slate-400" />
-                        <span>Edit</span>
-                      </button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedStaffForCard(member)}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-300 text-slate-700 hover:text-emerald-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer group/btn"
+                          title={`View Staff ID Card for ${member.name}`}
+                        >
+                          <Eye className="w-3.5 h-3.5 text-slate-400 group-hover/btn:text-emerald-600 transition-colors" />
+                          <span>View</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditModal(member)}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-300 text-slate-700 hover:text-blue-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+                          title={`Edit Staff ${member.name}`}
+                        >
+                          <Pencil className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Edit</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -690,6 +702,16 @@ export default function StaffDetailsPage() {
           isOpen={isEditModalOpen}
           onClose={handleCloseEditModal}
           onSuccess={handleEditSuccess}
+        />
+      )}
+
+      {/* Staff ID Card Modal (Green & Red Theme, Downloadable) */}
+      {selectedStaffForCard && (
+        <StaffIdCardModal
+          key={selectedStaffForCard.id}
+          staff={selectedStaffForCard}
+          onClose={() => setSelectedStaffForCard(null)}
+          clinicName={selectedStaffForCard.clinic?.name || 'Iniya Aesthetics & Wellness'}
         />
       )}
     </div>
