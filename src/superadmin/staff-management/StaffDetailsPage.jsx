@@ -20,7 +20,6 @@ import {
   Compass,
 } from 'lucide-react';
 import StaffStatusBadge from './StaffStatusBadge';
-import StaffEditModal from './StaffEditModal';
 import StaffAvatar from '../../components/StaffAvatar';
 import staffManagementService from '../services/staffManagementService';
 import clinicManagementService from '../services/clinicManagementService';
@@ -101,10 +100,6 @@ export default function StaffDetailsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-
-  // Edit modal state
-  const [selectedStaffForEdit, setSelectedStaffForEdit] = useState(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fetchStaff = useCallback(async () => {
     setIsLoading(true);
@@ -194,23 +189,6 @@ export default function StaffDetailsPage() {
     setDepartmentFilter('all');
     setStatusFilter('all');
     setPage(1);
-  };
-
-  const handleOpenEditModal = (staffMember) => {
-    setSelectedStaffForEdit(staffMember);
-    setIsEditModalOpen(true);
-  };
-
-  const handleCloseEditModal = () => {
-    setIsEditModalOpen(false);
-    setSelectedStaffForEdit(null);
-  };
-
-  const handleEditSuccess = (updatedStaff) => {
-    setStaffList((prev) =>
-      prev.map((s) => (s.id === updatedStaff.id ? { ...s, ...updatedStaff } : s))
-    );
-    fetchStaff();
   };
 
   return (
@@ -622,17 +600,16 @@ export default function StaffDetailsPage() {
                       />
                     </td>
 
-                    {/* Actions: Edit button */}
+                    {/* Actions: Edit button (navigates to edit page) */}
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEditModal(member)}
+                      <Link
+                        to={`/superadmin/staff-management/${member.id}/edit`}
                         className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-300 text-slate-700 hover:text-blue-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
                         title={`Edit Staff ${member.name}`}
                       >
                         <Pencil className="w-3.5 h-3.5 text-slate-400" />
                         <span>Edit</span>
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))}
@@ -678,16 +655,6 @@ export default function StaffDetailsPage() {
           </div>
         )}
       </div>
-
-      {/* Edit Staff Modal */}
-      {selectedStaffForEdit && (
-        <StaffEditModal
-          staff={selectedStaffForEdit}
-          isOpen={isEditModalOpen}
-          onClose={handleCloseEditModal}
-          onSuccess={handleEditSuccess}
-        />
-      )}
     </div>
   );
 }

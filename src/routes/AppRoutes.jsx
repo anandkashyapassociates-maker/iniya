@@ -13,6 +13,7 @@ import AdminCreationPage from '../superadmin/admin-management/AdminCreationPage'
 import AdminDetailsPage from '../superadmin/admin-management/AdminDetailsPage';
 import StaffCreationPage from '../superadmin/staff-management/StaffCreationPage';
 import StaffDetailsPage from '../superadmin/staff-management/StaffDetailsPage';
+import StaffEditPage from '../superadmin/staff-management/StaffEditPage';
 import VendorCreationPage from '../superadmin/vendor-management/VendorCreationPage';
 import VendorDetailsPage from '../superadmin/vendor-management/VendorDetailsPage';
 import SalesMemberCreationPage from '../superadmin/sales-management/SalesMemberCreationPage';
@@ -120,6 +121,7 @@ export default function AppRoutes() {
           {/* Phase 3: Staff Management Submodule Routes */}
           <Route path="/superadmin/staff-management/create" element={<StaffCreationPage />} />
           <Route path="/superadmin/staff-management/details" element={<StaffDetailsPage />} />
+          <Route path="/superadmin/staff-management/:id/edit" element={<StaffEditPage />} />
 
           {/* Phase 4: Vendor Management Submodule Routes */}
           <Route path="/superadmin/vendors" element={<VendorDetailsPage />} />
@@ -140,6 +142,7 @@ export default function AppRoutes() {
           <Route path="/superadmin/admins/:id/edit" element={<SuperAdminEditAdminPage />} />
           <Route path="/superadmin/staff" element={<Navigate to="/superadmin/staff-management/details" replace />} />
           <Route path="/superadmin/staff/create" element={<Navigate to="/superadmin/staff-management/create" replace />} />
+          <Route path="/superadmin/staff/:id/edit" element={<StaffEditPage />} />
           
           {/* Executive Category Oversight */}
           <Route path="/superadmin/categories" element={<Navigate to="/superadmin/inventory/categories" replace />} />
