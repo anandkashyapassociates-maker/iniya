@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import DataTable from '../../components/DataTable';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import AdminAvatar from '../../components/AdminAvatar';
 import superAdminService from '../../services/superAdminService';
 import { useToast } from '../../context/ToastContext';
 
@@ -125,9 +126,7 @@ export default function SuperAdminAdminsListPage() {
       header: 'Admin Name & Email',
       render: (row) => (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs shrink-0">
-            {row.name.charAt(0).toUpperCase()}
-          </div>
+          <AdminAvatar admin={row} size="md" />
           <div>
             <div className="font-bold text-slate-900">{row.name}</div>
             <div className="text-[11px] text-slate-500 font-mono">{row.email}</div>
