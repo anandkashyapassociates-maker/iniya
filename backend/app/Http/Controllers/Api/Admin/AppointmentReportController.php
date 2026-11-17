@@ -38,6 +38,7 @@ class AppointmentReportController extends Controller
             'sessions' => function ($q) {
                 $q->with([
                     'staff:id,staff_code,name,department,designation',
+                    'executedBy:id,staff_code,name,department,designation',
                     'service:id,service_category_id,name,price',
                     'inventoryProduct:id,product_name,business_unit',
                 ])->orderBy('session_number');
@@ -224,11 +225,12 @@ class AppointmentReportController extends Controller
         }
 
         $query = AppointmentSession::with([
-            'masterAppointment:id,clinic_id,appointment_number,customer_id,sales_team_id,appointment_date,appointment_fees,notes,image',
+            'masterAppointment:id,clinic_id,appointment_number,customer_id,sales_team_id,sales_commission,appointment_date,appointment_fees,notes,image',
             'masterAppointment.clinic:id,clinic_code,name,branch_name,location,city',
             'masterAppointment.customer:id,name,mobile,email,gender,age,address,image',
             'masterAppointment.salesTeam:id,sales_code,name,email,mobile,department',
             'staff:id,staff_code,name,department,designation,mobile',
+            'executedBy:id,staff_code,name,department,designation,mobile',
             'service:id,service_category_id,name,price',
             'service.category:id,name',
             'inventoryProduct:id,product_name,business_unit',
@@ -267,6 +269,11 @@ class AppointmentReportController extends Controller
                             ->orWhere('staff_code', 'like', "%{$search}%")
                             ->orWhere('department', 'like', "%{$search}%");
                     })
+                    ->orWhereHas('executedBy', function ($sq) use ($search) {
+                        $sq->where('name', 'like', "%{$search}%")
+                            ->orWhere('staff_code', 'like', "%{$search}%")
+                            ->orWhere('department', 'like', "%{$search}%");
+                    })
                     ->orWhereHas('service', function ($servQ) use ($search) {
                         $servQ->where('name', 'like', "%{$search}%");
                     });
@@ -275,7 +282,10 @@ class AppointmentReportController extends Controller
 
         // 2. Staff Member Filter
         if ($staffId = $request->input('staff_id')) {
-            $query->where('staff_id', $staffId);
+            $query->where(function ($q) use ($staffId) {
+                $q->where('staff_id', $staffId)
+                    ->orWhere('executed_by_staff_id', $staffId);
+            });
         }
 
         // 3. Service Filter
