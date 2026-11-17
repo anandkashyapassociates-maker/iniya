@@ -15,7 +15,6 @@ import {
   UploadCloud,
   Trash2,
   HeartPulse,
-  Activity,
   AlertCircle,
   Info,
 } from 'lucide-react';
@@ -29,10 +28,6 @@ export default function AdminCustomerEditPage() {
   const navigate = useNavigate();
   const toast = useToast();
   const { user } = useAdminAuth();
-
-  if (user && user.role === 'staff') {
-    return <Navigate to="/admin/my-appointments" replace />;
-  }
 
   const [formData, setFormData] = useState({
     name: '',
@@ -56,12 +51,6 @@ export default function AdminCustomerEditPage() {
     const fetchCustomer = async () => {
       try {
         const data = await adminService.getCustomer(id);
-
-        if (data.admin_id && user?.id && Number(data.admin_id) !== Number(user.id)) {
-          toast.error('Unauthorized: You can only edit customers registered by you.');
-          navigate('/admin/customers');
-          return;
-        }
 
         setFormData({
           name: data.name || '',
@@ -190,6 +179,10 @@ export default function AdminCustomerEditPage() {
       setIsSaving(false);
     }
   };
+
+  if (user && user.role === 'staff') {
+    return <Navigate to="/admin/my-appointments" replace />;
+  }
 
   if (isFetching) {
     return (
