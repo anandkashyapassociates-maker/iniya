@@ -325,6 +325,7 @@ export default function AppointmentReportsPage({
           'Patient Gender',
           'Patient Age',
           'Referred By (Sales)',
+          'Sales Team Commission',
           'Consultation Fees',
           'Total Sessions',
           'Completed Sessions',
@@ -349,6 +350,7 @@ export default function AppointmentReportsPage({
             `"${item.customer?.gender || ''}"`,
             `"${item.customer?.age || ''}"`,
             `"${item.sales_team ? `${item.sales_team.name} (${item.sales_team.sales_code})` : 'Direct'}"`,
+            item.sales_commission || 0,
             item.appointment_fees || 0,
             stats.total || 0,
             stats.completed || 0,
@@ -889,6 +891,7 @@ export default function AppointmentReportsPage({
                   <th className="py-3.5 px-4">Clinic &amp; Branch</th>
                   <th className="py-3.5 px-4">Patient Profile</th>
                   <th className="py-3.5 px-4">Referral Sales Member</th>
+                  <th className="py-3.5 px-4 text-right whitespace-nowrap">Sales Team Commission</th>
                   <th className="py-3.5 px-4 text-right">Consultation Fees</th>
                   <th className="py-3.5 px-4 text-center">Sessions Execution</th>
                   <th className="py-3.5 px-4 text-right">Patient Paid</th>
@@ -971,6 +974,11 @@ export default function AppointmentReportsPage({
                         ) : (
                           <span className="text-[11px] text-slate-400 italic">Direct / None</span>
                         )}
+                      </td>
+
+                      {/* Sales Team Commission */}
+                      <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
+                        {formatCurrency(item.sales_commission || 0)}
                       </td>
 
                       {/* Fees */}

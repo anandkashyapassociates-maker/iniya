@@ -133,6 +133,7 @@ class AppointmentReportController extends Controller
 
         $totalAppointments = $appointmentIds->count();
         $totalFees = (float) (clone $query)->sum('appointment_fees');
+        $totalSalesCommission = (float) (clone $query)->sum('sales_commission');
 
         // Aggregate session metrics for these appointments
         $sessionStats = AppointmentSession::whereIn('master_appointment_id', $appointmentIds)
@@ -150,6 +151,7 @@ class AppointmentReportController extends Controller
         $summary = [
             'total_appointments' => $totalAppointments,
             'total_fees' => $totalFees,
+            'total_sales_commission' => $totalSalesCommission,
             'total_sessions' => (int) ($sessionStats->total_sessions ?? 0),
             'completed_sessions' => (int) ($sessionStats->completed_sessions ?? 0),
             'in_progress_sessions' => (int) ($sessionStats->in_progress_sessions ?? 0),
