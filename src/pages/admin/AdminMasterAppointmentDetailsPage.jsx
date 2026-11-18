@@ -882,7 +882,7 @@ export default function AdminMasterAppointmentDetailsPage() {
                         <button
                           type="button"
                           onClick={() => setHistorySession(ses)}
-                          title="View Session Reschedule Audit History"
+                          title="View Session Reschedule & Reassign History"
                           className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 hover:text-slate-900 border border-slate-200 rounded-xl transition-all cursor-pointer whitespace-nowrap shadow-xs"
                         >
                           <History className="w-3.5 h-3.5 text-slate-400" />

@@ -57,8 +57,8 @@ const getSessionPractitioner = (s) => {
   return s.executed_by || s.executedBy || s.staff || null;
 };
 
-// Check if a session has been rescheduled to a different practitioner
-const isPractitionerRescheduled = (s) => {
+// Check if a session has been reassigned to a different staff practitioner
+const isPractitionerReassigned = (s) => {
   if (!s) return false;
   const originalId = s.staff_id || s.staff?.id;
   const executedId = s.executed_by_staff_id || s.executed_by?.id || s.executedBy?.id;
@@ -69,7 +69,20 @@ const isPractitionerRescheduled = (s) => {
   if (execStaff && s.staff && Number(execStaff.id) !== Number(s.staff.id)) {
     return true;
   }
-  return false;
+  const histories = s.reschedule_histories || s.rescheduleHistories || [];
+  return histories.some(
+    (h) => h.new_staff_id && h.old_staff_id && Number(h.new_staff_id) !== Number(h.old_staff_id)
+  );
+};
+
+// Check if a session's date or time has been rescheduled
+const isDateTimeRescheduled = (s) => {
+  if (!s) return false;
+  const histories = s.reschedule_histories || s.rescheduleHistories || [];
+  return histories.some(
+    (h) => (h.old_date && h.new_date && String(h.old_date).slice(0, 10) !== String(h.new_date).slice(0, 10)) ||
+           (h.old_time && h.new_time && String(h.old_time).trim() !== String(h.new_time).trim())
+  );
 };
 
 export default function AppointmentReceiptModal({
@@ -85,7 +98,8 @@ export default function AppointmentReceiptModal({
 
   const isSessionType = type === 'session' && session;
   const activeSessionDoctor = isSessionType ? getSessionPractitioner(session) : null;
-  const sessionIsRescheduled = isSessionType ? isPractitionerRescheduled(session) : false;
+  const sessionIsStaffReassigned = isSessionType ? isPractitionerReassigned(session) : false;
+  const sessionIsDateTimeRescheduled = isSessionType ? isDateTimeRescheduled(session) : false;
   const customer = appointment.customer || {};
   const sessions = appointment.sessions || [];
   const salesTeam = appointment.sales_team || {};
@@ -445,9 +459,9 @@ export default function AppointmentReceiptModal({
                             {activeSessionDoctor.staff_code ? ` • ${activeSessionDoctor.staff_code}` : ''}
                           </span>
                         )}
-                        {sessionIsRescheduled && (
-                          <span className="inline-block mt-0.5 text-[9px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded">
-                            Rescheduled
+                        {sessionIsStaffReassigned && (
+                          <span className="inline-block mt-0.5 text-[9px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded">
+                            Reassigned
                             {session.staff?.name ? ` (Prev: ${session.staff.name})` : ''}
                           </span>
                         )}
@@ -537,6 +551,11 @@ export default function AppointmentReceiptModal({
                             {session.session_date ? String(session.session_date).slice(0, 10) : 'N/A'}
                           </div>
                           <div className="text-slate-500 font-mono text-[10px]">{session.session_time || ''}</div>
+                          {sessionIsDateTimeRescheduled && (
+                            <span className="inline-block mt-0.5 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-200 rounded">
+                              Rescheduled
+                            </span>
+                          )}
                         </td>
                         <td className="py-2 px-3">
                           <div className="font-semibold text-slate-900">
@@ -545,9 +564,9 @@ export default function AppointmentReceiptModal({
                           <div className="text-slate-400 text-[9px]">
                             {[activeSessionDoctor?.department, activeSessionDoctor?.staff_code].filter(Boolean).join(' • ')}
                           </div>
-                          {sessionIsRescheduled && (
-                            <span className="inline-block mt-0.5 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-200 rounded">
-                              Rescheduled
+                          {sessionIsStaffReassigned && (
+                            <span className="inline-block mt-0.5 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-200 rounded">
+                              Reassigned
                               {session.staff?.name ? ` (Prev: ${session.staff.name})` : ''}
                             </span>
                           )}
@@ -574,7 +593,8 @@ export default function AppointmentReceiptModal({
                       sessions.map((ses) => {
                         const fee = ses.service?.price ? Number(ses.service.price) : 0;
                         const sesDoctor = getSessionPractitioner(ses);
-                        const sesRescheduled = isPractitionerRescheduled(ses);
+                        const sesStaffReassigned = isPractitionerReassigned(ses);
+                        const sesDateTimeRescheduled = isDateTimeRescheduled(ses);
                         return (
                           <tr key={ses.id}>
                             <td className="py-2 px-2.5 text-center font-bold text-slate-700">
@@ -596,6 +616,11 @@ export default function AppointmentReceiptModal({
                                 {ses.session_date ? String(ses.session_date).slice(0, 10) : 'N/A'}
                               </div>
                               <div className="text-slate-500 font-mono text-[10px]">{ses.session_time || ''}</div>
+                              {sesDateTimeRescheduled && (
+                                <span className="inline-block mt-0.5 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-200 rounded">
+                                  Rescheduled
+                                </span>
+                              )}
                             </td>
                             <td className="py-2 px-3">
                               <div className="font-medium text-slate-900">
@@ -604,9 +629,9 @@ export default function AppointmentReceiptModal({
                               <div className="text-slate-400 text-[9px]">
                                 {[sesDoctor?.department, sesDoctor?.staff_code].filter(Boolean).join(' • ')}
                               </div>
-                              {sesRescheduled && (
-                                <span className="inline-block mt-0.5 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-200 rounded">
-                                  Rescheduled
+                              {sesStaffReassigned && (
+                                <span className="inline-block mt-0.5 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 border border-teal-200 rounded">
+                                  Reassigned{ses.staff?.name ? ` (Prev: ${ses.staff.name})` : ''}
                                 </span>
                               )}
                             </td>
