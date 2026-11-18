@@ -155,8 +155,8 @@ export default function AdminDashboardPage() {
   // Financial metrics
   const todayRevenue = stats?.today_revenue ?? 0;
   const totalRevenue = stats?.total_revenue ?? 0;
-  const todayPatientPaid = stats?.today_patient_paid ?? 0;
-  const totalPatientPaid = stats?.total_patient_paid ?? 0;
+  const todayPatientPaid = stats?.today_patient_paid ?? stats?.today_payment_received ?? 0;
+  const totalPatientPaid = stats?.total_patient_paid ?? stats?.total_payment_received ?? 0;
   const todayStaffCommission = stats?.today_staff_commission ?? 0;
   const totalStaffCommission = stats?.total_staff_commission ?? 0;
 
@@ -386,9 +386,10 @@ export default function AdminDashboardPage() {
       {/* ======================================================== */}
       {/* 3. EXECUTIVE FINANCIAL & CLINICAL KPI MATRIX (100% Real DB) */}
       {/* ======================================================== */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        {isStaff ? (
-          <>
+      {isStaff ? (
+        <div className="space-y-4 sm:space-y-5">
+          {/* STAFF ROW 1: Clinical Consultations (3 Cards, col-4 / 3-col Grid with Mobile Responsive) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {/* STAFF CARD 1: My Total Consultations */}
             <Link to="/admin/my-appointments" className="block group">
               <StatCard
@@ -430,8 +431,12 @@ export default function AdminDashboardPage() {
                 actionText="Cases ↗"
               />
             </Link>
+          </div>
 
-            {/* STAFF CARD 4: Completed Consultations */}
+          {/* STAFF ROW 2: Queue, Supplies & Completed (3 Cards, col-4 / 3-col Grid with Mobile Responsive) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+
+            {/* STAFF CARD 6: Completed Consultations */}
             <Link to="/admin/my-appointments" className="block group">
               <StatCard
                 title="Completed Sessions"
@@ -444,23 +449,72 @@ export default function AdminDashboardPage() {
                 actionText="Reports ↗"
               />
             </Link>
+            
+            {/* STAFF CARD 4: Pending Patient Queue */}
+            <Link to="/admin/my-appointments" className="block group">
+              <StatCard
+                title="Pending Queue"
+                value={pendingCount}
+                subtitle="Upcoming patient appointments"
+                icon={Clock}
+                colorScheme="amber"
+                trend={pendingCount > 0 ? `${pendingCount} Awaiting` : '0 Pending'}
+                trendColor={pendingCount > 0 ? 'amber' : 'slate'}
+                actionText="Queue ↗"
+              />
+            </Link>
 
-            {/* STAFF CARD 5: Total Earned Commission */}
+            {/* STAFF CARD 5: Medical Inventory Stock (Information-only, managed by Admin) */}
             <div className="block">
               <StatCard
-                title="Total Commission"
-                value={totalStaffCommission > 0 ? `₹${totalStaffCommission.toLocaleString('en-IN')}` : '₹0'}
-                subtitle="Earned across completed sessions"
-                icon={Award}
-                colorScheme="purple"
-                animateCount={false}
-                trend={totalStaffCommission > 0 ? `₹${totalStaffCommission.toLocaleString('en-IN')}` : '₹0 Earned'}
-                trendColor={totalStaffCommission > 0 ? 'purple' : 'slate'}
-                actionText="Earnings ↗"
+                title="Supplies Stock"
+                value={totalInventory}
+                subtitle={lowStockCount > 0 ? `${lowStockCount} items depleted` : 'Adequate supply'}
+                icon={Boxes}
+                colorScheme={lowStockCount > 0 ? 'amber' : 'emerald'}
+                trend={lowStockCount > 0 ? `${lowStockCount} Depleted` : 'Healthy'}
+                trendColor={lowStockCount > 0 ? 'amber' : 'emerald'}
+                actionText="Supplies ↗"
               />
             </div>
+          </div>
 
-            {/* STAFF CARD 6: Today's Cleared Commission */}
+          {/* STAFF ROW 3: Patient Collections Matrix (2 Cards, col-6 / 2-col Grid with Mobile Responsive) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-5">
+            {/* STAFF CARD 7: Today's Collection Received from Patients */}
+            <Link to="/admin/my-appointments" className="block group">
+              <StatCard
+                title="Today's Collection Received"
+                value={todayPatientPaid > 0 ? `₹${todayPatientPaid.toLocaleString('en-IN')}` : '₹0'}
+                subtitle="Collected from patients today"
+                icon={Wallet}
+                colorScheme="emerald"
+                animateCount={false}
+                trend={todayPatientPaid > 0 ? `₹${todayPatientPaid.toLocaleString('en-IN')}` : '₹0 Today'}
+                trendColor={todayPatientPaid > 0 ? 'emerald' : 'slate'}
+                actionText="Received ↗"
+              />
+            </Link>
+
+            {/* STAFF CARD 8: Total Collection Received from Patients */}
+            <Link to="/admin/my-appointments" className="block group">
+              <StatCard
+                title="Total Collection Received"
+                value={totalPatientPaid > 0 ? `₹${totalPatientPaid.toLocaleString('en-IN')}` : '₹0'}
+                subtitle="Total collections received by you"
+                icon={CreditCard}
+                colorScheme="blue"
+                animateCount={false}
+                trend={totalPatientPaid > 0 ? `₹${totalPatientPaid.toLocaleString('en-IN')}` : '₹0 Total'}
+                trendColor={totalPatientPaid > 0 ? 'blue' : 'slate'}
+                actionText="Received ↗"
+              />
+            </Link>
+          </div>
+
+          {/* STAFF ROW 4: Cleared & Earned Commissions Matrix (2 Cards, col-6 / 2-col Grid with Mobile Responsive) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-5">
+            {/* STAFF CARD 9: Today's Cleared Commission */}
             <div className="block">
               <StatCard
                 title="Today's Commission"
@@ -475,36 +529,24 @@ export default function AdminDashboardPage() {
               />
             </div>
 
-            {/* STAFF CARD 7: Pending Patient Queue */}
-            <Link to="/admin/my-appointments" className="block group">
-              <StatCard
-                title="Pending Queue"
-                value={pendingCount}
-                subtitle="Upcoming patient appointments"
-                icon={Clock}
-                colorScheme="amber"
-                trend={pendingCount > 0 ? `${pendingCount} Awaiting` : '0 Pending'}
-                trendColor={pendingCount > 0 ? 'amber' : 'slate'}
-                actionText="Queue ↗"
-              />
-            </Link>
-
-            {/* STAFF CARD 8: Medical Inventory Stock (Information-only, managed by Admin) */}
+            {/* STAFF CARD 10: Total Earned Commission */}
             <div className="block">
               <StatCard
-                title="Supplies Stock"
-                value={totalInventory}
-                subtitle={lowStockCount > 0 ? `${lowStockCount} items depleted` : 'Adequate supply'}
-                icon={Boxes}
-                colorScheme={lowStockCount > 0 ? 'amber' : 'emerald'}
-                trend={lowStockCount > 0 ? `${lowStockCount} Depleted` : 'Healthy'}
-                trendColor={lowStockCount > 0 ? 'amber' : 'emerald'}
-                actionText="Supplies ↗"
+                title="Total Commission"
+                value={totalStaffCommission > 0 ? `₹${totalStaffCommission.toLocaleString('en-IN')}` : '₹0'}
+                subtitle="Earned across completed sessions"
+                icon={Award}
+                colorScheme="purple"
+                animateCount={false}
+                trend={totalStaffCommission > 0 ? `₹${totalStaffCommission.toLocaleString('en-IN')}` : '₹0 Earned'}
+                trendColor={totalStaffCommission > 0 ? 'purple' : 'slate'}
+                actionText="Earnings ↗"
               />
             </div>
-          </>
-        ) : (
-          <>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             {/* ADMIN ROW 1 - CARD 1: Total Registered Patients */}
             <Link to="/admin/customers" className="block group">
               <StatCard
@@ -620,9 +662,8 @@ export default function AdminDashboardPage() {
                 actionText="Supplies ↗"
               />
             </Link>
-          </>
+          </div>
         )}
-      </div>
 
       {/* ======================================================== */}
       {/* 4. FINANCIAL TREND SPLINE & PAYMENT DISTRIBUTION (7:5)   */}

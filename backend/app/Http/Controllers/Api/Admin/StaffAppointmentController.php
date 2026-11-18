@@ -37,6 +37,7 @@ class StaffAppointmentController extends Controller
                     'customer:id,name,email,mobile,gender,age,address,image',
                     'salesTeam:id,sales_code,name',
                     'admin:id,name,email',
+                    'sessions:id,master_appointment_id,payment_amount,status',
                 ]);
             },
             'service:id,service_category_id,name,price',
@@ -100,6 +101,24 @@ class StaffAppointmentController extends Controller
         $completedSessionsCount = (clone $staffSessions)->where('status', AppointmentSession::STATUS_COMPLETED)->count();
         $inProgressSessionsCount = (clone $staffSessions)->where('status', AppointmentSession::STATUS_IN_PROGRESS)->count();
         $totalCommissionEarned = (float) (clone $staffSessions)->sum('staff_commission');
+        $todayCommissionEarned = (float) (clone $staffSessions)->whereDate('session_date', $today)->sum('staff_commission');
+
+        $totalPaymentReceived = (float) (clone $staffSessions)
+            ->whereNotNull('payment_amount')
+            ->where('payment_amount', '>', 0)
+            ->sum('payment_amount');
+
+        $todayPaymentReceived = (float) (clone $staffSessions)
+            ->whereNotNull('payment_amount')
+            ->where('payment_amount', '>', 0)
+            ->where(function ($q) use ($today) {
+                $q->whereDate('payment_date', $today)
+                    ->orWhere(function ($sq) use ($today) {
+                        $sq->whereNull('payment_date')
+                            ->whereDate('updated_at', $today);
+                    });
+            })
+            ->sum('payment_amount');
 
         $perPage = min((int) $request->input('per_page', 15), 100);
         $paginated = $query->orderBy('session_date', 'desc')
@@ -118,6 +137,9 @@ class StaffAppointmentController extends Controller
                 'completed_sessions' => $completedSessionsCount,
                 'in_progress_sessions' => $inProgressSessionsCount,
                 'total_commission_earned' => $totalCommissionEarned,
+                'today_commission_earned' => $todayCommissionEarned,
+                'today_payment_received' => $todayPaymentReceived,
+                'total_payment_received' => $totalPaymentReceived,
             ],
         ]);
     }
@@ -149,6 +171,7 @@ class StaffAppointmentController extends Controller
                         'sessions' => function ($sq) {
                             $sq->with([
                                 'staff:id,staff_code,name,department,designation,mobile',
+                                'executedBy:id,staff_code,name,department,designation,mobile',
                                 'service:id,service_category_id,name,price',
                                 'service.category:id,name',
                                 'inventoryProduct:id,product_name,business_unit',
@@ -156,6 +179,8 @@ class StaffAppointmentController extends Controller
                         },
                     ]);
                 },
+                'staff:id,staff_code,name,department,designation,mobile',
+                'executedBy:id,staff_code,name,department,designation,mobile',
                 'service:id,service_category_id,name,price',
                 'service.category:id,name',
                 'inventoryProduct:id,product_name,business_unit',
@@ -225,7 +250,11 @@ class StaffAppointmentController extends Controller
             'status' => $validated['status'],
         ];
 
-        if (in_array($validated['status'], [AppointmentSession::STATUS_IN_PROGRESS, AppointmentSession::STATUS_COMPLETED], true)) {
+        if (in_array($validated['status'], [
+            AppointmentSession::STATUS_IN_PROGRESS,
+            AppointmentSession::STATUS_COMPLETED,
+            AppointmentSession::STATUS_CANCELLED,
+        ], true)) {
             $updateData['executed_by_staff_id'] = $user->id;
         }
 
@@ -236,6 +265,7 @@ class StaffAppointmentController extends Controller
             if (array_key_exists('payment_notes', $validated)) {
                 $updateData['payment_notes'] = $validated['payment_notes'];
             }
+            $updateData['executed_by_staff_id'] = $user->id;
         }
 
         $session->update($updateData);

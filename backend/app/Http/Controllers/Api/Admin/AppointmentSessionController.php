@@ -174,9 +174,19 @@ class AppointmentSessionController extends Controller
             'status' => ['required', Rule::in(AppointmentSession::ALL_STATUSES)],
         ]);
 
-        $session->update([
+        $updatePayload = [
             'status' => $validated['status'],
-        ]);
+        ];
+
+        if ($user instanceof \App\Models\Staff && in_array($validated['status'], [
+            AppointmentSession::STATUS_IN_PROGRESS,
+            AppointmentSession::STATUS_COMPLETED,
+            AppointmentSession::STATUS_CANCELLED,
+        ], true)) {
+            $updatePayload['executed_by_staff_id'] = $user->id;
+        }
+
+        $session->update($updatePayload);
 
         return response()->json([
             'success' => true,

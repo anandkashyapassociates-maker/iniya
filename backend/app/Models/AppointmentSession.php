@@ -8,6 +8,27 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @property int $id
+ * @property int $master_appointment_id
+ * @property int $session_number
+ * @property int|null $service_id
+ * @property string|null $treatment_details
+ * @property string|null $session_date
+ * @property string|null $session_time
+ * @property int|null $staff_id
+ * @property int|null $executed_by_staff_id
+ * @property float|null $staff_commission
+ * @property float|null $consultation_fee
+ * @property int|null $inventory_product_id
+ * @property string|null $image
+ * @property string|null $image_url
+ * @property string $status
+ * @property float|null $payment_amount
+ * @property string|null $payment_date
+ * @property string|null $payment_mode
+ * @property string|null $payment_notes
+ */
 class AppointmentSession extends Model
 {
     use HasFactory;

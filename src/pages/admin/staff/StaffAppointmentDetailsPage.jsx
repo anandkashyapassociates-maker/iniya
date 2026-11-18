@@ -164,15 +164,6 @@ export default function StaffAppointmentDetailsPage() {
 
       const res = await staffAppointmentService.updateSessionStatus(sessionData.id, payload);
       if (res && res.success) {
-        setSessionData((prev) => ({
-          ...prev,
-          status: modalStatus,
-          payment_amount: payload.payment_amount ?? prev.payment_amount,
-          payment_date: payload.payment_date ?? prev.payment_date,
-          payment_mode: payload.payment_mode ?? prev.payment_mode,
-          payment_notes: payload.payment_notes ?? prev.payment_notes,
-        }));
-
         const statusLabel =
           modalStatus === 'completed'
             ? 'Completed (Session Closed)'
@@ -189,6 +180,7 @@ export default function StaffAppointmentDetailsPage() {
         }
 
         setIsStatusModalOpen(false);
+        await fetchDetails();
       }
     } catch (err) {
       console.error('Failed to update session status & payment:', err);
@@ -444,15 +436,23 @@ export default function StaffAppointmentDetailsPage() {
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
               <span className="text-slate-500">Practitioner:</span>
               <div className="flex items-center gap-1.5">
-                {(user?.image_url || user?.profile_photo || user?.image || session.staff?.image_url || session.staff?.profile_photo) ? (
-                  <img
-                    src={getImageUrl(user?.image_url || user?.profile_photo || user?.image || session.staff?.image_url || session.staff?.profile_photo)}
-                    alt={user?.name || session.staff?.name}
-                    className="w-5 h-5 rounded-md object-cover border border-slate-200 shrink-0"
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                  />
-                ) : null}
-                <span className="font-semibold text-slate-800">{user?.name || session.staff?.name || 'Assigned Staff'}</span>
+                {(() => {
+                  const execStaff = session.executed_by || session.executedBy || session.staff || user;
+                  const img = execStaff?.image_url || execStaff?.profile_photo || execStaff?.image;
+                  return (
+                    <>
+                      {img ? (
+                        <img
+                          src={getImageUrl(img)}
+                          alt={execStaff?.name}
+                          className="w-5 h-5 rounded-md object-cover border border-slate-200 shrink-0"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      ) : null}
+                      <span className="font-semibold text-slate-800">{execStaff?.name || 'Assigned Staff'}</span>
+                    </>
+                  );
+                })()}
               </div>
             </div>
 

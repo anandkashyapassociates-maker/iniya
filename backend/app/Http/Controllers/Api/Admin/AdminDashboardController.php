@@ -139,11 +139,19 @@ class AdminDashboardController extends Controller
 
             $totalPatientPaid = (float) AppointmentSession::forStaff($adminId)
                 ->whereNotNull('payment_amount')
+                ->where('payment_amount', '>', 0)
                 ->sum('payment_amount');
 
             $todayPatientPaid = (float) AppointmentSession::forStaff($adminId)
-                ->whereDate('payment_date', $todayStr)
                 ->whereNotNull('payment_amount')
+                ->where('payment_amount', '>', 0)
+                ->where(function ($q) use ($todayStr) {
+                    $q->whereDate('payment_date', $todayStr)
+                        ->orWhere(function ($sq) use ($todayStr) {
+                            $sq->whereNull('payment_date')
+                                ->whereDate('updated_at', $todayStr);
+                        });
+                })
                 ->sum('payment_amount');
         } else {
             $todayRevenue = (float) (clone $masterQuery)->whereDate('appointment_date', $todayStr)->sum('appointment_fees');
@@ -354,6 +362,8 @@ class AdminDashboardController extends Controller
                 'total_revenue' => $totalRevenue,
                 'today_patient_paid' => $todayPatientPaid,
                 'total_patient_paid' => $totalPatientPaid,
+                'today_payment_received' => $todayPatientPaid,
+                'total_payment_received' => $totalPatientPaid,
                 'today_staff_commission' => $todayStaffCommission,
                 'total_staff_commission' => $totalStaffCommission,
                 'active_packages' => $activePackages,

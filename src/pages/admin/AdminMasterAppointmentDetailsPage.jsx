@@ -615,17 +615,24 @@ export default function AdminMasterAppointmentDetailsPage() {
                     {/* Executive By */}
                     <td className="py-3 px-4 text-xs whitespace-nowrap">
                       {(() => {
-                        const isClosed = ses.status === 'completed' || ses.status === 'in_progress';
-                        const executedStaff = isClosed ? (ses.executed_by || ses.executedBy || ses.staff) : null;
+                        const isHandled = ['completed', 'in_progress', 'cancelled'].includes(ses.status);
+                        const executedStaff = ses.executed_by || ses.executedBy || (isHandled ? (ses.staff || ses.assignedStaff) : null);
 
-                        if (isClosed && executedStaff) {
+                        if (executedStaff && (isHandled || ses.executed_by || ses.executedBy)) {
+                          const statusColor =
+                            ses.status === 'cancelled'
+                              ? 'text-rose-600'
+                              : ses.status === 'in_progress'
+                              ? 'text-indigo-600'
+                              : 'text-emerald-600';
+
                           return (
                             <div className="flex items-center gap-2.5">
                               <StaffAvatar staff={executedStaff} size="sm" />
                               <div>
                                 <div className="font-semibold text-slate-800">{executedStaff.name}</div>
-                                <div className="text-emerald-600 text-[11px] font-medium">
-                                  {executedStaff.department || 'Completed'}
+                                <div className={`${statusColor} text-[11px] font-medium`}>
+                                  {executedStaff.department || (ses.status === 'cancelled' ? 'Cancelled' : ses.status === 'in_progress' ? 'In Progress' : 'Completed')}
                                 </div>
                               </div>
                             </div>

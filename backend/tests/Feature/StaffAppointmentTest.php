@@ -47,7 +47,7 @@ class StaffAppointmentTest extends TestCase
 
         $this->superAdmin = SuperAdmin::create([
             'name' => 'Hospital Governance',
-            'email' => 'governance_'.uniqid().'@example.com',
+            'email' => 'governance_' . uniqid() . '@example.com',
             'password' => Hash::make('Password@123'),
             'is_active' => true,
         ]);
@@ -55,7 +55,7 @@ class StaffAppointmentTest extends TestCase
         $this->admin = Admin::create([
             'super_admin_id' => $this->superAdmin->id,
             'name' => 'Clinic Reception Admin',
-            'email' => 'reception_'.uniqid().'@example.com',
+            'email' => 'reception_' . uniqid() . '@example.com',
             'mobile' => '9111122222',
             'password' => Hash::make('Password@123'),
             'status' => 'active',
@@ -66,7 +66,7 @@ class StaffAppointmentTest extends TestCase
         $this->staff1 = Staff::create([
             'staff_code' => 'STF-DOC-01',
             'name' => 'Dr. Ayesha Khan',
-            'email' => 'ayesha_'.uniqid().'@example.com',
+            'email' => 'ayesha_' . uniqid() . '@example.com',
             'mobile' => '9888811111',
             'department' => 'Dermatology',
             'designation' => 'Senior Consultant',
@@ -80,7 +80,7 @@ class StaffAppointmentTest extends TestCase
         $this->staff2 = Staff::create([
             'staff_code' => 'STF-DOC-02',
             'name' => 'Dr. Vikram Seth',
-            'email' => 'vikram_'.uniqid().'@example.com',
+            'email' => 'vikram_' . uniqid() . '@example.com',
             'mobile' => '9888822222',
             'department' => 'Orthopedics',
             'designation' => 'Consultant',
@@ -93,7 +93,7 @@ class StaffAppointmentTest extends TestCase
 
         $this->customer = Customer::create([
             'name' => 'Sunil Verma',
-            'email' => 'sunil_'.uniqid().'@example.com',
+            'email' => 'sunil_' . uniqid() . '@example.com',
             'mobile' => '9777712345',
             'gender' => 'male',
             'age' => 38,
@@ -103,7 +103,7 @@ class StaffAppointmentTest extends TestCase
         $this->salesMember = SalesMember::create([
             'sales_code' => 'SAL-0099',
             'name' => 'Sales Officer Rohit',
-            'email' => 'rohit_'.uniqid().'@example.com',
+            'email' => 'rohit_' . uniqid() . '@example.com',
             'mobile' => '9888899999',
             'status' => 'active',
         ]);
@@ -177,7 +177,7 @@ class StaffAppointmentTest extends TestCase
         ]);
 
         // Call as Staff 1
-        $res = $this->withHeader('Authorization', 'Bearer '.$this->staff1Token)
+        $res = $this->withHeader('Authorization', 'Bearer ' . $this->staff1Token)
             ->getJson('/api/admin/my-appointments');
 
         $res->assertStatus(200)
@@ -222,8 +222,8 @@ class StaffAppointmentTest extends TestCase
             'image' => 'sessions/skin_lesion_01.jpg',
         ]);
 
-        $res = $this->withHeader('Authorization', 'Bearer '.$this->staff1Token)
-            ->getJson('/api/admin/my-appointments/'.$session->id);
+        $res = $this->withHeader('Authorization', 'Bearer ' . $this->staff1Token)
+            ->getJson('/api/admin/my-appointments/' . $session->id);
 
         $res->assertStatus(200)
             ->assertJsonPath('session.id', $session->id)
@@ -261,8 +261,8 @@ class StaffAppointmentTest extends TestCase
         ]);
 
         // Staff 1 tries to access Dr Vikram's appointment session
-        $res = $this->withHeader('Authorization', 'Bearer '.$this->staff1Token)
-            ->getJson('/api/admin/my-appointments/'.$session->id);
+        $res = $this->withHeader('Authorization', 'Bearer ' . $this->staff1Token)
+            ->getJson('/api/admin/my-appointments/' . $session->id);
 
         $res->assertStatus(404)
             ->assertJsonPath('message', 'Appointment session record not found or you are not assigned to it.');
@@ -273,7 +273,7 @@ class StaffAppointmentTest extends TestCase
      */
     public function test_admin_is_forbidden_from_my_appointments(): void
     {
-        $res = $this->withHeader('Authorization', 'Bearer '.$this->adminToken)
+        $res = $this->withHeader('Authorization', 'Bearer ' . $this->adminToken)
             ->getJson('/api/admin/my-appointments');
 
         $res->assertStatus(403)
@@ -307,8 +307,8 @@ class StaffAppointmentTest extends TestCase
         ]);
 
         // 1. Update to in_progress
-        $res1 = $this->withHeader('Authorization', 'Bearer '.$this->staff1Token)
-            ->patchJson('/api/admin/my-appointments/'.$session->id.'/status', [
+        $res1 = $this->withHeader('Authorization', 'Bearer ' . $this->staff1Token)
+            ->patchJson('/api/admin/my-appointments/' . $session->id . '/status', [
                 'status' => 'in_progress',
             ]);
 
@@ -316,11 +316,12 @@ class StaffAppointmentTest extends TestCase
             ->assertJsonPath('success', true)
             ->assertJsonPath('session.status', 'in_progress');
 
-        $this->assertEquals('in_progress', $session->fresh()->status);
+        $session->refresh();
+        $this->assertEquals('in_progress', $session->status);
 
         // 2. Update to completed (Session closed) and receive payment
-        $res2 = $this->withHeader('Authorization', 'Bearer '.$this->staff1Token)
-            ->patchJson('/api/admin/my-appointments/'.$session->id.'/status', [
+        $res2 = $this->withHeader('Authorization', 'Bearer ' . $this->staff1Token)
+            ->patchJson('/api/admin/my-appointments/' . $session->id . '/status', [
                 'status' => 'completed',
                 'payment_amount' => 1500.00,
                 'payment_date' => now()->toDateString(),
@@ -337,6 +338,63 @@ class StaffAppointmentTest extends TestCase
         $this->assertEquals(1500.00, (float) $fresh->payment_amount);
         $this->assertEquals('cash', $fresh->payment_mode);
         $this->assertEquals('Patient paid in cash at reception', $fresh->payment_notes);
+        $this->assertEquals($this->staff1->id, $fresh->executed_by_staff_id);
+
+        // Verify summary includes today_payment_received and total_payment_received
+        $listRes = $this->withHeader('Authorization', 'Bearer ' . $this->staff1Token)
+            ->getJson('/api/admin/my-appointments');
+
+        $listRes->assertStatus(200)
+            ->assertJsonPath('summary.today_payment_received', 1500)
+            ->assertJsonPath('summary.total_payment_received', 1500);
+
+        // Verify staff dashboard includes today_payment_received and total_payment_received
+        $dashRes = $this->withHeader('Authorization', 'Bearer ' . $this->staff1Token)
+            ->getJson('/api/admin/dashboard');
+
+        $dashRes->assertStatus(200)
+            ->assertJsonPath('stats.today_payment_received', 1500)
+            ->assertJsonPath('stats.total_payment_received', 1500);
+    }
+
+    /**
+     * Test staff can cancel session and executed_by is recorded.
+     */
+    public function test_staff_cancelling_session_sets_executed_by(): void
+    {
+        $mapt = MasterAppointment::create([
+            'appointment_number' => 'MAPT-20261103-0103',
+            'customer_id' => $this->customer->id,
+            'sales_team_id' => $this->salesMember->id,
+            'appointment_date' => now()->toDateString(),
+            'appointment_fees' => 1500.00,
+            'admin_id' => $this->admin->id,
+        ]);
+
+        $session = AppointmentSession::create([
+            'master_appointment_id' => $mapt->id,
+            'session_number' => 1,
+            'service_id' => $this->service->id,
+            'treatment_details' => 'Consultation session',
+            'session_date' => now()->toDateString(),
+            'session_time' => '02:00 PM',
+            'staff_id' => $this->staff1->id,
+            'staff_commission' => 300.00,
+            'status' => AppointmentSession::STATUS_PENDING,
+        ]);
+
+        $res = $this->withHeader('Authorization', 'Bearer ' . $this->staff1Token)
+            ->patchJson('/api/admin/my-appointments/' . $session->id . '/status', [
+                'status' => 'cancelled',
+            ]);
+
+        $res->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('session.status', 'cancelled');
+
+        $fresh = $session->fresh();
+        $this->assertEquals('cancelled', $fresh->status);
+        $this->assertEquals($this->staff1->id, $fresh->executed_by_staff_id);
     }
 
     /**
@@ -369,15 +427,17 @@ class StaffAppointmentTest extends TestCase
 
         $file = UploadedFile::fake()->image('clinical_photo.jpg');
 
-        $res = $this->withHeader('Authorization', 'Bearer '.$this->staff1Token)
-            ->postJson('/api/admin/my-appointments/'.$session->id.'/image', [
+        $res = $this->withHeader('Authorization', 'Bearer ' . $this->staff1Token)
+            ->postJson('/api/admin/my-appointments/' . $session->id . '/image', [
                 'image' => $file,
             ]);
 
         $res->assertStatus(200)
             ->assertJsonPath('success', true);
 
-        $this->assertNotNull($session->fresh()->image);
-        Storage::disk('public')->assertExists($session->fresh()->image);
+        $session->refresh();
+        $imagePath = (string) ($session->image ?? '');
+        $this->assertNotEmpty($imagePath);
+        Storage::disk('public')->assertExists($imagePath);
     }
 }
