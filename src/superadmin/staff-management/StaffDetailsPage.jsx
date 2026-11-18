@@ -671,10 +671,10 @@ export default function StaffDetailsPage() {
                           type="button"
                           onClick={() => handleLoginAsStaff(member)}
                           disabled={loggingInStaffId === member.id || member.status === 'blocked' || !member.is_active}
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-semibold shadow-2xs transition-all cursor-pointer ${
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-2xs transition-all cursor-pointer ${
                             member.status === 'blocked' || !member.is_active
-                              ? 'border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed opacity-60'
-                              : 'border-blue-200 bg-blue-50/70 hover:bg-blue-100 text-blue-700 hover:text-blue-800'
+                              ? 'border border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed opacity-60'
+                              : 'border border-blue-600 bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
                           }`}
                           title={
                             member.status === 'blocked'
