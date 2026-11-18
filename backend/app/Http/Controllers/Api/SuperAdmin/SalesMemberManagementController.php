@@ -36,8 +36,11 @@ class SalesMemberManagementController extends Controller
             });
         }
 
-        // Clinic filter
-        if ($clinicId = $request->input('clinic_id')) {
+        // Clinic filter (superadmin can filter; admin is strictly scoped to own clinic)
+        $user = $request->user();
+        if ($user && ! empty($user->clinic_id)) {
+            $query->where('clinic_id', $user->clinic_id);
+        } elseif ($clinicId = $request->input('clinic_id')) {
             if ($clinicId !== '' && $clinicId !== 'all') {
                 $query->where('clinic_id', $clinicId);
             }
@@ -259,12 +262,19 @@ class SalesMemberManagementController extends Controller
     /**
      * Display the specified Sales Member.
      */
-    public function show(string $id): JsonResponse
+    public function show(Request $request, string $id): JsonResponse
     {
-        $member = SalesMember::with([
+        $query = SalesMember::with([
             'superAdmin:id,name,email',
             'clinic:id,clinic_code,name,branch_name,location,city',
-        ])->find($id);
+        ]);
+
+        $user = $request->user();
+        if ($user && ! empty($user->clinic_id)) {
+            $query->where('clinic_id', $user->clinic_id);
+        }
+
+        $member = $query->find($id);
 
         if (! $member) {
             return response()->json([

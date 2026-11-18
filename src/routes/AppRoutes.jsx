@@ -38,6 +38,7 @@ import SuperAdminInventoryReportsPage from '../superadmin/inventory/SuperAdminIn
 import StaffPayoutsPage from '../superadmin/payouts/StaffPayoutsPage';
 import StaffPayoutCreatePage from '../superadmin/payouts/StaffPayoutCreatePage';
 import VendorPayoutsPage from '../superadmin/payouts/VendorPayoutsPage';
+import SalesPayoutsPage from '../superadmin/payouts/SalesPayoutsPage';
 import PayoutsLedgerPage from '../superadmin/payouts/PayoutsLedgerPage';
 
 // Admin Module (Panel 2 - Separate Team Developer)
@@ -78,6 +79,11 @@ import AdminPayoutsReportsPage from '../pages/admin/reports/AdminPayoutsReportsP
 import AppointmentReportsPage from '../pages/admin/reports/AppointmentReportsPage';
 import StaffMyAppointmentsPage from '../pages/admin/staff/StaffMyAppointmentsPage';
 import StaffAppointmentDetailsPage from '../pages/admin/staff/StaffAppointmentDetailsPage';
+import StaffPaymentsReportPage from '../pages/admin/staff/StaffPaymentsReportPage';
+
+// Admin Clinic Management Module (Branch Scoped Staff & Sales Team)
+import AdminClinicStaffPage from '../pages/admin/clinic/AdminClinicStaffPage';
+import AdminClinicSalesPage from '../pages/admin/clinic/AdminClinicSalesPage';
 
 // Portal Root
 import LandingPage from '../pages/LandingPage';
@@ -169,6 +175,7 @@ export default function AppRoutes() {
           <Route path="/superadmin/payouts/staff/create" element={<StaffPayoutCreatePage />} />
           <Route path="/superadmin/payouts/staff/edit/:id" element={<StaffPayoutCreatePage />} />
           <Route path="/superadmin/payouts/vendors" element={<VendorPayoutsPage />} />
+          <Route path="/superadmin/payouts/sales" element={<SalesPayoutsPage />} />
           <Route path="/superadmin/payouts/ledger" element={<PayoutsLedgerPage />} />
 
           <Route path="/superadmin/profile" element={<SuperAdminProfilePage />} />
@@ -203,9 +210,17 @@ export default function AppRoutes() {
           {/* Staff Personal Portal: Accessible only to Staff */}
           <Route path="/admin/my-appointments" element={<StaffMyAppointmentsPage />} />
           <Route path="/admin/my-appointments/:id" element={<StaffAppointmentDetailsPage />} />
+          <Route path="/admin/my-payments" element={<StaffPaymentsReportPage />} />
+          <Route path="/admin/staff/payments-report" element={<Navigate to="/admin/my-payments" replace />} />
+          <Route path="/admin/payments-report" element={<Navigate to="/admin/my-payments" replace />} />
 
           {/* ADMIN-ONLY MODULES: Staff cannot open via URL, direct navigation, or typing in address bar */}
           <Route element={<AdminOnlyRoute />}>
+            {/* Clinic Management Module (Branch Scoped Staff & Sales Team) */}
+            <Route path="/admin/clinic-management" element={<Navigate to="/admin/clinic-management/staff" replace />} />
+            <Route path="/admin/clinic-management/staff" element={<AdminClinicStaffPage />} />
+            <Route path="/admin/clinic-management/sales" element={<AdminClinicSalesPage />} />
+
             {/* Appointments Management */}
             <Route path="/admin/appointments" element={<AdminMasterAppointmentsPage />} />
             <Route path="/admin/appointments/create" element={<AdminMasterAppointmentCreatePage />} />

@@ -17,6 +17,8 @@ class Payout extends Model
 
     public const TYPE_VENDOR = 'vendor';
 
+    public const TYPE_SALES = 'sales';
+
     public const ACCOUNT_CASH = 'Cash';
 
     public const ACCOUNT_BANK = 'Bank';
@@ -39,6 +41,7 @@ class Payout extends Model
         'payout_type',
         'staff_id',
         'vendor_id',
+        'sales_member_id',
         'total_amount',
         'paid_amount',
         'balance_amount',
@@ -84,6 +87,14 @@ class Payout extends Model
     }
 
     /**
+     * Sales Team Member beneficiary (if payout_type == 'sales').
+     */
+    public function salesMember(): BelongsTo
+    {
+        return $this->belongsTo(SalesMember::class, 'sales_member_id');
+    }
+
+    /**
      * Super Admin who created / disbursed the payout.
      */
     public function superAdmin(): BelongsTo
@@ -92,11 +103,15 @@ class Payout extends Model
     }
 
     /**
-     * Safely generate a unique Payout Voucher Number (e.g., PAY-STF-0001, PAY-VEN-0001).
+     * Safely generate a unique Payout Voucher Number (e.g., PAY-STF-0001, PAY-VEN-0001, PAY-SLS-0001).
      */
     public static function generateUniqueNumber(string $type = 'staff'): string
     {
-        $prefix = ($type === self::TYPE_VENDOR) ? 'PAY-VEN-' : 'PAY-STF-';
+        $prefix = match ($type) {
+            self::TYPE_SALES => 'PAY-SLS-',
+            self::TYPE_VENDOR => 'PAY-VEN-',
+            default => 'PAY-STF-',
+        };
 
         return DB::transaction(function () use ($prefix) {
             $latest = static::where('payout_number', 'LIKE', "{$prefix}%")

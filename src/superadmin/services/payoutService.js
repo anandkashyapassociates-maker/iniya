@@ -26,6 +26,14 @@ export const payoutService = {
   },
 
   /**
+   * Fetch active sales team member options for dropdown selection.
+   */
+  async getSalesOptions(params = {}) {
+    const response = await superAdminApiClient.get('/superadmin/payouts/sales-options', { params });
+    return response.data;
+  },
+
+  /**
    * Fetch paginated list of staff payouts with filters and summary.
    */
   async getStaffPayouts(params = {}) {
@@ -70,6 +78,30 @@ export const payoutService = {
    */
   async updateVendorPayout(id, data) {
     const response = await superAdminApiClient.put(`/superadmin/payouts/vendors/${id}`, data);
+    return response.data;
+  },
+
+  /**
+   * Fetch paginated list of sales team payouts with filters and summary.
+   */
+  async getSalesPayouts(params = {}) {
+    const response = await superAdminApiClient.get('/superadmin/payouts/sales', { params });
+    return response.data;
+  },
+
+  /**
+   * Disburse / Record a new Sales Team Payout.
+   */
+  async recordSalesPayout(data) {
+    const response = await superAdminApiClient.post('/superadmin/payouts/sales', data);
+    return response.data;
+  },
+
+  /**
+   * Update an existing Sales Team Payout.
+   */
+  async updateSalesPayout(id, data) {
+    const response = await superAdminApiClient.put(`/superadmin/payouts/sales/${id}`, data);
     return response.data;
   },
 

@@ -27,6 +27,8 @@ import {
   Clock,
   Building2,
   Lock,
+  UserCheck,
+  TrendingUp,
 } from 'lucide-react';
 
 import { getImageUrl } from '../utils/imageUrl';
@@ -41,6 +43,9 @@ export default function Sidebar({
   const isSuperAdmin = role === 'superadmin';
   const location = useLocation();
 
+  const isInClinicManagement = location.pathname.startsWith('/admin/clinic-management');
+  const [clinicManagementOpen, setClinicManagementOpen] = useState(isInClinicManagement);
+
   const isAppointmentsActive = location.pathname.startsWith('/admin/appointments');
   const [appointmentsOpen, setAppointmentsOpen] = useState(isAppointmentsActive);
 
@@ -50,20 +55,28 @@ export default function Sidebar({
   const [reportsOpen, setReportsOpen] = useState(isInReports);
 
   useEffect(() => {
-    if (isAppointmentsActive) {
+    if (isInClinicManagement) {
+      setClinicManagementOpen(true);
+      setAppointmentsOpen(false);
+      setInventoryOpen(false);
+      setReportsOpen(false);
+    } else if (isAppointmentsActive) {
       setAppointmentsOpen(true);
+      setClinicManagementOpen(false);
       setInventoryOpen(false);
       setReportsOpen(false);
     } else if (isInReports) {
       setReportsOpen(true);
       setInventoryOpen(false);
       setAppointmentsOpen(false);
+      setClinicManagementOpen(false);
     } else if (isInInventory) {
       setInventoryOpen(true);
       setReportsOpen(false);
       setAppointmentsOpen(false);
+      setClinicManagementOpen(false);
     }
-  }, [isAppointmentsActive, isInReports, isInInventory]);
+  }, [isInClinicManagement, isAppointmentsActive, isInReports, isInInventory]);
 
   const superAdminNavItems = [
     {
@@ -118,7 +131,34 @@ export default function Sidebar({
       icon: User,
       color: 'from-rose-500 to-pink-600',
     },
-    // My Appointments: Only visible to logged-in Staff members (Admin ko show nahi honge)
+    // Clinic Management: Visible ONLY to Admin (directly below Profile)
+    ...(!isStaff
+      ? [
+          {
+            key: 'clinic-management',
+            label: 'Clinic Management',
+            icon: Building2,
+            color: 'from-emerald-500 to-teal-600',
+            isDropdown: true,
+            isOpen: clinicManagementOpen,
+            onToggle: () => setClinicManagementOpen((prev) => !prev),
+            basePath: '/admin/clinic-management',
+            children: [
+              {
+                to: '/admin/clinic-management/staff',
+                label: 'Staff Details',
+                icon: UserCheck,
+              },
+              {
+                to: '/admin/clinic-management/sales',
+                label: 'Sales Team Details',
+                icon: TrendingUp,
+              },
+            ],
+          },
+        ]
+      : []),
+    // My Appointments & Payments Report: Only visible to logged-in Staff members (Admin ko show nahi honge)
     ...(isStaff
       ? [
           {
@@ -126,6 +166,12 @@ export default function Sidebar({
             label: 'My Appointments',
             icon: CalendarCheck,
             color: 'from-emerald-600 to-teal-600',
+          },
+          {
+            to: '/admin/my-payments',
+            label: 'Payments Report',
+            icon: Wallet,
+            color: 'from-amber-500 to-orange-600',
           },
         ]
       : []),
@@ -139,10 +185,13 @@ export default function Sidebar({
             color: 'from-teal-500 to-emerald-600',
           },
           {
+            key: 'appointments',
             label: 'Appointments',
             icon: Calendar,
             color: 'from-blue-600 to-indigo-600',
             isDropdown: true,
+            isOpen: appointmentsOpen,
+            onToggle: () => setAppointmentsOpen((prev) => !prev),
             basePath: '/admin/appointments',
             children: [
               {
@@ -247,11 +296,13 @@ export default function Sidebar({
 
               if (item.isDropdown) {
                 const isGroupActive = location.pathname.startsWith(item.basePath || '');
+                const isDropdownOpen = item.isOpen !== undefined ? item.isOpen : appointmentsOpen;
+                const toggleDropdown = item.onToggle || (() => setAppointmentsOpen((prev) => !prev));
                 return (
-                  <div key={item.label} className="pt-1.5 pb-1">
+                  <div key={item.key || item.label} className="pt-1.5 pb-1">
                     <button
                       type="button"
-                      onClick={() => setAppointmentsOpen((prev) => !prev)}
+                      onClick={toggleDropdown}
                       className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer group ${
                         isGroupActive
                           ? 'bg-blue-600/15 text-blue-300 border border-blue-500/30'
@@ -268,12 +319,12 @@ export default function Sidebar({
                       </div>
                       <ChevronDown
                         className={`w-4 h-4 transition-transform duration-200 ${
-                          appointmentsOpen ? 'rotate-0' : '-rotate-90'
+                          isDropdownOpen ? 'rotate-0' : '-rotate-90'
                         }`}
                       />
                     </button>
 
-                    {appointmentsOpen && (
+                    {isDropdownOpen && (
                       <div className="pl-4 pr-1 pt-1.5 space-y-1">
                         {item.children?.map((sub) => {
                           const SubIcon = sub.icon;

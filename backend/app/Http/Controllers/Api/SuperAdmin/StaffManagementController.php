@@ -34,8 +34,11 @@ class StaffManagementController extends Controller
             });
         }
 
-        // Filter by clinic
-        if ($clinicId = $request->input('clinic_id')) {
+        // Filter by clinic (superadmin can filter; admin is strictly scoped to own clinic)
+        $user = $request->user();
+        if ($user && ! empty($user->clinic_id)) {
+            $query->where('clinic_id', $user->clinic_id);
+        } elseif ($clinicId = $request->input('clinic_id')) {
             if ($clinicId !== '' && $clinicId !== 'all') {
                 $query->where('clinic_id', $clinicId);
             }
@@ -217,12 +220,19 @@ class StaffManagementController extends Controller
     /**
      * Display the specified Staff member.
      */
-    public function show(string $id): JsonResponse
+    public function show(Request $request, string $id): JsonResponse
     {
-        $staff = Staff::with([
+        $query = Staff::with([
             'superAdmin:id,name,email',
             'clinic:id,clinic_code,name,branch_name,location,city,address,phone',
-        ])->find($id);
+        ]);
+
+        $user = $request->user();
+        if ($user && ! empty($user->clinic_id)) {
+            $query->where('clinic_id', $user->clinic_id);
+        }
+
+        $staff = $query->find($id);
 
         if (! $staff) {
             return response()->json([

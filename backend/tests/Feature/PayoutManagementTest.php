@@ -7,7 +7,9 @@ use App\Models\InventoryBrand;
 use App\Models\InventoryCategory;
 use App\Models\InventoryProduct;
 use App\Models\InventoryStockLog;
+use App\Models\MasterAppointment;
 use App\Models\Payout;
+use App\Models\SalesMember;
 use App\Models\Staff;
 use App\Models\SuperAdmin;
 use App\Models\Vendor;
@@ -800,5 +802,91 @@ class PayoutManagementTest extends TestCase
         $voucherRes->assertStatus(200)
             ->assertJsonPath('payout.payout_number', 'PAY-REP-001')
             ->assertJsonPath('payout.amount', '5000.00');
+    }
+
+    /**
+     * Test Superadmin can manage sales team payouts and view them in unified ledger.
+     */
+    public function test_superadmin_can_manage_sales_team_payouts_and_view_in_ledger(): void
+    {
+        $salesMember = SalesMember::create([
+            'sales_code' => 'SAL-0001',
+            'name' => 'Alice Sales',
+            'email' => 'alice@sales.test',
+            'mobile' => '9876543210',
+            'designation' => 'Sales Representative',
+            'department' => 'Sales',
+            'status' => 'active',
+            'created_by_superadmin_id' => $this->superAdmin->id,
+        ]);
+
+        // 1. Fetch sales options
+        $optionsRes = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->getJson('/api/superadmin/payouts/sales-options');
+
+        $optionsRes->assertStatus(200)
+            ->assertJsonFragment([
+                'name' => 'Alice Sales',
+                'sales_code' => 'SAL-0001',
+            ]);
+
+        // 2. Record a sales payout
+        $payoutData = [
+            'sales_member_id' => $salesMember->id,
+            'amount' => 4500.00,
+            'total_amount' => 10000.00,
+            'payout_date' => now()->toDateString(),
+            'account_type' => 'Bank',
+            'reference_number' => 'SALES-REF-001',
+            'note' => 'Quarterly sales commission payout',
+        ];
+
+        $storeRes = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->postJson('/api/superadmin/payouts/sales', $payoutData);
+
+        $storeRes->assertStatus(201)
+            ->assertJsonPath('message', 'Sales member payout recorded successfully.')
+            ->assertJsonPath('payout.payout_type', 'sales')
+            ->assertJsonPath('payout.amount', '4500.00')
+            ->assertJsonPath('payout.balance_amount', '5500.00')
+            ->assertJsonPath('payout.status', 'partial');
+
+        $payoutId = $storeRes->json('payout.id');
+        $this->assertStringStartsWith('PAY-SLS-', $storeRes->json('payout.payout_number'));
+
+        // 3. List sales payouts
+        $listRes = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->getJson('/api/superadmin/payouts/sales');
+
+        $listRes->assertStatus(200)
+            ->assertJsonPath('summary.total_count', 1)
+            ->assertJsonPath('summary.total_amount', 4500);
+
+        // 4. Update sales payout
+        $updateRes = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->putJson('/api/superadmin/payouts/sales/'.$payoutId, [
+                'sales_member_id' => $salesMember->id,
+                'amount' => 10000.00,
+                'total_amount' => 10000.00,
+                'payout_date' => now()->toDateString(),
+                'account_type' => 'Bank',
+                'reference_number' => 'SALES-REF-001-FULL',
+                'note' => 'Full sales payout completed',
+            ]);
+
+        $updateRes->assertStatus(200)
+            ->assertJsonPath('payout.amount', '10000.00')
+            ->assertJsonPath('payout.balance_amount', '0.00')
+            ->assertJsonPath('payout.status', 'completed');
+
+        // 5. Verify Unified Ledger shows sales payout
+        $ledgerRes = $this->withHeader('Authorization', 'Bearer '.$this->superAdminToken)
+            ->getJson('/api/superadmin/payouts/ledger?payout_type=sales');
+
+        $ledgerRes->assertStatus(200)
+            ->assertJsonPath('summary.records_count', 1)
+            ->assertJsonPath('summary.total_sales_disbursed', 10000)
+            ->assertJsonPath('ledger.data.0.payout_type', 'sales')
+            ->assertJsonPath('ledger.data.0.sales_member.name', 'Alice Sales');
     }
 }

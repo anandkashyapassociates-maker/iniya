@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import {
   Calendar,
@@ -8,18 +8,14 @@ import {
   Trash2,
   CalendarDays,
   Search,
-  Filter,
-  DollarSign,
   Layers,
   Clock,
   CheckCircle2,
   XCircle,
-  AlertCircle,
   Loader2,
-  Users,
   ReceiptIndianRupee,
   Building2,
-  MapPin,
+  RotateCcw,
 } from 'lucide-react';
 import adminMasterAppointmentService from '../../services/adminMasterAppointmentService';
 import adminInventoryService from '../../services/adminInventoryService';
@@ -40,12 +36,6 @@ export default function AdminMasterAppointmentsPage() {
     Boolean(user?.is_staff) ||
     user?.role === 'Staff Practitioner' ||
     Boolean(user?.staff_code);
-
-  if (isStaff) {
-    return <Navigate to="/admin/my-appointments" replace />;
-  }
-  const toastRef = useRef(toast);
-  toastRef.current = toast;
 
   // State
   const [loading, setLoading] = useState(true);
@@ -144,7 +134,7 @@ export default function AdminMasterAppointmentsPage() {
         }
       } catch (err) {
         console.error(err);
-        toastRef.current.error('Failed to load master appointments.');
+        toast.error('Failed to load master appointments.');
       } finally {
         setLoading(false);
       }
@@ -367,6 +357,10 @@ export default function AdminMasterAppointmentsPage() {
     },
   ];
 
+  if (isStaff) {
+    return <Navigate to="/admin/my-appointments" replace />;
+  }
+
   return (
     <div className="space-y-6">
       {/* Header Card */}
@@ -582,15 +576,25 @@ export default function AdminMasterAppointmentsPage() {
               ))}
             </select>
 
-            {/* Clinic Branch Badge (Locked to admin's assigned clinic) */}
-            {user?.clinic ? (
-              <div className="px-3 py-2 bg-indigo-50 border border-indigo-200/80 rounded-xl text-xs font-bold text-indigo-700 flex items-center gap-1.5 shrink-0 shadow-2xs">
-                <Building2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                <span className="truncate max-w-[190px]">
-                  {user.clinic.name} {user.clinic.branch_name ? `(${user.clinic.branch_name})` : ''}
-                </span>
-              </div>
-            ) : clinics.length > 0 ? (
+            {/* Status Filter (In place of circled clinic badge) */}
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                const val = e.target.value;
+                setStatusFilter(val);
+                setActiveStatCard(val || 'all');
+              }}
+              className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors"
+            >
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+
+            {/* Clinic Filter (Only visible if multi-clinic without fixed admin clinic) */}
+            {!user?.clinic && clinics.length > 0 && (
               <select
                 value={clinicFilter}
                 onChange={(e) => setClinicFilter(e.target.value)}
@@ -603,7 +607,27 @@ export default function AdminMasterAppointmentsPage() {
                   </option>
                 ))}
               </select>
-            ) : null}
+            )}
+
+            {/* Reset Filter Button */}
+            {(search || dateFilter || customerIdFilter || salesTeamIdFilter || statusFilter) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('');
+                  setDateFilter('');
+                  setCustomerIdFilter('');
+                  setSalesTeamIdFilter('');
+                  setStatusFilter('');
+                  setActiveStatCard('all');
+                }}
+                className="px-2.5 py-2 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100/80 border border-rose-200/60 rounded-xl transition-all flex items-center gap-1 cursor-pointer shadow-2xs"
+                title="Reset all filters"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset</span>
+              </button>
+            )}
           </div>
         </div>
 

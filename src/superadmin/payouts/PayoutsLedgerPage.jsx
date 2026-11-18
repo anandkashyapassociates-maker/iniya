@@ -2,14 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Wallet,
   Search,
-  Filter,
   RefreshCw,
   Calendar,
   Building2,
-  DollarSign,
   FileText,
   UserCheck,
   Truck,
+  Users,
   CheckCircle2,
   Eye,
   X,
@@ -17,8 +16,6 @@ import {
   Banknote,
   ChevronLeft,
   ChevronRight,
-  Download,
-  SlidersHorizontal,
   RotateCcw,
   Clock,
   AlertCircle,
@@ -38,6 +35,7 @@ export default function PayoutsLedgerPage() {
   const [isLoadingClinics, setIsLoadingClinics] = useState(false);
   const [staffOptions, setStaffOptions] = useState([]);
   const [vendorOptions, setVendorOptions] = useState([]);
+  const [salesOptions, setSalesOptions] = useState([]);
   const [summary, setSummary] = useState({
     total_payout_amount: 0,
     total_paid_amount: 0,
@@ -49,6 +47,9 @@ export default function PayoutsLedgerPage() {
     total_vendor_payout: 0,
     total_vendor_disbursed: 0,
     total_vendor_balance: 0,
+    total_sales_payout: 0,
+    total_sales_disbursed: 0,
+    total_sales_balance: 0,
     total_cash_disbursed: 0,
     total_bank_disbursed: 0,
     records_count: 0,
@@ -64,9 +65,10 @@ export default function PayoutsLedgerPage() {
   // Filters
   const [search, setSearch] = useState('');
   const [selectedClinicId, setSelectedClinicId] = useState('');
-  const [payoutType, setPayoutType] = useState('all'); // all | staff | vendor
+  const [payoutType, setPayoutType] = useState('all'); // all | staff | vendor | sales
   const [selectedStaffId, setSelectedStaffId] = useState('');
   const [selectedVendorId, setSelectedVendorId] = useState('');
+  const [selectedSalesMemberId, setSelectedSalesMemberId] = useState('');
   const [selectedAccountType, setSelectedAccountType] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [datePreset, setDatePreset] = useState('all_time');
@@ -116,6 +118,18 @@ export default function PayoutsLedgerPage() {
     }
   }, [selectedClinicId]);
 
+  // Load sales options scoped to selectedClinicId
+  const loadSalesOptions = useCallback(async () => {
+    try {
+      const data = await payoutService.getSalesOptions({
+        clinic_id: selectedClinicId || undefined,
+      });
+      setSalesOptions(data || []);
+    } catch (err) {
+      console.error('Failed to load sales list:', err);
+    }
+  }, [selectedClinicId]);
+
   // Load vendor options
   const loadVendorOptions = useCallback(async () => {
     try {
@@ -133,7 +147,8 @@ export default function PayoutsLedgerPage() {
 
   useEffect(() => {
     loadStaffOptions();
-  }, [loadStaffOptions]);
+    loadSalesOptions();
+  }, [loadStaffOptions, loadSalesOptions]);
 
   // Fetch unified ledger
   const fetchLedger = useCallback(async () => {
@@ -147,6 +162,7 @@ export default function PayoutsLedgerPage() {
         payout_type: payoutType !== 'all' ? payoutType : undefined,
         staff_id: selectedStaffId || undefined,
         vendor_id: selectedVendorId || undefined,
+        sales_member_id: selectedSalesMemberId || undefined,
         account_type: selectedAccountType || undefined,
         status: selectedStatus || undefined,
         preset: datePreset,
@@ -173,7 +189,7 @@ export default function PayoutsLedgerPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [page, perPage, search, selectedClinicId, payoutType, selectedStaffId, selectedVendorId, selectedAccountType, selectedStatus, datePreset, fromDate, toDate, toast]);
+  }, [page, perPage, search, selectedClinicId, payoutType, selectedStaffId, selectedVendorId, selectedSalesMemberId, selectedAccountType, selectedStatus, datePreset, fromDate, toDate, toast]);
 
   useEffect(() => {
     fetchLedger();
@@ -217,6 +233,7 @@ export default function PayoutsLedgerPage() {
     setPayoutType('all');
     setSelectedStaffId('');
     setSelectedVendorId('');
+    setSelectedSalesMemberId('');
     setSelectedAccountType('');
     setSelectedStatus('');
     setDatePreset('all_time');
@@ -300,8 +317,8 @@ export default function PayoutsLedgerPage() {
           </div>
         </div>
 
-        {/* Row 2: 3 Cards (Balance Due, Staff Paid / Bal, Vendor Paid / Bal) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        {/* Row 2: 4 Cards (Balance Due, Staff Paid / Bal, Vendor Paid / Bal, Sales Paid / Bal) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           {/* Balance Due */}
           <div className="bg-white rounded-2xl border border-amber-200/80 p-4 shadow-xs overflow-hidden">
             <div className="flex items-center justify-between">
@@ -354,6 +371,25 @@ export default function PayoutsLedgerPage() {
             </p>
             <p className="text-xs text-amber-600 mt-0.5 truncate">
               Bal: {formatCurrency(summary.total_vendor_balance)}
+            </p>
+          </div>
+
+          {/* Sales Team Breakdown */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
+                Sales Paid / Bal
+              </span>
+              <Users className="w-4 h-4 text-indigo-600" />
+            </div>
+            <p
+              className="text-lg sm:text-xl font-bold tracking-tight text-slate-800 mt-2 truncate"
+              title={formatCurrency(summary.total_sales_disbursed)}
+            >
+              {formatCurrency(summary.total_sales_disbursed)}
+            </p>
+            <p className="text-xs text-amber-600 mt-0.5 truncate">
+              Bal: {formatCurrency(summary.total_sales_balance)}
             </p>
           </div>
         </div>
@@ -419,7 +455,7 @@ export default function PayoutsLedgerPage() {
               />
             </div>
 
-            {(search || selectedClinicId || payoutType !== 'all' || selectedStaffId || selectedVendorId || selectedAccountType || selectedStatus || datePreset !== 'all_time' || fromDate || toDate) && (
+            {(search || selectedClinicId || payoutType !== 'all' || selectedStaffId || selectedVendorId || selectedSalesMemberId || selectedAccountType || selectedStatus || datePreset !== 'all_time' || fromDate || toDate) && (
               <button
                 onClick={handleResetFilters}
                 className="flex items-center gap-1 px-2.5 py-1 text-xs text-rose-600 hover:bg-rose-50 rounded-lg font-medium transition-colors cursor-pointer ml-1"
@@ -433,7 +469,7 @@ export default function PayoutsLedgerPage() {
         </div>
 
         {/* Secondary Filter Controls Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-3">
           {/* Keyword Search */}
           <div className="relative">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -457,6 +493,7 @@ export default function PayoutsLedgerPage() {
               onChange={(e) => {
                 setSelectedClinicId(e.target.value);
                 setSelectedStaffId('');
+                setSelectedSalesMemberId('');
                 setPage(1);
               }}
               className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
@@ -470,7 +507,7 @@ export default function PayoutsLedgerPage() {
             </select>
           </div>
 
-          {/* Beneficiary Type (All, Staff, Vendor) */}
+          {/* Beneficiary Type (All, Staff, Vendor, Sales) */}
           <div>
             <select
               value={payoutType}
@@ -483,6 +520,7 @@ export default function PayoutsLedgerPage() {
               <option value="all">Beneficiary: All Types</option>
               <option value="staff">Staff Payouts Only</option>
               <option value="vendor">Vendor Payouts Only</option>
+              <option value="sales">Sales Team Payouts Only</option>
             </select>
           </div>
 
@@ -490,7 +528,7 @@ export default function PayoutsLedgerPage() {
           <div>
             <select
               value={selectedStaffId}
-              disabled={payoutType === 'vendor'}
+              disabled={payoutType === 'vendor' || payoutType === 'sales'}
               onChange={(e) => {
                 setSelectedStaffId(e.target.value);
                 setPage(1);
@@ -510,7 +548,7 @@ export default function PayoutsLedgerPage() {
           <div>
             <select
               value={selectedVendorId}
-              disabled={payoutType === 'staff'}
+              disabled={payoutType === 'staff' || payoutType === 'sales'}
               onChange={(e) => {
                 setSelectedVendorId(e.target.value);
                 setPage(1);
@@ -521,6 +559,26 @@ export default function PayoutsLedgerPage() {
               {vendorOptions.map((v) => (
                 <option key={v.id} value={v.id}>
                   {v.vendor_name} ({v.vendor_code})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sales Member Wise Filter */}
+          <div>
+            <select
+              value={selectedSalesMemberId}
+              disabled={payoutType === 'staff' || payoutType === 'vendor'}
+              onChange={(e) => {
+                setSelectedSalesMemberId(e.target.value);
+                setPage(1);
+              }}
+              className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="">Sales: All Members</option>
+              {salesOptions.map((sm) => (
+                <option key={sm.id} value={sm.id}>
+                  {sm.name} ({sm.sales_code || `ID: ${sm.id}`})
                 </option>
               ))}
             </select>
@@ -621,12 +679,14 @@ export default function PayoutsLedgerPage() {
                 ledger.map((item, idx) => {
                   const serialNo = (pagination.current_page - 1) * pagination.per_page + idx + 1;
                   const isStaff = item.payout_type === 'staff';
+                  const isSales = item.payout_type === 'sales';
+                  const isVendor = item.payout_type === 'vendor';
                   const totalAmt = Number(item.total_amount > 0 ? item.total_amount : item.amount) || 0;
                   const paidAmt = Number(item.paid_amount > 0 ? item.paid_amount : item.amount) || 0;
                   const balAmt = Number(item.balance_amount) || 0;
                   const isPaid = balAmt <= 0;
                   const isPartial = balAmt > 0 && paidAmt > 0;
-                  const clinic = isStaff ? (item.staff?.clinic || item.clinic) : null;
+                  const clinic = isStaff ? (item.staff?.clinic || item.clinic) : isSales ? (item.sales_member?.clinic || item.clinic) : null;
 
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
@@ -654,7 +714,17 @@ export default function PayoutsLedgerPage() {
                               {item.staff.staff_code} &bull; {item.staff.department || 'General'}
                             </p>
                           </div>
-                        ) : !isStaff && item.vendor ? (
+                        ) : isSales && item.sales_member ? (
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-1.5 py-0.2 rounded-sm border border-indigo-200">Sales</span>
+                              <p className="font-semibold text-slate-900">{item.sales_member.name}</p>
+                            </div>
+                            <p className="text-[11px] text-slate-500 font-mono">
+                              {item.sales_member.sales_code} &bull; {item.sales_member.designation || 'Sales'}
+                            </p>
+                          </div>
+                        ) : isVendor && item.vendor ? (
                           <div>
                             <div className="flex items-center gap-1.5">
                               <span className="text-[10px] font-bold bg-amber-50 text-amber-700 px-1.5 py-0.2 rounded-sm border border-amber-200">Vendor</span>
@@ -839,13 +909,24 @@ export default function PayoutsLedgerPage() {
 
               <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-1.5">
                 <p className="text-[10px] uppercase font-semibold text-slate-400">
-                  {selectedPayout.payout_type === 'staff' ? 'Staff Beneficiary' : 'Vendor / Supplier'}
+                  {selectedPayout.payout_type === 'staff'
+                    ? 'Staff Beneficiary'
+                    : selectedPayout.payout_type === 'sales'
+                    ? 'Sales Representative Beneficiary'
+                    : 'Vendor / Supplier'}
                 </p>
                 {selectedPayout.payout_type === 'staff' && selectedPayout.staff ? (
                   <>
                     <p className="text-sm font-bold text-slate-900">{selectedPayout.staff.name}</p>
                     <p className="text-slate-600">
                       Staff Code: <span className="font-mono font-semibold">{selectedPayout.staff.staff_code || '-'}</span> &bull; {selectedPayout.staff.department || 'General'}
+                    </p>
+                  </>
+                ) : selectedPayout.payout_type === 'sales' && selectedPayout.sales_member ? (
+                  <>
+                    <p className="text-sm font-bold text-slate-900">{selectedPayout.sales_member.name}</p>
+                    <p className="text-slate-600">
+                      Sales Code: <span className="font-mono font-semibold">{selectedPayout.sales_member.sales_code || '-'}</span> &bull; {selectedPayout.sales_member.designation || 'Sales'}
                     </p>
                   </>
                 ) : selectedPayout.payout_type === 'vendor' && selectedPayout.vendor ? (
@@ -861,38 +942,42 @@ export default function PayoutsLedgerPage() {
                 )}
               </div>
 
-              {/* Assigned Clinic Details for Staff Payout */}
-              {selectedPayout.payout_type === 'staff' && selectedPayout.staff?.clinic && (
-                <div className="p-3.5 bg-blue-50/70 rounded-xl border border-blue-200/80 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-blue-900 font-semibold text-xs">
-                      <Building2 className="w-3.5 h-3.5 text-blue-600" />
-                      <span>Assigned Clinic Branch</span>
+              {/* Assigned Clinic Details for Staff or Sales Payout */}
+              {((selectedPayout.payout_type === 'staff' && selectedPayout.staff?.clinic) ||
+                (selectedPayout.payout_type === 'sales' && selectedPayout.sales_member?.clinic)) && (() => {
+                const c = selectedPayout.payout_type === 'staff' ? selectedPayout.staff.clinic : selectedPayout.sales_member.clinic;
+                return (
+                  <div className="p-3.5 bg-blue-50/70 rounded-xl border border-blue-200/80 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-blue-900 font-semibold text-xs">
+                        <Building2 className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Assigned Clinic Branch</span>
+                      </div>
+                      <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-white text-blue-700 border border-blue-200">
+                        {c.clinic_code || 'CLINIC'}
+                      </span>
                     </div>
-                    <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-white text-blue-700 border border-blue-200">
-                      {selectedPayout.staff.clinic.clinic_code || 'CLINIC'}
-                    </span>
+                    <p className="text-xs font-bold text-slate-900">
+                      {c.name}
+                      {c.branch_name ? ` (${c.branch_name})` : ''}
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] text-slate-600 pt-0.5">
+                      {(c.location || c.city || c.address) && (
+                        <p className="flex items-center gap-1 truncate" title={c.address || c.location}>
+                          <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                          <span>{[c.location, c.city, c.state].filter(Boolean).join(', ') || c.address}</span>
+                        </p>
+                      )}
+                      {(c.phone || c.email) && (
+                        <p className="flex items-center gap-1 truncate font-mono text-[10px]">
+                          <Phone className="w-3 h-3 text-slate-400 shrink-0" />
+                          <span>{c.phone || c.email}</span>
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-xs font-bold text-slate-900">
-                    {selectedPayout.staff.clinic.name}
-                    {selectedPayout.staff.clinic.branch_name ? ` (${selectedPayout.staff.clinic.branch_name})` : ''}
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] text-slate-600 pt-0.5">
-                    {(selectedPayout.staff.clinic.location || selectedPayout.staff.clinic.city || selectedPayout.staff.clinic.address) && (
-                      <p className="flex items-center gap-1 truncate" title={selectedPayout.staff.clinic.address || selectedPayout.staff.clinic.location}>
-                        <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                        <span>{[selectedPayout.staff.clinic.location, selectedPayout.staff.clinic.city, selectedPayout.staff.clinic.state].filter(Boolean).join(', ') || selectedPayout.staff.clinic.address}</span>
-                      </p>
-                    )}
-                    {(selectedPayout.staff.clinic.phone || selectedPayout.staff.clinic.email) && (
-                      <p className="flex items-center gap-1 truncate font-mono text-[10px]">
-                        <Phone className="w-3 h-3 text-slate-400 shrink-0" />
-                        <span>{selectedPayout.staff.clinic.phone || selectedPayout.staff.clinic.email}</span>
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Total Payout, Paid Amount, Balance Due */}
               <div className="grid grid-cols-3 gap-2.5">
