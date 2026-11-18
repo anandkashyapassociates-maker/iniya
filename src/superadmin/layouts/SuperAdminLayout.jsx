@@ -897,7 +897,24 @@ export default function SuperAdminLayout() {
                     <span>Vendor Payouts</span>
                   </NavLink>
 
-                  {/* 3. Payouts Ledger */}
+                  {/* 3. Sales Payouts */}
+                  <NavLink
+                    to="/superadmin/payouts/sales"
+                    end
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-indigo-600/20 text-indigo-300 font-medium border border-indigo-500/30'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                      }`
+                    }
+                  >
+                    <Users className="w-3.5 h-3.5 shrink-0" />
+                    <span>Sales Payouts</span>
+                  </NavLink>
+
+                  {/* 4. Payouts Ledger */}
                   <NavLink
                     to="/superadmin/payouts/ledger"
                     end

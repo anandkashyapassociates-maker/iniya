@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\Admin\ProductController;
 use App\Http\Controllers\Api\Admin\ServiceManagementController;
 use App\Http\Controllers\Api\Admin\SessionRescheduleController;
 use App\Http\Controllers\Api\Admin\StaffAppointmentController;
+use App\Http\Controllers\Api\Admin\StaffPaymentController;
 use App\Http\Controllers\Api\SuperAdmin\AdminManagementController;
 use App\Http\Controllers\Api\SuperAdmin\ClinicManagementController;
 use App\Http\Controllers\Api\SuperAdmin\PayoutController;
@@ -167,17 +168,21 @@ Route::prefix('superadmin')
             Route::get('/admin-report', [SuperAdminInventoryController::class, 'adminReport']);
         });
 
-        // Payout Management (Staff Payouts, Vendor Payouts, Payouts Ledger)
+        // Payout Management (Staff Payouts, Vendor Payouts, Sales Payouts, Payouts Ledger)
         Route::prefix('payouts')->group(function () {
             Route::get('/stats', [PayoutController::class, 'stats']);
             Route::get('/staff-options', [PayoutController::class, 'staffOptions']);
             Route::get('/vendor-options', [PayoutController::class, 'vendorOptions']);
+            Route::get('/sales-options', [PayoutController::class, 'salesOptions']);
             Route::get('/staff', [PayoutController::class, 'staffPayouts']);
             Route::post('/staff', [PayoutController::class, 'storeStaffPayout']);
             Route::put('/staff/{id}', [PayoutController::class, 'updateStaffPayout']);
             Route::get('/vendors', [PayoutController::class, 'vendorPayouts']);
             Route::post('/vendors', [PayoutController::class, 'storeVendorPayout']);
             Route::put('/vendors/{id}', [PayoutController::class, 'updateVendorPayout']);
+            Route::get('/sales', [PayoutController::class, 'salesPayouts']);
+            Route::post('/sales', [PayoutController::class, 'storeSalesPayout']);
+            Route::put('/sales/{id}', [PayoutController::class, 'updateSalesPayout']);
             Route::get('/ledger', [PayoutController::class, 'ledger']);
             Route::get('/{id}', [PayoutController::class, 'show']);
             Route::delete('/{id}', [PayoutController::class, 'destroy']);
@@ -250,13 +255,19 @@ Route::prefix('admin')
         Route::get('/sessions/{id}/receipt', [AppointmentSessionController::class, 'receipt']);
 
         // ==========================================
-        // STAFF PERSONAL PORTAL: MY APPOINTMENTS
+        // STAFF PERSONAL PORTAL: MY APPOINTMENTS & PAYMENTS
         // ==========================================
         Route::prefix('my-appointments')->group(function () {
             Route::get('/', [StaffAppointmentController::class, 'index']);
             Route::get('/{id}', [StaffAppointmentController::class, 'show']);
             Route::patch('/{id}/status', [StaffAppointmentController::class, 'updateStatus']);
             Route::post('/{id}/image', [StaffAppointmentController::class, 'uploadImage']);
+        });
+
+        Route::prefix('my-payments')->group(function () {
+            Route::get('/', [StaffPaymentController::class, 'index']);
+            Route::get('/sessions', [StaffPaymentController::class, 'sessionCommissions']);
+            Route::get('/voucher/{id}', [StaffPaymentController::class, 'voucher']);
         });
 
         // ========================================================
@@ -268,6 +279,17 @@ Route::prefix('admin')
         Route::middleware('auth.admin_only')->group(function () {
             // Clinic Options for Admin modules
             Route::get('/clinics/options', [ClinicManagementController::class, 'options']);
+
+            // Clinic Management (Staff & Sales Team Details for Admin's Clinic)
+            Route::prefix('clinic-management')->group(function () {
+                Route::get('/staff', [StaffManagementController::class, 'index']);
+                Route::get('/staff/departments', [StaffManagementController::class, 'departments']);
+                Route::get('/staff/{id}', [StaffManagementController::class, 'show']);
+                Route::get('/sales-members', [SalesMemberManagementController::class, 'index']);
+                Route::get('/sales-members/departments', [SalesMemberManagementController::class, 'departments']);
+                Route::get('/sales-members/territories', [SalesMemberManagementController::class, 'territories']);
+                Route::get('/sales-members/{id}', [SalesMemberManagementController::class, 'show']);
+            });
 
             // Customer Management
             Route::get('/customers/stats', [CustomerController::class, 'stats']);
@@ -405,6 +427,7 @@ Route::prefix('admin')
                 Route::get('/', [PayoutController::class, 'ledger']);
                 Route::get('/staff-options', [PayoutController::class, 'staffOptions']);
                 Route::get('/vendor-options', [PayoutController::class, 'vendorOptions']);
+                Route::get('/sales-options', [PayoutController::class, 'salesOptions']);
                 Route::get('/{id}', [PayoutController::class, 'show']);
             });
             Route::get('/payouts/ledger', [PayoutController::class, 'ledger']);
