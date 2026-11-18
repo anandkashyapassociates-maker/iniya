@@ -148,9 +148,14 @@ class SuperAdminDashboardController extends Controller
         $totalPayouts = Payout::count();
         $staffPayoutsCount = Payout::where('payout_type', Payout::TYPE_STAFF)->count();
         $staffPayoutsDisbursed = (float) (Payout::where('payout_type', Payout::TYPE_STAFF)->where('status', Payout::STATUS_COMPLETED)->sum('paid_amount') ?? 0);
+        $staffPayoutsPending = (float) (Payout::where('payout_type', Payout::TYPE_STAFF)->whereIn('status', [Payout::STATUS_PENDING, Payout::STATUS_PARTIAL])->sum('balance_amount') ?? 0);
         $vendorPayoutsCount = Payout::where('payout_type', Payout::TYPE_VENDOR)->count();
         $vendorPayoutsDisbursed = (float) (Payout::where('payout_type', Payout::TYPE_VENDOR)->where('status', Payout::STATUS_COMPLETED)->sum('paid_amount') ?? 0);
-        $totalDisbursed = $staffPayoutsDisbursed + $vendorPayoutsDisbursed;
+        $vendorPayoutsPending = (float) (Payout::where('payout_type', Payout::TYPE_VENDOR)->whereIn('status', [Payout::STATUS_PENDING, Payout::STATUS_PARTIAL])->sum('balance_amount') ?? 0);
+        $salesPayoutsCount = Payout::where('payout_type', Payout::TYPE_SALES)->count();
+        $salesPayoutsDisbursed = (float) (Payout::where('payout_type', Payout::TYPE_SALES)->where('status', Payout::STATUS_COMPLETED)->sum('paid_amount') ?? 0);
+        $salesPayoutsPending = (float) (Payout::where('payout_type', Payout::TYPE_SALES)->whereIn('status', [Payout::STATUS_PENDING, Payout::STATUS_PARTIAL])->sum('balance_amount') ?? 0);
+        $totalDisbursed = $staffPayoutsDisbursed + $vendorPayoutsDisbursed + $salesPayoutsDisbursed;
         $pendingPayoutLiabilities = (float) (Payout::whereIn('status', [Payout::STATUS_PENDING, Payout::STATUS_PARTIAL])->sum('balance_amount') ?? 0);
 
         // 8. Dynamic Growth Trend Data (Computed 100% from real database timestamps)
@@ -199,7 +204,7 @@ class SuperAdminDashboardController extends Controller
             ->get(['id', 'sales_code', 'name', 'email', 'territory', 'designation', 'status', 'created_at']);
 
         $recentAppointments = MasterAppointment::with([
-            'customer:id,first_name,last_name,email,mobile_number',
+            'customer:id,name,email,mobile',
             'sessions:id,master_appointment_id,status,session_date,session_time',
         ])
             ->latest()
@@ -366,13 +371,19 @@ class SuperAdminDashboardController extends Controller
                     'label' => 'Payout Management',
                     'total_payouts' => $totalPayouts,
                     'staff_disbursed' => $staffPayoutsDisbursed,
+                    'staff_pending' => $staffPayoutsPending,
                     'staff_count' => $staffPayoutsCount,
                     'vendor_disbursed' => $vendorPayoutsDisbursed,
+                    'vendor_pending' => $vendorPayoutsPending,
                     'vendor_count' => $vendorPayoutsCount,
+                    'sales_disbursed' => $salesPayoutsDisbursed,
+                    'sales_pending' => $salesPayoutsPending,
+                    'sales_count' => $salesPayoutsCount,
                     'total_disbursed' => $totalDisbursed,
                     'pending_liabilities' => $pendingPayoutLiabilities,
                     'staff_payouts_url' => '/superadmin/payouts/staff',
                     'vendor_payouts_url' => '/superadmin/payouts/vendors',
+                    'sales_payouts_url' => '/superadmin/payouts/sales',
                     'ledger_url' => '/superadmin/payouts/ledger',
                     'recent_payouts' => $recentPayouts,
                 ],
