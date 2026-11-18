@@ -21,7 +21,6 @@ import {
   Compass,
 } from 'lucide-react';
 import AdminStatusBadge from './AdminStatusBadge';
-import AdminEditModal from './AdminEditModal';
 import AdminAvatar from '../../components/AdminAvatar';
 import adminManagementService from '../services/adminManagementService';
 import clinicManagementService from '../services/clinicManagementService';
@@ -48,10 +47,6 @@ export default function AdminDetailsPage() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
 
-  // Edit modal state
-  const [selectedAdminForEdit, setSelectedAdminForEdit] = useState(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
   // Load clinic options for filtering
   useEffect(() => {
     let isMounted = true;
@@ -71,23 +66,6 @@ export default function AdminDetailsPage() {
     };
   }, []);
 
-  const handleOpenEditModal = (admin) => {
-    setSelectedAdminForEdit(admin);
-    setIsEditModalOpen(true);
-  };
-
-  const handleCloseEditModal = () => {
-    setIsEditModalOpen(false);
-    setSelectedAdminForEdit(null);
-  };
-
-  const handleEditSuccess = (updatedAdmin) => {
-    setAdmins((prev) =>
-      prev.map((adm) => (adm.id === updatedAdmin.id ? { ...adm, ...updatedAdmin } : adm))
-    );
-    fetchAdmins();
-  };
-
   const handleLoginAsAdmin = async (adm) => {
     if (adm.status === 'blocked') {
       toast.error(`Cannot login as '${adm.name}': Account is blocked.`);
@@ -105,13 +83,27 @@ export default function AdminDetailsPage() {
     try {
       const res = await adminManagementService.impersonateAdmin(adm.id);
 
-      // Store in localStorage
+      // Store in localStorage for Admin role strictly
       localStorage.setItem('admin_token', res.token);
       localStorage.setItem('admin_user', JSON.stringify(res.user));
+      localStorage.setItem('clinic_active_role', 'admin');
+      localStorage.removeItem('staff_token');
+      localStorage.removeItem('staff_user');
       localStorage.setItem(
         'admin_impersonated_by_superadmin',
         JSON.stringify(res.impersonated_by || { active: true, admin_id: adm.id })
       );
+
+      // Directly set sessionStorage on newTab if accessible
+      try {
+        if (newTab && newTab.sessionStorage) {
+          newTab.sessionStorage.setItem('clinic_tab_token', res.token);
+          newTab.sessionStorage.setItem('clinic_tab_user', JSON.stringify(res.user));
+          newTab.sessionStorage.setItem('clinic_tab_role', 'admin');
+        }
+      } catch (e) {
+        // Safe ignore
+      }
 
       if (setSession) {
         setSession(res.token, res.user);
@@ -575,15 +567,14 @@ export default function AdminDetailsPage() {
                           <span>{loggingInAdminId === adm.id ? 'Opening...' : 'View'}</span>
                         </button>
 
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEditModal(adm)}
+                        <Link
+                          to={`/superadmin/admin-management/${adm.id}/edit`}
                           className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
                           title={`Edit Admin ${adm.name}`}
                         >
                           <Pencil className="w-3.5 h-3.5 text-slate-400" />
                           <span>Edit</span>
-                        </button>
+                        </Link>
                       </div>
                     </td>
                   </tr>
@@ -630,16 +621,6 @@ export default function AdminDetailsPage() {
           </div>
         )}
       </div>
-
-      {/* Edit Administrator Modal */}
-      {selectedAdminForEdit && (
-        <AdminEditModal
-          admin={selectedAdminForEdit}
-          isOpen={isEditModalOpen}
-          onClose={handleCloseEditModal}
-          onSuccess={handleEditSuccess}
-        />
-      )}
     </div>
   );
 }

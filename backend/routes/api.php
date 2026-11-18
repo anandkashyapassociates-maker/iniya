@@ -114,6 +114,7 @@ Route::prefix('superadmin')
         Route::get('/staff/{id}', [StaffManagementController::class, 'show']);
         Route::match(['PUT', 'POST'], '/staff/{id}', [StaffManagementController::class, 'update']);
         Route::patch('/staff/{id}/status', [StaffManagementController::class, 'updateStatus']);
+        Route::post('/staff/{id}/impersonate', [StaffManagementController::class, 'impersonate']);
 
         // Vendor Management
         Route::get('/vendors/preview-code', [VendorManagementController::class, 'previewCode']);

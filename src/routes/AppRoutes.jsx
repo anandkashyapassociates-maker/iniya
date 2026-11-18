@@ -11,6 +11,7 @@ import SuperAdminResetPasswordPage from '../superadmin/pages/SuperAdminResetPass
 import SuperAdminDashboardPage from '../superadmin/pages/SuperAdminDashboardPage';
 import AdminCreationPage from '../superadmin/admin-management/AdminCreationPage';
 import AdminDetailsPage from '../superadmin/admin-management/AdminDetailsPage';
+import AdminEditPage from '../superadmin/admin-management/AdminEditPage';
 import StaffCreationPage from '../superadmin/staff-management/StaffCreationPage';
 import StaffDetailsPage from '../superadmin/staff-management/StaffDetailsPage';
 import StaffEditPage from '../superadmin/staff-management/StaffEditPage';
@@ -123,6 +124,7 @@ export default function AppRoutes() {
           {/* Phase 2: Admin Management Submodule Routes */}
           <Route path="/superadmin/admin-management/create" element={<AdminCreationPage />} />
           <Route path="/superadmin/admin-management/details" element={<AdminDetailsPage />} />
+          <Route path="/superadmin/admin-management/:id/edit" element={<AdminEditPage />} />
           
           {/* Phase 3: Staff Management Submodule Routes */}
           <Route path="/superadmin/staff-management/create" element={<StaffCreationPage />} />
@@ -145,7 +147,7 @@ export default function AppRoutes() {
           {/* Backward Compatibility Aliases */}
           <Route path="/superadmin/admins" element={<Navigate to="/superadmin/admin-management/details" replace />} />
           <Route path="/superadmin/admins/create" element={<Navigate to="/superadmin/admin-management/create" replace />} />
-          <Route path="/superadmin/admins/:id/edit" element={<SuperAdminEditAdminPage />} />
+          <Route path="/superadmin/admins/:id/edit" element={<AdminEditPage />} />
           <Route path="/superadmin/staff" element={<Navigate to="/superadmin/staff-management/details" replace />} />
           <Route path="/superadmin/staff/create" element={<Navigate to="/superadmin/staff-management/create" replace />} />
           <Route path="/superadmin/staff/:id/edit" element={<StaffEditPage />} />

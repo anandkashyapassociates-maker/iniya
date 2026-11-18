@@ -15,6 +15,7 @@ import {
   Building2,
   Briefcase,
   Pencil,
+  Eye,
   Hash,
   MapPin,
   Compass,
@@ -24,6 +25,7 @@ import StaffAvatar from '../../components/StaffAvatar';
 import staffManagementService from '../services/staffManagementService';
 import clinicManagementService from '../services/clinicManagementService';
 import { useToast } from '../../context/ToastContext';
+import { useAdminAuth } from '../../features/auth/AdminAuthContext';
 import { getImageUrl } from '../../utils/imageUrl';
 
 const formatJoiningDate = (dateString) => {
@@ -84,6 +86,7 @@ const COMMON_DEPARTMENTS = [
 
 export default function StaffDetailsPage() {
   const toast = useToast();
+  const { setSession } = useAdminAuth();
 
   const [staffList, setStaffList] = useState([]);
   const [departmentsList, setDepartmentsList] = useState(COMMON_DEPARTMENTS);
@@ -91,6 +94,7 @@ export default function StaffDetailsPage() {
   const [pagination, setPagination] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [loggingInStaffId, setLoggingInStaffId] = useState(null);
 
   // Filters & search state
   const [searchInput, setSearchInput] = useState('');
@@ -189,6 +193,66 @@ export default function StaffDetailsPage() {
     setDepartmentFilter('all');
     setStatusFilter('all');
     setPage(1);
+  };
+
+  const handleLoginAsStaff = async (member) => {
+    if (member.status === 'blocked') {
+      toast.error(`Cannot login as '${member.name}': Account is blocked.`);
+      return;
+    }
+    if (!member.is_active || member.status === 'inactive') {
+      toast.error(`Cannot login as '${member.name}': Account is inactive.`);
+      return;
+    }
+
+    // Pre-open tab synchronously on user action to prevent browser popup blockers
+    const newTab = window.open('about:blank', '_blank');
+
+    setLoggingInStaffId(member.id);
+    try {
+      const res = await staffManagementService.impersonateStaff(member.id);
+
+      // Store in localStorage for both Admin & Staff fallback keys
+      localStorage.setItem('admin_token', res.token);
+      localStorage.setItem('admin_user', JSON.stringify(res.user));
+      localStorage.setItem('staff_token', res.token);
+      localStorage.setItem('staff_user', JSON.stringify(res.user));
+      localStorage.setItem('clinic_active_role', 'staff');
+      localStorage.setItem(
+        'admin_impersonated_by_superadmin',
+        JSON.stringify(res.impersonated_by || { active: true, staff_id: member.id })
+      );
+
+      // Directly set sessionStorage on newTab if accessible
+      try {
+        if (newTab && newTab.sessionStorage) {
+          newTab.sessionStorage.setItem('clinic_tab_token', res.token);
+          newTab.sessionStorage.setItem('clinic_tab_user', JSON.stringify(res.user));
+          newTab.sessionStorage.setItem('clinic_tab_role', 'staff');
+        }
+      } catch (e) {
+        // Safe to ignore
+      }
+
+      if (setSession) {
+        setSession(res.token, res.user);
+      }
+
+      toast.success(`Logged in as Staff '${member.name}'! Staff portal opened in next tab.`);
+
+      if (newTab) {
+        newTab.location.href = '/admin/dashboard';
+      } else {
+        window.open('/admin/dashboard', '_blank');
+      }
+    } catch (err) {
+      if (newTab) {
+        newTab.close();
+      }
+      toast.error(err.response?.data?.message || `Failed to log in as ${member.name}.`);
+    } finally {
+      setLoggingInStaffId(null);
+    }
   };
 
   return (
@@ -600,16 +664,39 @@ export default function StaffDetailsPage() {
                       />
                     </td>
 
-                    {/* Actions: Edit button (navigates to edit page) */}
+                    {/* Actions: View (open staff panel) & Edit */}
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                      <Link
-                        to={`/superadmin/staff-management/${member.id}/edit`}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-300 text-slate-700 hover:text-blue-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
-                        title={`Edit Staff ${member.name}`}
-                      >
-                        <Pencil className="w-3.5 h-3.5 text-slate-400" />
-                        <span>Edit</span>
-                      </Link>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleLoginAsStaff(member)}
+                          disabled={loggingInStaffId === member.id || member.status === 'blocked' || !member.is_active}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-2xs transition-all cursor-pointer ${
+                            member.status === 'blocked' || !member.is_active
+                              ? 'border border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed opacity-60'
+                              : 'border border-blue-600 bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
+                          }`}
+                          title={
+                            member.status === 'blocked'
+                              ? 'Account blocked - cannot view'
+                              : !member.is_active
+                              ? 'Account inactive - cannot view'
+                              : `View Staff Portal as ${member.name} (Opens in next tab)`
+                          }
+                        >
+                          <Eye className={`w-3.5 h-3.5 ${loggingInStaffId === member.id ? 'animate-spin' : ''}`} />
+                          <span>{loggingInStaffId === member.id ? 'Opening...' : 'View'}</span>
+                        </button>
+
+                        <Link
+                          to={`/superadmin/staff-management/${member.id}/edit`}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-300 text-slate-700 hover:text-blue-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+                          title={`Edit Staff ${member.name}`}
+                        >
+                          <Pencil className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Edit</span>
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}
