@@ -1566,39 +1566,29 @@ export default function SuperAdminDashboardPage() {
                 Medical staff compensation vouchers &amp; payroll
               </p>
 
-              {/* Primary Metric */}
-              <div className="mt-4">
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-                  Total Disbursed to Staff
-                </span>
-                <div className="text-3xl sm:text-4xl font-black text-slate-900 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
-                  {formatCurrency(modules.payouts?.staff_disbursed || 0)}
-                </div>
-              </div>
-
-              {/* Operational Stat Chips */}
-              <div className="grid grid-cols-2 gap-2.5 mt-4">
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Settled</span>
-                  <span className="text-sm font-extrabold text-purple-700 tabular-numbers mt-0.5">
-                    <AnimatedCounter value={modules.payouts?.staff_count || 0} /> Paid
+              {/* Primary Metrics: Total Disbursed & Pending */}
+              <div className="grid grid-cols-2 gap-4 mt-5">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                    Total Disbursed
                   </span>
+                  <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
+                    {formatCurrency(modules.payouts?.staff_disbursed || 0)}
+                  </div>
                 </div>
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Audit</span>
-                  <span className="text-sm font-extrabold text-emerald-600 tabular-numbers mt-0.5">
-                    TDS Logged
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                    Pending
                   </span>
+                  <div className="text-2xl sm:text-3xl font-black text-amber-600 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
+                    {formatCurrency(modules.payouts?.staff_pending || 0)}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Bottom Actions */}
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs relative z-10">
-              <span className="text-slate-500 font-medium inline-flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                Automatic tax &amp; deduction logging
-              </span>
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-end text-xs relative z-10">
               <Link
                 to="/superadmin/payouts/staff"
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs transition-all hover:scale-105"
