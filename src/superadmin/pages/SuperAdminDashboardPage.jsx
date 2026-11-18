@@ -1563,29 +1563,25 @@ export default function SuperAdminDashboardPage() {
                 Medical staff compensation vouchers &amp; payroll
               </p>
 
-              {/* Primary Metrics: Total Disbursed & Pending */}
-              <div className="grid grid-cols-2 gap-4 mt-5">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-                    Total Disbursed
-                  </span>
-                  <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
-                    {formatCurrency(modules.payouts?.staff_disbursed || 0)}
-                  </div>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-                    Pending
-                  </span>
-                  <div className="text-2xl sm:text-3xl font-black text-amber-600 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
-                    {formatCurrency(modules.payouts?.staff_pending || 0)}
-                  </div>
+              {/* Primary Metric: Total Disbursed */}
+              <div className="mt-5">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                  Total Disbursed
+                </span>
+                <div className="text-3xl sm:text-4xl font-black text-slate-900 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
+                  {formatCurrency(modules.payouts?.staff_disbursed || 0)}
                 </div>
               </div>
             </div>
 
-            {/* Bottom Actions */}
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-end text-xs relative z-10">
+            {/* Bottom Actions: Pending on Left, Button on Right */}
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs relative z-10">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Pending:</span>
+                <span className="text-sm font-bold text-amber-600 tabular-numbers">
+                  {formatCurrency(modules.payouts?.staff_pending || 0)}
+                </span>
+              </div>
               <Link
                 to="/superadmin/payouts/staff"
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs transition-all hover:scale-105"
@@ -1616,29 +1612,25 @@ export default function SuperAdminDashboardPage() {
                 Procurement, consumables &amp; clinic logistics
               </p>
 
-              {/* Primary Metrics: Total Disbursed & Pending */}
-              <div className="grid grid-cols-2 gap-4 mt-5">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-                    Total Disbursed
-                  </span>
-                  <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
-                    {formatCurrency(modules.payouts?.vendor_disbursed || 0)}
-                  </div>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-                    Pending
-                  </span>
-                  <div className="text-2xl sm:text-3xl font-black text-amber-600 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
-                    {formatCurrency(modules.payouts?.vendor_pending ?? modules.payouts?.pending_liabilities ?? 0)}
-                  </div>
+              {/* Primary Metric: Total Disbursed */}
+              <div className="mt-5">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                  Total Disbursed
+                </span>
+                <div className="text-3xl sm:text-4xl font-black text-slate-900 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
+                  {formatCurrency(modules.payouts?.vendor_disbursed || 0)}
                 </div>
               </div>
             </div>
 
-            {/* Bottom Actions */}
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-end text-xs relative z-10">
+            {/* Bottom Actions: Pending on Left, Button on Right */}
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs relative z-10">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Pending:</span>
+                <span className="text-sm font-bold text-amber-600 tabular-numbers">
+                  {formatCurrency(modules.payouts?.vendor_pending ?? modules.payouts?.pending_liabilities ?? 0)}
+                </span>
+              </div>
               <Link
                 to="/superadmin/payouts/vendors"
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs transition-all hover:scale-105"
@@ -1669,29 +1661,25 @@ export default function SuperAdminDashboardPage() {
                 Sales executive commission &amp; performance payroll
               </p>
 
-              {/* Primary Metrics: Total Disbursed & Pending */}
-              <div className="grid grid-cols-2 gap-4 mt-5">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-                    Total Disbursed
-                  </span>
-                  <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
-                    {formatCurrency(modules.payouts?.sales_disbursed || 0)}
-                  </div>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-                    Pending
-                  </span>
-                  <div className="text-2xl sm:text-3xl font-black text-amber-600 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
-                    {formatCurrency(modules.payouts?.sales_pending || 0)}
-                  </div>
+              {/* Primary Metric: Total Disbursed */}
+              <div className="mt-5">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                  Total Disbursed
+                </span>
+                <div className="text-3xl sm:text-4xl font-black text-slate-900 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
+                  {formatCurrency(modules.payouts?.sales_disbursed || 0)}
                 </div>
               </div>
             </div>
 
-            {/* Bottom Actions */}
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-end text-xs relative z-10">
+            {/* Bottom Actions: Pending on Left, Button on Right */}
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs relative z-10">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Pending:</span>
+                <span className="text-sm font-bold text-amber-600 tabular-numbers">
+                  {formatCurrency(modules.payouts?.sales_pending || 0)}
+                </span>
+              </div>
               <Link
                 to="/superadmin/payouts/sales"
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs transition-all hover:scale-105"
