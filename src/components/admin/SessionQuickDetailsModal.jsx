@@ -190,15 +190,22 @@ export default function SessionQuickDetailsModal({
                 Executive By
               </span>
               {(() => {
-                const isClosed = session.status === 'completed' || session.status === 'in_progress';
-                const executedStaff = isClosed ? (session.executed_by || session.executedBy || session.staff) : null;
+                const isHandled = ['completed', 'in_progress', 'cancelled'].includes(session.status);
+                const executedStaff = session.executed_by || session.executedBy || (isHandled ? (session.staff || session.assignedStaff) : null);
 
-                if (isClosed && executedStaff) {
+                if (executedStaff && (isHandled || session.executed_by || session.executedBy)) {
+                  const statusColor =
+                    session.status === 'cancelled'
+                      ? 'text-rose-600'
+                      : session.status === 'in_progress'
+                      ? 'text-indigo-600'
+                      : 'text-emerald-600';
+
                   return (
                     <>
-                      <div className="font-semibold text-xs text-emerald-800">{executedStaff.name}</div>
-                      <div className="text-[11px] text-emerald-600 font-medium">
-                        {executedStaff.department || 'Completed'}
+                      <div className="font-semibold text-xs text-slate-800">{executedStaff.name}</div>
+                      <div className={`text-[11px] ${statusColor} font-medium`}>
+                        {executedStaff.department || (session.status === 'cancelled' ? 'Cancelled' : session.status === 'in_progress' ? 'In Progress' : 'Completed')}
                       </div>
                     </>
                   );
