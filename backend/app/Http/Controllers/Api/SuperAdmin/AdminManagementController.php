@@ -172,12 +172,15 @@ class AdminManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('admins')->ignore($admin->id)],
             'mobile' => ['nullable', 'string', 'min:7', 'max:20', Rule::unique('admins')->ignore($admin->id)],
-            'password' => ['nullable', 'string', Password::min(8)],
+            'password' => ['nullable', 'string', Password::min(8), 'confirmed'],
+            'password_confirmation' => ['nullable', 'string'],
             'status' => ['sometimes', 'string', Rule::in(['active', 'inactive', 'blocked'])],
             'is_active' => ['sometimes', 'boolean'],
         ], [
             'clinic_id.required' => 'Please select a clinic branch for this administrator.',
             'clinic_id.unique' => 'This clinic branch already has an assigned administrator. Each clinic can only have one admin.',
+            'password.min' => 'Password must be at least 8 characters long.',
+            'password.confirmed' => 'New password and confirm password do not match.',
         ]);
 
         $dataToUpdate = [
@@ -201,8 +204,10 @@ class AdminManagementController extends Controller
             $dataToUpdate['status'] = $validated['is_active'] ? 'active' : ($admin->status === 'blocked' ? 'blocked' : 'inactive');
         }
 
+        $passwordUpdated = false;
         if (! empty($validated['password'])) {
             $dataToUpdate['password'] = Hash::make($validated['password']);
+            $passwordUpdated = true;
             // Revoke current sessions if password updated
             $admin->tokens()->delete();
         }
@@ -215,16 +220,21 @@ class AdminManagementController extends Controller
         $admin->update($dataToUpdate);
 
         $superAdmin = $request->user();
+        $pwdLogNote = $passwordUpdated ? ' with password change' : '';
         AdminActivityLog::record(
             'super_admin',
             $superAdmin->id,
             'admin_updated',
-            "Super Admin '{$superAdmin->name}' updated Admin '{$admin->name}' details (Status: {$admin->status}).",
+            "Super Admin '{$superAdmin->name}' updated Admin '{$admin->name}' details{$pwdLogNote} (Status: {$admin->status}).",
             $request
         );
 
+        $successMessage = $passwordUpdated
+            ? "Admin account '{$admin->name}' and password updated successfully."
+            : 'Admin account updated successfully.';
+
         return response()->json([
-            'message' => 'Admin account updated successfully.',
+            'message' => $successMessage,
             'admin' => $admin->fresh()->load([
                 'superAdmin:id,name,email',
                 'clinic:id,clinic_code,name,branch_name,location,city,state,address,phone',

@@ -17,6 +17,8 @@ import {
   Compass,
   Globe,
   MapPin,
+  KeyRound,
+  Copy,
 } from 'lucide-react';
 import adminManagementService from '../services/adminManagementService';
 import clinicManagementService from '../services/clinicManagementService';
@@ -31,7 +33,6 @@ export default function AdminEditModal({ admin, isOpen, onClose, onSuccess }) {
     email: '',
     mobile: '',
     status: 'active',
-    changePassword: false,
     password: '',
     password_confirmation: '',
   });
@@ -43,6 +44,36 @@ export default function AdminEditModal({ admin, isOpen, onClose, onSuccess }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Generate a random strong password for admin
+  const handleGeneratePassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%&*';
+    let generated = '';
+    for (let i = 0; i < 10; i++) {
+      generated += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setFormData((prev) => ({
+      ...prev,
+      password: generated,
+      password_confirmation: generated,
+    }));
+    setShowPassword(true);
+    setShowConfirmPassword(true);
+    setErrors((prev) => {
+      const copy = { ...prev };
+      delete copy.password;
+      delete copy.password_confirmation;
+      return copy;
+    });
+    toast.info('Generated new strong password.');
+  };
+
+  // Copy password to clipboard
+  const handleCopyPassword = () => {
+    if (!formData.password) return;
+    navigator.clipboard.writeText(formData.password);
+    toast.success('Password copied to clipboard!');
+  };
 
   // Load clinic options (only unassigned clinics + current admin's clinic)
   useEffect(() => {
@@ -105,7 +136,6 @@ export default function AdminEditModal({ admin, isOpen, onClose, onSuccess }) {
         email: admin.email || '',
         mobile: admin.mobile || '',
         status: initialStatus,
-        changePassword: false,
         password: '',
         password_confirmation: '',
       });
@@ -161,10 +191,9 @@ export default function AdminEditModal({ admin, isOpen, onClose, onSuccess }) {
       errs.mobile = 'Please enter a valid mobile number (min 7 digits).';
     }
 
-    if (formData.changePassword) {
-      if (!formData.password) {
-        errs.password = 'New password is required.';
-      } else if (formData.password.length < 8) {
+    // Password validation (only if Superadmin enters a new password)
+    if (formData.password && formData.password.trim() !== '') {
+      if (formData.password.length < 8) {
         errs.password = 'Password must be at least 8 characters.';
       }
 
@@ -199,13 +228,13 @@ export default function AdminEditModal({ admin, isOpen, onClose, onSuccess }) {
         status: formData.status,
       };
 
-      if (formData.changePassword) {
+      if (formData.password && formData.password.trim() !== '') {
         payload.password = formData.password;
         payload.password_confirmation = formData.password_confirmation;
       }
 
       const response = await adminManagementService.updateAdmin(admin.id, payload);
-      toast.success(`Admin account '${formData.name}' updated successfully.`);
+      toast.success(response.message || `Admin account '${formData.name}' updated successfully.`);
 
       if (onSuccess) {
         onSuccess(response.admin || response.data || response);
@@ -239,7 +268,7 @@ export default function AdminEditModal({ admin, isOpen, onClose, onSuccess }) {
 
       <div className="min-h-full flex items-center justify-center p-3 sm:p-4">
         <div
-          className="relative bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200/90 overflow-hidden flex flex-col max-h-[92vh] my-4 sm:my-8 animate-slide-up"
+          className="relative bg-white w-full max-w-xl sm:max-w-2xl rounded-3xl shadow-2xl border border-slate-200/90 overflow-hidden flex flex-col max-h-[92vh] my-4 sm:my-8 animate-slide-up"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Modal Header */}
@@ -369,48 +398,185 @@ export default function AdminEditModal({ admin, isOpen, onClose, onSuccess }) {
                 {errors.name && <p className="text-[11px] text-rose-600 mt-1 font-medium">{errors.name}</p>}
               </div>
 
-              {/* Email Address */}
-              <div className="min-w-0">
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Email Address <span className="text-rose-500">*</span>
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="admin@company.com"
-                    className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 text-slate-900 border rounded-xl focus:bg-white focus:outline-none focus:ring-4 transition-all duration-200 ${
-                      errors.email
-                        ? 'border-rose-400 focus:ring-rose-500/15'
-                        : 'border-slate-200 focus:ring-blue-500/15 focus:border-blue-500'
-                    }`}
-                  />
+              {/* Email Address & Mobile Number 2-Column Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {/* Email Address */}
+                <div className="min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Email Address <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="admin@company.com"
+                      className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 text-slate-900 border rounded-xl focus:bg-white focus:outline-none focus:ring-4 transition-all duration-200 ${
+                        errors.email
+                          ? 'border-rose-400 focus:ring-rose-500/15'
+                          : 'border-slate-200 focus:ring-blue-500/15 focus:border-blue-500'
+                      }`}
+                    />
+                  </div>
+                  {errors.email && <p className="text-[11px] text-rose-600 mt-1 font-medium">{errors.email}</p>}
                 </div>
-                {errors.email && <p className="text-[11px] text-rose-600 mt-1 font-medium">{errors.email}</p>}
+
+                {/* Mobile Number */}
+                <div className="min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Mobile Number <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="tel"
+                      value={formData.mobile}
+                      onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+                      placeholder="+91 98765 43210"
+                      className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 text-slate-900 border rounded-xl focus:bg-white focus:outline-none focus:ring-4 transition-all duration-200 ${
+                        errors.mobile
+                          ? 'border-rose-400 focus:ring-rose-500/15'
+                          : 'border-slate-200 focus:ring-blue-500/15 focus:border-blue-500'
+                      }`}
+                    />
+                  </div>
+                  {errors.mobile && <p className="text-[11px] text-rose-600 mt-1 font-medium">{errors.mobile}</p>}
+                </div>
               </div>
 
-              {/* Mobile Number */}
-              <div className="min-w-0">
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Mobile Number <span className="text-rose-500">*</span>
-                </label>
-                <div className="relative">
-                  <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    type="tel"
-                    value={formData.mobile}
-                    onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-                    placeholder="+91 98765 43210"
-                    className={`w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50 text-slate-900 border rounded-xl focus:bg-white focus:outline-none focus:ring-4 transition-all duration-200 ${
-                      errors.mobile
-                        ? 'border-rose-400 focus:ring-rose-500/15'
-                        : 'border-slate-200 focus:ring-blue-500/15 focus:border-blue-500'
-                    }`}
-                  />
+              {/* Password Change / Credentials Card (Directly Visible for Superadmin) */}
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-50/70 via-blue-50/40 to-slate-50 border border-indigo-200/80 space-y-3 shadow-2xs">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+                      <Lock className="w-3.5 h-3.5" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
+                        Change Password (Optional)
+                      </span>
+                      <span className="text-[11px] text-slate-500">
+                        Leave blank to keep existing password unchanged
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    {formData.password && (
+                      <button
+                        type="button"
+                        onClick={handleCopyPassword}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200 transition-colors cursor-pointer shadow-2xs"
+                        title="Copy password to clipboard"
+                      >
+                        <Copy className="w-3 h-3 text-slate-500" />
+                        <span>Copy</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleGeneratePassword}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-700 hover:text-indigo-900 bg-white hover:bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200 transition-colors cursor-pointer shadow-2xs"
+                      title="Generate random strong 10-character password"
+                    >
+                      <KeyRound className="w-3 h-3 text-indigo-600" />
+                      <span>Generate Password</span>
+                    </button>
+                  </div>
                 </div>
-                {errors.mobile && <p className="text-[11px] text-rose-600 mt-1 font-medium">{errors.mobile}</p>}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  {/* New Password */}
+                  <div className="min-w-0">
+                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                      New Password {formData.password ? <span className="text-rose-500">*</span> : ''}
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={formData.password}
+                        onChange={(e) => {
+                          setFormData({ ...formData, password: e.target.value });
+                          if (errors.password) {
+                            setErrors((prev) => {
+                              const copy = { ...prev };
+                              delete copy.password;
+                              return copy;
+                            });
+                          }
+                        }}
+                        placeholder="Enter min. 8 characters"
+                        autoComplete="new-password"
+                        className={`w-full pl-9 pr-9 py-2 text-xs bg-white text-slate-900 border rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
+                          errors.password
+                            ? 'border-rose-400 focus:ring-rose-500/15'
+                            : 'border-slate-200 focus:ring-indigo-500/15 focus:border-indigo-500'
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer p-1"
+                        title={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                    {errors.password && (
+                      <p className="text-[11px] text-rose-600 mt-1 font-medium">{errors.password}</p>
+                    )}
+                  </div>
+
+                  {/* Confirm New Password */}
+                  <div className="min-w-0">
+                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                      Confirm New Password {formData.password ? <span className="text-rose-500">*</span> : ''}
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={formData.password_confirmation}
+                        onChange={(e) => {
+                          setFormData({ ...formData, password_confirmation: e.target.value });
+                          if (errors.password_confirmation) {
+                            setErrors((prev) => {
+                              const copy = { ...prev };
+                              delete copy.password_confirmation;
+                              return copy;
+                            });
+                          }
+                        }}
+                        placeholder="Re-enter new password"
+                        autoComplete="new-password"
+                        className={`w-full pl-9 pr-9 py-2 text-xs bg-white text-slate-900 border rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
+                          errors.password_confirmation
+                            ? 'border-rose-400 focus:ring-rose-500/15'
+                            : 'border-slate-200 focus:ring-indigo-500/15 focus:border-indigo-500'
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer p-1"
+                        title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                    {errors.password_confirmation && (
+                      <p className="text-[11px] text-rose-600 mt-1 font-medium">{errors.password_confirmation}</p>
+                    )}
+                  </div>
+                </div>
+
+                {formData.password && (
+                  <p className="text-[11px] text-indigo-700/80 flex items-center gap-1.5 pt-0.5">
+                    <Shield className="w-3.5 h-3.5 shrink-0 text-indigo-600" />
+                    <span>Saving will update credentials and invalidate previous sessions for this administrator.</span>
+                  </p>
+                )}
               </div>
 
               {/* Account Status Radio Group */}
@@ -501,98 +667,6 @@ export default function AdminEditModal({ admin, isOpen, onClose, onSuccess }) {
                   </label>
                 </div>
                 {errors.status && <p className="text-[11px] text-rose-600 mt-1">{errors.status}</p>}
-              </div>
-
-              {/* Change Password Checkbox Accordion */}
-              <div className="pt-2 border-t border-slate-100">
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={formData.changePassword}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        changePassword: e.target.checked,
-                        password: '',
-                        password_confirmation: '',
-                      })
-                    }
-                    className="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer"
-                  />
-                  <span className="text-xs font-bold text-slate-700">
-                    Change Administrator Password
-                  </span>
-                </label>
-
-                {formData.changePassword && (
-                  <div className="mt-3 space-y-3 p-4 rounded-2xl bg-slate-50/80 border border-slate-200/90 animate-slide-up">
-                    {/* New Password */}
-                    <div className="min-w-0">
-                      <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
-                        New Password (Min 8 Characters)
-                      </label>
-                      <div className="relative">
-                        <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                        <input
-                          type={showPassword ? 'text' : 'password'}
-                          value={formData.password}
-                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                          placeholder="••••••••••••"
-                          className={`w-full pl-10 pr-10 py-2.5 text-xs bg-white text-slate-900 border rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
-                            errors.password
-                              ? 'border-rose-400 focus:ring-rose-500/15'
-                              : 'border-slate-200 focus:ring-blue-500/15 focus:border-blue-500'
-                          }`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer p-1"
-                        >
-                          {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                        </button>
-                      </div>
-                      {errors.password && <p className="text-[11px] text-rose-600 mt-1 font-medium">{errors.password}</p>}
-                    </div>
-
-                    {/* Confirm New Password */}
-                    <div className="min-w-0">
-                      <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
-                        Confirm New Password
-                      </label>
-                      <div className="relative">
-                        <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                        <input
-                          type={showConfirmPassword ? 'text' : 'password'}
-                          value={formData.password_confirmation}
-                          onChange={(e) =>
-                            setFormData({ ...formData, password_confirmation: e.target.value })
-                          }
-                          placeholder="••••••••••••"
-                          className={`w-full pl-10 pr-10 py-2.5 text-xs bg-white text-slate-900 border rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
-                            errors.password_confirmation
-                              ? 'border-rose-400 focus:ring-rose-500/15'
-                              : 'border-slate-200 focus:ring-blue-500/15 focus:border-blue-500'
-                          }`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer p-1"
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="w-3.5 h-3.5" />
-                          ) : (
-                            <Eye className="w-3.5 h-3.5" />
-                          )}
-                        </button>
-                      </div>
-                      {errors.password_confirmation && (
-                        <p className="text-[11px] text-rose-600 mt-1 font-medium">{errors.password_confirmation}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
