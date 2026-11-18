@@ -204,7 +204,7 @@ class SuperAdminDashboardController extends Controller
             ->get(['id', 'sales_code', 'name', 'email', 'territory', 'designation', 'status', 'created_at']);
 
         $recentAppointments = MasterAppointment::with([
-            'customer:id,first_name,last_name,email,mobile_number',
+            'customer:id,name,email,mobile',
             'sessions:id,master_appointment_id,status,session_date,session_time',
         ])
             ->latest()
