@@ -37,6 +37,7 @@ import ConfirmDialog from '../../components/ConfirmDialog';
 import ProductMultiSelectDropdown from '../../components/admin/ProductMultiSelectDropdown';
 import AppointmentReceiptModal from '../../components/admin/AppointmentReceiptModal';
 import SessionProductsModal from '../../components/admin/SessionProductsModal';
+import StaffAvatar from '../../components/StaffAvatar';
 import { useToast } from '../../context/ToastContext';
 import { useAdminAuth } from '../../features/auth/AdminAuthContext';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -578,32 +579,7 @@ export default function AdminMasterAppointmentDetailsPage() {
                     {/* Staff */}
                     <td className="py-3 px-4 text-xs whitespace-nowrap">
                       <div className="flex items-center gap-2.5">
-                        {ses.staff ? (
-                          ses.staff.image_url || ses.staff.profile_photo || ses.staff.image ? (
-                            <img
-                              src={getImageUrl(ses.staff.image_url || ses.staff.profile_photo || ses.staff.image)}
-                              alt={ses.staff.name}
-                              className="w-7 h-7 rounded-lg object-cover border border-slate-200 shadow-2xs shrink-0"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                                if (e.currentTarget.nextElementSibling) {
-                                  e.currentTarget.nextElementSibling.style.display = 'flex';
-                                }
-                              }}
-                            />
-                          ) : null
-                        ) : null}
-                        <div
-                          className="w-7 h-7 rounded-lg bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center font-bold text-[10px] shrink-0"
-                          style={{
-                            display:
-                              ses.staff && (ses.staff.image_url || ses.staff.profile_photo || ses.staff.image)
-                                ? 'none'
-                                : 'flex',
-                          }}
-                        >
-                          {ses.staff?.name ? ses.staff.name.charAt(0).toUpperCase() : 'S'}
-                        </div>
+                        <StaffAvatar staff={ses.staff} size="sm" />
                         <div>
                           <div className="font-semibold text-slate-800">{ses.staff?.name || 'Unassigned'}</div>
                           <div className="text-slate-400 text-[11px]">{ses.staff?.department || ''}</div>
@@ -626,30 +602,7 @@ export default function AdminMasterAppointmentDetailsPage() {
 
                         return (
                           <div className="flex items-center gap-2.5">
-                            {reassignStaff.image_url || reassignStaff.profile_photo || reassignStaff.image ? (
-                              <img
-                                src={getImageUrl(reassignStaff.image_url || reassignStaff.profile_photo || reassignStaff.image)}
-                                alt={reassignStaff.name}
-                                className="w-7 h-7 rounded-lg object-cover border border-slate-200 shadow-2xs shrink-0"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                  if (e.currentTarget.nextElementSibling) {
-                                    e.currentTarget.nextElementSibling.style.display = 'flex';
-                                  }
-                                }}
-                              />
-                            ) : null}
-                            <div
-                              className="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center font-bold text-[10px] shrink-0"
-                              style={{
-                                display:
-                                  reassignStaff.image_url || reassignStaff.profile_photo || reassignStaff.image
-                                    ? 'none'
-                                    : 'flex',
-                              }}
-                            >
-                              {reassignStaff.name ? reassignStaff.name.charAt(0).toUpperCase() : 'R'}
-                            </div>
+                            <StaffAvatar staff={reassignStaff} size="sm" />
                             <div>
                               <div className="font-semibold text-slate-800">{reassignStaff.name}</div>
                               <div className="text-slate-400 text-[11px]">{reassignStaff.department || ''}</div>
@@ -668,30 +621,7 @@ export default function AdminMasterAppointmentDetailsPage() {
                         if (isClosed && executedStaff) {
                           return (
                             <div className="flex items-center gap-2.5">
-                              {executedStaff.image_url || executedStaff.profile_photo || executedStaff.image ? (
-                                <img
-                                  src={getImageUrl(executedStaff.image_url || executedStaff.profile_photo || executedStaff.image)}
-                                  alt={executedStaff.name}
-                                  className="w-7 h-7 rounded-lg object-cover border border-emerald-200 shadow-2xs shrink-0"
-                                  onError={(e) => {
-                                    e.currentTarget.style.display = 'none';
-                                    if (e.currentTarget.nextElementSibling) {
-                                      e.currentTarget.nextElementSibling.style.display = 'flex';
-                                    }
-                                  }}
-                                />
-                              ) : null}
-                              <div
-                                className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center font-bold text-[10px] shrink-0"
-                                style={{
-                                  display:
-                                    executedStaff.image_url || executedStaff.profile_photo || executedStaff.image
-                                      ? 'none'
-                                      : 'flex',
-                                }}
-                              >
-                                {executedStaff.name ? executedStaff.name.charAt(0).toUpperCase() : 'E'}
-                              </div>
+                              <StaffAvatar staff={executedStaff} size="sm" />
                               <div>
                                 <div className="font-semibold text-slate-800">{executedStaff.name}</div>
                                 <div className="text-emerald-600 text-[11px] font-medium">
