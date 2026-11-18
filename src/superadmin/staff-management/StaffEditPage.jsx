@@ -20,6 +20,9 @@ import {
   Eye,
   EyeOff,
   UserCheck,
+  Shield,
+  KeyRound,
+  Copy,
 } from 'lucide-react';
 import staffManagementService from '../services/staffManagementService';
 import clinicManagementService from '../services/clinicManagementService';
@@ -45,6 +48,7 @@ export default function StaffEditPage() {
     name: '',
     email: '',
     password: '',
+    password_confirmation: '',
     mobile: '',
     department: '',
     designation: '',
@@ -61,7 +65,38 @@ export default function StaffEditPage() {
   const [isLoadingClinics, setIsLoadingClinics] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
+
+  // Generate a random strong password for staff
+  const handleGeneratePassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%&*';
+    let generated = '';
+    for (let i = 0; i < 10; i++) {
+      generated += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setFormData((prev) => ({
+      ...prev,
+      password: generated,
+      password_confirmation: generated,
+    }));
+    setShowPassword(true);
+    setShowConfirmPassword(true);
+    setErrors((prev) => {
+      const copy = { ...prev };
+      delete copy.password;
+      delete copy.password_confirmation;
+      return copy;
+    });
+    toast.info('Generated new strong password.');
+  };
+
+  // Copy password to clipboard
+  const handleCopyPassword = () => {
+    if (!formData.password) return;
+    navigator.clipboard.writeText(formData.password);
+    toast.success('Password copied to clipboard!');
+  };
 
   // Fetch active clinic options
   useEffect(() => {
@@ -108,6 +143,7 @@ export default function StaffEditPage() {
           name: data.name || '',
           email: data.email || '',
           password: '',
+          password_confirmation: '',
           mobile: data.mobile || '',
           department: data.department || '',
           designation: data.designation || '',
@@ -213,8 +249,15 @@ export default function StaffEditPage() {
       }
     }
 
-    if (formData.password && formData.password.trim() && formData.password.trim().length < 8) {
-      errs.password = 'Password must be at least 8 characters.';
+    if (formData.password && formData.password.trim() !== '') {
+      if (formData.password.trim().length < 8) {
+        errs.password = 'Password must be at least 8 characters.';
+      }
+      if (!formData.password_confirmation) {
+        errs.password_confirmation = 'Please confirm the new password.';
+      } else if (formData.password !== formData.password_confirmation) {
+        errs.password_confirmation = 'Passwords do not match.';
+      }
     }
 
     return errs;
@@ -249,6 +292,7 @@ export default function StaffEditPage() {
 
       if (formData.password && formData.password.trim()) {
         payload.password = formData.password.trim();
+        payload.password_confirmation = formData.password_confirmation.trim();
       }
 
       if (photoFile) {
@@ -566,36 +610,139 @@ export default function StaffEditPage() {
                   )}
                 </div>
 
-                {/* Password (Optional update) */}
-                <div className="min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Reset Password <span className="text-slate-400 font-normal lowercase">(min. 8 characters, or leave blank to keep current)</span>
-                  </label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={formData.password}
-                      onChange={(e) => handleChange('password', e.target.value)}
-                      placeholder="Enter new password (min. 8 characters)"
-                      disabled={isSubmitting}
-                      className={`w-full pl-10 pr-10 py-2.5 text-xs bg-slate-50 border rounded-xl focus:bg-white focus:outline-none focus:ring-4 transition-all duration-200 ${
-                        errors.password
-                          ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/15'
-                          : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-500/15'
-                      }`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
-                      title={showPassword ? 'Hide Password' : 'Show Password'}
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
+                {/* Staff Login Password Card (Full 2-column span) */}
+                <div className="min-w-0 sm:col-span-2 p-4 rounded-2xl bg-gradient-to-br from-indigo-50/70 via-blue-50/40 to-slate-50 border border-indigo-200/80 space-y-3 shadow-2xs">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+                        <Lock className="w-3.5 h-3.5" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
+                          Staff Login Password (Optional)
+                        </span>
+                        <span className="text-[11px] text-slate-500">
+                          Leave blank to keep existing password unchanged
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      {formData.password && (
+                        <button
+                          type="button"
+                          onClick={handleCopyPassword}
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200 transition-colors cursor-pointer shadow-2xs"
+                          title="Copy password to clipboard"
+                        >
+                          <Copy className="w-3 h-3 text-slate-500" />
+                          <span>Copy</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleGeneratePassword}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-700 hover:text-indigo-900 bg-white hover:bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200 transition-colors cursor-pointer shadow-2xs"
+                        title="Generate random strong 10-character password"
+                      >
+                        <KeyRound className="w-3 h-3 text-indigo-600" />
+                        <span>Generate Password</span>
+                      </button>
+                    </div>
                   </div>
-                  {errors.password && (
-                    <p className="text-[11px] text-rose-600 mt-1 font-medium">{errors.password}</p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    {/* New Password */}
+                    <div className="min-w-0">
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        New Password {formData.password ? <span className="text-rose-500">*</span> : ''}
+                      </label>
+                      <div className="relative">
+                        <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={formData.password}
+                          onChange={(e) => {
+                            handleChange('password', e.target.value);
+                            if (errors.password) {
+                              setErrors((prev) => {
+                                const copy = { ...prev };
+                                delete copy.password;
+                                return copy;
+                              });
+                            }
+                          }}
+                          placeholder="Enter min. 8 characters"
+                          autoComplete="new-password"
+                          disabled={isSubmitting}
+                          className={`w-full pl-9 pr-9 py-2 text-xs bg-white text-slate-900 border rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
+                            errors.password
+                              ? 'border-rose-400 focus:ring-rose-500/15'
+                              : 'border-slate-200 focus:ring-indigo-500/15 focus:border-indigo-500'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer p-1"
+                          title={showPassword ? 'Hide password' : 'Show password'}
+                        >
+                          {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                      {errors.password && (
+                        <p className="text-[11px] text-rose-600 mt-1 font-medium">{errors.password}</p>
+                      )}
+                    </div>
+
+                    {/* Confirm New Password */}
+                    <div className="min-w-0">
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        Confirm New Password {formData.password ? <span className="text-rose-500">*</span> : ''}
+                      </label>
+                      <div className="relative">
+                        <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          value={formData.password_confirmation}
+                          onChange={(e) => {
+                            handleChange('password_confirmation', e.target.value);
+                            if (errors.password_confirmation) {
+                              setErrors((prev) => {
+                                const copy = { ...prev };
+                                delete copy.password_confirmation;
+                                return copy;
+                              });
+                            }
+                          }}
+                          placeholder="Re-enter new password"
+                          autoComplete="new-password"
+                          disabled={isSubmitting}
+                          className={`w-full pl-9 pr-9 py-2 text-xs bg-white text-slate-900 border rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
+                            errors.password_confirmation
+                              ? 'border-rose-400 focus:ring-rose-500/15'
+                              : 'border-slate-200 focus:ring-indigo-500/15 focus:border-indigo-500'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer p-1"
+                          title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                        >
+                          {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                      {errors.password_confirmation && (
+                        <p className="text-[11px] text-rose-600 mt-1 font-medium">{errors.password_confirmation}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {formData.password && (
+                    <p className="text-[11px] text-indigo-700/80 flex items-center gap-1.5 pt-0.5">
+                      <Shield className="w-3.5 h-3.5 shrink-0 text-indigo-600" />
+                      <span>Updating password will immediately revoke previous active sessions for this staff member.</span>
+                    </p>
                   )}
                 </div>
 

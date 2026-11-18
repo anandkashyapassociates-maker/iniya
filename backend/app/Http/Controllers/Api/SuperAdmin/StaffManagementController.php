@@ -256,7 +256,8 @@ class StaffManagementController extends Controller
             'clinic_id' => ['sometimes', 'nullable', 'integer', 'exists:clinics,id'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('staff')->ignore($staff->id)],
-            'password' => ['nullable', 'string', 'min:8'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'password_confirmation' => ['nullable', 'string'],
             'mobile' => ['nullable', 'string', 'min:7', 'max:25'],
             'department' => ['nullable', 'string', 'max:100'],
             'designation' => ['nullable', 'string', 'max:100'],
@@ -267,6 +268,9 @@ class StaffManagementController extends Controller
             'image' => $photoRules,
             'status' => ['sometimes', 'string', Rule::in(['active', 'inactive', 'blocked'])],
             'is_active' => ['sometimes', 'boolean'],
+        ], [
+            'password.min' => 'Password must be at least 8 characters long.',
+            'password.confirmed' => 'New password and confirm password do not match.',
         ]);
 
         $dataToUpdate = [
@@ -278,8 +282,12 @@ class StaffManagementController extends Controller
             $dataToUpdate['clinic_id'] = $validated['clinic_id'];
         }
 
+        $passwordChanged = false;
         if (! empty($validated['password'])) {
             $dataToUpdate['password'] = Hash::make($validated['password']);
+            $passwordChanged = true;
+            // Revoke active sessions if password is changed
+            $staff->tokens()->delete();
         }
 
         foreach (['mobile', 'department', 'designation', 'employment_type', 'joining_date', 'address'] as $field) {
@@ -349,16 +357,21 @@ class StaffManagementController extends Controller
         $staff->update($dataToUpdate);
 
         $superAdmin = $request->user();
+        $pwdLogNote = $passwordChanged ? ' with password change' : '';
         AdminActivityLog::record(
             'super_admin',
             $superAdmin->id,
             'staff_updated',
-            "Super Admin '{$superAdmin->name}' updated Staff '{$staff->name}' ({$staff->staff_code}) details.",
+            "Super Admin '{$superAdmin->name}' updated Staff '{$staff->name}' ({$staff->staff_code}) details{$pwdLogNote}.",
             $request
         );
 
+        $successMsg = $passwordChanged
+            ? "Staff member '{$staff->name}' details & password updated successfully."
+            : 'Staff member updated successfully.';
+
         return response()->json([
-            'message' => 'Staff member updated successfully.',
+            'message' => $successMsg,
             'staff' => $staff->fresh()->load([
                 'superAdmin:id,name,email',
                 'clinic:id,clinic_code,name,branch_name,location,city,address,phone',
@@ -419,6 +432,91 @@ class StaffManagementController extends Controller
         return response()->json([
             'message' => "Staff member {$statusText} successfully.",
             'staff' => $staff->fresh()->load('superAdmin:id,name,email'),
+        ]);
+    }
+
+    /**
+     * Impersonate / Log in as a Staff member by Super Admin.
+     */
+    public function impersonate(Request $request, string $id): JsonResponse
+    {
+        $staff = Staff::find($id);
+
+        if (! $staff) {
+            return response()->json([
+                'message' => 'Staff member not found.',
+            ], 404);
+        }
+
+        if ($staff->status === 'blocked') {
+            return response()->json([
+                'message' => 'Cannot log in as a blocked Staff account. Please unblock the staff member first.',
+            ], 422);
+        }
+
+        if (! $staff->is_active || $staff->status === 'inactive') {
+            return response()->json([
+                'message' => 'Cannot log in as an inactive Staff account. Please activate the staff member first.',
+            ], 422);
+        }
+
+        $superAdmin = $request->user();
+
+        // Generate Sanctum access token for the staff with role:staff ability
+        $token = $staff->createToken('staff-impersonate-token', ['role:staff'])->plainTextToken;
+
+        AdminActivityLog::record(
+            'super_admin',
+            $superAdmin->id,
+            'staff_impersonation',
+            "Super Admin '{$superAdmin->name}' logged in as Staff '{$staff->name}' (ID: {$staff->id}, Code: {$staff->staff_code}).",
+            $request
+        );
+
+        $staff->loadMissing('clinic');
+
+        return response()->json([
+            'message' => "Successfully authenticated as Staff '{$staff->name}'.",
+            'token' => $token,
+            'user' => [
+                'id' => $staff->id,
+                'staff_code' => $staff->staff_code,
+                'name' => $staff->name,
+                'email' => $staff->email,
+                'mobile' => $staff->mobile,
+                'clinic_id' => $staff->clinic_id,
+                'clinic' => $staff->clinic ? [
+                    'id' => $staff->clinic->id,
+                    'clinic_code' => $staff->clinic->clinic_code,
+                    'name' => $staff->clinic->name,
+                    'branch_name' => $staff->clinic->branch_name,
+                    'location' => $staff->clinic->location,
+                    'address' => $staff->clinic->address,
+                    'city' => $staff->clinic->city,
+                    'state' => $staff->clinic->state,
+                    'postal_code' => $staff->clinic->postal_code,
+                    'phone' => $staff->clinic->phone,
+                    'email' => $staff->clinic->email,
+                    'status' => $staff->clinic->status,
+                ] : null,
+                'department' => $staff->department,
+                'designation' => $staff->designation,
+                'employment_type' => $staff->employment_type,
+                'profile_photo' => $staff->profile_photo,
+                'image' => $staff->profile_photo,
+                'image_url' => $staff->image_url,
+                'status' => $staff->status,
+                'is_active' => $staff->is_active,
+                'last_login_at' => $staff->last_login_at,
+                'created_at' => $staff->created_at,
+                'role' => 'staff',
+                'user_type' => 'staff',
+            ],
+            'impersonated_by' => [
+                'superadmin_id' => $superAdmin->id,
+                'superadmin_name' => $superAdmin->name,
+                'superadmin_email' => $superAdmin->email,
+            ],
         ]);
     }
 }

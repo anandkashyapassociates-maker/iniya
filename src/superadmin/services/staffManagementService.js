@@ -71,6 +71,14 @@ export const staffManagementService = {
     const response = await superAdminApiClient.get('/superadmin/staff/departments');
     return response.data;
   },
+
+  /**
+   * Impersonate / Log in as Staff member by Super Admin.
+   */
+  async impersonateStaff(id) {
+    const response = await superAdminApiClient.post(`/superadmin/staff/${id}/impersonate`);
+    return response.data;
+  },
 };
 
 export default staffManagementService;
