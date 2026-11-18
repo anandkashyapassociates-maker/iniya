@@ -42,7 +42,7 @@ class SessionRescheduleController extends Controller
         $validated = $request->validate([
             'session_date' => ['required', 'date', 'after_or_equal:today'],
             'session_time' => ['required', 'string', 'max:20'],
-            'staff_id' => ['required', 'exists:staff,id'],
+            'staff_id' => ['nullable', 'exists:staff,id'],
             'staff_commission' => ['nullable', 'numeric', 'min:0'],
             'inventory_product_id' => ['nullable'],
             'inventory_product_ids' => ['nullable', 'array'],
@@ -83,7 +83,7 @@ class SessionRescheduleController extends Controller
                 ]);
             }
 
-            if ($session->masterAppointment?->clinic_id) {
+            if (! empty($validated['staff_id']) && $session->masterAppointment?->clinic_id) {
                 $staffValid = Staff::where('id', $validated['staff_id'])
                     ->where('clinic_id', $session->masterAppointment->clinic_id)
                     ->exists();
@@ -124,6 +124,10 @@ class SessionRescheduleController extends Controller
             $hasProductUpdate = array_key_exists('inventory_product_ids', $validated) || array_key_exists('inventory_product_id', $validated);
             $newProductIds = $hasProductUpdate ? $productIds : $oldProductIds;
 
+            $targetStaffId = ! empty($validated['staff_id'])
+                ? (int) $validated['staff_id']
+                : ($session->executed_by_staff_id ?? $session->staff_id);
+
             // 1. Create reschedule history record
             $history = AppointmentRescheduleHistory::create([
                 'session_id' => $session->id,
@@ -134,7 +138,7 @@ class SessionRescheduleController extends Controller
                 'old_inventory_product_ids' => ! empty($oldProductIds) ? array_values($oldProductIds) : null,
                 'new_date' => $validated['session_date'],
                 'new_time' => $validated['session_time'],
-                'new_staff_id' => $validated['staff_id'],
+                'new_staff_id' => $targetStaffId,
                 'new_commission' => $newCommission,
                 'new_inventory_product_ids' => ! empty($newProductIds) ? array_values($newProductIds) : null,
                 'reschedule_reason' => $validated['reschedule_reason'] ?? null,
@@ -154,7 +158,7 @@ class SessionRescheduleController extends Controller
                 'session_date' => $validated['session_date'],
                 'session_time' => $validated['session_time'],
                 'staff_id' => $originalStaffId,
-                'executed_by_staff_id' => $validated['staff_id'],
+                'executed_by_staff_id' => ! empty($validated['staff_id']) ? (int) $validated['staff_id'] : $session->executed_by_staff_id,
                 'staff_commission' => $newCommission,
             ];
 
@@ -174,6 +178,127 @@ class SessionRescheduleController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Session rescheduled successfully and history recorded.',
+            'data' => $result,
+        ]);
+    }
+
+    /**
+     * Reassign an individual appointment session to another staff practitioner.
+     * STRICT BUSINESS RULES:
+     * - Only pending sessions can be reassigned.
+     * - In Progress, Completed, and Cancelled sessions are strictly prohibited.
+     * - Concurrency safe with row locking (lockForUpdate).
+     * - Audit trail saved in appointment_reschedule_history table.
+     */
+    public function reassignStaff(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $isStaff = ($user instanceof Staff)
+            || (isset($user->role) && in_array(strtolower($user->role), ['staff', 'staff practitioner']))
+            || (isset($user->user_type) && strtolower($user->user_type) === 'staff')
+            || ($user && ! empty($user->staff_code))
+            || ($user && $user->tokenCan('role:staff'));
+
+        if ($isStaff) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Staff members are strictly not authorized to reassign sessions. Only Clinic Administrators can reassign staff.',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'staff_id' => ['required', 'exists:staff,id'],
+            'staff_commission' => ['nullable', 'numeric', 'min:0'],
+            'reason' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $adminName = $request->user()?->name ?? 'Admin';
+
+        $result = DB::transaction(function () use ($id, $validated, $adminName, $user) {
+            /** @var AppointmentSession $session */
+            $session = AppointmentSession::with('masterAppointment')->where('id', $id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($user && ! empty($user->clinic_id) && (int) $session->masterAppointment?->clinic_id !== (int) $user->clinic_id) {
+                throw ValidationException::withMessages([
+                    'session' => ['Unauthorized: This appointment session belongs to a different clinic branch.'],
+                ]);
+            }
+
+            if ($session->masterAppointment?->clinic_id) {
+                $staffValid = Staff::where('id', $validated['staff_id'])
+                    ->where('clinic_id', $session->masterAppointment->clinic_id)
+                    ->exists();
+                if (! $staffValid) {
+                    throw ValidationException::withMessages([
+                        'staff_id' => ['Selected staff member does not belong to this clinic branch.'],
+                    ]);
+                }
+            }
+
+            // STRICT STATUS ENFORCEMENT
+            if ($session->status !== AppointmentSession::STATUS_PENDING) {
+                $statusLabel = ucfirst(str_replace('_', ' ', $session->status));
+                throw ValidationException::withMessages([
+                    'status' => ["Only 'Pending' sessions can have staff reassigned. This session is currently '{$statusLabel}', so staff reassignment is not allowed."],
+                ]);
+            }
+
+            $sessionDateStr = $session->session_date instanceof Carbon
+                ? $session->session_date->toDateString()
+                : (string) $session->session_date;
+
+            $oldStaffId = $session->executed_by_staff_id ?? $session->staff_id;
+            $oldCommission = $session->staff_commission;
+            $newCommission = array_key_exists('staff_commission', $validated) && $validated['staff_commission'] !== null
+                ? (float) $validated['staff_commission']
+                : (float) $session->staff_commission;
+
+            $productIds = ! empty($session->inventory_product_ids)
+                ? array_map('intval', (array) $session->inventory_product_ids)
+                : (! empty($session->inventory_product_id) ? [(int) $session->inventory_product_id] : []);
+
+            // 1. Create reschedule history record for audit
+            $history = AppointmentRescheduleHistory::create([
+                'session_id' => $session->id,
+                'old_date' => $sessionDateStr,
+                'old_time' => $session->session_time,
+                'old_staff_id' => $oldStaffId,
+                'old_commission' => $oldCommission,
+                'old_inventory_product_ids' => ! empty($productIds) ? array_values($productIds) : null,
+                'new_date' => $sessionDateStr,
+                'new_time' => $session->session_time,
+                'new_staff_id' => $validated['staff_id'],
+                'new_commission' => $newCommission,
+                'new_inventory_product_ids' => ! empty($productIds) ? array_values($productIds) : null,
+                'reschedule_reason' => ! empty($validated['reason']) ? $validated['reason'] : 'Staff reassigned by admin',
+                'rescheduled_by' => $adminName,
+                'created_at' => Carbon::now(),
+            ]);
+
+            // Preserve original booking staff in staff_id, and assign the newly chosen staff as executed_by_staff_id
+            $originalStaffId = $session->staff_id;
+            $firstHistory = AppointmentRescheduleHistory::where('session_id', $session->id)->orderBy('id')->first();
+            if ($firstHistory && $firstHistory->old_staff_id) {
+                $originalStaffId = $firstHistory->old_staff_id;
+            }
+
+            $session->update([
+                'staff_id' => $originalStaffId,
+                'executed_by_staff_id' => $validated['staff_id'],
+                'staff_commission' => $newCommission,
+            ]);
+
+            return [
+                'session' => $session->fresh(['staff', 'executedBy', 'inventoryProduct']),
+                'history' => $history->load(['oldStaff', 'newStaff']),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Staff reassigned successfully and history recorded.',
             'data' => $result,
         ]);
     }

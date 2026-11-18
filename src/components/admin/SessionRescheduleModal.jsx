@@ -25,8 +25,6 @@ export default function SessionRescheduleModal({
   const [loading, setLoading] = useState(false);
   const [sessionDate, setSessionDate] = useState('');
   const [sessionTime, setSessionTime] = useState('');
-  const [staffId, setStaffId] = useState('');
-  const [staffCommission, setStaffCommission] = useState('0');
   const [selectedProductIds, setSelectedProductIds] = useState([]);
   const [reason, setReason] = useState('');
   const [error, setError] = useState('');
@@ -37,12 +35,6 @@ export default function SessionRescheduleModal({
     if (session) {
       setSessionDate(session.session_date ? String(session.session_date).slice(0, 10) : todayStr);
       setSessionTime(session.session_time || '10:00');
-      setStaffId(session.staff_id || (staffList[0]?.id ?? ''));
-      setStaffCommission(
-        session.staff_commission !== undefined && session.staff_commission !== null
-          ? String(session.staff_commission)
-          : '0'
-      );
 
       // Pre-populate products from session (support multiple or legacy single)
       const existingProductIds = session.selected_products && session.selected_products.length > 0
@@ -55,7 +47,7 @@ export default function SessionRescheduleModal({
       setReason('');
       setError('');
     }
-  }, [session, staffList, todayStr]);
+  }, [session, todayStr]);
 
   // Staff members are strictly not permitted to reschedule sessions
   if (!isOpen || !session || isStaff) return null;
@@ -80,16 +72,6 @@ export default function SessionRescheduleModal({
       return;
     }
 
-    if (!staffId) {
-      setError('Please assign a staff member.');
-      return;
-    }
-
-    if (staffCommission === '' || isNaN(Number(staffCommission)) || Number(staffCommission) < 0) {
-      setError('Please enter a valid staff commission (₹0 or greater).');
-      return;
-    }
-
     // Past time check for today
     if (sessionDate === todayStr) {
       const now = new Date();
@@ -110,8 +92,6 @@ export default function SessionRescheduleModal({
       const res = await adminMasterAppointmentService.rescheduleSession(session.id, {
         session_date: sessionDate,
         session_time: sessionTime,
-        staff_id: staffId,
-        staff_commission: Number(staffCommission),
         inventory_product_ids: pIds,
         inventory_product_id: pIds.length > 0 ? pIds[0] : null,
         reschedule_reason: reason || undefined,
@@ -248,50 +228,7 @@ export default function SessionRescheduleModal({
               </div>
             </div>
 
-            {/* Grid 2: Assigned Staff & Commission in 2 Columns */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {/* New Assigned Staff */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  New Assigned Staff <span className="text-rose-500">*</span>
-                </label>
-                <select
-                  value={staffId}
-                  onChange={(e) => setStaffId(e.target.value)}
-                  required
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-colors cursor-pointer"
-                >
-                  <option value="">Select Staff Member</option>
-                  {staffList.map((st) => (
-                    <option key={st.id} value={st.id}>
-                      {st.name} {st.department ? `(${st.department})` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
 
-              {/* New Staff Commission */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Staff Commission (₹) <span className="text-rose-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-semibold text-xs sm:text-sm">
-                    ₹
-                  </div>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={staffCommission}
-                    onChange={(e) => setStaffCommission(e.target.value)}
-                    placeholder="0.00"
-                    required
-                    className="w-full pl-8 pr-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-colors font-mono"
-                  />
-                </div>
-              </div>
-            </div>
 
             {/* Product Used: Editable Multi-Select Dropdown */}
             <div>

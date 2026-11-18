@@ -52,6 +52,10 @@ export const adminMasterAppointmentService = {
     return adminApi.post(`/admin/sessions/${sessionId}/reschedule`, data).then(r => r.data);
   },
 
+  reassignStaff(sessionId, data) {
+    return adminApi.post(`/admin/sessions/${sessionId}/reassign-staff`, data).then(r => r.data);
+  },
+
   getRescheduleHistory(sessionId) {
     return adminApi.get(`/admin/sessions/${sessionId}/reschedule-history`).then(r => r.data);
   },

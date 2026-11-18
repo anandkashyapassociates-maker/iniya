@@ -362,6 +362,7 @@ Route::prefix('admin')
             
             // Session Reschedule & History (Strict Pending Validation & Concurrency Locked)
             Route::post('/sessions/{id}/reschedule', [SessionRescheduleController::class, 'reschedule']);
+            Route::post('/sessions/{id}/reassign-staff', [SessionRescheduleController::class, 'reassignStaff']);
             Route::get('/sessions/{id}/reschedule-history', [SessionRescheduleController::class, 'history']);
 
             // ==========================================

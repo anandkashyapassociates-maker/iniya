@@ -27,9 +27,11 @@ import {
   Check,
   Building2,
   MapPin,
+  UserCheck,
 } from 'lucide-react';
 import adminMasterAppointmentService from '../../services/adminMasterAppointmentService';
 import SessionRescheduleModal from '../../components/admin/SessionRescheduleModal';
+import SessionReassignStaffModal from '../../components/admin/SessionReassignStaffModal';
 import SessionRescheduleHistoryModal from '../../components/admin/SessionRescheduleHistoryModal';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import ProductMultiSelectDropdown from '../../components/admin/ProductMultiSelectDropdown';
@@ -64,6 +66,7 @@ export default function AdminMasterAppointmentDetailsPage() {
 
   // Modals state
   const [rescheduleSession, setRescheduleSession] = useState(null);
+  const [reassignSession, setReassignSession] = useState(null);
   const [historySession, setHistorySession] = useState(null);
   const [deleteSessionId, setDeleteSessionId] = useState(null);
   const [deletingSession, setDeletingSession] = useState(false);
@@ -526,6 +529,7 @@ export default function AdminMasterAppointmentDetailsPage() {
                 <th className="py-3 px-4 min-w-[140px]">Product Used</th>
                 <th className="py-3 px-3 text-center whitespace-nowrap">Session Photo</th>
                 <th className="py-3 px-4 whitespace-nowrap">Status</th>
+                <th className="py-3 px-4 text-center whitespace-nowrap">Reassign Staff</th>
                 <th className="py-3 px-4 text-center whitespace-nowrap">Reschedule</th>
                 <th className="py-3 px-3 text-center whitespace-nowrap">View</th>
                 <th className="py-3 px-3 text-center whitespace-nowrap">Delete</th>
@@ -832,7 +836,29 @@ export default function AdminMasterAppointmentDetailsPage() {
                       </span>
                     </td>
 
-                    {/* Dedicated Column: Reschedule & Audit Log (Directly after Status) */}
+                    {/* Dedicated Column: Reassign Staff (Directly after Status) */}
+                    <td className="py-3 px-4 text-center whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={() => setReassignSession(ses)}
+                        disabled={!isPending}
+                        title={
+                          isPending
+                            ? 'Reassign this session to another staff practitioner'
+                            : `Reassignment locked: Status is ${ses.status}`
+                        }
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-xl border transition-all whitespace-nowrap shadow-xs ${
+                          isPending
+                            ? 'text-teal-700 bg-teal-50 hover:bg-teal-100 hover:text-teal-800 border-teal-200 cursor-pointer'
+                            : 'text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed opacity-60'
+                        }`}
+                      >
+                        <UserCheck className="w-3.5 h-3.5 text-teal-600" />
+                        <span>Reassign Staff</span>
+                      </button>
+                    </td>
+
+                    {/* Dedicated Column: Reschedule & Audit Log */}
                     <td className="py-3 px-4 text-center whitespace-nowrap">
                       <div className="inline-flex items-center justify-center gap-1.5">
                         <button
@@ -1251,6 +1277,15 @@ export default function AdminMasterAppointmentDetailsPage() {
           </div>
         </div>
       )}
+
+      {/* Reassign Staff Modal */}
+      <SessionReassignStaffModal
+        isOpen={Boolean(reassignSession)}
+        onClose={() => setReassignSession(null)}
+        session={reassignSession}
+        staffList={staffList}
+        onSuccess={() => fetchDetails()}
+      />
 
       {/* Reschedule Modal */}
       <SessionRescheduleModal
