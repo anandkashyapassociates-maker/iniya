@@ -83,13 +83,27 @@ export default function AdminDetailsPage() {
     try {
       const res = await adminManagementService.impersonateAdmin(adm.id);
 
-      // Store in localStorage
+      // Store in localStorage for Admin role strictly
       localStorage.setItem('admin_token', res.token);
       localStorage.setItem('admin_user', JSON.stringify(res.user));
+      localStorage.setItem('clinic_active_role', 'admin');
+      localStorage.removeItem('staff_token');
+      localStorage.removeItem('staff_user');
       localStorage.setItem(
         'admin_impersonated_by_superadmin',
         JSON.stringify(res.impersonated_by || { active: true, admin_id: adm.id })
       );
+
+      // Directly set sessionStorage on newTab if accessible
+      try {
+        if (newTab && newTab.sessionStorage) {
+          newTab.sessionStorage.setItem('clinic_tab_token', res.token);
+          newTab.sessionStorage.setItem('clinic_tab_user', JSON.stringify(res.user));
+          newTab.sessionStorage.setItem('clinic_tab_role', 'admin');
+        }
+      } catch (e) {
+        // Safe ignore
+      }
 
       if (setSession) {
         setSession(res.token, res.user);
