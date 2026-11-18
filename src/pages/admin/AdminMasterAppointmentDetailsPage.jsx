@@ -519,7 +519,8 @@ export default function AdminMasterAppointmentDetailsPage() {
                 <th className="py-3 px-4 whitespace-nowrap">Date & Time</th>
                 <th className="py-3 px-4 min-w-[200px]">Treatment / Procedure</th>
                 <th className="py-3 px-4 min-w-[140px]">Assigned Staff</th>
-                <th className="py-3 px-4 min-w-[140px]">Executive Staff</th>
+                <th className="py-3 px-4 min-w-[140px]">Reassign Staff</th>
+                <th className="py-3 px-4 min-w-[140px]">Executive By</th>
                 <th className="py-3 px-4 min-w-[160px]">Clinic Branch</th>
                 <th className="py-3 px-4 whitespace-nowrap">Commission</th>
                 <th className="py-3 px-4 min-w-[140px]">Product Used</th>
@@ -606,22 +607,103 @@ export default function AdminMasterAppointmentDetailsPage() {
                       </div>
                     </td>
 
-                    {/* Executive Staff */}
-                    <td className="py-3 px-4 text-xs">
-                      {ses.executed_by || ses.executedBy ? (
-                        <>
-                          <div className="font-semibold text-slate-800">
-                            {(ses.executed_by || ses.executedBy)?.name}
+                    {/* Reassign Staff */}
+                    <td className="py-3 px-4 text-xs whitespace-nowrap">
+                      {(() => {
+                        const latestReschedule = ses.reschedule_histories?.[0];
+                        const reassignStaff =
+                          latestReschedule?.new_staff ||
+                          latestReschedule?.newStaff ||
+                          (hasRescheduleHistories ? (ses.executed_by || ses.executedBy) : null);
+
+                        if (!hasRescheduleHistories || !reassignStaff) {
+                          return <span className="text-slate-400 font-medium text-xs">—</span>;
+                        }
+
+                        return (
+                          <div className="flex items-center gap-2.5">
+                            {reassignStaff.image_url || reassignStaff.profile_photo || reassignStaff.image ? (
+                              <img
+                                src={getImageUrl(reassignStaff.image_url || reassignStaff.profile_photo || reassignStaff.image)}
+                                alt={reassignStaff.name}
+                                className="w-7 h-7 rounded-lg object-cover border border-slate-200 shadow-2xs shrink-0"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                  if (e.currentTarget.nextElementSibling) {
+                                    e.currentTarget.nextElementSibling.style.display = 'flex';
+                                  }
+                                }}
+                              />
+                            ) : null}
+                            <div
+                              className="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center font-bold text-[10px] shrink-0"
+                              style={{
+                                display:
+                                  reassignStaff.image_url || reassignStaff.profile_photo || reassignStaff.image
+                                    ? 'none'
+                                    : 'flex',
+                              }}
+                            >
+                              {reassignStaff.name ? reassignStaff.name.charAt(0).toUpperCase() : 'R'}
+                            </div>
+                            <div>
+                              <div className="font-semibold text-slate-800">{reassignStaff.name}</div>
+                              <div className="text-slate-400 text-[11px]">{reassignStaff.department || ''}</div>
+                            </div>
                           </div>
-                          <div className="text-slate-400 text-[11px]">
-                            {(ses.executed_by || ses.executedBy)?.department || ''}
-                          </div>
-                        </>
-                      ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-400 text-[11px] font-medium">
-                          Pending Execution
-                        </span>
-                      )}
+                        );
+                      })()}
+                    </td>
+
+                    {/* Executive By */}
+                    <td className="py-3 px-4 text-xs whitespace-nowrap">
+                      {(() => {
+                        const isClosed = ses.status === 'completed' || ses.status === 'in_progress';
+                        const executedStaff = isClosed ? (ses.executed_by || ses.executedBy || ses.staff) : null;
+
+                        if (isClosed && executedStaff) {
+                          return (
+                            <div className="flex items-center gap-2.5">
+                              {executedStaff.image_url || executedStaff.profile_photo || executedStaff.image ? (
+                                <img
+                                  src={getImageUrl(executedStaff.image_url || executedStaff.profile_photo || executedStaff.image)}
+                                  alt={executedStaff.name}
+                                  className="w-7 h-7 rounded-lg object-cover border border-emerald-200 shadow-2xs shrink-0"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    if (e.currentTarget.nextElementSibling) {
+                                      e.currentTarget.nextElementSibling.style.display = 'flex';
+                                    }
+                                  }}
+                                />
+                              ) : null}
+                              <div
+                                className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center font-bold text-[10px] shrink-0"
+                                style={{
+                                  display:
+                                    executedStaff.image_url || executedStaff.profile_photo || executedStaff.image
+                                      ? 'none'
+                                      : 'flex',
+                                }}
+                              >
+                                {executedStaff.name ? executedStaff.name.charAt(0).toUpperCase() : 'E'}
+                              </div>
+                              <div>
+                                <div className="font-semibold text-slate-800">{executedStaff.name}</div>
+                                <div className="text-emerald-600 text-[11px] font-medium">
+                                  {executedStaff.department || 'Completed'}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-400 text-[11px] font-medium">
+                            Pending Execution
+                          </span>
+                        );
+                      })()}
                     </td>
 
                     {/* Clinic Branch */}
