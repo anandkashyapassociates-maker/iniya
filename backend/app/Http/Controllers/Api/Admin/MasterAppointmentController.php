@@ -174,7 +174,7 @@ class MasterAppointmentController extends Controller
         });
 
         if ($isStaffUser && $adminId) {
-            $sessionsQuery->where('staff_id', $adminId);
+            $sessionsQuery->forStaff($adminId);
         }
 
         $totalSessions = (clone $sessionsQuery)->count();

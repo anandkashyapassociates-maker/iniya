@@ -217,4 +217,21 @@ class AppointmentSession extends Model
     {
         return $this->hasMany(AppointmentRescheduleHistory::class, 'session_id')->orderByDesc('id');
     }
+
+    /**
+     * Scope query to sessions actively assigned to or executed by a specific staff member.
+     * When executed_by_staff_id is set (e.g. reassigned staff), that staff owns the session,
+     * and the previous staff_id loses active ownership.
+     * When executed_by_staff_id is null, the original staff_id owns the session.
+     */
+    public function scopeForStaff($query, int $staffId)
+    {
+        return $query->where(function ($q) use ($staffId) {
+            $q->where('executed_by_staff_id', $staffId)
+                ->orWhere(function ($sq) use ($staffId) {
+                    $sq->where('staff_id', $staffId)
+                        ->whereNull('executed_by_staff_id');
+                });
+        });
+    }
 }

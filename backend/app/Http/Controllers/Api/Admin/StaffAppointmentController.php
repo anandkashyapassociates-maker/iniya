@@ -29,14 +29,8 @@ class StaffAppointmentController extends Controller
 
         $staffId = $user->id;
 
-        // Query directly on appointment_sessions where this staff member is executed_by or originally assigned
-        $query = AppointmentSession::where(function ($q) use ($staffId) {
-            $q->where('executed_by_staff_id', $staffId)
-                ->orWhere(function ($sq) use ($staffId) {
-                    $sq->where('staff_id', $staffId)
-                        ->whereNull('executed_by_staff_id');
-                });
-        })->with([
+        // Query directly on appointment_sessions where this staff member is actively assigned or executed_by
+        $query = AppointmentSession::forStaff($staffId)->with([
             'masterAppointment' => function ($q) {
                 $q->with([
                     'clinic:id,clinic_code,name,branch_name,location,city',
@@ -99,7 +93,7 @@ class StaffAppointmentController extends Controller
         }
 
         // Summary Statistics for logged-in staff member
-        $staffSessions = AppointmentSession::where('staff_id', $staffId);
+        $staffSessions = AppointmentSession::forStaff($staffId);
         $totalSessionsCount = (clone $staffSessions)->count();
         $todaySessionsCount = (clone $staffSessions)->whereDate('session_date', $today)->count();
         $pendingSessionsCount = (clone $staffSessions)->where('status', AppointmentSession::STATUS_PENDING)->count();
@@ -143,11 +137,8 @@ class StaffAppointmentController extends Controller
 
         $staffId = $user->id;
 
-        // Find the session directly assigned to or executed by this staff member
-        $session = AppointmentSession::where(function ($q) use ($staffId) {
-            $q->where('executed_by_staff_id', $staffId)
-                ->orWhere('staff_id', $staffId);
-        })
+        // Find the session actively assigned to or executed by this staff member
+        $session = AppointmentSession::forStaff($staffId)
             ->with([
                 'masterAppointment' => function ($q) {
                     $q->with([
@@ -201,10 +192,7 @@ class StaffAppointmentController extends Controller
             ], 403);
         }
 
-        $session = AppointmentSession::where(function ($q) use ($user) {
-            $q->where('executed_by_staff_id', $user->id)
-                ->orWhere('staff_id', $user->id);
-        })
+        $session = AppointmentSession::forStaff($user->id)
             ->where(function ($q) use ($id) {
                 $q->where('id', $id)
                     ->orWhere('master_appointment_id', $id);
@@ -278,10 +266,7 @@ class StaffAppointmentController extends Controller
             ], 403);
         }
 
-        $session = AppointmentSession::where(function ($q) use ($user) {
-            $q->where('executed_by_staff_id', $user->id)
-                ->orWhere('staff_id', $user->id);
-        })
+        $session = AppointmentSession::forStaff($user->id)
             ->where(function ($q) use ($id) {
                 $q->where('id', $id)
                     ->orWhere('master_appointment_id', $id);

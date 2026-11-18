@@ -88,7 +88,7 @@ class AppointmentReportController extends Controller
         // 4. Staff Member Filter (Appointments containing sessions assigned to this staff)
         if ($staffId = $request->input('staff_id')) {
             $query->whereHas('sessions', function ($sq) use ($staffId) {
-                $sq->where('staff_id', $staffId);
+                $sq->forStaff($staffId);
             });
         }
 
@@ -282,10 +282,7 @@ class AppointmentReportController extends Controller
 
         // 2. Staff Member Filter
         if ($staffId = $request->input('staff_id')) {
-            $query->where(function ($q) use ($staffId) {
-                $q->where('staff_id', $staffId)
-                    ->orWhere('executed_by_staff_id', $staffId);
-            });
+            $query->forStaff($staffId);
         }
 
         // 3. Service Filter

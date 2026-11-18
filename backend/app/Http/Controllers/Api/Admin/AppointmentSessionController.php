@@ -268,7 +268,7 @@ class AppointmentSessionController extends Controller
                 $staffId = $staffRecord?->id;
             }
             if ($staffId) {
-                $query->where('staff_id', $staffId);
+                $query->forStaff($staffId);
             }
         } else {
             // Operational Admin: Strictly scope calendar sessions to appointments of their clinic
@@ -280,7 +280,7 @@ class AppointmentSessionController extends Controller
             }
 
             if ($staffId = $request->input('staff_id')) {
-                $query->where('staff_id', $staffId);
+                $query->forStaff($staffId);
             }
         }
 

@@ -101,7 +101,7 @@ class AdminDashboardController extends Controller
             }
         });
         if ($isStaffUser && $adminId) {
-            $sessionsQuery->where('staff_id', $adminId);
+            $sessionsQuery->forStaff($adminId);
         }
 
         $totalSessions = (clone $sessionsQuery)->count();
@@ -125,11 +125,11 @@ class AdminDashboardController extends Controller
 
         // 2. Financial Metrics & Patient Collections
         if ($isStaffUser && $adminId) {
-            $totalStaffCommission = (float) AppointmentSession::where('staff_id', $adminId)
+            $totalStaffCommission = (float) AppointmentSession::forStaff($adminId)
                 ->where('status', AppointmentSession::STATUS_COMPLETED)
                 ->sum('staff_commission');
 
-            $todayStaffCommission = (float) AppointmentSession::where('staff_id', $adminId)
+            $todayStaffCommission = (float) AppointmentSession::forStaff($adminId)
                 ->whereDate('session_date', $todayStr)
                 ->where('status', AppointmentSession::STATUS_COMPLETED)
                 ->sum('staff_commission');
@@ -137,11 +137,11 @@ class AdminDashboardController extends Controller
             $todayRevenue = $todayStaffCommission;
             $totalRevenue = $totalStaffCommission;
 
-            $totalPatientPaid = (float) AppointmentSession::where('staff_id', $adminId)
+            $totalPatientPaid = (float) AppointmentSession::forStaff($adminId)
                 ->whereNotNull('payment_amount')
                 ->sum('payment_amount');
 
-            $todayPatientPaid = (float) AppointmentSession::where('staff_id', $adminId)
+            $todayPatientPaid = (float) AppointmentSession::forStaff($adminId)
                 ->whereDate('payment_date', $todayStr)
                 ->whereNotNull('payment_amount')
                 ->sum('payment_amount');
@@ -167,7 +167,7 @@ class AdminDashboardController extends Controller
             }
         });
         if ($isStaffUser && $adminId) {
-            $paymentModesQuery->where('staff_id', $adminId);
+            $paymentModesQuery->forStaff($adminId);
         }
 
         $paymentModes = [
@@ -240,10 +240,10 @@ class AdminDashboardController extends Controller
         $activePackages = Service::count();
         if ($isStaffUser && $adminId) {
             $topServices = Service::whereHas('sessions', function ($q) use ($adminId) {
-                $q->where('staff_id', $adminId);
+                $q->forStaff($adminId);
             })
                 ->withCount(['sessions' => function ($q) use ($adminId) {
-                    $q->where('staff_id', $adminId);
+                    $q->forStaff($adminId);
                 }])
                 ->orderByDesc('sessions_count')
                 ->take(4)
@@ -289,7 +289,7 @@ class AdminDashboardController extends Controller
             });
 
         if ($isStaffUser && $adminId) {
-            $scheduleSessionsQuery->where('staff_id', $adminId);
+            $scheduleSessionsQuery->forStaff($adminId);
         }
 
         $scheduleSessions = $scheduleSessionsQuery
@@ -407,11 +407,11 @@ class AdminDashboardController extends Controller
             $end = $monthDate->copy()->endOfMonth()->toDateString();
 
             if ($staffId) {
-                $commission = (float) AppointmentSession::where('staff_id', $staffId)
+                $commission = (float) AppointmentSession::forStaff($staffId)
                     ->whereBetween('session_date', [$start, $end])
                     ->where('status', AppointmentSession::STATUS_COMPLETED)
                     ->sum('staff_commission');
-                $collections = (float) AppointmentSession::where('staff_id', $staffId)
+                $collections = (float) AppointmentSession::forStaff($staffId)
                     ->whereBetween('session_date', [$start, $end])
                     ->whereNotNull('payment_amount')
                     ->sum('payment_amount');
@@ -447,11 +447,11 @@ class AdminDashboardController extends Controller
             $wEnd = $now->copy()->subDays($w * 7)->toDateString();
 
             if ($staffId) {
-                $rev = (float) AppointmentSession::where('staff_id', $staffId)
+                $rev = (float) AppointmentSession::forStaff($staffId)
                     ->whereBetween('session_date', [$wStart, $wEnd])
                     ->where('status', AppointmentSession::STATUS_COMPLETED)
                     ->sum('staff_commission');
-                $col = (float) AppointmentSession::where('staff_id', $staffId)
+                $col = (float) AppointmentSession::forStaff($staffId)
                     ->whereBetween('session_date', [$wStart, $wEnd])
                     ->whereNotNull('payment_amount')
                     ->sum('payment_amount');
@@ -494,11 +494,11 @@ class AdminDashboardController extends Controller
             $qEnd = Carbon::create($now->year, $endM, 1)->endOfMonth()->toDateString();
 
             if ($staffId) {
-                $qRev = (float) AppointmentSession::where('staff_id', $staffId)
+                $qRev = (float) AppointmentSession::forStaff($staffId)
                     ->whereBetween('session_date', [$qStart, $qEnd])
                     ->where('status', AppointmentSession::STATUS_COMPLETED)
                     ->sum('staff_commission');
-                $qCol = (float) AppointmentSession::where('staff_id', $staffId)
+                $qCol = (float) AppointmentSession::forStaff($staffId)
                     ->whereBetween('session_date', [$qStart, $qEnd])
                     ->whereNotNull('payment_amount')
                     ->sum('payment_amount');

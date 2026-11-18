@@ -75,10 +75,16 @@ class PayoutController extends Controller
         $staff = $staffQuery->orderBy('name', 'asc')->get();
 
         // Calculate commissions & payouts for each staff member
-        $commissions = AppointmentSession::select('staff_id', DB::raw('SUM(staff_commission) as total_commission'))
-            ->whereNotNull('staff_id')
-            ->groupBy('staff_id')
-            ->pluck('total_commission', 'staff_id');
+        $commissions = AppointmentSession::select(
+                DB::raw('COALESCE(executed_by_staff_id, staff_id) as effective_staff_id'),
+                DB::raw('SUM(staff_commission) as total_commission')
+            )
+            ->where(function ($q) {
+                $q->whereNotNull('executed_by_staff_id')
+                    ->orWhereNotNull('staff_id');
+            })
+            ->groupBy(DB::raw('COALESCE(executed_by_staff_id, staff_id)'))
+            ->pluck('total_commission', 'effective_staff_id');
 
         $payouts = Payout::where('payout_type', Payout::TYPE_STAFF)
             ->select('staff_id', DB::raw('SUM(paid_amount) as total_paid'))
@@ -204,7 +210,7 @@ class PayoutController extends Controller
         // Commissions from appointment_sessions
         $selectedStaffId = $request->input('staff_id');
         if ($selectedStaffId && $selectedStaffId !== 'all') {
-            $commissionsSum = (float) AppointmentSession::where('staff_id', $selectedStaffId)->sum('staff_commission');
+            $commissionsSum = (float) AppointmentSession::forStaff((int) $selectedStaffId)->sum('staff_commission');
         } else {
             $commissionsSum = (float) AppointmentSession::whereNotNull('staff_id')->sum('staff_commission');
         }
@@ -236,10 +242,13 @@ class PayoutController extends Controller
         // Dynamically enrich payout items with staff commission data from appointment_sessions if total_amount was not pre-populated
         $staffIds = collect($paginated->items())->pluck('staff_id')->filter()->unique();
         if ($staffIds->isNotEmpty()) {
-            $commissionsByStaff = AppointmentSession::whereIn('staff_id', $staffIds)
-                ->select('staff_id', DB::raw('SUM(staff_commission) as total_comm'))
-                ->groupBy('staff_id')
-                ->pluck('total_comm', 'staff_id');
+            $commissionsByStaff = AppointmentSession::select(
+                    DB::raw('COALESCE(executed_by_staff_id, staff_id) as effective_staff_id'),
+                    DB::raw('SUM(staff_commission) as total_comm')
+                )
+                ->whereIn(DB::raw('COALESCE(executed_by_staff_id, staff_id)'), $staffIds)
+                ->groupBy(DB::raw('COALESCE(executed_by_staff_id, staff_id)'))
+                ->pluck('total_comm', 'effective_staff_id');
 
             foreach ($paginated->items() as $item) {
                 if ($item->staff_id && isset($commissionsByStaff[$item->staff_id])) {
@@ -288,7 +297,7 @@ class PayoutController extends Controller
         $paidAmount = (float) $validated['amount'];
 
         // Automatically pull total commission earned from appointment_sessions
-        $totalCommission = (float) AppointmentSession::where('staff_id', $staff->id)->sum('staff_commission');
+        $totalCommission = (float) AppointmentSession::forStaff($staff->id)->sum('staff_commission');
 
         // Sum previously paid disbursements to this staff member
         $previouslyPaid = (float) Payout::where('payout_type', Payout::TYPE_STAFF)
@@ -367,7 +376,7 @@ class PayoutController extends Controller
         $paidAmount = (float) $validated['amount'];
 
         // Automatically pull total commission earned from appointment_sessions
-        $totalCommission = (float) AppointmentSession::where('staff_id', $staff->id)->sum('staff_commission');
+        $totalCommission = (float) AppointmentSession::forStaff($staff->id)->sum('staff_commission');
 
         // Sum previously paid disbursements to this staff member (excluding this payout itself)
         $previouslyPaid = (float) Payout::where('payout_type', Payout::TYPE_STAFF)
