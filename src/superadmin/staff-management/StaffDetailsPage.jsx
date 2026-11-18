@@ -212,13 +212,27 @@ export default function StaffDetailsPage() {
     try {
       const res = await staffManagementService.impersonateStaff(member.id);
 
-      // Store in localStorage
+      // Store in localStorage for both Admin & Staff fallback keys
       localStorage.setItem('admin_token', res.token);
       localStorage.setItem('admin_user', JSON.stringify(res.user));
+      localStorage.setItem('staff_token', res.token);
+      localStorage.setItem('staff_user', JSON.stringify(res.user));
+      localStorage.setItem('clinic_active_role', 'staff');
       localStorage.setItem(
         'admin_impersonated_by_superadmin',
         JSON.stringify(res.impersonated_by || { active: true, staff_id: member.id })
       );
+
+      // Directly set sessionStorage on newTab if accessible
+      try {
+        if (newTab && newTab.sessionStorage) {
+          newTab.sessionStorage.setItem('clinic_tab_token', res.token);
+          newTab.sessionStorage.setItem('clinic_tab_user', JSON.stringify(res.user));
+          newTab.sessionStorage.setItem('clinic_tab_role', 'staff');
+        }
+      } catch (e) {
+        // Safe to ignore
+      }
 
       if (setSession) {
         setSession(res.token, res.user);
@@ -227,9 +241,9 @@ export default function StaffDetailsPage() {
       toast.success(`Logged in as Staff '${member.name}'! Staff portal opened in next tab.`);
 
       if (newTab) {
-        newTab.location.href = '/admin/my-appointments';
+        newTab.location.href = '/admin/dashboard';
       } else {
-        window.open('/admin/my-appointments', '_blank');
+        window.open('/admin/dashboard', '_blank');
       }
     } catch (err) {
       if (newTab) {

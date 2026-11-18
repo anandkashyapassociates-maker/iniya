@@ -69,10 +69,16 @@ const getInitialAuth = () => {
     const adminToken = localStorage.getItem('admin_token');
     const adminUser = localStorage.getItem('admin_user');
     if (adminToken && adminUser) {
+      const parsedAdminUser = JSON.parse(adminUser);
+      const isActuallyStaff =
+        parsedAdminUser?.role === 'staff' ||
+        parsedAdminUser?.user_type === 'staff' ||
+        Boolean(parsedAdminUser?.staff_code);
+      const determinedRole = isActuallyStaff ? 'staff' : 'admin';
       sessionStorage.setItem('clinic_tab_token', adminToken);
       sessionStorage.setItem('clinic_tab_user', adminUser);
-      sessionStorage.setItem('clinic_tab_role', 'admin');
-      return { token: adminToken, user: JSON.parse(adminUser), role: 'admin' };
+      sessionStorage.setItem('clinic_tab_role', determinedRole);
+      return { token: adminToken, user: parsedAdminUser, role: determinedRole };
     }
 
     // Fallback to staff session
