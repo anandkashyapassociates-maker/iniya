@@ -1542,7 +1542,7 @@ export default function SuperAdminDashboardPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* Card 1: Staff Payouts */}
           <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden">
             <div className="absolute -top-12 -right-12 w-36 h-36 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-colors pointer-events-none" />
@@ -1644,6 +1644,59 @@ export default function SuperAdminDashboardPage() {
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs transition-all hover:scale-105"
               >
                 <span>Vendor Payouts</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Card 3: Sales Payout */}
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden">
+            <div className="absolute -top-12 -right-12 w-36 h-36 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-colors pointer-events-none" />
+
+            <div className="relative z-10">
+              {/* Top Row: 3D Emerald TrendingUp Icon */}
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-emerald-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
+                  <TrendingUp className="w-6 h-6 drop-shadow-sm" />
+                </div>
+              </div>
+
+              {/* Title & Subtitle */}
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
+                Sales Payout
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Sales executive commission &amp; performance payroll
+              </p>
+
+              {/* Primary Metrics: Total Disbursed & Pending */}
+              <div className="grid grid-cols-2 gap-4 mt-5">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                    Total Disbursed
+                  </span>
+                  <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
+                    {formatCurrency(modules.payouts?.sales_disbursed || 0)}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                    Pending
+                  </span>
+                  <div className="text-2xl sm:text-3xl font-black text-amber-600 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
+                    {formatCurrency(modules.payouts?.sales_pending || 0)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-end text-xs relative z-10">
+              <Link
+                to="/superadmin/payouts/sales"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs transition-all hover:scale-105"
+              >
+                <span>Sales Payouts</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
             </div>

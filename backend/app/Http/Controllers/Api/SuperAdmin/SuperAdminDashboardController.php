@@ -152,7 +152,10 @@ class SuperAdminDashboardController extends Controller
         $vendorPayoutsCount = Payout::where('payout_type', Payout::TYPE_VENDOR)->count();
         $vendorPayoutsDisbursed = (float) (Payout::where('payout_type', Payout::TYPE_VENDOR)->where('status', Payout::STATUS_COMPLETED)->sum('paid_amount') ?? 0);
         $vendorPayoutsPending = (float) (Payout::where('payout_type', Payout::TYPE_VENDOR)->whereIn('status', [Payout::STATUS_PENDING, Payout::STATUS_PARTIAL])->sum('balance_amount') ?? 0);
-        $totalDisbursed = $staffPayoutsDisbursed + $vendorPayoutsDisbursed;
+        $salesPayoutsCount = Payout::where('payout_type', Payout::TYPE_SALES)->count();
+        $salesPayoutsDisbursed = (float) (Payout::where('payout_type', Payout::TYPE_SALES)->where('status', Payout::STATUS_COMPLETED)->sum('paid_amount') ?? 0);
+        $salesPayoutsPending = (float) (Payout::where('payout_type', Payout::TYPE_SALES)->whereIn('status', [Payout::STATUS_PENDING, Payout::STATUS_PARTIAL])->sum('balance_amount') ?? 0);
+        $totalDisbursed = $staffPayoutsDisbursed + $vendorPayoutsDisbursed + $salesPayoutsDisbursed;
         $pendingPayoutLiabilities = (float) (Payout::whereIn('status', [Payout::STATUS_PENDING, Payout::STATUS_PARTIAL])->sum('balance_amount') ?? 0);
 
         // 8. Dynamic Growth Trend Data (Computed 100% from real database timestamps)
@@ -373,10 +376,14 @@ class SuperAdminDashboardController extends Controller
                     'vendor_disbursed' => $vendorPayoutsDisbursed,
                     'vendor_pending' => $vendorPayoutsPending,
                     'vendor_count' => $vendorPayoutsCount,
+                    'sales_disbursed' => $salesPayoutsDisbursed,
+                    'sales_pending' => $salesPayoutsPending,
+                    'sales_count' => $salesPayoutsCount,
                     'total_disbursed' => $totalDisbursed,
                     'pending_liabilities' => $pendingPayoutLiabilities,
                     'staff_payouts_url' => '/superadmin/payouts/staff',
                     'vendor_payouts_url' => '/superadmin/payouts/vendors',
+                    'sales_payouts_url' => '/superadmin/payouts/sales',
                     'ledger_url' => '/superadmin/payouts/ledger',
                     'recent_payouts' => $recentPayouts,
                 ],
