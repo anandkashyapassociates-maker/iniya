@@ -1548,14 +1548,11 @@ export default function SuperAdminDashboardPage() {
             <div className="absolute -top-12 -right-12 w-36 h-36 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-colors pointer-events-none" />
 
             <div className="relative z-10">
-              {/* Top Row: 3D Purple Receipt Icon + Vouchers Pill */}
+              {/* Top Row: 3D Purple Receipt Icon */}
               <div className="flex items-center justify-between gap-2 mb-4">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 via-fuchsia-600 to-pink-500 text-white flex items-center justify-center icon-3d shadow-md shadow-purple-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shrink-0">
                   <Receipt className="w-6 h-6 drop-shadow-sm" />
                 </div>
-                <span className="px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-bold border border-purple-200/60 shadow-2xs shrink-0">
-                  <AnimatedCounter value={modules.payouts?.staff_count || 0} /> Vouchers
-                </span>
               </div>
 
               {/* Title & Subtitle */}
@@ -1599,61 +1596,49 @@ export default function SuperAdminDashboardPage() {
             </div>
           </div>
 
-          {/* Card 2: Vendor Supplier Invoices */}
+          {/* Card 2: Vendor Supplier Payout */}
           <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between relative overflow-hidden">
             <div className="absolute -top-12 -right-12 w-36 h-36 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition-colors pointer-events-none" />
 
             <div className="relative z-10">
-              {/* Top Row: 3D Indigo Truck Icon + Invoices Pill */}
+              {/* Top Row: 3D Indigo Truck Icon */}
               <div className="flex items-center justify-between gap-2 mb-4">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-cyan-500 text-white flex items-center justify-center icon-3d shadow-md shadow-indigo-500/30 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 shrink-0">
                   <Truck className="w-6 h-6 drop-shadow-sm" />
                 </div>
-                <span className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-200/60 shadow-2xs shrink-0">
-                  <AnimatedCounter value={modules.payouts?.vendor_count || 0} /> Invoices
-                </span>
               </div>
 
               {/* Title & Subtitle */}
               <h3 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                Vendor Supplier Invoices
+                Vendor Supplier Payout
               </h3>
               <p className="text-xs text-slate-500 mt-1">
                 Procurement, consumables &amp; clinic logistics
               </p>
 
-              {/* Primary Metric */}
-              <div className="mt-4">
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-                  Total Settled to Suppliers
-                </span>
-                <div className="text-3xl sm:text-4xl font-black text-slate-900 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
-                  {formatCurrency(modules.payouts?.vendor_disbursed || 0)}
-                </div>
-              </div>
-
-              {/* Operational Stat Chips */}
-              <div className="grid grid-cols-2 gap-2.5 mt-4">
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Settled</span>
-                  <span className="text-sm font-extrabold text-indigo-700 tabular-numbers mt-0.5">
-                    <AnimatedCounter value={modules.payouts?.vendor_count || 0} /> Invoices
+              {/* Primary Metrics: Total Disbursed & Pending */}
+              <div className="grid grid-cols-2 gap-4 mt-5">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                    Total Disbursed
                   </span>
+                  <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
+                    {formatCurrency(modules.payouts?.vendor_disbursed || 0)}
+                  </div>
                 </div>
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pending</span>
-                  <span className="text-sm font-extrabold text-amber-600 tabular-numbers mt-0.5">
-                    {formatCurrency(modules.payouts?.pending_liabilities || 0)}
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                    Pending
                   </span>
+                  <div className="text-2xl sm:text-3xl font-black text-amber-600 mt-1 tracking-tight tabular-numbers whitespace-nowrap">
+                    {formatCurrency(modules.payouts?.vendor_pending ?? modules.payouts?.pending_liabilities ?? 0)}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Bottom Actions */}
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs relative z-10">
-              <span className="text-slate-500 font-medium">
-                Pending balance: <strong className="text-slate-800">{formatCurrency(modules.payouts?.pending_liabilities || 0)}</strong>
-              </span>
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-end text-xs relative z-10">
               <Link
                 to="/superadmin/payouts/vendors"
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs transition-all hover:scale-105"

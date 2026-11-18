@@ -151,6 +151,7 @@ class SuperAdminDashboardController extends Controller
         $staffPayoutsPending = (float) (Payout::where('payout_type', Payout::TYPE_STAFF)->whereIn('status', [Payout::STATUS_PENDING, Payout::STATUS_PARTIAL])->sum('balance_amount') ?? 0);
         $vendorPayoutsCount = Payout::where('payout_type', Payout::TYPE_VENDOR)->count();
         $vendorPayoutsDisbursed = (float) (Payout::where('payout_type', Payout::TYPE_VENDOR)->where('status', Payout::STATUS_COMPLETED)->sum('paid_amount') ?? 0);
+        $vendorPayoutsPending = (float) (Payout::where('payout_type', Payout::TYPE_VENDOR)->whereIn('status', [Payout::STATUS_PENDING, Payout::STATUS_PARTIAL])->sum('balance_amount') ?? 0);
         $totalDisbursed = $staffPayoutsDisbursed + $vendorPayoutsDisbursed;
         $pendingPayoutLiabilities = (float) (Payout::whereIn('status', [Payout::STATUS_PENDING, Payout::STATUS_PARTIAL])->sum('balance_amount') ?? 0);
 
@@ -370,6 +371,7 @@ class SuperAdminDashboardController extends Controller
                     'staff_pending' => $staffPayoutsPending,
                     'staff_count' => $staffPayoutsCount,
                     'vendor_disbursed' => $vendorPayoutsDisbursed,
+                    'vendor_pending' => $vendorPayoutsPending,
                     'vendor_count' => $vendorPayoutsCount,
                     'total_disbursed' => $totalDisbursed,
                     'pending_liabilities' => $pendingPayoutLiabilities,
