@@ -449,7 +449,7 @@ export default function AdminDashboardPage() {
                 actionText="Reports ↗"
               />
             </Link>
-            
+
             {/* STAFF CARD 4: Pending Patient Queue */}
             <Link to="/admin/my-appointments" className="block group">
               <StatCard
@@ -479,40 +479,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* STAFF ROW 3: Patient Collections Matrix (2 Cards, col-6 / 2-col Grid with Mobile Responsive) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-5">
-            {/* STAFF CARD 7: Today's Collection Received from Patients */}
-            <Link to="/admin/my-appointments" className="block group">
-              <StatCard
-                title="Today's Collection Received"
-                value={todayPatientPaid > 0 ? `₹${todayPatientPaid.toLocaleString('en-IN')}` : '₹0'}
-                subtitle="Collected from patients today"
-                icon={Wallet}
-                colorScheme="emerald"
-                animateCount={false}
-                trend={todayPatientPaid > 0 ? `₹${todayPatientPaid.toLocaleString('en-IN')}` : '₹0 Today'}
-                trendColor={todayPatientPaid > 0 ? 'emerald' : 'slate'}
-                actionText="Received ↗"
-              />
-            </Link>
-
-            {/* STAFF CARD 8: Total Collection Received from Patients */}
-            <Link to="/admin/my-appointments" className="block group">
-              <StatCard
-                title="Total Collection Received"
-                value={totalPatientPaid > 0 ? `₹${totalPatientPaid.toLocaleString('en-IN')}` : '₹0'}
-                subtitle="Total collections received by you"
-                icon={CreditCard}
-                colorScheme="blue"
-                animateCount={false}
-                trend={totalPatientPaid > 0 ? `₹${totalPatientPaid.toLocaleString('en-IN')}` : '₹0 Total'}
-                trendColor={totalPatientPaid > 0 ? 'blue' : 'slate'}
-                actionText="Received ↗"
-              />
-            </Link>
-          </div>
-
-          {/* STAFF ROW 4: Cleared & Earned Commissions Matrix (2 Cards, col-6 / 2-col Grid with Mobile Responsive) */}
+          {/* STAFF ROW 3: Cleared & Earned Commissions Matrix (2 Cards, col-6 / 2-col Grid with Mobile Responsive) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-5">
             {/* STAFF CARD 9: Today's Cleared Commission */}
             <div className="block">
@@ -547,123 +514,123 @@ export default function AdminDashboardPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {/* ADMIN ROW 1 - CARD 1: Total Registered Patients */}
-            <Link to="/admin/customers" className="block group">
-              <StatCard
-                title="Total Registered Patients"
-                value={totalPatients}
-                subtitle={`${newPatientsThisMonth} registered this month`}
-                icon={Users}
-                colorScheme="blue"
-                trend={totalPatients > 0 ? `${totalPatients} Verified` : '0 Registered'}
-                trendColor={totalPatients > 0 ? 'blue' : 'slate'}
-                actionText="Directory ↗"
-              />
-            </Link>
+          {/* ADMIN ROW 1 - CARD 1: Total Registered Patients */}
+          <Link to="/admin/customers" className="block group">
+            <StatCard
+              title="Total Registered Patients"
+              value={totalPatients}
+              subtitle={`${newPatientsThisMonth} registered this month`}
+              icon={Users}
+              colorScheme="blue"
+              trend={totalPatients > 0 ? `${totalPatients} Verified` : '0 Registered'}
+              trendColor={totalPatients > 0 ? 'blue' : 'slate'}
+              actionText="Directory ↗"
+            />
+          </Link>
 
-            {/* ADMIN ROW 1 - CARD 2: Today's OPD Consultations */}
-            <Link to="/admin/appointments" className="block group">
-              <StatCard
-                title="Today's OPD Consultations"
-                value={todaySessionsCount}
-                subtitle={`${upcomingQueueCount} in active queue today`}
-                icon={Calendar}
-                colorScheme="emerald"
-                trend={todaySessionsCount > 0 ? `${todaySessionsCount} In Queue` : '0 In Queue'}
-                trendColor={todaySessionsCount > 0 ? 'emerald' : 'slate'}
-                actionText="Queue ↗"
-              />
-            </Link>
+          {/* ADMIN ROW 1 - CARD 2: Today's OPD Consultations */}
+          <Link to="/admin/appointments" className="block group">
+            <StatCard
+              title="Today's OPD Consultations"
+              value={todaySessionsCount}
+              subtitle={`${upcomingQueueCount} in active queue today`}
+              icon={Calendar}
+              colorScheme="emerald"
+              trend={todaySessionsCount > 0 ? `${todaySessionsCount} In Queue` : '0 In Queue'}
+              trendColor={todaySessionsCount > 0 ? 'emerald' : 'slate'}
+              actionText="Queue ↗"
+            />
+          </Link>
 
-            {/* ADMIN ROW 1 - CARD 3: Total Booked Value (Revenue) */}
-            <div className="block">
-              <StatCard
-                title="Total Booked Value"
-                value={totalRevenue > 0 ? `₹${totalRevenue.toLocaleString('en-IN')}` : '₹0'}
-                subtitle={`₹${todayRevenue.toLocaleString('en-IN')} booked today`}
-                icon={TrendingUp}
-                colorScheme="violet"
-                animateCount={false}
-                trend={totalRevenue > 0 ? `₹${totalRevenue.toLocaleString('en-IN')} Booked` : '₹0 Booked'}
-                trendColor={totalRevenue > 0 ? 'purple' : 'slate'}
-                actionText="Ledger ↗"
-              />
-            </div>
-
-            {/* ADMIN ROW 1 - CARD 4: Patient Payments Received */}
-            <div className="block">
-              <StatCard
-                title="Collections Received"
-                value={totalPatientPaid > 0 ? `₹${totalPatientPaid.toLocaleString('en-IN')}` : '₹0'}
-                subtitle={`₹${todayPatientPaid.toLocaleString('en-IN')} collected today`}
-                icon={IndianRupee}
-                colorScheme="emerald"
-                animateCount={false}
-                trend={totalPatientPaid > 0 ? `₹${totalPatientPaid.toLocaleString('en-IN')} Received` : '₹0 Received'}
-                trendColor={totalPatientPaid > 0 ? 'emerald' : 'slate'}
-                actionText="Collections ↗"
-              />
-            </div>
-
-            {/* ADMIN ROW 2 - CARD 5: Staff Commissions Earned */}
-            <div className="block">
-              <StatCard
-                title="Staff Commissions"
-                value={totalStaffCommission > 0 ? `₹${totalStaffCommission.toLocaleString('en-IN')}` : '₹0'}
-                subtitle={`₹${todayStaffCommission.toLocaleString('en-IN')} cleared today`}
-                icon={Award}
-                colorScheme="purple"
-                animateCount={false}
-                trend={totalStaffCommission > 0 ? `₹${totalStaffCommission.toLocaleString('en-IN')} Cleared` : '₹0 Cleared'}
-                trendColor={totalStaffCommission > 0 ? 'purple' : 'slate'}
-                actionText="Payouts ↗"
-              />
-            </div>
-
-            {/* ADMIN ROW 2 - CARD 6: Completed Sessions Rate */}
-            <Link to="/admin/appointments" className="block group">
-              <StatCard
-                title="Execution Success Rate"
-                value={`${sessionCompletionRate}%`}
-                subtitle={`${completedCount} of ${stats?.total_sessions || 0} sessions closed`}
-                icon={CheckCircle2}
-                colorScheme="amber"
-                animateCount={false}
-                trend={completedCount > 0 ? `${completedCount} Closed` : '0 Closed'}
-                trendColor={completedCount > 0 ? 'emerald' : 'slate'}
-                actionText="Reports ↗"
-              />
-            </Link>
-
-            {/* ADMIN ROW 2 - CARD 7: Active Clinical Packages */}
-            <Link to="/admin/appointments/services" className="block group">
-              <StatCard
-                title="Clinical Services Catalog"
-                value={activePackages}
-                subtitle="Treatments & Procedures Active"
-                icon={FolderTree}
-                colorScheme="cyan"
-                trend={`${activePackages} Active`}
-                trendColor="cyan"
-                actionText="Catalog ↗"
-              />
-            </Link>
-
-            {/* ADMIN ROW 2 - CARD 8: Medical Supplies & Stock Health */}
-            <Link to="/admin/inventory/stocks" className="block group">
-              <StatCard
-                title="Medical Supplies Health"
-                value={totalInventory}
-                subtitle={lowStockCount > 0 ? `${lowStockCount} items depleted` : 'Adequate supply'}
-                icon={Boxes}
-                colorScheme={lowStockCount > 0 ? 'amber' : 'emerald'}
-                trend={lowStockCount > 0 ? `${lowStockCount} Depleted` : 'Healthy'}
-                trendColor={lowStockCount > 0 ? 'amber' : 'emerald'}
-                actionText="Supplies ↗"
-              />
-            </Link>
+          {/* ADMIN ROW 1 - CARD 3: Total Booked Value (Revenue) */}
+          <div className="block">
+            <StatCard
+              title="Total Booked Value"
+              value={totalRevenue > 0 ? `₹${totalRevenue.toLocaleString('en-IN')}` : '₹0'}
+              subtitle={`₹${todayRevenue.toLocaleString('en-IN')} booked today`}
+              icon={TrendingUp}
+              colorScheme="violet"
+              animateCount={false}
+              trend={totalRevenue > 0 ? `₹${totalRevenue.toLocaleString('en-IN')} Booked` : '₹0 Booked'}
+              trendColor={totalRevenue > 0 ? 'purple' : 'slate'}
+              actionText="Ledger ↗"
+            />
           </div>
-        )}
+
+          {/* ADMIN ROW 1 - CARD 4: Patient Payments Received */}
+          <div className="block">
+            <StatCard
+              title="Collections Received"
+              value={totalPatientPaid > 0 ? `₹${totalPatientPaid.toLocaleString('en-IN')}` : '₹0'}
+              subtitle={`₹${todayPatientPaid.toLocaleString('en-IN')} collected today`}
+              icon={IndianRupee}
+              colorScheme="emerald"
+              animateCount={false}
+              trend={totalPatientPaid > 0 ? `₹${totalPatientPaid.toLocaleString('en-IN')} Received` : '₹0 Received'}
+              trendColor={totalPatientPaid > 0 ? 'emerald' : 'slate'}
+              actionText="Collections ↗"
+            />
+          </div>
+
+          {/* ADMIN ROW 2 - CARD 5: Staff Commissions Earned */}
+          <div className="block">
+            <StatCard
+              title="Staff Commissions"
+              value={totalStaffCommission > 0 ? `₹${totalStaffCommission.toLocaleString('en-IN')}` : '₹0'}
+              subtitle={`₹${todayStaffCommission.toLocaleString('en-IN')} cleared today`}
+              icon={Award}
+              colorScheme="purple"
+              animateCount={false}
+              trend={totalStaffCommission > 0 ? `₹${totalStaffCommission.toLocaleString('en-IN')} Cleared` : '₹0 Cleared'}
+              trendColor={totalStaffCommission > 0 ? 'purple' : 'slate'}
+              actionText="Payouts ↗"
+            />
+          </div>
+
+          {/* ADMIN ROW 2 - CARD 6: Completed Sessions Rate */}
+          <Link to="/admin/appointments" className="block group">
+            <StatCard
+              title="Execution Success Rate"
+              value={`${sessionCompletionRate}%`}
+              subtitle={`${completedCount} of ${stats?.total_sessions || 0} sessions closed`}
+              icon={CheckCircle2}
+              colorScheme="amber"
+              animateCount={false}
+              trend={completedCount > 0 ? `${completedCount} Closed` : '0 Closed'}
+              trendColor={completedCount > 0 ? 'emerald' : 'slate'}
+              actionText="Reports ↗"
+            />
+          </Link>
+
+          {/* ADMIN ROW 2 - CARD 7: Active Clinical Packages */}
+          <Link to="/admin/appointments/services" className="block group">
+            <StatCard
+              title="Clinical Services Catalog"
+              value={activePackages}
+              subtitle="Treatments & Procedures Active"
+              icon={FolderTree}
+              colorScheme="cyan"
+              trend={`${activePackages} Active`}
+              trendColor="cyan"
+              actionText="Catalog ↗"
+            />
+          </Link>
+
+          {/* ADMIN ROW 2 - CARD 8: Medical Supplies & Stock Health */}
+          <Link to="/admin/inventory/stocks" className="block group">
+            <StatCard
+              title="Medical Supplies Health"
+              value={totalInventory}
+              subtitle={lowStockCount > 0 ? `${lowStockCount} items depleted` : 'Adequate supply'}
+              icon={Boxes}
+              colorScheme={lowStockCount > 0 ? 'amber' : 'emerald'}
+              trend={lowStockCount > 0 ? `${lowStockCount} Depleted` : 'Healthy'}
+              trendColor={lowStockCount > 0 ? 'amber' : 'emerald'}
+              actionText="Supplies ↗"
+            />
+          </Link>
+        </div>
+      )}
 
       {/* ======================================================== */}
       {/* 4. FINANCIAL TREND SPLINE & PAYMENT DISTRIBUTION (7:5)   */}
@@ -909,16 +876,14 @@ export default function AdminDashboardPage() {
                       key={tab.key}
                       type="button"
                       onClick={() => setQueueTab(tab.key)}
-                      className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
-                        isActive
-                          ? 'bg-white text-blue-700 shadow-xs border border-slate-200/50 scale-[1.02]'
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                      }`}
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${isActive
+                        ? 'bg-white text-blue-700 shadow-xs border border-slate-200/50 scale-[1.02]'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                        }`}
                     >
                       <span>{tab.label}</span>
-                      <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${
-                        isActive ? 'bg-blue-100/80 text-blue-800' : 'bg-slate-200/70 text-slate-600'
-                      }`}>
+                      <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${isActive ? 'bg-blue-100/80 text-blue-800' : 'bg-slate-200/70 text-slate-600'
+                        }`}>
                         {tab.count}
                       </span>
                     </button>
@@ -978,10 +943,10 @@ export default function AdminDashboardPage() {
                       const statusColor = isComplete
                         ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                         : isInProg
-                        ? 'bg-blue-50 text-blue-700 border-blue-200'
-                        : isPend
-                        ? 'bg-amber-50 text-amber-700 border-amber-200'
-                        : 'bg-rose-50 text-rose-700 border-rose-200';
+                          ? 'bg-blue-50 text-blue-700 border-blue-200'
+                          : isPend
+                            ? 'bg-amber-50 text-amber-700 border-amber-200'
+                            : 'bg-rose-50 text-rose-700 border-rose-200';
 
                       return (
                         <tr key={ses.id} className="hover:bg-blue-50/30 transition-colors group/row">
@@ -1422,11 +1387,10 @@ export default function AdminDashboardPage() {
                         </div>
 
                         <span
-                          className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 font-mono shadow-2xs border ${
-                            isDepleted
-                              ? 'bg-rose-50 text-rose-700 border-rose-200'
-                              : 'bg-amber-50 text-amber-800 border-amber-200'
-                          }`}
+                          className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 font-mono shadow-2xs border ${isDepleted
+                            ? 'bg-rose-50 text-rose-700 border-rose-200'
+                            : 'bg-amber-50 text-amber-800 border-amber-200'
+                            }`}
                         >
                           {item.quantity} in stock
                         </span>
@@ -1663,9 +1627,8 @@ export default function AdminDashboardPage() {
               {recent_activity.length} Recent Events
             </span>
             <div
-              className={`w-9 h-9 rounded-xl bg-slate-100 text-slate-600 group-hover/btn:bg-indigo-50 group-hover/btn:text-indigo-600 flex items-center justify-center transition-all duration-300 ${
-                activityFeedOpen ? 'rotate-180 bg-indigo-50 text-indigo-600' : ''
-              }`}
+              className={`w-9 h-9 rounded-xl bg-slate-100 text-slate-600 group-hover/btn:bg-indigo-50 group-hover/btn:text-indigo-600 flex items-center justify-center transition-all duration-300 ${activityFeedOpen ? 'rotate-180 bg-indigo-50 text-indigo-600' : ''
+                }`}
             >
               <ChevronDown className="w-4 h-4 transition-transform duration-300" />
             </div>
@@ -1674,11 +1637,10 @@ export default function AdminDashboardPage() {
 
         {/* Dropdown Expandable Content */}
         <div
-          className={`transition-all duration-300 ease-in-out ${
-            activityFeedOpen
-              ? 'max-h-[600px] opacity-100 border-t border-slate-100'
-              : 'max-h-0 opacity-0 pointer-events-none'
-          } overflow-hidden`}
+          className={`transition-all duration-300 ease-in-out ${activityFeedOpen
+            ? 'max-h-[600px] opacity-100 border-t border-slate-100'
+            : 'max-h-0 opacity-0 pointer-events-none'
+            } overflow-hidden`}
         >
           <div className="p-5 sm:p-6 pt-4 space-y-3 relative z-10">
             <div className="flex items-center justify-between text-xs text-slate-400 pb-2 border-b border-slate-100 font-mono">
@@ -1711,10 +1673,10 @@ export default function AdminDashboardPage() {
                         <span>
                           {act.created_at
                             ? new Date(act.created_at).toLocaleTimeString('en-IN', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: true,
-                              })
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              hour12: true,
+                            })
                             : 'Recent'}
                         </span>
                       </div>

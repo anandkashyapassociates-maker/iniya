@@ -283,35 +283,6 @@ export default function StaffMyAppointmentsPage() {
             <p className="text-xs text-slate-500 mt-0.5">From your assigned sessions</p>
           </div>
         </div>
-
-        {/* Row 3: 2 Cards - Patient Collections Received */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          <div className="bg-white rounded-2xl border border-emerald-200/80 p-4 sm:p-5 shadow-xs overflow-hidden">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md">
-                Today's Collection Received
-              </span>
-              <Wallet className="w-4 h-4 text-emerald-600" />
-            </div>
-            <p className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-700 mt-2">
-              {formatCurrency(summary.today_payment_received)}
-            </p>
-            <p className="text-xs text-slate-500 mt-0.5">Patient collections recorded today</p>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-blue-200/80 p-4 sm:p-5 shadow-xs overflow-hidden">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-800 bg-blue-50 px-2 py-0.5 rounded-md">
-                Total Collection Received
-              </span>
-              <CreditCard className="w-4 h-4 text-blue-600" />
-            </div>
-            <p className="text-2xl sm:text-3xl font-bold tracking-tight text-blue-700 mt-2">
-              {formatCurrency(summary.total_payment_received)}
-            </p>
-            <p className="text-xs text-slate-500 mt-0.5">Total collections received across your sessions</p>
-          </div>
-        </div>
       </div>
 
       {/* Filter and Search Bar */}
@@ -445,7 +416,6 @@ export default function StaffMyAppointmentsPage() {
                 <th className="py-3 px-3 text-center">Photo</th>
                 <th className="py-3 px-3 text-center">Status</th>
                 <th className="py-3 px-3 text-right">Commission</th>
-                <th className="py-3 px-3 text-right">Total Collection</th>
                 <th className="py-3 px-3 text-center">Action</th>
               </tr>
             </thead>
@@ -629,32 +599,6 @@ export default function StaffMyAppointmentsPage() {
                         ) : (
                           <span className="text-slate-400">—</span>
                         )}
-                      </td>
-
-                      {/* Collection (Assigned to this session) */}
-                      <td className="py-3.5 px-3 text-right whitespace-nowrap font-mono">
-                        {(() => {
-                          const assignedFee = Number(
-                            ses.consultation_fee ??
-                            ses.service?.price ??
-                            (master.sessions?.length === 1 ? master.appointment_fees : 0)
-                          );
-                          const sessionCollected = Number(ses.payment_amount || 0);
-                          const displayAmount = assignedFee > 0 ? assignedFee : sessionCollected;
-
-                          return (
-                            <div>
-                              <span className="font-bold text-slate-900 block">
-                                {displayAmount > 0 ? formatCurrency(displayAmount) : '—'}
-                              </span>
-                              {sessionCollected > 0 && (
-                                <span className="inline-flex items-center gap-0.5 text-[10px] text-emerald-700 font-medium bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
-                                  Recv: {formatCurrency(sessionCollected)}
-                                </span>
-                              )}
-                            </div>
-                          );
-                        })()}
                       </td>
 
                       {/* Action */}

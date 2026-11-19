@@ -62,10 +62,6 @@ export default function StaffAppointmentDetailsPage() {
 
   // Form State inside Modal
   const [modalStatus, setModalStatus] = useState('completed');
-  const [receivePayment, setReceivePayment] = useState(true);
-  const [paymentAmount, setPaymentAmount] = useState('');
-  const [paymentDate, setPaymentDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [paymentMode, setPaymentMode] = useState('cash');
   const [paymentNotes, setPaymentNotes] = useState('');
 
   const fetchDetails = useCallback(async () => {
@@ -79,17 +75,6 @@ export default function StaffAppointmentDetailsPage() {
         // Pre-fill modal states
         if (res.session?.status) {
           setModalStatus(res.session.status === 'completed' ? 'completed' : res.session.status);
-        }
-        if (res.session?.payment_amount) {
-          setPaymentAmount(String(res.session.payment_amount));
-        } else if (res.session?.service?.price) {
-          setPaymentAmount(String(res.session.service.price));
-        }
-        if (res.session?.payment_date) {
-          setPaymentDate(res.session.payment_date);
-        }
-        if (res.session?.payment_mode) {
-          setPaymentMode(res.session.payment_mode);
         }
         if (res.session?.payment_notes) {
           setPaymentNotes(res.session.payment_notes);
@@ -107,7 +92,7 @@ export default function StaffAppointmentDetailsPage() {
     fetchDetails();
   }, [fetchDetails]);
 
-  // Open the Status & Payment Popup Modal (Only allowed for pending or in_progress sessions)
+  // Open the Status Popup Modal (Only allowed for pending or in_progress sessions)
   const handleOpenStatusModal = () => {
     const current = sessionData?.status || 'pending';
     if (current === 'completed' || current === 'cancelled') {
@@ -115,30 +100,15 @@ export default function StaffAppointmentDetailsPage() {
       return;
     }
     setModalStatus(current);
-    if (sessionData?.payment_amount) {
-      setPaymentAmount(String(sessionData.payment_amount));
-      setReceivePayment(true);
-    } else if (sessionData?.service?.price) {
-      setPaymentAmount(String(sessionData.service.price));
-      setReceivePayment(true);
-    }
-    if (sessionData?.payment_date) {
-      setPaymentDate(sessionData.payment_date);
-    } else {
-      setPaymentDate(new Date().toISOString().split('T')[0]);
-    }
-    if (sessionData?.payment_mode) {
-      setPaymentMode(sessionData.payment_mode);
-    } else {
-      setPaymentMode('cash');
-    }
     if (sessionData?.payment_notes) {
       setPaymentNotes(sessionData.payment_notes);
+    } else {
+      setPaymentNotes('');
     }
     setIsStatusModalOpen(true);
   };
 
-  // Submit Status Change & Payment from Modal
+  // Submit Status Change from Modal
   const handleSaveStatusAndPayment = async (e) => {
     e.preventDefault();
     if (!sessionData?.id || isUpdatingStatus) return;
@@ -155,11 +125,8 @@ export default function StaffAppointmentDetailsPage() {
         status: modalStatus,
       };
 
-      if (receivePayment && paymentAmount && Number(paymentAmount) >= 0) {
-        payload.payment_amount = Number(paymentAmount);
-        payload.payment_date = paymentDate || new Date().toISOString().split('T')[0];
-        payload.payment_mode = paymentMode;
-        payload.payment_notes = paymentNotes.trim() || undefined;
+      if (paymentNotes && paymentNotes.trim()) {
+        payload.payment_notes = paymentNotes.trim();
       }
 
       const res = await staffAppointmentService.updateSessionStatus(sessionData.id, payload);
@@ -173,17 +140,12 @@ export default function StaffAppointmentDetailsPage() {
             ? 'Cancelled'
             : 'Pending';
 
-        if (payload.payment_amount) {
-          toast.success(`Session status updated to ${statusLabel} and payment of ${formatCurrency(payload.payment_amount)} recorded!`);
-        } else {
-          toast.success(`Session status successfully updated to ${statusLabel}!`);
-        }
-
+        toast.success(`Session status successfully updated to ${statusLabel}!`);
         setIsStatusModalOpen(false);
         await fetchDetails();
       }
     } catch (err) {
-      console.error('Failed to update session status & payment:', err);
+      console.error('Failed to update session status:', err);
       toast.error(err.response?.data?.message || 'Failed to update session status.');
     } finally {
       setIsUpdatingStatus(false);
@@ -426,10 +388,10 @@ export default function StaffAppointmentDetailsPage() {
               </strong>
             </p>
 
-            {session.service?.price && (
+            {(session.consultation_fee || session.service?.price) && (
               <p className="flex items-center justify-between">
                 <span className="text-slate-500">Service Fee:</span>
-                <span className="font-mono text-slate-700 font-semibold">{formatCurrency(session.service.price)}</span>
+                <span className="font-mono text-slate-700 font-semibold">{formatCurrency(session.consultation_fee ?? session.service?.price)}</span>
               </p>
             )}
 
@@ -518,40 +480,6 @@ export default function StaffAppointmentDetailsPage() {
           </div>
         </div>
       </div>
-
-      {/* Patient Payment Received Banner (if already recorded) */}
-      {session.payment_amount && Number(session.payment_amount) > 0 && (
-        <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-blue-500/10 border border-emerald-200 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
-              <Receipt className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-emerald-900">Patient Payment Received</span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800">
-                  {session.payment_mode || 'Cash'}
-                </span>
-              </div>
-              <p className="text-xs text-slate-600 mt-0.5">
-                Amount: <strong className="text-emerald-700 font-mono text-sm">{formatCurrency(session.payment_amount)}</strong>
-                {session.payment_date && ` • Received on ${session.payment_date}`}
-                {session.payment_notes && ` • "${session.payment_notes}"`}
-              </p>
-            </div>
-          </div>
-
-          {!isStatusLocked && (
-            <button
-              type="button"
-              onClick={handleOpenStatusModal}
-              className="text-xs font-semibold text-emerald-700 hover:text-emerald-900 hover:underline cursor-pointer self-start sm:self-auto"
-            >
-              Update Payment &amp; Status &rarr;
-            </button>
-          )}
-        </div>
-      )}
 
       {/* Clinical Treatment & Consumables Allocated */}
       <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-4">
@@ -780,13 +708,13 @@ export default function StaffAppointmentDetailsPage() {
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-xl transition-all shadow-sm cursor-pointer"
           >
             <CheckCircle2 className="w-4 h-4" />
-            <span>Update Status &amp; Receive Payment</span>
+            <span>Update Status</span>
           </button>
         )}
       </div>
 
       {/* ======================================================== */}
-      {/* POPUP MODAL: UPDATE SESSION STATUS & RECEIVE PAYMENT    */}
+      {/* POPUP MODAL: UPDATE SESSION STATUS                       */}
       {/* ======================================================== */}
       {isStatusModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
@@ -799,7 +727,7 @@ export default function StaffAppointmentDetailsPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-sm tracking-wide">
-                    Update Session Status &amp; Payment
+                    Update Session Status
                   </h3>
                   <p className="text-[11px] text-slate-400">
                     Session #{session.session_number} • {master.appointment_number} • {customer.name || 'Patient'}
@@ -854,10 +782,7 @@ export default function StaffAppointmentDetailsPage() {
                   {/* Completed (Close Session) */}
                   <button
                     type="button"
-                    onClick={() => {
-                      setModalStatus('completed');
-                      setReceivePayment(true);
-                    }}
+                    onClick={() => setModalStatus('completed')}
                     className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${
                       modalStatus === 'completed'
                         ? 'bg-teal-50 border-teal-300 ring-2 ring-teal-500/20 font-bold text-teal-900'
@@ -893,111 +818,18 @@ export default function StaffAppointmentDetailsPage() {
                 )}
               </div>
 
-              {/* 2. Patient Payment Collection Section */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3.5">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-200/80">
-                  <div className="flex items-center gap-2">
-                    <Wallet className="w-4 h-4 text-emerald-600" />
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-800">
-                      Receive Payment from Patient
-                    </span>
-                  </div>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={receivePayment}
-                      onChange={(e) => setReceivePayment(e.target.checked)}
-                      className="w-4 h-4 text-emerald-600 rounded-sm border-slate-300 focus:ring-emerald-500"
-                    />
-                    <span className="text-[11px] font-semibold text-slate-600">Collect Payment</span>
-                  </label>
-                </div>
-
-                {receivePayment ? (
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {/* Payment Date */}
-                      <div>
-                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block mb-1">
-                          Payment Date *
-                        </label>
-                        <input
-                          type="date"
-                          value={paymentDate}
-                          onChange={(e) => setPaymentDate(e.target.value)}
-                          required={receivePayment}
-                          className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 font-medium"
-                        />
-                      </div>
-
-                      {/* Payment Amount */}
-                      <div>
-                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block mb-1">
-                          Amount Received (₹) *
-                        </label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={paymentAmount}
-                            onChange={(e) => setPaymentAmount(e.target.value)}
-                            required={receivePayment}
-                            placeholder="0.00"
-                            className="w-full pl-7 pr-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 font-mono font-bold text-slate-900"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Payment Mode */}
-                    <div>
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block mb-1">
-                        Payment Mode / Channel *
-                      </label>
-                      <div className="grid grid-cols-4 gap-2">
-                        {[
-                          { id: 'cash', label: 'Cash' },
-                          { id: 'upi', label: 'UPI / QR' },
-                          { id: 'card', label: 'Card' },
-                          { id: 'bank', label: 'Bank' },
-                        ].map((m) => (
-                          <button
-                            key={m.id}
-                            type="button"
-                            onClick={() => setPaymentMode(m.id)}
-                            className={`py-2 px-2 text-center rounded-xl border text-[11px] font-bold cursor-pointer transition-colors ${
-                              paymentMode === m.id
-                                ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
-                            }`}
-                          >
-                            {m.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Notes */}
-                    <div>
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block mb-1">
-                        Payment Note / Receipt Remark (Optional)
-                      </label>
-                      <input
-                        type="text"
-                        value={paymentNotes}
-                        onChange={(e) => setPaymentNotes(e.target.value)}
-                        placeholder="e.g. Session 1 payment received in full"
-                        className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 text-slate-700"
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-[11px] text-slate-400 italic">
-                    No payment will be recorded with this status update.
-                  </p>
-                )}
+              {/* 2. Receipt Remark (Optional) */}
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-700 block">
+                  Receipt Remark (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={paymentNotes}
+                  onChange={(e) => setPaymentNotes(e.target.value)}
+                  placeholder="e.g. Session 1 Receipt Remark"
+                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-700 placeholder:text-slate-400 font-medium"
+                />
               </div>
 
               {/* Modal Footer Buttons */}
@@ -1016,17 +848,11 @@ export default function StaffAppointmentDetailsPage() {
                 >
                   {isUpdatingStatus ? (
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  ) : modalStatus === 'completed' ? (
-                    <CheckCircle className="w-3.5 h-3.5" />
                   ) : (
                     <CheckCircle2 className="w-3.5 h-3.5" />
                   )}
                   <span>
-                    {isUpdatingStatus
-                      ? 'Saving...'
-                      : modalStatus === 'completed'
-                      ? 'Confirm & Close Session'
-                      : 'Save Status Update'}
+                    {isUpdatingStatus ? 'Saving...' : 'Save Status Update'}
                   </span>
                 </button>
               </div>

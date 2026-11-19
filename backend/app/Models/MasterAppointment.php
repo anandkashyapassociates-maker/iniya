@@ -41,6 +41,9 @@ class MasterAppointment extends Model
      */
     protected $appends = [
         'image_url',
+        'total_paid',
+        'balance_remaining',
+        'payment_status',
     ];
 
     /**
@@ -190,5 +193,59 @@ class MasterAppointment extends Model
     public function sessions(): HasMany
     {
         return $this->hasMany(AppointmentSession::class, 'master_appointment_id')->orderBy('session_number');
+    }
+
+    /**
+     * Recorded patient payments for this appointment.
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(AppointmentPayment::class, 'master_appointment_id')->orderBy('id', 'desc');
+    }
+
+    /**
+     * Accessor for cumulative amount paid so far.
+     */
+    public function getTotalPaidAttribute(): float
+    {
+        if ($this->relationLoaded('payments')) {
+            if ($this->payments->isNotEmpty()) {
+                return (float) $this->payments->sum(fn ($p) => (float) $p->amount);
+            }
+        } elseif ($this->payments()->exists()) {
+            return (float) $this->payments()->sum('amount');
+        }
+
+        // Fallback for appointments recorded prior to payment ledger table
+        if ($this->relationLoaded('sessions')) {
+            return (float) $this->sessions->sum(fn ($s) => (float) ($s->payment_amount ?? 0));
+        }
+
+        return (float) $this->sessions()->sum('payment_amount');
+    }
+
+    /**
+     * Accessor for remaining balance due.
+     */
+    public function getBalanceRemainingAttribute(): float
+    {
+        $fee = (float) ($this->appointment_fees ?? 0);
+        return max(0.0, $fee - $this->total_paid);
+    }
+
+    /**
+     * Accessor for payment status: paid, partial, or unpaid.
+     */
+    public function getPaymentStatusAttribute(): string
+    {
+        $fee = (float) ($this->appointment_fees ?? 0);
+        $paid = $this->total_paid;
+        if ($fee > 0 && $paid >= ($fee - 0.01)) {
+            return 'paid';
+        }
+        if ($paid > 0) {
+            return 'partial';
+        }
+        return 'unpaid';
     }
 }

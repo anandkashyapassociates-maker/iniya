@@ -14,6 +14,7 @@ import {
   XCircle,
   Loader2,
   ReceiptIndianRupee,
+  Wallet,
   Building2,
   RotateCcw,
 } from 'lucide-react';
@@ -22,6 +23,7 @@ import adminInventoryService from '../../services/adminInventoryService';
 import DataTable from '../../components/DataTable';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import AppointmentReceiptModal from '../../components/admin/AppointmentReceiptModal';
+import AppointmentCollectionModal from '../../components/admin/AppointmentCollectionModal';
 import { useToast } from '../../context/ToastContext';
 import { useAdminAuth } from '../../features/auth/AdminAuthContext';
 
@@ -80,8 +82,22 @@ export default function AdminMasterAppointmentsPage() {
   const [deleteId, setDeleteId] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  // Receipt Modal State
-  const [selectedReceiptAppointment, setSelectedReceiptAppointment] = useState(null);
+  // Payment Collection & Receipt Modal States
+  const [collectionModal, setCollectionModal] = useState({ isOpen: false, appointment: null });
+  const [receiptModal, setReceiptModal] = useState({ isOpen: false, appointment: null, payment: null, type: 'master' });
+
+  const handleOpenCollectionModal = (row) => {
+    setCollectionModal({ isOpen: true, appointment: row });
+  };
+
+  const handleOpenReceipt = (payment, appt) => {
+    setReceiptModal({
+      isOpen: true,
+      appointment: appt || collectionModal.appointment,
+      payment: payment || null,
+      type: payment ? 'payment' : 'master',
+    });
+  };
 
   // Load dropdown options once
   useEffect(() => {
@@ -264,7 +280,7 @@ export default function AdminMasterAppointmentsPage() {
         let totalFee = Number(row.appointment_fees || 0);
         if (Array.isArray(row.sessions) && row.sessions.length > 0) {
           const sessionsSum = row.sessions.reduce((acc, s) => {
-            const p = s.service?.price !== undefined ? Number(s.service.price) : Number(s.payment_amount || 0);
+            const p = s.consultation_fee ?? s.service?.price ?? s.payment_amount ?? 0;
             return acc + (isNaN(p) ? 0 : p);
           }, 0);
           if (sessionsSum > 0) {
@@ -275,6 +291,96 @@ export default function AdminMasterAppointmentsPage() {
           <span className="font-bold text-slate-900 text-sm font-mono">
             ₹{totalFee.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </span>
+        );
+      },
+    },
+    {
+      header: 'COLLECTION (₹)',
+      className: 'text-right whitespace-nowrap',
+      render: (row) => {
+        let totalFee = Number(row.appointment_fees || 0);
+        if (Array.isArray(row.sessions) && row.sessions.length > 0) {
+          const sessionsSum = row.sessions.reduce((acc, s) => {
+            const p = s.consultation_fee ?? s.service?.price ?? s.payment_amount ?? 0;
+            return acc + Number(p || 0);
+          }, 0);
+          if (sessionsSum > 0) totalFee = sessionsSum;
+        }
+
+        let paid = Number(row.total_paid || 0);
+        if (row.total_paid === undefined) {
+          if (Array.isArray(row.payments) && row.payments.length > 0) {
+            paid = row.payments.reduce((acc, p) => acc + Number(p.amount || 0), 0);
+          } else if (Array.isArray(row.sessions)) {
+            paid = row.sessions.reduce((acc, s) => acc + Number(s.payment_amount || 0), 0);
+          }
+        }
+        const balance = Math.max(0, totalFee - paid);
+        const isPaid = balance <= 0 && totalFee > 0;
+        const isPartial = paid > 0 && balance > 0;
+
+        return (
+          <div className="flex flex-col items-end gap-1">
+            {isPaid ? (
+              <button
+                type="button"
+                onClick={() => handleOpenCollectionModal(row)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/90 hover:bg-emerald-100 hover:border-emerald-300 transition-all shadow-2xs cursor-pointer group"
+                title="View Payment Ledger &amp; Receipts"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Paid</span>
+                <span className="font-mono text-emerald-700 bg-white px-1.5 py-0.5 rounded text-[11px] border border-emerald-200/70">
+                  ₹{paid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                </span>
+              </button>
+            ) : isPartial ? (
+              <button
+                type="button"
+                onClick={() => handleOpenCollectionModal(row)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-slate-900 hover:bg-emerald-700 transition-all shadow-xs cursor-pointer group"
+                title="Click to Collect Remaining Balance"
+              >
+                <ReceiptIndianRupee className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Collect Due</span>
+                <span className="font-mono text-emerald-300 bg-slate-800 group-hover:bg-emerald-800 px-1.5 py-0.5 rounded text-[11px] transition-colors">
+                  ₹{balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                </span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleOpenCollectionModal(row)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all shadow-xs cursor-pointer group"
+                title="Click to Receive Payment Collection"
+              >
+                <ReceiptIndianRupee className="w-3.5 h-3.5 text-white" />
+                <span>Collect Payment</span>
+                <span className="font-mono text-white bg-emerald-700/80 px-1.5 py-0.5 rounded text-[11px]">
+                  ₹{totalFee.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                </span>
+              </button>
+            )}
+            <div className="flex items-center gap-1 text-[10px] font-mono">
+              {isPaid ? (
+                <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  Cleared in Full ✓
+                </span>
+              ) : isPartial ? (
+                <>
+                  <span className="text-emerald-700 font-bold">Paid: ₹{paid.toLocaleString('en-IN')}</span>
+                  <span className="text-slate-300">•</span>
+                  <span className="text-rose-600 font-bold">Due: ₹{balance.toLocaleString('en-IN')}</span>
+                </>
+              ) : (
+                <span className="text-rose-600 font-semibold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                  Total Due: ₹{totalFee.toLocaleString('en-IN')}
+                </span>
+              )}
+            </div>
+          </div>
         );
       },
     },
@@ -325,7 +431,7 @@ export default function AdminMasterAppointmentsPage() {
       render: (row) => (
         <div className="flex items-center justify-center space-x-1.5">
           <button
-            onClick={() => setSelectedReceiptAppointment(row)}
+            onClick={() => handleOpenReceipt(null, row)}
             className="p-1.5 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
             title="Download / Print Payment Receipt (₹)"
           >
@@ -654,12 +760,25 @@ export default function AdminMasterAppointmentsPage() {
         isLoading={deleting}
       />
 
+      {/* Patient Payment Collection Popup Modal */}
+      <AppointmentCollectionModal
+        isOpen={collectionModal.isOpen}
+        onClose={() => setCollectionModal({ isOpen: false, appointment: null })}
+        appointment={collectionModal.appointment}
+        onPaymentSuccess={() => {
+          fetchAppointments();
+          fetchStats();
+        }}
+        onOpenReceipt={(payment, appt) => handleOpenReceipt(payment, appt)}
+      />
+
       {/* Master Appointment Payment Receipt Modal */}
       <AppointmentReceiptModal
-        isOpen={Boolean(selectedReceiptAppointment)}
-        onClose={() => setSelectedReceiptAppointment(null)}
-        appointment={selectedReceiptAppointment}
-        type="master"
+        isOpen={receiptModal.isOpen}
+        onClose={() => setReceiptModal({ isOpen: false, appointment: null, payment: null, type: 'master' })}
+        appointment={receiptModal.appointment}
+        payment={receiptModal.payment}
+        type={receiptModal.type}
       />
     </div>
   );

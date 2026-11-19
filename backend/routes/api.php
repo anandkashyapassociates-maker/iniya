@@ -376,6 +376,11 @@ Route::prefix('admin')
             Route::put('/master-appointments/{id}', [MasterAppointmentController::class, 'update']);
             Route::delete('/master-appointments/{id}', [MasterAppointmentController::class, 'destroy']);
 
+            // Patient Payment Collection & Transaction Receipts
+            Route::post('/master-appointments/{id}/payments', [MasterAppointmentController::class, 'collectPayment']);
+            Route::get('/master-appointments/{id}/payments', [MasterAppointmentController::class, 'getPayments']);
+            Route::get('/master-appointments/{id}/payments/{paymentId}/receipt', [MasterAppointmentController::class, 'getPaymentReceipt']);
+
             // Individual Session Management
             Route::post('/master-appointments/{id}/sessions', [AppointmentSessionController::class, 'store']);
             Route::put('/sessions/{id}', [AppointmentSessionController::class, 'update']);

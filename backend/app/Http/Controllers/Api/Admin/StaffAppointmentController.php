@@ -258,13 +258,14 @@ class StaffAppointmentController extends Controller
             $updateData['executed_by_staff_id'] = $user->id;
         }
 
+        if (array_key_exists('payment_notes', $validated)) {
+            $updateData['payment_notes'] = $validated['payment_notes'];
+        }
+
         if (array_key_exists('payment_amount', $validated) && $validated['payment_amount'] !== null && $validated['payment_amount'] !== '') {
             $updateData['payment_amount'] = (float) $validated['payment_amount'];
             $updateData['payment_date'] = $validated['payment_date'] ?? Carbon::today()->toDateString();
             $updateData['payment_mode'] = $validated['payment_mode'] ?? 'cash';
-            if (array_key_exists('payment_notes', $validated)) {
-                $updateData['payment_notes'] = $validated['payment_notes'];
-            }
             $updateData['executed_by_staff_id'] = $user->id;
         }
 

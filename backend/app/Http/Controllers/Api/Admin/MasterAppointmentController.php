@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminActivityLog;
+use App\Models\AppointmentPayment;
 use App\Models\AppointmentSession;
 use App\Models\Clinic;
 use App\Models\Customer;
@@ -32,6 +33,7 @@ class MasterAppointmentController extends Controller
             'customer:id,name,mobile,email,gender',
             'salesTeam:id,sales_code,name,email,mobile,department',
             'admin:id,name,email',
+            'payments',
             'sessions' => function ($q) {
                 $q->with([
                     'staff:id,staff_code,name,department,designation',
@@ -519,6 +521,7 @@ class MasterAppointmentController extends Controller
             'customer',
             'salesTeam',
             'admin:id,name,email',
+            'payments.admin:id,name,email',
             'sessions' => function ($q) {
                 $q->with([
                     'staff',
@@ -669,6 +672,7 @@ class MasterAppointmentController extends Controller
             'customer',
             'salesTeam',
             'admin:id,name,email',
+            'payments.admin:id,name,email',
             'sessions' => function ($q) {
                 $q->with([
                     'staff',
@@ -715,6 +719,222 @@ class MasterAppointmentController extends Controller
             'data' => [
                 'receipt_number' => 'RCP-M'.str_pad((string) $master->id, 5, '0', STR_PAD_LEFT),
                 'receipt_date' => Carbon::now()->toIso8601String(),
+                'appointment' => $master,
+            ],
+        ]);
+    }
+
+    /**
+     * Collect / record a patient payment for a master appointment.
+     * Automatically applies FIFO sequential allocation across sessions.
+     */
+    public function collectPayment(Request $request, int $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'payment_date' => ['nullable', 'date'],
+            'payment_mode' => ['required', 'string', 'max:50'],
+            'payment_notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $master = MasterAppointment::with([
+            'clinic',
+            'customer',
+            'salesTeam',
+            'admin:id,name,email',
+            'payments.admin:id,name,email',
+            'sessions' => function ($q) {
+                $q->with([
+                    'staff:id,staff_code,name,department,designation',
+                    'executedBy:id,staff_code,name,department,designation',
+                    'service:id,service_category_id,name,price',
+                ])->orderBy('session_number');
+            },
+            'payments',
+        ])->findOrFail($id);
+
+        $admin = $request->user();
+        if ($admin && ! empty($admin->clinic_id) && (int) $master->clinic_id !== (int) $admin->clinic_id) {
+            return response()->json([
+                'message' => 'Unauthorized: This master appointment belongs to a different clinic branch.',
+            ], 403);
+        }
+
+        $totalFees = (float) $master->recalculateFees();
+        $previousPaid = (float) $master->payments()->sum('amount');
+        $balanceBefore = max(0.0, $totalFees - $previousPaid);
+
+        $amount = round((float) $validated['amount'], 2);
+        if ($amount > ($balanceBefore + 0.01) && $balanceBefore > 0) {
+            return response()->json([
+                'message' => "Payment amount (₹" . number_format($amount, 2) . ") exceeds the remaining balance of ₹" . number_format($balanceBefore, 2) . ".",
+            ], 422);
+        }
+
+        $paymentDate = $validated['payment_date'] ?? Carbon::today()->toDateString();
+        $paymentMode = $validated['payment_mode'];
+        $paymentNotes = $validated['payment_notes'] ?? null;
+
+        $payment = DB::transaction(function () use (
+            $master,
+            $admin,
+            $amount,
+            $paymentDate,
+            $paymentMode,
+            $paymentNotes,
+            $totalFees,
+            $previousPaid
+        ) {
+            $newCumulativePaid = $previousPaid + $amount;
+            $balanceRemaining = max(0.0, $totalFees - $newCumulativePaid);
+
+            // Sequential / FIFO allocation across sessions
+            $unallocated = $newCumulativePaid;
+            $allocations = [];
+            $sessions = $master->sessions()->with('service')->orderBy('session_number')->get();
+
+            foreach ($sessions as $session) {
+                $fee = (float) ($session->consultation_fee ?? $session->service?->price ?? 0.0);
+                $allocatedForThisSession = min($unallocated, $fee);
+                $sessionBalance = max(0.0, $fee - $allocatedForThisSession);
+                $unallocated = max(0.0, $unallocated - $allocatedForThisSession);
+
+                $session->payment_amount = $allocatedForThisSession;
+                if ($allocatedForThisSession > 0 && ! $session->payment_date) {
+                    $session->payment_date = $paymentDate;
+                }
+                if ($allocatedForThisSession > 0 && ! $session->payment_mode) {
+                    $session->payment_mode = $paymentMode;
+                }
+                $session->saveQuietly();
+
+                $allocations[] = [
+                    'session_id' => $session->id,
+                    'session_number' => $session->session_number,
+                    'service_name' => $session->service?->name ?? $session->treatment_details ?? "Session #{$session->session_number}",
+                    'treatment_details' => $session->treatment_details,
+                    'fee' => $fee,
+                    'allocated_amount' => $allocatedForThisSession,
+                    'balance' => $sessionBalance,
+                    'status' => ($allocatedForThisSession >= $fee && $fee > 0) ? 'paid' : ($allocatedForThisSession > 0 ? 'partial' : 'unpaid'),
+                ];
+            }
+
+            $receiptNumber = AppointmentPayment::generateReceiptNumber($paymentDate);
+
+            return AppointmentPayment::create([
+                'receipt_number' => $receiptNumber,
+                'master_appointment_id' => $master->id,
+                'admin_id' => $admin?->id,
+                'amount' => $amount,
+                'payment_date' => $paymentDate,
+                'payment_mode' => $paymentMode,
+                'payment_notes' => $paymentNotes,
+                'total_appointment_fees' => $totalFees,
+                'previous_paid_amount' => $previousPaid,
+                'current_paid_amount' => $newCumulativePaid,
+                'balance_remaining' => $balanceRemaining,
+                'session_allocations' => $allocations,
+            ]);
+        });
+
+        if ($admin) {
+            AdminActivityLog::record(
+                'admin',
+                $admin->id,
+                'appointment_payment_collected',
+                "Admin '{$admin->name}' collected payment of ₹" . number_format($amount, 2) . " ({$paymentMode}) for Appointment #{$master->appointment_number}. Receipt: {$payment->receipt_number}",
+                $request
+            );
+        }
+
+        $freshMaster = $master->fresh([
+            'clinic',
+            'customer',
+            'salesTeam',
+            'admin:id,name,email',
+            'payments.admin:id,name,email',
+            'sessions' => function ($q) {
+                $q->with([
+                    'staff',
+                    'executedBy',
+                    'inventoryProduct',
+                    'service.category.parent',
+                ])->orderBy('session_number');
+            },
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Payment of ₹" . number_format($amount, 2) . " successfully collected. Receipt {$payment->receipt_number} generated.",
+            'payment' => $payment->load('admin:id,name,email'),
+            'appointment' => $freshMaster,
+        ]);
+    }
+
+    /**
+     * Get all payment transaction history for a master appointment.
+     */
+    public function getPayments(Request $request, int $id): JsonResponse
+    {
+        $master = MasterAppointment::findOrFail($id);
+
+        $admin = $request->user();
+        if ($admin && ! empty($admin->clinic_id) && (int) $master->clinic_id !== (int) $admin->clinic_id) {
+            return response()->json([
+                'message' => 'Unauthorized: This master appointment belongs to a different clinic branch.',
+            ], 403);
+        }
+
+        $payments = $master->payments()->with('admin:id,name,email')->orderByDesc('id')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $payments,
+            'summary' => [
+                'total_fees' => (float) $master->appointment_fees,
+                'total_paid' => (float) $master->total_paid,
+                'balance_remaining' => (float) $master->balance_remaining,
+                'payment_status' => $master->payment_status,
+            ],
+        ]);
+    }
+
+    /**
+     * Get details and receipt data for a single payment transaction.
+     */
+    public function getPaymentReceipt(Request $request, int $id, int $paymentId): JsonResponse
+    {
+        $master = MasterAppointment::with([
+            'clinic',
+            'customer',
+            'salesTeam',
+            'admin:id,name,email',
+            'payments.admin:id,name,email',
+            'sessions' => function ($q) {
+                $q->with([
+                    'staff',
+                    'executedBy',
+                    'service.category.parent',
+                ])->orderBy('session_number');
+            },
+        ])->findOrFail($id);
+
+        $payment = AppointmentPayment::with('admin:id,name,email')
+            ->where('master_appointment_id', $master->id)
+            ->findOrFail($paymentId);
+
+        $admin = $request->user();
+        if ($admin && ! empty($admin->clinic_id) && (int) $master->clinic_id !== (int) $admin->clinic_id) {
+            return response()->json([
+                'message' => 'Unauthorized: This master appointment belongs to a different clinic branch.',
+            ], 403);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'payment' => $payment,
                 'appointment' => $master,
             ],
         ]);

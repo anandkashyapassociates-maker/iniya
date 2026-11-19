@@ -3,6 +3,7 @@ import {
   Printer,
   X,
   CheckCircle2,
+  Clock,
   User,
   ShieldCheck,
   Phone,
@@ -90,13 +91,15 @@ export default function AppointmentReceiptModal({
   onClose,
   appointment,
   session = null,
-  type = 'master', // 'master' (User/Appointment-wise) or 'session' (Session-wise)
+  payment = null,
+  type = 'master', // 'master' (User/Appointment-wise), 'session' (Session-wise), or 'payment' (Transaction-wise)
 }) {
   const receiptRef = useRef(null);
 
   if (!isOpen || !appointment) return null;
 
-  const isSessionType = type === 'session' && session;
+  const isPaymentType = Boolean(payment || type === 'payment');
+  const isSessionType = !isPaymentType && type === 'session' && session;
   const activeSessionDoctor = isSessionType ? getSessionPractitioner(session) : null;
   const sessionIsStaffReassigned = isSessionType ? isPractitionerReassigned(session) : false;
   const sessionIsDateTimeRescheduled = isSessionType ? isDateTimeRescheduled(session) : false;
@@ -119,7 +122,9 @@ export default function AppointmentReceiptModal({
   const clinicEmail = clinic.email || 'care@iniyaclinic.com';
 
   // Receipt Numbers & Dates
-  const receiptNumber = isSessionType
+  const receiptNumber = isPaymentType
+    ? (payment?.receipt_number || `RCP-P${String(payment?.id || appointment.id).padStart(5, '0')}`)
+    : isSessionType
     ? `RCP-S${String(session.id).padStart(5, '0')}`
     : `RCP-M${String(appointment.id).padStart(5, '0')}`;
 
@@ -142,11 +147,60 @@ export default function AppointmentReceiptModal({
       })
     : 'N/A';
 
-  const sessionFee = session?.service?.price ? Number(session.service.price) : Number(session?.payment_amount || appointment.appointment_fees || 0);
+  const receiptDateFormatted = isPaymentType && payment?.payment_date
+    ? new Date(payment.payment_date).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      })
+    : todayFormatted;
+
+  const sessionFee = Number(session?.consultation_fee ?? session?.service?.price ?? session?.payment_amount ?? appointment.appointment_fees ?? 0);
   const masterFee = sessions.length > 0
-    ? sessions.reduce((acc, s) => acc + (s.service?.price !== undefined ? Number(s.service.price) : Number(s.payment_amount || 0)), 0)
+    ? sessions.reduce((acc, s) => acc + Number(s.consultation_fee ?? s.service?.price ?? s.payment_amount ?? 0), 0)
     : Number(appointment.appointment_fees || 0);
   const totalAmount = isSessionType ? sessionFee : (masterFee > 0 ? masterFee : Number(appointment.appointment_fees || 0));
+
+  // Compute cumulative paid and due balance for the whole master appointment
+  const appointmentTotalPaid = Number(
+    appointment.total_paid !== undefined && appointment.total_paid !== null
+      ? appointment.total_paid
+      : (Array.isArray(appointment.payments) && appointment.payments.length > 0
+          ? appointment.payments.reduce((acc, p) => acc + Number(p.amount || 0), 0)
+          : (Array.isArray(appointment.sessions) && appointment.sessions.length > 0
+              ? appointment.sessions.reduce((acc, s) => acc + Number(s.payment_amount || 0), 0)
+              : 0))
+  );
+
+  const appointmentBalanceRemaining = Number(
+    appointment.balance_remaining !== undefined && appointment.balance_remaining !== null
+      ? appointment.balance_remaining
+      : Math.max(0, totalAmount - appointmentTotalPaid)
+  );
+
+  // Financials depending on receipt mode
+  let currentPaidAmount = 0;
+  let previousPaidAmount = 0;
+  let balanceRemaining = 0;
+
+  if (isPaymentType) {
+    currentPaidAmount = Number(payment?.amount || 0);
+    previousPaidAmount = Number(payment?.previous_paid_amount || 0);
+    balanceRemaining = Number(
+      payment?.balance_remaining !== undefined && payment?.balance_remaining !== null
+        ? payment.balance_remaining
+        : Math.max(0, totalAmount - (previousPaidAmount + currentPaidAmount))
+    );
+  } else if (isSessionType) {
+    currentPaidAmount = Number(session?.payment_amount || 0);
+    previousPaidAmount = 0;
+    balanceRemaining = Math.max(0, sessionFee - currentPaidAmount);
+  } else {
+    // Master Appointment Receipt
+    currentPaidAmount = appointmentTotalPaid;
+    previousPaidAmount = 0;
+    balanceRemaining = appointmentBalanceRemaining;
+  }
 
   // High-fidelity Single Page Isolated Iframe Print
   const handlePrint = () => {
@@ -338,7 +392,9 @@ export default function AppointmentReceiptModal({
                   Document Type
                 </span>
                 <span className="text-xs sm:text-sm font-extrabold text-slate-900 font-display">
-                  {isSessionType
+                  {isPaymentType
+                    ? 'MASTER APPOINTMENT PAYMENT RECEIPT'
+                    : isSessionType
                     ? `CLINICAL SESSION RECEIPT (SESSION #${session.session_number})`
                     : 'MASTER APPOINTMENT PAYMENT RECEIPT'}
                 </span>
@@ -350,17 +406,29 @@ export default function AppointmentReceiptModal({
                   <span className="font-bold text-slate-900">{receiptNumber}</span>
                 </div>
                 <div>
-                  <span className="text-[9px] font-sans text-slate-400 block font-semibold">DATE & TIME</span>
+                  <span className="text-[9px] font-sans text-slate-400 block font-semibold">DATE &amp; TIME</span>
                   <span className="font-bold text-slate-900">
-                    {todayFormatted}, {nowTimeFormatted}
+                    {receiptDateFormatted}, {nowTimeFormatted}
                   </span>
                 </div>
                 <div>
                   <span className="text-[9px] font-sans text-slate-400 block font-semibold">PAYMENT STATUS</span>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full border border-emerald-200">
-                    <CheckCircle2 className="w-2.5 h-2.5" />
-                    <span>PAID</span>
-                  </span>
+                  {balanceRemaining <= 0 && currentPaidAmount > 0 ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full border border-emerald-200">
+                      <CheckCircle2 className="w-2.5 h-2.5" />
+                      <span>PAID IN FULL</span>
+                    </span>
+                  ) : currentPaidAmount > 0 ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded-full border border-amber-200">
+                      <Clock className="w-2.5 h-2.5" />
+                      <span>PARTIAL PAYMENT</span>
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-100/80 px-2 py-0.5 rounded-full border border-rose-200">
+                      <Clock className="w-2.5 h-2.5" />
+                      <span>PAYMENT DUE</span>
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -591,7 +659,7 @@ export default function AppointmentReceiptModal({
                     ) : (
                       /* Full Master Appointment Sessions Breakdown */
                       sessions.map((ses) => {
-                        const fee = ses.service?.price ? Number(ses.service.price) : 0;
+                        const fee = Number(ses.consultation_fee ?? ses.service?.price ?? ses.payment_amount ?? 0);
                         const sesDoctor = getSessionPractitioner(ses);
                         const sesStaffReassigned = isPractitionerReassigned(ses);
                         const sesDateTimeRescheduled = isDateTimeRescheduled(ses);
@@ -667,28 +735,53 @@ export default function AppointmentReceiptModal({
                   Amount Chargeable (in words)
                 </span>
                 <p className="text-[11px] font-semibold text-slate-700 italic max-w-sm">
-                  {numberToWords(totalAmount)}
+                  {numberToWords(currentPaidAmount > 0 ? currentPaidAmount : totalAmount)}
                 </p>
-                <div className="pt-1 flex items-center gap-2 text-[10px] text-slate-500">
-                  <span>Payment Mode: <strong>OPD Desk / Cleared</strong></span>
+                <div className="pt-1 flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
+                  <span>
+                    Payment Mode:{' '}
+                    <strong className="uppercase">
+                      {payment?.payment_mode || (currentPaidAmount > 0 ? 'OPD Desk / Cleared' : 'Pending Payment')}
+                    </strong>
+                  </span>
                   <span>&bull;</span>
                   <span>Tax: <strong>Inclusive</strong></span>
+                  {payment?.payment_notes && (
+                    <>
+                      <span>&bull;</span>
+                      <span className="italic text-slate-700">"{payment.payment_notes}"</span>
+                    </>
+                  )}
                 </div>
               </div>
 
-              <div className="w-full sm:w-60 bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5">
+              <div className="w-full sm:w-64 bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5">
                 <div className="flex items-center justify-between text-[11px] text-slate-600">
                   <span>Gross Consultation Fees:</span>
-                  <span className="font-mono">₹{Number(totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                </div>
-                <div className="flex items-center justify-between text-[11px] text-slate-600">
-                  <span>Clinical Discounts:</span>
-                  <span className="font-mono">₹0.00</span>
-                </div>
-                <div className="border-t border-slate-200 pt-1.5 flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-slate-900 font-display">Total Amount Paid:</span>
-                  <span className="text-sm font-black text-emerald-600 font-mono">
+                  <span className="font-mono">
                     ₹{Number(totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                {isPaymentType && (
+                  <div className="flex items-center justify-between text-[11px] text-slate-600">
+                    <span>Previously Collected:</span>
+                    <span className="font-mono">
+                      ₹{Number(previousPaidAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                )}
+                <div className="border-t border-slate-200 pt-1.5 flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-900 font-display">
+                    {isPaymentType ? 'Current Payment Received:' : 'Total Amount Paid:'}
+                  </span>
+                  <span className="text-sm font-black text-emerald-600 font-mono">
+                    ₹{Number(currentPaidAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div className="border-t border-slate-200/80 pt-1 flex items-center justify-between text-[11px]">
+                  <span className="font-bold text-slate-700">Remaining Due Balance:</span>
+                  <span className={`font-mono font-bold ${balanceRemaining <= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
+                    ₹{Number(balanceRemaining).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>

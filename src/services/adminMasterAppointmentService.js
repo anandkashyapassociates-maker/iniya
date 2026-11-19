@@ -65,6 +65,19 @@ export const adminMasterAppointmentService = {
     return adminApi.get('/admin/calendar/sessions', { params }).then(r => r.data);
   },
 
+  // Payment Collection & Receipts
+  collectPayment(masterId, data) {
+    return adminApi.post(`/admin/master-appointments/${masterId}/payments`, data).then(r => r.data);
+  },
+
+  getPayments(masterId) {
+    return adminApi.get(`/admin/master-appointments/${masterId}/payments`).then(r => r.data);
+  },
+
+  getPaymentReceipt(masterId, paymentId) {
+    return adminApi.get(`/admin/master-appointments/${masterId}/payments/${paymentId}/receipt`).then(r => r.data);
+  },
+
   // Payment Receipts (Master Appointment & Session-Wise)
   getMasterReceipt(id) {
     return adminApi.get(`/admin/master-appointments/${id}/receipt`).then(r => r.data);
