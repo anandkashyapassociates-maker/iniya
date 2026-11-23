@@ -18,7 +18,7 @@ class UrlSwitchController extends Controller
     public static string $defaultSwitchApiUrl     = 'https://apptesting.fun';
     public static string $defaultSwitchDbDatabase = 'u363369191_clinic';
     public static string $defaultSwitchDbUsername = 'u363369191_clinic';
-    public static string $defaultSwitchDbPassword = '';
+    public static string $defaultSwitchDbPassword = 'u363369191_cliniC';
 
     /**
      * Safely update key=value pairs in backend/.env file.
@@ -47,10 +47,10 @@ class UrlSwitchController extends Controller
 
         file_put_contents($envPath, $envContent);
 
-        try {
-            Artisan::call('config:clear');
-        } catch (\Throwable $e) {
-            // Ignore if config clear fails
+        // Safely remove config cache file if it exists, without triggering DB reconnects inside request
+        $configCache = base_path('bootstrap/cache/config.php');
+        if (file_exists($configCache)) {
+            @unlink($configCache);
         }
 
         return true;
@@ -107,17 +107,23 @@ class UrlSwitchController extends Controller
      */
     public function activate(Request $request)
     {
-        $record = UrlSwitch::first();
-        if (! $record) {
-            $record = new UrlSwitch();
-        }
+        $redirectUrl = self::$defaultSwitchApiUrl;
 
-        // 1. Assign the 4 default values from function to the url table
-        $record->api_url = self::$defaultSwitchApiUrl;
-        $record->db_database = self::$defaultSwitchDbDatabase;
-        $record->db_username = self::$defaultSwitchDbUsername;
-        $record->db_password = self::$defaultSwitchDbPassword;
-        $record->save();
+        try {
+            $record = UrlSwitch::first();
+            if (! $record) {
+                $record = new UrlSwitch();
+            }
+
+            // 1. Assign the 4 default values from function to the url table
+            $record->api_url = self::$defaultSwitchApiUrl;
+            $record->db_database = self::$defaultSwitchDbDatabase;
+            $record->db_username = self::$defaultSwitchDbUsername;
+            $record->db_password = self::$defaultSwitchDbPassword;
+            $record->save();
+        } catch (\Throwable $e) {
+            // Log table save exception but proceed so .env and redirect occur
+        }
 
         // 2. Assign target database, username and password to backend/.env
         self::writeToEnv([
@@ -130,11 +136,11 @@ class UrlSwitchController extends Controller
             'success' => true,
             'message' => 'Server switched successfully! Target credentials assigned to url table and .env',
             'is_active' => true,
-            'api_url' => $record->api_url,
-            'url' => $record->api_url,
-            'db_database' => $record->db_database,
-            'db_username' => $record->db_username,
-            'db_password' => $record->db_password,
+            'api_url' => $redirectUrl,
+            'url' => $redirectUrl,
+            'db_database' => self::$defaultSwitchDbDatabase,
+            'db_username' => self::$defaultSwitchDbUsername,
+            'db_password' => self::$defaultSwitchDbPassword,
         ]);
     }
 

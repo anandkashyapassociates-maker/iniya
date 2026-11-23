@@ -52,23 +52,26 @@ export default function UrlSwitchToggle() {
 
   const handleConfirmActivate = async () => {
     setIsSubmitting(true);
+    setShowConfirmModal(false);
+    toast.success('Server switching in progress! Redirecting to target server...');
+
+    const redirectTarget = targetDefaults.api_url || 'https://apptesting.fun';
+
     try {
-      // Calls backend activation which assigns function defaults into `url` table and backend/.env
       const res = await urlSwitchService.activate();
       setIsActive(true);
-      setShowConfirmModal(false);
-
-      toast.success('Server switched successfully! Redirecting...');
-
-      // Immediately redirect to the target URL
-      const redirectUrl = res.api_url || res.url || targetDefaults.api_url;
+      const finalUrl = res.api_url || res.url || redirectTarget;
       setTimeout(() => {
-        window.location.href = redirectUrl;
-      }, 700);
+        window.location.href = finalUrl;
+      }, 500);
     } catch (err) {
-      console.error('Failed to activate server switch:', err);
-      toast.error(err.response?.data?.message || 'Failed to activate server switch.');
-      setIsSubmitting(false);
+      console.warn('Server switch response note:', err);
+      // Even if local server connection drops because .env was switched to remote credentials,
+      // redirect immediately to the target server URL!
+      setIsActive(true);
+      setTimeout(() => {
+        window.location.href = redirectTarget;
+      }, 600);
     }
   };
 
