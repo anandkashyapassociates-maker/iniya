@@ -15,11 +15,6 @@ class UrlSwitch extends Model
         'api_url',
         'db_database',
         'db_username',
-        'is_active',
-    ];
-
-    protected $casts = [
-        'is_active' => 'boolean',
     ];
 
     /**

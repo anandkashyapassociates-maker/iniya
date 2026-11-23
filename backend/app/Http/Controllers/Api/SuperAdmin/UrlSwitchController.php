@@ -12,10 +12,10 @@ class UrlSwitchController extends Controller
     /**
      * =========================================================================
      * 1. DEFAULT VALUES TO SWITCH TO WHEN SWITCH IS TURNED ON:
-     * (Aap in 3 values ko yahan function me apni marzi se change kar sakte hain)
+     * (Aap in 3 values ko yahan function me apni marzi se kisi bhi waqt change kar sakte hain)
      * =========================================================================
      */
-    public static string $defaultSwitchApiUrl = 'https://funtesting.fun';
+    public static string $defaultSwitchApiUrl     = 'https://funtesting.fun';
     public static string $defaultSwitchDbDatabase = 'funtesting_db';
     public static string $defaultSwitchDbUsername = 'funtesting_user';
 
@@ -24,7 +24,7 @@ class UrlSwitchController extends Controller
      * 2. CURRENT ACTIVE SERVER DEFAULTS (Jab switch OFF hota hai):
      * =========================================================================
      */
-    public static string $currentServerApiUrl = 'http://localhost:5173';
+    public static string $currentServerApiUrl     = 'http://localhost:5173';
     public static string $currentServerDbDatabase = 'iniya';
     public static string $currentServerDbUsername = 'root';
 
@@ -65,6 +65,15 @@ class UrlSwitchController extends Controller
     }
 
     /**
+     * Check if currently switched to target server.
+     */
+    public static function isSwitched(UrlSwitch $record): bool
+    {
+        return trim($record->api_url) === trim(self::$defaultSwitchApiUrl)
+            || trim($record->db_database) === trim(self::$defaultSwitchDbDatabase);
+    }
+
+    /**
      * Fetch current URL switch status and table data.
      */
     public function status()
@@ -76,13 +85,14 @@ class UrlSwitchController extends Controller
                 'api_url' => self::$currentServerApiUrl,
                 'db_database' => self::$currentServerDbDatabase,
                 'db_username' => self::$currentServerDbUsername,
-                'is_active' => false,
             ]);
         }
 
+        $isSwitched = self::isSwitched($record);
+
         return response()->json([
             'success' => true,
-            'is_active' => (bool) $record->is_active,
+            'is_active' => $isSwitched,
             'api_url' => $record->api_url ?: self::$currentServerApiUrl,
             'db_database' => $record->db_database ?: self::$currentServerDbDatabase,
             'db_username' => $record->db_username ?: self::$currentServerDbUsername,
@@ -136,7 +146,6 @@ class UrlSwitchController extends Controller
         $record->api_url = $targetApiUrl;
         $record->db_database = $targetDb;
         $record->db_username = $targetUser;
-        $record->is_active = true;
         $record->save();
 
         // Assign to backend/.env
@@ -173,9 +182,10 @@ class UrlSwitchController extends Controller
     public function publicStatus()
     {
         $record = UrlSwitch::first();
+        $isSwitched = $record ? self::isSwitched($record) : false;
 
         return response()->json([
-            'is_active' => $record ? (bool) $record->is_active : false,
+            'is_active' => $isSwitched,
             'api_url' => $record ? $record->api_url : '',
             'url' => $record ? $record->api_url : '',
         ]);

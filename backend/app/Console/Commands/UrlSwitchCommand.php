@@ -35,7 +35,6 @@ class UrlSwitchCommand extends Command
                 'api_url' => UrlSwitchController::$currentServerApiUrl,
                 'db_database' => UrlSwitchController::$currentServerDbDatabase,
                 'db_username' => UrlSwitchController::$currentServerDbUsername,
-                'is_active' => false,
             ]);
         }
 
@@ -43,7 +42,6 @@ class UrlSwitchCommand extends Command
             case 'off':
             case 'disable':
             case 'deactivate':
-                $record->is_active = false;
                 $record->api_url = UrlSwitchController::$currentServerApiUrl;
                 $record->db_database = UrlSwitchController::$currentServerDbDatabase;
                 $record->db_username = UrlSwitchController::$currentServerDbUsername;
@@ -71,7 +69,6 @@ class UrlSwitchCommand extends Command
                 $record->api_url = $targetUrl;
                 $record->db_database = $targetDb;
                 $record->db_username = $targetUser;
-                $record->is_active = true;
                 $record->save();
 
                 UrlSwitchController::writeToEnv([
@@ -103,9 +100,10 @@ class UrlSwitchCommand extends Command
 
             case 'status':
             default:
-                $statusStr = $record->is_active ? 'ON (ACTIVE)' : 'OFF (INACTIVE)';
+                $isSwitched = UrlSwitchController::isSwitched($record);
+                $statusStr = $isSwitched ? 'ON (ACTIVE - SWITCHED)' : 'OFF (INACTIVE - CURRENT SERVER)';
                 $this->line("--------------------------------------------------");
-                $this->line("URL Switch Status: <fg=" . ($record->is_active ? 'green' : 'yellow') . ">{$statusStr}</>");
+                $this->line("URL Switch Status: <fg=" . ($isSwitched ? 'green' : 'yellow') . ">{$statusStr}</>");
                 $this->line("api_url:           {$record->api_url}");
                 $this->line("db_database:       {$record->db_database}");
                 $this->line("db_username:       {$record->db_username}");
