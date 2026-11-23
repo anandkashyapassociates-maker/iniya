@@ -79,19 +79,9 @@ export default function UrlSwitchToggle() {
     return null;
   }
 
-  // Check if currently browsing on the target server domain (e.g. apptesting.fun)
-  const isTargetServer = (() => {
-    try {
-      const currentHost = window.location.hostname.toLowerCase();
-      const targetHost = new URL(targetDefaults.api_url).hostname.toLowerCase();
-      return currentHost === targetHost || currentHost.includes('apptesting.fun');
-    } catch {
-      return false;
-    }
-  })();
-
-  // When active (ON) or already on the target server, hide completely so it is never visible
-  if (isActive || isTargetServer) {
+  // When active (ON / Switched), hide completely from the superadmin panel.
+  // It remains visible until someone turns it ON.
+  if (isActive) {
     return null;
   }
 

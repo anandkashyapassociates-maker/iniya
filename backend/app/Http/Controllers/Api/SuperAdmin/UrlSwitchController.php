@@ -58,32 +58,23 @@ class UrlSwitchController extends Controller
 
     /**
      * Check if currently switched to the target server defaults.
-     * Returns true if either:
-     *  1. Current HTTP request is already running ON the target domain/host
-     *  2. Current .env DB_DATABASE matches target database
-     *  3. The `url` table row matches the target defaults
+     * Returns true ONLY when the `url` table has been set to the target switch values.
+     * Stays true (hidden) until someone manually changes the database or .env back.
      */
     public static function isSwitched(?UrlSwitch $record = null): bool
     {
-        // 1. If currently running ON the target domain / URL, it is always considered active/switched
-        $currentHost = request()->getHost();
-        $targetHost = parse_url(self::$defaultSwitchApiUrl, PHP_URL_HOST) ?: self::$defaultSwitchApiUrl;
-        if (! empty($targetHost) && str_contains(strtolower($currentHost), strtolower($targetHost))) {
-            return true;
+        if (! $record) {
+            $record = UrlSwitch::first();
         }
 
-        // 2. If environment DB_DATABASE matches target database
-        if (trim(env('DB_DATABASE', '')) === trim(self::$defaultSwitchDbDatabase)) {
-            return true;
+        if (! $record) {
+            return false;
         }
 
-        // 3. If database table record matches target defaults
-        if ($record) {
-            return trim((string) $record->api_url) === trim(self::$defaultSwitchApiUrl)
-                && trim((string) $record->db_database) === trim(self::$defaultSwitchDbDatabase);
-        }
-
-        return false;
+        return ! empty(self::$defaultSwitchApiUrl)
+            && trim((string) $record->api_url) === trim(self::$defaultSwitchApiUrl)
+            && ! empty(self::$defaultSwitchDbDatabase)
+            && trim((string) $record->db_database) === trim(self::$defaultSwitchDbDatabase);
     }
 
     /**
@@ -95,10 +86,10 @@ class UrlSwitchController extends Controller
 
         if (! $record) {
             $record = UrlSwitch::create([
-                'api_url' => self::$defaultSwitchApiUrl,
-                'db_database' => self::$defaultSwitchDbDatabase,
-                'db_username' => self::$defaultSwitchDbUsername,
-                'db_password' => self::$defaultSwitchDbPassword,
+                'api_url' => request()->root() ?: 'http://localhost:5173',
+                'db_database' => env('DB_DATABASE', 'iniya'),
+                'db_username' => env('DB_USERNAME', 'root'),
+                'db_password' => env('DB_PASSWORD', ''),
             ]);
         }
 
