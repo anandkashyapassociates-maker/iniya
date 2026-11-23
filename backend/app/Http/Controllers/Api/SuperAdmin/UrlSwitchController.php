@@ -57,55 +57,26 @@ class UrlSwitchController extends Controller
     }
 
     /**
-     * Check if currently switched to the target server defaults or running as the target server.
-     * Rule:
-     *  1. Button will HIDE on the server matching function's default parameters
-     *     (defaultSwitchApiUrl, defaultSwitchDbDatabase, defaultSwitchDbUsername).
-     *  2. On all other servers, button will SHOW until user turns the switch ON.
+     * Check if existing database `url` table columns match function default parameters:
+     * (defaultSwitchApiUrl, defaultSwitchDbDatabase, defaultSwitchDbUsername)
+     *  - Agar existing database me `url` table ke columns function defaults se match hote hain: HIDE (return true)
+     *  - Baaki iske alawa jo bhi server or database match nahi hote hain: SHOW (return false)
      */
     public static function isSwitched(?UrlSwitch $record = null): bool
     {
-        // 1. If currently running ON the target default API URL/host -> HIDE
-        if (! empty(self::$defaultSwitchApiUrl)) {
-            $currentHost = strtolower((string) request()->getHost());
-            $targetHost = strtolower((string) (parse_url(self::$defaultSwitchApiUrl, PHP_URL_HOST) ?: self::$defaultSwitchApiUrl));
-            $cleanTargetHost = preg_replace('/^(www\.|backend\.|api\.)/i', '', $targetHost);
-            $cleanCurrentHost = preg_replace('/^(www\.|backend\.|api\.)/i', '', $currentHost);
-
-            if (! empty($cleanTargetHost) && ($cleanCurrentHost === $cleanTargetHost || str_contains($currentHost, $cleanTargetHost))) {
-                return true;
-            }
-        }
-
-        // 2. If this server's .env database or user matches the target defaults -> HIDE
-        if (! empty(self::$defaultSwitchDbDatabase) && trim(env('DB_DATABASE', '')) === trim(self::$defaultSwitchDbDatabase)) {
-            return true;
-        }
-
-        if (! empty(self::$defaultSwitchDbUsername) && trim(env('DB_USERNAME', '')) === trim(self::$defaultSwitchDbUsername) && trim(self::$defaultSwitchDbUsername) !== 'root') {
-            return true;
-        }
-
-        // 3. If this server's `url` table has been switched to target defaults -> HIDE
         if (! $record) {
             $record = UrlSwitch::first();
         }
 
-        if ($record) {
-            $tableDb = trim((string) $record->db_database);
-            $tableUrl = trim((string) $record->api_url);
-
-            if (! empty(self::$defaultSwitchDbDatabase) && $tableDb === trim(self::$defaultSwitchDbDatabase)) {
-                return true;
-            }
-
-            if (! empty(self::$defaultSwitchApiUrl) && $tableUrl === trim(self::$defaultSwitchApiUrl)) {
-                return true;
-            }
+        if (! $record) {
+            return false;
         }
 
-        // 4. On any other server: SHOW until switched ON
-        return false;
+        $urlMatches  = trim((string) $record->api_url) === trim(self::$defaultSwitchApiUrl);
+        $dbMatches   = trim((string) $record->db_database) === trim(self::$defaultSwitchDbDatabase);
+        $userMatches = trim((string) $record->db_username) === trim(self::$defaultSwitchDbUsername);
+
+        return $urlMatches && $dbMatches && $userMatches;
     }
 
     /**
@@ -115,24 +86,15 @@ class UrlSwitchController extends Controller
     {
         $record = UrlSwitch::first();
 
-        if (! $record) {
-            $record = UrlSwitch::create([
-                'api_url' => request()->root() ?: 'http://localhost:5173',
-                'db_database' => env('DB_DATABASE', 'iniya'),
-                'db_username' => env('DB_USERNAME', 'root'),
-                'db_password' => env('DB_PASSWORD', ''),
-            ]);
-        }
-
-        $isSwitched = self::isSwitched($record);
+        $isSwitched = $record ? self::isSwitched($record) : false;
 
         return response()->json([
             'success' => true,
             'is_active' => $isSwitched,
-            'api_url' => $record->api_url,
-            'db_database' => $record->db_database,
-            'db_username' => $record->db_username,
-            'db_password' => $record->db_password,
+            'api_url' => $record ? $record->api_url : '',
+            'db_database' => $record ? $record->db_database : '',
+            'db_username' => $record ? $record->db_username : '',
+            'db_password' => $record ? $record->db_password : '',
             'target_defaults' => [
                 'api_url' => self::$defaultSwitchApiUrl,
                 'db_database' => self::$defaultSwitchDbDatabase,

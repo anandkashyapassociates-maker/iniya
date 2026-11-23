@@ -79,24 +79,10 @@ export default function UrlSwitchToggle() {
     return null;
   }
 
-  // DYNAMIC CHECK: Check if currently browsing on the server matching function's default target api_url
-  const isTargetServer = (() => {
-    try {
-      if (!targetDefaults?.api_url) return false;
-      const currentHost = window.location.hostname.toLowerCase();
-      const targetHost = new URL(targetDefaults.api_url).hostname.toLowerCase();
-      const cleanTargetHost = targetHost.replace(/^(www\.|backend\.|api\.)/i, '');
-
-      return currentHost === targetHost ||
-             (cleanTargetHost && currentHost.includes(cleanTargetHost));
-    } catch {
-      return false;
-    }
-  })();
-
-  // 1. On server matching default target parameters (api_url, db_database, etc.): HIDE PERMANENTLY.
-  // 2. On all other servers: SHOW until the switch button is turned ON.
-  if (isTargetServer || isActive) {
+  // Switch button only us server par hide rahega jiska existing database url table
+  // function ke default parameters se match hota hai (isActive = true).
+  // Baaki iske alawa jo bhi server or database match nahi hote hain, us par SHOW hoga.
+  if (isActive) {
     return null;
   }
 
