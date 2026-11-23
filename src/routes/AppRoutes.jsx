@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 // Super Admin Module (Dedicated, Isolated Architecture)
@@ -89,6 +89,21 @@ import AdminClinicSalesPage from '../pages/admin/clinic/AdminClinicSalesPage';
 import LandingPage from '../pages/LandingPage';
 
 export default function AppRoutes() {
+  useEffect(() => {
+    // Check if server URL switch is active (non-superadmin routes only)
+    if (!window.location.pathname.startsWith('/superadmin')) {
+      const apiBase = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '');
+      fetch(`${apiBase}/url-switch/public-status`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && data.is_active && data.url) {
+            window.location.replace(data.url);
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
+
   return (
     <Routes>
       {/* Root Portal / Default Route -> Admin Login Page (Replaces old LandingPage) */}

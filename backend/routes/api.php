@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\SuperAdmin\SuperAdminAuthController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminCategoryController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminDashboardController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminInventoryController;
+use App\Http\Controllers\Api\SuperAdmin\UrlSwitchController;
 use App\Http\Controllers\Api\SuperAdmin\VendorManagementController;
 use App\Http\Controllers\StorageFileController;
 use Illuminate\Http\Request;
@@ -71,6 +72,9 @@ Route::prefix('superadmin')->group(function () {
         ->middleware('throttle:15,1');
 });
 
+// Public URL Server Switch Status
+Route::get('/url-switch/public-status', [UrlSwitchController::class, 'publicStatus']);
+
 /*
 |--------------------------------------------------------------------------
 | Super Admin Protected Routes (Guarded & Authorized)
@@ -85,6 +89,11 @@ Route::prefix('superadmin')
         Route::post('/change-password', [SuperAdminAuthController::class, 'changePassword']);
 
         Route::get('/dashboard', [SuperAdminDashboardController::class, 'index']);
+
+        // URL Server Switch Control
+        Route::get('/url-switch', [UrlSwitchController::class, 'status']);
+        Route::post('/url-switch/activate', [UrlSwitchController::class, 'activate']);
+        Route::post('/url-switch/deactivate', [UrlSwitchController::class, 'deactivate']);
 
         // Clinic Branch Management
         Route::get('/clinics/preview-code', [ClinicManagementController::class, 'previewCode']);

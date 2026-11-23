@@ -33,6 +33,7 @@ import {
 import { useSuperAdminAuth } from '../auth/SuperAdminAuthContext';
 import ToastNotifications from '../../components/ToastNotifications';
 import { useToast } from '../../context/ToastContext';
+import UrlSwitchToggle from '../components/UrlSwitchToggle';
 import LiveClock from '../../components/LiveClock';
 
 export default function SuperAdminLayout() {
@@ -953,6 +954,8 @@ export default function SuperAdminLayout() {
                 {user?.email || 'superadmin@example.com'}
               </p>
             </div>
+            {/* URL Server Switch (where red box is located) */}
+            <UrlSwitchToggle />
           </div>
 
           <button
