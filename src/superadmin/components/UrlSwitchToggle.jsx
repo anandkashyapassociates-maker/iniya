@@ -79,9 +79,26 @@ export default function UrlSwitchToggle() {
     return null;
   }
 
-  // When active (ON / Switched), hide completely from the superadmin panel.
-  // It remains visible until someone turns it ON.
-  if (isActive) {
+  // Check if currently browsing on Server 2 (destination/target server, e.g. apptesting.fun)
+  const isTargetServer = (() => {
+    try {
+      const currentHost = window.location.hostname.toLowerCase();
+      const targetUrl = targetDefaults.api_url || 'https://apptesting.fun';
+      const targetHost = new URL(targetUrl).hostname.toLowerCase();
+      const cleanTargetHost = targetHost.replace(/^(www\.|backend\.|api\.)/i, '');
+
+      return currentHost === targetHost ||
+             (cleanTargetHost && currentHost.includes(cleanTargetHost)) ||
+             currentHost.includes('apptesting.fun');
+    } catch {
+      return false;
+    }
+  })();
+
+  // 1. On Server 2 (destination server): NEVER show the switch button.
+  // 2. On Server 1 (source server): Show button by default; hide only when switched (isActive = true),
+  //    and stay hidden until someone manually changes Server 1's database or .env back.
+  if (isTargetServer || isActive) {
     return null;
   }
 
