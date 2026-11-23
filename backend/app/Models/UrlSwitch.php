@@ -13,6 +13,11 @@ class UrlSwitch extends Model
 
     protected $fillable = [
         'url',
+        'db_database',
+        'db_username',
+        'previous_url',
+        'previous_db_database',
+        'previous_db_username',
         'is_active',
     ];
 

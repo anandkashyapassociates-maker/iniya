@@ -4,20 +4,66 @@ namespace App\Http\Controllers\Api\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use App\Models\UrlSwitch;
 
 class UrlSwitchController extends Controller
 {
     /**
-     * Fetch current URL switch status.
+     * Safely update key=value pairs in backend/.env file.
+     */
+    public static function writeToEnv(array $data): bool
+    {
+        $envPath = base_path('.env');
+        if (! file_exists($envPath)) {
+            return false;
+        }
+
+        $envContent = file_get_contents($envPath);
+
+        foreach ($data as $key => $value) {
+            $value = trim($value);
+            // Quote value if it contains spaces or special characters
+            if (str_contains($value, ' ') && ! str_starts_with($value, '"')) {
+                $value = "\"{$value}\"";
+            }
+
+            if (preg_match("/^{$key}=.*/m", $envContent)) {
+                $envContent = preg_replace("/^{$key}=.*/m", "{$key}={$value}", $envContent);
+            } else {
+                $envContent .= "\n{$key}={$value}";
+            }
+        }
+
+        file_put_contents($envPath, $envContent);
+
+        try {
+            Artisan::call('config:clear');
+        } catch (\Throwable $e) {
+            // Ignore config clear failure if cached
+        }
+
+        return true;
+    }
+
+    /**
+     * Fetch current URL switch status and database settings.
      */
     public function status()
     {
         $record = UrlSwitch::first();
 
+        $currentDb = env('DB_DATABASE', 'iniya');
+        $currentDbUser = env('DB_USERNAME', 'root');
+
         if (! $record) {
             $record = UrlSwitch::create([
-                'url' => 'https://apptesting.fun',
+                'url' => 'https://funtesting.fun',
+                'db_database' => $currentDb,
+                'db_username' => $currentDbUser,
+                'previous_url' => url('/'),
+                'previous_db_database' => $currentDb,
+                'previous_db_username' => $currentDbUser,
                 'is_active' => false,
             ]);
         }
@@ -25,19 +71,29 @@ class UrlSwitchController extends Controller
         return response()->json([
             'success' => true,
             'is_active' => (bool) $record->is_active,
-            'url' => $record->url,
+            'url' => $record->url ?: 'https://funtesting.fun',
+            'db_database' => $record->db_database ?: $currentDb,
+            'db_username' => $record->db_username ?: $currentDbUser,
+            'current_server' => [
+                'url' => url('/'),
+                'db_database' => $currentDb,
+                'db_username' => $currentDbUser,
+            ],
             'can_turn_off_from_frontend' => false,
         ]);
     }
 
     /**
-     * Activate the URL switch.
-     * Once switched ON, it turns on and redirects to the configured URL.
+     * Activate the server switch.
+     * Updates url, db_database, db_username in `url` table,
+     * writes them to backend/.env, and redirects.
      */
     public function activate(Request $request)
     {
         $validated = $request->validate([
             'url' => ['nullable', 'string', 'max:2048'],
+            'db_database' => ['nullable', 'string', 'max:255'],
+            'db_username' => ['nullable', 'string', 'max:255'],
         ]);
 
         $record = UrlSwitch::first();
@@ -46,31 +102,47 @@ class UrlSwitchController extends Controller
             $record = new UrlSwitch();
         }
 
-        if (! empty($validated['url'])) {
-            $targetUrl = trim($validated['url']);
-            // Ensure http:// or https:// prefix
-            if (! preg_match('~^(?:f|ht)tps?://~i', $targetUrl)) {
-                $targetUrl = 'https://' . $targetUrl;
-            }
-            $record->url = $targetUrl;
-        } elseif (empty($record->url)) {
-            $record->url = 'https://apptesting.fun';
+        // Store current server settings as previous if not already saved
+        $currentDb = env('DB_DATABASE', 'iniya');
+        $currentDbUser = env('DB_USERNAME', 'root');
+        $record->previous_url = $record->previous_url ?: url('/');
+        $record->previous_db_database = $record->previous_db_database ?: $currentDb;
+        $record->previous_db_username = $record->previous_db_username ?: $currentDbUser;
+
+        // Target URL
+        $targetUrl = ! empty($validated['url']) ? trim($validated['url']) : ($record->url ?: 'https://funtesting.fun');
+        if (! preg_match('~^(?:f|ht)tps?://~i', $targetUrl)) {
+            $targetUrl = 'https://' . $targetUrl;
         }
 
+        // Target Database & Username
+        $targetDb = ! empty($validated['db_database']) ? trim($validated['db_database']) : ($record->db_database ?: $currentDb);
+        $targetDbUser = ! empty($validated['db_username']) ? trim($validated['db_username']) : ($record->db_username ?: $currentDbUser);
+
+        $record->url = $targetUrl;
+        $record->db_database = $targetDb;
+        $record->db_username = $targetDbUser;
         $record->is_active = true;
         $record->save();
 
+        // Assign to backend/.env so the server automatically switches
+        self::writeToEnv([
+            'DB_DATABASE' => $targetDb,
+            'DB_USERNAME' => $targetDbUser,
+        ]);
+
         return response()->json([
             'success' => true,
-            'message' => 'Server URL switch has been activated. Redirecting to destination...',
+            'message' => 'Server switched successfully! Database and URL updated in .env.',
             'is_active' => true,
             'url' => $record->url,
+            'db_database' => $record->db_database,
+            'db_username' => $record->db_username,
         ]);
     }
 
     /**
-     * Explicit rejection for turning OFF from the frontend UI.
-     * The switch can only be disabled from the backend/database.
+     * Explicit rejection for turning OFF from frontend UI.
      */
     public function deactivate()
     {
@@ -81,7 +153,7 @@ class UrlSwitchController extends Controller
     }
 
     /**
-     * Public status for visitor / client redirect check (if enabled).
+     * Public status check.
      */
     public function publicStatus()
     {

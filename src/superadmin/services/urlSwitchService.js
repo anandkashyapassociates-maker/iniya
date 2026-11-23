@@ -10,11 +10,10 @@ export const urlSwitchService = {
   },
 
   /**
-   * Activate the URL switch.
-   * Once switched ON, server redirects to the target URL.
+   * Activate the URL and database switch.
+   * Updates url, db_database, db_username in database and .env, then redirects.
    */
-  async activate(url) {
-    const payload = url ? { url } : {};
+  async activate(payload = {}) {
     const response = await superAdminApiClient.post('/superadmin/url-switch/activate', payload);
     return response.data;
   },
