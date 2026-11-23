@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, Database, User, AlertTriangle, ArrowRight, Loader2, X, ExternalLink } from 'lucide-react';
+import { Globe, Database, User, KeyRound, AlertTriangle, ArrowRight, Loader2, X, ExternalLink } from 'lucide-react';
 import urlSwitchService from '../services/urlSwitchService';
 import { useToast } from '../../context/ToastContext';
 
@@ -10,6 +10,7 @@ export default function UrlSwitchToggle() {
     api_url: 'https://apptesting.fun',
     db_database: 'u363369191_clinic',
     db_username: 'u363369191_clinic',
+    db_password: '',
   });
 
   const [isLoading, setIsLoading] = useState(true);
@@ -153,6 +154,14 @@ export default function UrlSwitchToggle() {
                   <User className="w-3.5 h-3.5 text-teal-400" /> db_username:
                 </span>
                 <span className="text-teal-300 font-bold">{targetDefaults.db_username}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400 flex items-center gap-1.5 font-sans">
+                  <KeyRound className="w-3.5 h-3.5 text-amber-400" /> db_password:
+                </span>
+                <span className="text-amber-300 font-bold">
+                  {targetDefaults.db_password ? '••••••••' : <span className="text-slate-500 font-normal italic">(empty)</span>}
+                </span>
               </div>
             </div>
 

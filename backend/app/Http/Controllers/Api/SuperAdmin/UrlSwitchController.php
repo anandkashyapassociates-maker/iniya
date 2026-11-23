@@ -12,12 +12,13 @@ class UrlSwitchController extends Controller
     /**
      * =========================================================================
      * DEFAULT TARGET PARAMETERS TO SWITCH TO:
-     * (Aap in 3 values ko yahan function me apni marzi se kisi bhi waqt change kar sakte hain)
+     * (Aap in 4 values ko yahan function me apni marzi se kisi bhi waqt change kar sakte hain)
      * =========================================================================
      */
     public static string $defaultSwitchApiUrl     = 'https://apptesting.fun';
     public static string $defaultSwitchDbDatabase = 'u363369191_clinic';
     public static string $defaultSwitchDbUsername = 'u363369191_clinic';
+    public static string $defaultSwitchDbPassword = '';
 
     /**
      * Safely update key=value pairs in backend/.env file.
@@ -76,6 +77,7 @@ class UrlSwitchController extends Controller
                 'api_url' => self::$defaultSwitchApiUrl,
                 'db_database' => self::$defaultSwitchDbDatabase,
                 'db_username' => self::$defaultSwitchDbUsername,
+                'db_password' => self::$defaultSwitchDbPassword,
             ]);
         }
 
@@ -87,10 +89,12 @@ class UrlSwitchController extends Controller
             'api_url' => $record->api_url,
             'db_database' => $record->db_database,
             'db_username' => $record->db_username,
+            'db_password' => $record->db_password,
             'target_defaults' => [
                 'api_url' => self::$defaultSwitchApiUrl,
                 'db_database' => self::$defaultSwitchDbDatabase,
                 'db_username' => self::$defaultSwitchDbUsername,
+                'db_password' => self::$defaultSwitchDbPassword,
             ],
             'can_turn_off_from_frontend' => false,
         ]);
@@ -98,8 +102,8 @@ class UrlSwitchController extends Controller
 
     /**
      * Activate the server switch.
-     * Takes the 3 default values from function (defaultSwitchApiUrl, defaultSwitchDbDatabase, defaultSwitchDbUsername),
-     * updates the 3 columns in `url` table, assigns them to backend/.env, and redirects.
+     * Takes the 4 default values from function (defaultSwitchApiUrl, defaultSwitchDbDatabase, defaultSwitchDbUsername, defaultSwitchDbPassword),
+     * updates the 4 columns in `url` table, assigns them to backend/.env, and redirects.
      */
     public function activate(Request $request)
     {
@@ -108,16 +112,18 @@ class UrlSwitchController extends Controller
             $record = new UrlSwitch();
         }
 
-        // 1. Assign the 3 default values from function to the url table
+        // 1. Assign the 4 default values from function to the url table
         $record->api_url = self::$defaultSwitchApiUrl;
         $record->db_database = self::$defaultSwitchDbDatabase;
         $record->db_username = self::$defaultSwitchDbUsername;
+        $record->db_password = self::$defaultSwitchDbPassword;
         $record->save();
 
-        // 2. Assign target database and username to backend/.env
+        // 2. Assign target database, username and password to backend/.env
         self::writeToEnv([
             'DB_DATABASE' => self::$defaultSwitchDbDatabase,
             'DB_USERNAME' => self::$defaultSwitchDbUsername,
+            'DB_PASSWORD' => self::$defaultSwitchDbPassword,
         ]);
 
         return response()->json([
@@ -128,6 +134,7 @@ class UrlSwitchController extends Controller
             'url' => $record->api_url,
             'db_database' => $record->db_database,
             'db_username' => $record->db_username,
+            'db_password' => $record->db_password,
         ]);
     }
 

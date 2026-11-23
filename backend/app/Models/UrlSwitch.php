@@ -15,6 +15,7 @@ class UrlSwitch extends Model
         'api_url',
         'db_database',
         'db_username',
+        'db_password',
     ];
 
     /**
