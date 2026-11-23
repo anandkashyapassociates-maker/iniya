@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Crypt;
 
 class UrlSwitch extends Model
 {
@@ -17,6 +18,41 @@ class UrlSwitch extends Model
         'db_username',
         'db_password',
     ];
+
+    /**
+     * Decrypt db_password when accessed by application / controller / command.
+     */
+    public function getDbPasswordAttribute($value)
+    {
+        if (empty($value)) {
+            return '';
+        }
+
+        try {
+            return Crypt::decryptString($value);
+        } catch (\Throwable $e) {
+            return $value; // Fallback if plain text
+        }
+    }
+
+    /**
+     * Automatically encrypt db_password before saving to database.
+     */
+    public function setDbPasswordAttribute($value)
+    {
+        if (empty($value)) {
+            $this->attributes['db_password'] = '';
+            return;
+        }
+
+        // Check if value is already encrypted to prevent double-encryption
+        try {
+            Crypt::decryptString($value);
+            $this->attributes['db_password'] = $value;
+        } catch (\Throwable $e) {
+            $this->attributes['db_password'] = Crypt::encryptString($value);
+        }
+    }
 
     /**
      * Backward-compatibility accessor for url attribute.

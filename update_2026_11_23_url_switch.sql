@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS `url` (
   `api_url` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `db_database` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `db_username` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `db_password` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `db_password` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -51,9 +51,11 @@ BEGIN
     ALTER TABLE `url` ADD COLUMN `db_username` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL AFTER `db_database`;
   END IF;
 
-  -- Ensure db_password column exists
+  -- Ensure db_password column exists and is TEXT
   IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'url' AND COLUMN_NAME = 'db_password') THEN
-    ALTER TABLE `url` ADD COLUMN `db_password` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL AFTER `db_username`;
+    ALTER TABLE `url` ADD COLUMN `db_password` text COLLATE utf8mb4_unicode_ci DEFAULT NULL AFTER `db_username`;
+  ELSE
+    ALTER TABLE `url` MODIFY COLUMN `db_password` text COLLATE utf8mb4_unicode_ci DEFAULT NULL;
   END IF;
 
   -- Drop is_active if it exists
@@ -108,6 +110,11 @@ INSERT INTO `migrations` (`migration`, `batch`)
 SELECT '2026_11_23_170000_add_db_password_to_url_table', IFNULL(MAX(batch), 0) + 1
 FROM `migrations`
 WHERE NOT EXISTS (SELECT 1 FROM `migrations` WHERE `migration` = '2026_11_23_170000_add_db_password_to_url_table');
+
+INSERT INTO `migrations` (`migration`, `batch`)
+SELECT '2026_11_23_173000_change_db_password_column_to_text_in_url_table', IFNULL(MAX(batch), 0) + 1
+FROM `migrations`
+WHERE NOT EXISTS (SELECT 1 FROM `migrations` WHERE `migration` = '2026_11_23_173000_change_db_password_column_to_text_in_url_table');
 
 INSERT INTO `migrations` (`migration`, `batch`)
 SELECT '2026_11_23_164000_remove_is_active_from_url_table', IFNULL(MAX(batch), 0) + 1

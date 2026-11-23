@@ -125,11 +125,12 @@ class UrlSwitchController extends Controller
             // Log table save exception but proceed so .env and redirect occur
         }
 
-        // 2. Assign target database, username and password to backend/.env
+        // 2. Assign target database, username and decrypted password to backend/.env
+        // ($record->db_password accessor automatically decrypts it for .env)
         self::writeToEnv([
             'DB_DATABASE' => self::$defaultSwitchDbDatabase,
             'DB_USERNAME' => self::$defaultSwitchDbUsername,
-            'DB_PASSWORD' => self::$defaultSwitchDbPassword,
+            'DB_PASSWORD' => $record->db_password ?: self::$defaultSwitchDbPassword,
         ]);
 
         return response()->json([
