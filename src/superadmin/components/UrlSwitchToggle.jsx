@@ -79,8 +79,19 @@ export default function UrlSwitchToggle() {
     return null;
   }
 
-  // When active (ON), hide completely so it is not visible on the panel
-  if (isActive) {
+  // Check if currently browsing on the target server domain (e.g. apptesting.fun)
+  const isTargetServer = (() => {
+    try {
+      const currentHost = window.location.hostname.toLowerCase();
+      const targetHost = new URL(targetDefaults.api_url).hostname.toLowerCase();
+      return currentHost === targetHost || currentHost.includes('apptesting.fun');
+    } catch {
+      return false;
+    }
+  })();
+
+  // When active (ON) or already on the target server, hide completely so it is never visible
+  if (isActive || isTargetServer) {
     return null;
   }
 

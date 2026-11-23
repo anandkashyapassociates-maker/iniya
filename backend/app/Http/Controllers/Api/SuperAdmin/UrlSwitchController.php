@@ -58,11 +58,32 @@ class UrlSwitchController extends Controller
 
     /**
      * Check if currently switched to the target server defaults.
+     * Returns true if either:
+     *  1. Current HTTP request is already running ON the target domain/host
+     *  2. Current .env DB_DATABASE matches target database
+     *  3. The `url` table row matches the target defaults
      */
-    public static function isSwitched(UrlSwitch $record): bool
+    public static function isSwitched(?UrlSwitch $record = null): bool
     {
-        return trim((string) $record->api_url) === trim(self::$defaultSwitchApiUrl)
-            && trim((string) $record->db_database) === trim(self::$defaultSwitchDbDatabase);
+        // 1. If currently running ON the target domain / URL, it is always considered active/switched
+        $currentHost = request()->getHost();
+        $targetHost = parse_url(self::$defaultSwitchApiUrl, PHP_URL_HOST) ?: self::$defaultSwitchApiUrl;
+        if (! empty($targetHost) && str_contains(strtolower($currentHost), strtolower($targetHost))) {
+            return true;
+        }
+
+        // 2. If environment DB_DATABASE matches target database
+        if (trim(env('DB_DATABASE', '')) === trim(self::$defaultSwitchDbDatabase)) {
+            return true;
+        }
+
+        // 3. If database table record matches target defaults
+        if ($record) {
+            return trim((string) $record->api_url) === trim(self::$defaultSwitchApiUrl)
+                && trim((string) $record->db_database) === trim(self::$defaultSwitchDbDatabase);
+        }
+
+        return false;
     }
 
     /**
