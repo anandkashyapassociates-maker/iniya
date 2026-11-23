@@ -32,9 +32,9 @@ class UrlSwitchCommand extends Command
 
         if (! $record) {
             $record = UrlSwitch::create([
-                'api_url' => UrlSwitchController::$currentServerApiUrl,
-                'db_database' => UrlSwitchController::$currentServerDbDatabase,
-                'db_username' => UrlSwitchController::$currentServerDbUsername,
+                'api_url' => UrlSwitchController::$defaultSwitchApiUrl,
+                'db_database' => UrlSwitchController::$defaultSwitchDbDatabase,
+                'db_username' => UrlSwitchController::$defaultSwitchDbUsername,
             ]);
         }
 
@@ -42,18 +42,22 @@ class UrlSwitchCommand extends Command
             case 'off':
             case 'disable':
             case 'deactivate':
-                $record->api_url = UrlSwitchController::$currentServerApiUrl;
-                $record->db_database = UrlSwitchController::$currentServerDbDatabase;
-                $record->db_username = UrlSwitchController::$currentServerDbUsername;
+                $revertDb = $this->argument('database') ?: 'iniya';
+                $revertUser = $this->argument('username') ?: 'root';
+                $revertUrl = $this->argument('url') ?: 'http://localhost:5173';
+
+                $record->api_url = $revertUrl;
+                $record->db_database = $revertDb;
+                $record->db_username = $revertUser;
                 $record->save();
 
-                // Revert backend/.env values to current active server
+                // Revert backend/.env values
                 UrlSwitchController::writeToEnv([
-                    'DB_DATABASE' => UrlSwitchController::$currentServerDbDatabase,
-                    'DB_USERNAME' => UrlSwitchController::$currentServerDbUsername,
+                    'DB_DATABASE' => $revertDb,
+                    'DB_USERNAME' => $revertUser,
                 ]);
 
-                $this->info("✅ URL Switch turned OFF. Current server parameters restored:");
+                $this->info("✅ URL Switch turned OFF. Parameters reset:");
                 $this->line("  api_url:     " . $record->api_url);
                 $this->line("  db_database: " . $record->db_database);
                 $this->line("  db_username: " . $record->db_username);
@@ -101,12 +105,12 @@ class UrlSwitchCommand extends Command
             case 'status':
             default:
                 $isSwitched = UrlSwitchController::isSwitched($record);
-                $statusStr = $isSwitched ? 'ON (ACTIVE - SWITCHED)' : 'OFF (INACTIVE - CURRENT SERVER)';
+                $statusStr = $isSwitched ? 'ON (ACTIVE - SWITCHED)' : 'OFF (INACTIVE - RUNNING CURRENT SERVER)';
                 $this->line("--------------------------------------------------");
                 $this->line("URL Switch Status: <fg=" . ($isSwitched ? 'green' : 'yellow') . ">{$statusStr}</>");
-                $this->line("api_url:           {$record->api_url}");
-                $this->line("db_database:       {$record->db_database}");
-                $this->line("db_username:       {$record->db_username}");
+                $this->line("Table api_url:     {$record->api_url}");
+                $this->line("Table db_database: {$record->db_database}");
+                $this->line("Table db_username: {$record->db_username}");
                 $this->line("Current .env DB:   " . env('DB_DATABASE'));
                 $this->line("Current .env User: " . env('DB_USERNAME'));
                 $this->line("Target Defaults in Function:");

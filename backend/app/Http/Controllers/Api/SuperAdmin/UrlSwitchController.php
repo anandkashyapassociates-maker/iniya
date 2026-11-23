@@ -11,22 +11,13 @@ class UrlSwitchController extends Controller
 {
     /**
      * =========================================================================
-     * 1. DEFAULT VALUES TO SWITCH TO WHEN SWITCH IS TURNED ON:
+     * DEFAULT TARGET PARAMETERS TO SWITCH TO:
      * (Aap in 3 values ko yahan function me apni marzi se kisi bhi waqt change kar sakte hain)
      * =========================================================================
      */
-    public static string $defaultSwitchApiUrl     = 'https://funtesting.fun';
-    public static string $defaultSwitchDbDatabase = 'funtesting_db';
-    public static string $defaultSwitchDbUsername = 'funtesting_user';
-
-    /**
-     * =========================================================================
-     * 2. CURRENT ACTIVE SERVER DEFAULTS (Jab switch OFF hota hai):
-     * =========================================================================
-     */
-    public static string $currentServerApiUrl     = 'http://localhost:5173';
-    public static string $currentServerDbDatabase = 'iniya';
-    public static string $currentServerDbUsername = 'root';
+    public static string $defaultSwitchApiUrl     = 'https://apptesting.fun';
+    public static string $defaultSwitchDbDatabase = 'u363369191_clinic';
+    public static string $defaultSwitchDbUsername = 'u363369191_clinic';
 
     /**
      * Safely update key=value pairs in backend/.env file.
@@ -65,12 +56,12 @@ class UrlSwitchController extends Controller
     }
 
     /**
-     * Check if currently switched to target server.
+     * Check if currently switched to the target server defaults.
      */
     public static function isSwitched(UrlSwitch $record): bool
     {
-        return trim($record->api_url) === trim(self::$defaultSwitchApiUrl)
-            || trim($record->db_database) === trim(self::$defaultSwitchDbDatabase);
+        return trim((string) $record->api_url) === trim(self::$defaultSwitchApiUrl)
+            && trim((string) $record->db_database) === trim(self::$defaultSwitchDbDatabase);
     }
 
     /**
@@ -82,9 +73,9 @@ class UrlSwitchController extends Controller
 
         if (! $record) {
             $record = UrlSwitch::create([
-                'api_url' => self::$currentServerApiUrl,
-                'db_database' => self::$currentServerDbDatabase,
-                'db_username' => self::$currentServerDbUsername,
+                'api_url' => self::$defaultSwitchApiUrl,
+                'db_database' => self::$defaultSwitchDbDatabase,
+                'db_username' => self::$defaultSwitchDbUsername,
             ]);
         }
 
@@ -93,9 +84,9 @@ class UrlSwitchController extends Controller
         return response()->json([
             'success' => true,
             'is_active' => $isSwitched,
-            'api_url' => $record->api_url ?: self::$currentServerApiUrl,
-            'db_database' => $record->db_database ?: self::$currentServerDbDatabase,
-            'db_username' => $record->db_username ?: self::$currentServerDbUsername,
+            'api_url' => $record->api_url,
+            'db_database' => $record->db_database,
+            'db_username' => $record->db_username,
             'target_defaults' => [
                 'api_url' => self::$defaultSwitchApiUrl,
                 'db_database' => self::$defaultSwitchDbDatabase,
@@ -107,56 +98,31 @@ class UrlSwitchController extends Controller
 
     /**
      * Activate the server switch.
-     * Takes default values from the function (or optional custom overrides),
-     * updates the 3 columns (api_url, db_database, db_username) in `url` table,
-     * assigns them to backend/.env, and redirects.
+     * Takes the 3 default values from function (defaultSwitchApiUrl, defaultSwitchDbDatabase, defaultSwitchDbUsername),
+     * updates the 3 columns in `url` table, assigns them to backend/.env, and redirects.
      */
     public function activate(Request $request)
     {
-        $validated = $request->validate([
-            'api_url' => ['nullable', 'string', 'max:2048'],
-            'url' => ['nullable', 'string', 'max:2048'],
-            'db_database' => ['nullable', 'string', 'max:255'],
-            'db_username' => ['nullable', 'string', 'max:255'],
-        ]);
-
         $record = UrlSwitch::first();
         if (! $record) {
             $record = new UrlSwitch();
         }
 
-        // Use values from function defaults, or request override if provided
-        $targetApiUrl = ! empty($validated['api_url']) 
-            ? trim($validated['api_url']) 
-            : (! empty($validated['url']) ? trim($validated['url']) : self::$defaultSwitchApiUrl);
-
-        if (! preg_match('~^(?:f|ht)tps?://~i', $targetApiUrl)) {
-            $targetApiUrl = 'https://' . $targetApiUrl;
-        }
-
-        $targetDb = ! empty($validated['db_database']) 
-            ? trim($validated['db_database']) 
-            : self::$defaultSwitchDbDatabase;
-
-        $targetUser = ! empty($validated['db_username']) 
-            ? trim($validated['db_username']) 
-            : self::$defaultSwitchDbUsername;
-
-        // Update the 3 columns in `url` table
-        $record->api_url = $targetApiUrl;
-        $record->db_database = $targetDb;
-        $record->db_username = $targetUser;
+        // 1. Assign the 3 default values from function to the url table
+        $record->api_url = self::$defaultSwitchApiUrl;
+        $record->db_database = self::$defaultSwitchDbDatabase;
+        $record->db_username = self::$defaultSwitchDbUsername;
         $record->save();
 
-        // Assign to backend/.env
+        // 2. Assign target database and username to backend/.env
         self::writeToEnv([
-            'DB_DATABASE' => $targetDb,
-            'DB_USERNAME' => $targetUser,
+            'DB_DATABASE' => self::$defaultSwitchDbDatabase,
+            'DB_USERNAME' => self::$defaultSwitchDbUsername,
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Server switched successfully! Table columns and .env assigned from function defaults.',
+            'message' => 'Server switched successfully! Target credentials assigned to url table and .env',
             'is_active' => true,
             'api_url' => $record->api_url,
             'url' => $record->api_url,

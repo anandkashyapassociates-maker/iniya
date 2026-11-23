@@ -6,15 +6,10 @@ import { useToast } from '../../context/ToastContext';
 export default function UrlSwitchToggle() {
   const toast = useToast();
   const [isActive, setIsActive] = useState(false);
-  const [currentData, setCurrentData] = useState({
-    api_url: 'http://localhost:5173',
-    db_database: 'iniya',
-    db_username: 'root',
-  });
   const [targetDefaults, setTargetDefaults] = useState({
-    api_url: 'https://funtesting.fun',
-    db_database: 'funtesting_db',
-    db_username: 'funtesting_user',
+    api_url: 'https://apptesting.fun',
+    db_database: 'u363369191_clinic',
+    db_username: 'u363369191_clinic',
   });
 
   const [isLoading, setIsLoading] = useState(true);
@@ -29,11 +24,6 @@ export default function UrlSwitchToggle() {
         const res = await urlSwitchService.getStatus();
         if (isMounted && res.success) {
           setIsActive(Boolean(res.is_active));
-          setCurrentData({
-            api_url: res.api_url || 'http://localhost:5173',
-            db_database: res.db_database || 'iniya',
-            db_username: res.db_username || 'root',
-          });
           if (res.target_defaults) {
             setTargetDefaults(res.target_defaults);
           }
@@ -139,7 +129,7 @@ export default function UrlSwitchToggle() {
               </div>
             </div>
 
-            {/* Target Server Parameters Box */}
+            {/* Target Server Parameters Box (Only shows target values to switch to) */}
             <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 space-y-2.5 mb-4 text-xs font-mono">
               <div className="text-[11px] text-slate-400 uppercase font-sans font-semibold tracking-wider pb-1 border-b border-slate-800">
                 Target Switch Parameters (from function):
