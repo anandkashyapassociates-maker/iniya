@@ -73,11 +73,12 @@ export default function UrlSwitchToggle() {
   };
 
   if (isLoading) {
-    return (
-      <div className="shrink-0 flex items-center justify-center p-1" title="Loading URL switch...">
-        <div className="w-10 h-5 bg-slate-800 rounded-full animate-pulse" />
-      </div>
-    );
+    return null;
+  }
+
+  // When active (ON), hide completely so it is not visible on the panel
+  if (isActive) {
+    return null;
   }
 
   return (
