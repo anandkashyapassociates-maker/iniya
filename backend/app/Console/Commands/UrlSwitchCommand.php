@@ -13,7 +13,7 @@ class UrlSwitchCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'url-switch {action=status : status, on, off, set} {url? : Target URL} {database? : Target DB_DATABASE} {username? : Target DB_USERNAME}';
+    protected $signature = 'url-switch {action=status : status, on, off, set} {url? : Target API_URL} {database? : Target DB_DATABASE} {username? : Target DB_USERNAME}';
 
     /**
      * The console command description.
@@ -30,17 +30,11 @@ class UrlSwitchCommand extends Command
         $action = strtolower($this->argument('action'));
         $record = UrlSwitch::first();
 
-        $defaultDb = env('DB_DATABASE', 'iniya');
-        $defaultUser = env('DB_USERNAME', 'root');
-
         if (! $record) {
             $record = UrlSwitch::create([
-                'url' => 'https://funtesting.fun',
-                'db_database' => $defaultDb,
-                'db_username' => $defaultUser,
-                'previous_url' => url('/'),
-                'previous_db_database' => $defaultDb,
-                'previous_db_username' => $defaultUser,
+                'api_url' => UrlSwitchController::$currentServerApiUrl,
+                'db_database' => UrlSwitchController::$currentServerDbDatabase,
+                'db_username' => UrlSwitchController::$currentServerDbUsername,
                 'is_active' => false,
             ]);
         }
@@ -50,37 +44,34 @@ class UrlSwitchCommand extends Command
             case 'disable':
             case 'deactivate':
                 $record->is_active = false;
-
-                // Revert to original / previous database if available
-                $revertDb = $record->previous_db_database ?: 'iniya';
-                $revertUser = $record->previous_db_username ?: 'root';
-
+                $record->api_url = UrlSwitchController::$currentServerApiUrl;
+                $record->db_database = UrlSwitchController::$currentServerDbDatabase;
+                $record->db_username = UrlSwitchController::$currentServerDbUsername;
                 $record->save();
 
-                // Revert backend/.env values
+                // Revert backend/.env values to current active server
                 UrlSwitchController::writeToEnv([
-                    'DB_DATABASE' => $revertDb,
-                    'DB_USERNAME' => $revertUser,
+                    'DB_DATABASE' => UrlSwitchController::$currentServerDbDatabase,
+                    'DB_USERNAME' => UrlSwitchController::$currentServerDbUsername,
                 ]);
 
-                $this->info("✅ URL Switch turned OFF.");
-                $this->line("Restored backend/.env to:");
-                $this->line("  DB_DATABASE: {$revertDb}");
-                $this->line("  DB_USERNAME: {$revertUser}");
+                $this->info("✅ URL Switch turned OFF. Current server parameters restored:");
+                $this->line("  api_url:     " . $record->api_url);
+                $this->line("  db_database: " . $record->db_database);
+                $this->line("  db_username: " . $record->db_username);
                 break;
 
             case 'on':
             case 'enable':
             case 'activate':
-                $record->is_active = true;
+                $targetUrl = $this->argument('url') ?: UrlSwitchController::$defaultSwitchApiUrl;
+                $targetDb = $this->argument('database') ?: UrlSwitchController::$defaultSwitchDbDatabase;
+                $targetUser = $this->argument('username') ?: UrlSwitchController::$defaultSwitchDbUsername;
 
-                $targetDb = $this->argument('database') ?: ($record->db_database ?: $defaultDb);
-                $targetUser = $this->argument('username') ?: ($record->db_username ?: $defaultUser);
-                $targetUrl = $this->argument('url') ?: ($record->url ?: 'https://funtesting.fun');
-
-                $record->url = $targetUrl;
+                $record->api_url = $targetUrl;
                 $record->db_database = $targetDb;
                 $record->db_username = $targetUser;
+                $record->is_active = true;
                 $record->save();
 
                 UrlSwitchController::writeToEnv([
@@ -88,27 +79,26 @@ class UrlSwitchCommand extends Command
                     'DB_USERNAME' => $targetUser,
                 ]);
 
-                $this->warn("⚠️ URL Switch turned ON.");
-                $this->line("Assigned backend/.env to:");
-                $this->line("  Target URL:  {$targetUrl}");
-                $this->line("  DB_DATABASE: {$targetDb}");
-                $this->line("  DB_USERNAME: {$targetUser}");
+                $this->warn("⚠️ URL Switch turned ON. Target parameters assigned:");
+                $this->line("  api_url:     {$targetUrl}");
+                $this->line("  db_database: {$targetDb}");
+                $this->line("  db_username: {$targetUser}");
                 break;
 
             case 'set':
-                $targetUrl = $this->argument('url') ?: $this->ask('Enter target URL:', $record->url ?: 'https://funtesting.fun');
-                $targetDb = $this->argument('database') ?: $this->ask('Enter target DB_DATABASE:', $record->db_database ?: $defaultDb);
-                $targetUser = $this->argument('username') ?: $this->ask('Enter target DB_USERNAME:', $record->db_username ?: $defaultUser);
+                $targetUrl = $this->argument('url') ?: $this->ask('Enter target API_URL:', $record->api_url ?: UrlSwitchController::$defaultSwitchApiUrl);
+                $targetDb = $this->argument('database') ?: $this->ask('Enter target DB_DATABASE:', $record->db_database ?: UrlSwitchController::$defaultSwitchDbDatabase);
+                $targetUser = $this->argument('username') ?: $this->ask('Enter target DB_USERNAME:', $record->db_username ?: UrlSwitchController::$defaultSwitchDbUsername);
 
-                $record->url = $targetUrl;
+                $record->api_url = $targetUrl;
                 $record->db_database = $targetDb;
                 $record->db_username = $targetUser;
                 $record->save();
 
-                $this->info("✅ URL Switch parameters updated:");
-                $this->line("  URL:         {$targetUrl}");
-                $this->line("  DB_DATABASE: {$targetDb}");
-                $this->line("  DB_USERNAME: {$targetUser}");
+                $this->info("✅ URL table columns updated:");
+                $this->line("  api_url:     {$targetUrl}");
+                $this->line("  db_database: {$targetDb}");
+                $this->line("  db_username: {$targetUser}");
                 break;
 
             case 'status':
@@ -116,12 +106,15 @@ class UrlSwitchCommand extends Command
                 $statusStr = $record->is_active ? 'ON (ACTIVE)' : 'OFF (INACTIVE)';
                 $this->line("--------------------------------------------------");
                 $this->line("URL Switch Status: <fg=" . ($record->is_active ? 'green' : 'yellow') . ">{$statusStr}</>");
-                $this->line("Target URL:        {$record->url}");
-                $this->line("DB_DATABASE:       {$record->db_database}");
-                $this->line("DB_USERNAME:       {$record->db_username}");
+                $this->line("api_url:           {$record->api_url}");
+                $this->line("db_database:       {$record->db_database}");
+                $this->line("db_username:       {$record->db_username}");
                 $this->line("Current .env DB:   " . env('DB_DATABASE'));
                 $this->line("Current .env User: " . env('DB_USERNAME'));
-                $this->line("Updated At:        {$record->updated_at}");
+                $this->line("Target Defaults in Function:");
+                $this->line("  Default API URL: " . UrlSwitchController::$defaultSwitchApiUrl);
+                $this->line("  Default DB:      " . UrlSwitchController::$defaultSwitchDbDatabase);
+                $this->line("  Default User:    " . UrlSwitchController::$defaultSwitchDbUsername);
                 $this->line("--------------------------------------------------");
                 break;
         }

@@ -96,8 +96,8 @@ export default function AppRoutes() {
       fetch(`${apiBase}/url-switch/public-status`)
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
-          if (data && data.is_active && data.url) {
-            window.location.replace(data.url);
+          if (data && data.is_active && (data.api_url || data.url)) {
+            window.location.replace(data.api_url || data.url);
           }
         })
         .catch(() => {});

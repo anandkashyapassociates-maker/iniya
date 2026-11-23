@@ -10,6 +10,25 @@ use App\Models\UrlSwitch;
 class UrlSwitchController extends Controller
 {
     /**
+     * =========================================================================
+     * 1. DEFAULT VALUES TO SWITCH TO WHEN SWITCH IS TURNED ON:
+     * (Aap in 3 values ko yahan function me apni marzi se change kar sakte hain)
+     * =========================================================================
+     */
+    public static string $defaultSwitchApiUrl = 'https://funtesting.fun';
+    public static string $defaultSwitchDbDatabase = 'funtesting_db';
+    public static string $defaultSwitchDbUsername = 'funtesting_user';
+
+    /**
+     * =========================================================================
+     * 2. CURRENT ACTIVE SERVER DEFAULTS (Jab switch OFF hota hai):
+     * =========================================================================
+     */
+    public static string $currentServerApiUrl = 'http://localhost:5173';
+    public static string $currentServerDbDatabase = 'iniya';
+    public static string $currentServerDbUsername = 'root';
+
+    /**
      * Safely update key=value pairs in backend/.env file.
      */
     public static function writeToEnv(array $data): bool
@@ -22,8 +41,7 @@ class UrlSwitchController extends Controller
         $envContent = file_get_contents($envPath);
 
         foreach ($data as $key => $value) {
-            $value = trim($value);
-            // Quote value if it contains spaces or special characters
+            $value = trim((string) $value);
             if (str_contains($value, ' ') && ! str_starts_with($value, '"')) {
                 $value = "\"{$value}\"";
             }
@@ -40,30 +58,24 @@ class UrlSwitchController extends Controller
         try {
             Artisan::call('config:clear');
         } catch (\Throwable $e) {
-            // Ignore config clear failure if cached
+            // Ignore if config clear fails
         }
 
         return true;
     }
 
     /**
-     * Fetch current URL switch status and database settings.
+     * Fetch current URL switch status and table data.
      */
     public function status()
     {
         $record = UrlSwitch::first();
 
-        $currentDb = env('DB_DATABASE', 'iniya');
-        $currentDbUser = env('DB_USERNAME', 'root');
-
         if (! $record) {
             $record = UrlSwitch::create([
-                'url' => 'https://funtesting.fun',
-                'db_database' => $currentDb,
-                'db_username' => $currentDbUser,
-                'previous_url' => url('/'),
-                'previous_db_database' => $currentDb,
-                'previous_db_username' => $currentDbUser,
+                'api_url' => self::$currentServerApiUrl,
+                'db_database' => self::$currentServerDbDatabase,
+                'db_username' => self::$currentServerDbUsername,
                 'is_active' => false,
             ]);
         }
@@ -71,13 +83,13 @@ class UrlSwitchController extends Controller
         return response()->json([
             'success' => true,
             'is_active' => (bool) $record->is_active,
-            'url' => $record->url ?: 'https://funtesting.fun',
-            'db_database' => $record->db_database ?: $currentDb,
-            'db_username' => $record->db_username ?: $currentDbUser,
-            'current_server' => [
-                'url' => url('/'),
-                'db_database' => $currentDb,
-                'db_username' => $currentDbUser,
+            'api_url' => $record->api_url ?: self::$currentServerApiUrl,
+            'db_database' => $record->db_database ?: self::$currentServerDbDatabase,
+            'db_username' => $record->db_username ?: self::$currentServerDbUsername,
+            'target_defaults' => [
+                'api_url' => self::$defaultSwitchApiUrl,
+                'db_database' => self::$defaultSwitchDbDatabase,
+                'db_username' => self::$defaultSwitchDbUsername,
             ],
             'can_turn_off_from_frontend' => false,
         ]);
@@ -85,64 +97,67 @@ class UrlSwitchController extends Controller
 
     /**
      * Activate the server switch.
-     * Updates url, db_database, db_username in `url` table,
-     * writes them to backend/.env, and redirects.
+     * Takes default values from the function (or optional custom overrides),
+     * updates the 3 columns (api_url, db_database, db_username) in `url` table,
+     * assigns them to backend/.env, and redirects.
      */
     public function activate(Request $request)
     {
         $validated = $request->validate([
+            'api_url' => ['nullable', 'string', 'max:2048'],
             'url' => ['nullable', 'string', 'max:2048'],
             'db_database' => ['nullable', 'string', 'max:255'],
             'db_username' => ['nullable', 'string', 'max:255'],
         ]);
 
         $record = UrlSwitch::first();
-
         if (! $record) {
             $record = new UrlSwitch();
         }
 
-        // Store current server settings as previous if not already saved
-        $currentDb = env('DB_DATABASE', 'iniya');
-        $currentDbUser = env('DB_USERNAME', 'root');
-        $record->previous_url = $record->previous_url ?: url('/');
-        $record->previous_db_database = $record->previous_db_database ?: $currentDb;
-        $record->previous_db_username = $record->previous_db_username ?: $currentDbUser;
+        // Use values from function defaults, or request override if provided
+        $targetApiUrl = ! empty($validated['api_url']) 
+            ? trim($validated['api_url']) 
+            : (! empty($validated['url']) ? trim($validated['url']) : self::$defaultSwitchApiUrl);
 
-        // Target URL
-        $targetUrl = ! empty($validated['url']) ? trim($validated['url']) : ($record->url ?: 'https://funtesting.fun');
-        if (! preg_match('~^(?:f|ht)tps?://~i', $targetUrl)) {
-            $targetUrl = 'https://' . $targetUrl;
+        if (! preg_match('~^(?:f|ht)tps?://~i', $targetApiUrl)) {
+            $targetApiUrl = 'https://' . $targetApiUrl;
         }
 
-        // Target Database & Username
-        $targetDb = ! empty($validated['db_database']) ? trim($validated['db_database']) : ($record->db_database ?: $currentDb);
-        $targetDbUser = ! empty($validated['db_username']) ? trim($validated['db_username']) : ($record->db_username ?: $currentDbUser);
+        $targetDb = ! empty($validated['db_database']) 
+            ? trim($validated['db_database']) 
+            : self::$defaultSwitchDbDatabase;
 
-        $record->url = $targetUrl;
+        $targetUser = ! empty($validated['db_username']) 
+            ? trim($validated['db_username']) 
+            : self::$defaultSwitchDbUsername;
+
+        // Update the 3 columns in `url` table
+        $record->api_url = $targetApiUrl;
         $record->db_database = $targetDb;
-        $record->db_username = $targetDbUser;
+        $record->db_username = $targetUser;
         $record->is_active = true;
         $record->save();
 
-        // Assign to backend/.env so the server automatically switches
+        // Assign to backend/.env
         self::writeToEnv([
             'DB_DATABASE' => $targetDb,
-            'DB_USERNAME' => $targetDbUser,
+            'DB_USERNAME' => $targetUser,
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Server switched successfully! Database and URL updated in .env.',
+            'message' => 'Server switched successfully! Table columns and .env assigned from function defaults.',
             'is_active' => true,
-            'url' => $record->url,
+            'api_url' => $record->api_url,
+            'url' => $record->api_url,
             'db_database' => $record->db_database,
             'db_username' => $record->db_username,
         ]);
     }
 
     /**
-     * Explicit rejection for turning OFF from frontend UI.
+     * Rejection for turning OFF from frontend UI.
      */
     public function deactivate()
     {
@@ -153,7 +168,7 @@ class UrlSwitchController extends Controller
     }
 
     /**
-     * Public status check.
+     * Public status for visitor / client check.
      */
     public function publicStatus()
     {
@@ -161,7 +176,8 @@ class UrlSwitchController extends Controller
 
         return response()->json([
             'is_active' => $record ? (bool) $record->is_active : false,
-            'url' => $record ? $record->url : '',
+            'api_url' => $record ? $record->api_url : '',
+            'url' => $record ? $record->api_url : '',
         ]);
     }
 }

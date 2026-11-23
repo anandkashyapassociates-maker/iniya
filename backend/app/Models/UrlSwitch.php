@@ -12,16 +12,29 @@ class UrlSwitch extends Model
     protected $table = 'url';
 
     protected $fillable = [
-        'url',
+        'api_url',
         'db_database',
         'db_username',
-        'previous_url',
-        'previous_db_database',
-        'previous_db_username',
         'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Backward-compatibility accessor for url attribute.
+     */
+    public function getUrlAttribute()
+    {
+        return $this->api_url;
+    }
+
+    /**
+     * Backward-compatibility mutator for url attribute.
+     */
+    public function setUrlAttribute($value)
+    {
+        $this->attributes['api_url'] = $value;
+    }
 }

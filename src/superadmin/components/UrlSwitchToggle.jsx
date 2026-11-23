@@ -6,15 +6,16 @@ import { useToast } from '../../context/ToastContext';
 export default function UrlSwitchToggle() {
   const toast = useToast();
   const [isActive, setIsActive] = useState(false);
-  const [targetUrl, setTargetUrl] = useState('');
-  const [targetDb, setTargetDb] = useState('');
-  const [targetDbUser, setTargetDbUser] = useState('');
-
-  // Form input states for modal
-  const [inputUrl, setInputUrl] = useState('');
-  const [inputDb, setInputDb] = useState('');
-  const [inputDbUser, setInputDbUser] = useState('');
-  const [currentServer, setCurrentServer] = useState(null);
+  const [currentData, setCurrentData] = useState({
+    api_url: 'http://localhost:5173',
+    db_database: 'iniya',
+    db_username: 'root',
+  });
+  const [targetDefaults, setTargetDefaults] = useState({
+    api_url: 'https://funtesting.fun',
+    db_database: 'funtesting_db',
+    db_username: 'funtesting_user',
+  });
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,16 +29,13 @@ export default function UrlSwitchToggle() {
         const res = await urlSwitchService.getStatus();
         if (isMounted && res.success) {
           setIsActive(Boolean(res.is_active));
-          setTargetUrl(res.url || 'https://funtesting.fun');
-          setTargetDb(res.db_database || 'iniya');
-          setTargetDbUser(res.db_username || 'root');
-
-          setInputUrl(res.url || 'https://funtesting.fun');
-          setInputDb(res.db_database || 'iniya');
-          setInputDbUser(res.db_username || 'root');
-
-          if (res.current_server) {
-            setCurrentServer(res.current_server);
+          setCurrentData({
+            api_url: res.api_url || 'http://localhost:5173',
+            db_database: res.db_database || 'iniya',
+            db_username: res.db_username || 'root',
+          });
+          if (res.target_defaults) {
+            setTargetDefaults(res.target_defaults);
           }
         }
       } catch (err) {
@@ -58,47 +56,23 @@ export default function UrlSwitchToggle() {
       toast.warning('Switch cannot be turned off from the panel. It can only be disabled directly from the backend/database.');
       return;
     }
-    // Open confirmation modal to confirm activation
-    setInputUrl(targetUrl);
-    setInputDb(targetDb);
-    setInputDbUser(targetDbUser);
     setShowConfirmModal(true);
   };
 
   const handleConfirmActivate = async () => {
-    if (!inputUrl || !inputUrl.trim()) {
-      toast.error('Please enter a valid destination URL.');
-      return;
-    }
-    if (!inputDb || !inputDb.trim()) {
-      toast.error('Please enter a target DB_DATABASE name.');
-      return;
-    }
-    if (!inputDbUser || !inputDbUser.trim()) {
-      toast.error('Please enter a target DB_USERNAME.');
-      return;
-    }
-
     setIsSubmitting(true);
     try {
-      const payload = {
-        url: inputUrl.trim(),
-        db_database: inputDb.trim(),
-        db_username: inputDbUser.trim(),
-      };
-
-      const res = await urlSwitchService.activate(payload);
+      // Calls backend activation which assigns function defaults into `url` table and backend/.env
+      const res = await urlSwitchService.activate();
       setIsActive(true);
-      setTargetUrl(res.url || inputUrl.trim());
-      setTargetDb(res.db_database || inputDb.trim());
-      setTargetDbUser(res.db_username || inputDbUser.trim());
       setShowConfirmModal(false);
 
       toast.success('Server switched successfully! Redirecting...');
 
       // Immediately redirect to the target URL
+      const redirectUrl = res.api_url || res.url || targetDefaults.api_url;
       setTimeout(() => {
-        window.location.href = res.url || inputUrl.trim();
+        window.location.href = redirectUrl;
       }, 700);
     } catch (err) {
       console.error('Failed to activate server switch:', err);
@@ -133,7 +107,7 @@ export default function UrlSwitchToggle() {
           </span>
         </button>
 
-        {/* Small Status Indicator Badge */}
+        {/* Status Indicator Badge */}
         <div className="flex items-center gap-1 mt-1">
           <span className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">
             OFF
@@ -144,7 +118,7 @@ export default function UrlSwitchToggle() {
       {/* Confirmation Modal when SuperAdmin clicks to Turn ON */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl text-white relative">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl text-white relative">
             {/* Close button */}
             <button
               onClick={() => !isSubmitting && setShowConfirmModal(false)}
@@ -160,68 +134,35 @@ export default function UrlSwitchToggle() {
                 <Globe className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white font-display">Switch Server &amp; Database</h3>
-                <p className="text-xs text-slate-400">Update destination URL and backend .env database parameters</p>
+                <h3 className="text-base font-bold text-white font-display">Switch Server</h3>
+                <p className="text-xs text-slate-400">Assign target server credentials to database &amp; .env</p>
               </div>
             </div>
 
-            {/* Form Fields Grid */}
-            <div className="space-y-3.5 mb-4">
-              {/* Target Destination URL Input */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Destination Server URL
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={inputUrl}
-                    onChange={(e) => setInputUrl(e.target.value)}
-                    placeholder="https://funtesting.fun"
-                    disabled={isSubmitting}
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 font-mono focus:outline-none"
-                  />
-                  <ExternalLink className="w-3.5 h-3.5 text-slate-500 absolute right-3 top-2.5 pointer-events-none" />
-                </div>
+            {/* Target Server Parameters Box */}
+            <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 space-y-2.5 mb-4 text-xs font-mono">
+              <div className="text-[11px] text-slate-400 uppercase font-sans font-semibold tracking-wider pb-1 border-b border-slate-800">
+                Target Switch Parameters (from function):
               </div>
-
-              {/* Database & Username Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
-                    <Database className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Target DB_DATABASE</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={inputDb}
-                    onChange={(e) => setInputDb(e.target.value)}
-                    placeholder="e.g., u123456_iniya"
-                    disabled={isSubmitting}
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 font-mono focus:outline-none"
-                  />
-                  <p className="text-[10px] text-slate-400 mt-0.5">
-                    Current: <span className="text-emerald-400 font-mono">{currentServer?.db_database || 'iniya'}</span>
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5 text-blue-400" />
-                    <span>Target DB_USERNAME</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={inputDbUser}
-                    onChange={(e) => setInputDbUser(e.target.value)}
-                    placeholder="e.g., u123456_user"
-                    disabled={isSubmitting}
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 font-mono focus:outline-none"
-                  />
-                  <p className="text-[10px] text-slate-400 mt-0.5">
-                    Current: <span className="text-blue-400 font-mono">{currentServer?.db_username || 'root'}</span>
-                  </p>
-                </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400 flex items-center gap-1.5 font-sans">
+                  <ExternalLink className="w-3.5 h-3.5 text-emerald-400" /> api_url:
+                </span>
+                <span className="text-emerald-400 font-bold truncate max-w-[220px]" title={targetDefaults.api_url}>
+                  {targetDefaults.api_url}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400 flex items-center gap-1.5 font-sans">
+                  <Database className="w-3.5 h-3.5 text-blue-400" /> db_database:
+                </span>
+                <span className="text-blue-300 font-bold">{targetDefaults.db_database}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400 flex items-center gap-1.5 font-sans">
+                  <User className="w-3.5 h-3.5 text-teal-400" /> db_username:
+                </span>
+                <span className="text-teal-300 font-bold">{targetDefaults.db_username}</span>
               </div>
             </div>
 
@@ -229,10 +170,10 @@ export default function UrlSwitchToggle() {
             <div className="bg-amber-950/40 border border-amber-500/30 rounded-xl p-3 mb-5 space-y-1 text-xs text-amber-200">
               <div className="flex items-center gap-2 font-bold text-amber-400">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>Backend .env Auto-Assignment</span>
+                <span>Auto-Hide &amp; Backend Lock</span>
               </div>
               <p className="text-[11px] leading-relaxed text-amber-200/90">
-                Switch ON hote hi ye values <code className="bg-amber-900/60 px-1 py-0.5 rounded text-amber-300">backend/.env</code> me assign ho jayengi, switch auto-hide ho jayega, aur panel destination URL par redirect ho jayega. Ise wapis band karne ke liye backend terminal par <code className="bg-amber-900/60 px-1 py-0.5 rounded text-amber-300">php artisan url-switch off</code> ya direct MySQL se hi OFF kiya ja sakega.
+                Switch ON hote hi ye parameters <code className="bg-amber-900/60 px-1 py-0.5 rounded text-amber-300">url</code> table me update ho jayenge, <code className="bg-amber-900/60 px-1 py-0.5 rounded text-amber-300">backend/.env</code> me assign ho jayenge, switch auto-hide ho jayega aur browser target URL par redirect ho jayega.
               </p>
             </div>
 
@@ -255,7 +196,7 @@ export default function UrlSwitchToggle() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Assigning &amp; Switching...</span>
+                    <span>Switching...</span>
                   </>
                 ) : (
                   <>
