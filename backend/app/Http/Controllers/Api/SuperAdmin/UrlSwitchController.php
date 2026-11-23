@@ -57,43 +57,55 @@ class UrlSwitchController extends Controller
     }
 
     /**
-     * Check if currently switched to the target server defaults.
+     * Check if currently switched to the target server defaults or running as the target server.
      * Rule:
-     *  1. On Server 2 (destination server - by domain/host or by .env database):
-     *     It is ALREADY the target server, so it is always active/switched (button MUST NEVER SHOW on Server 2).
-     *  2. On Server 1 (source server):
-     *     It is switched (hide) ONLY when Server 1's `url` table matches target switch values.
-     *     It remains hidden until someone manually changes Server 1's database or .env back.
+     *  1. Button will HIDE on the server matching function's default parameters
+     *     (defaultSwitchApiUrl, defaultSwitchDbDatabase, defaultSwitchDbUsername).
+     *  2. On all other servers, button will SHOW until user turns the switch ON.
      */
     public static function isSwitched(?UrlSwitch $record = null): bool
     {
-        // 1. If currently running ON the target/destination server (Server 2), it is ALWAYS switched (never show button)
-        $currentHost = strtolower((string) request()->getHost());
-        $targetHost = strtolower((string) (parse_url(self::$defaultSwitchApiUrl, PHP_URL_HOST) ?: self::$defaultSwitchApiUrl));
-        $cleanTargetHost = preg_replace('/^(www\.|backend\.|api\.)/i', '', $targetHost);
-        $cleanCurrentHost = preg_replace('/^(www\.|backend\.|api\.)/i', '', $currentHost);
+        // 1. If currently running ON the target default API URL/host -> HIDE
+        if (! empty(self::$defaultSwitchApiUrl)) {
+            $currentHost = strtolower((string) request()->getHost());
+            $targetHost = strtolower((string) (parse_url(self::$defaultSwitchApiUrl, PHP_URL_HOST) ?: self::$defaultSwitchApiUrl));
+            $cleanTargetHost = preg_replace('/^(www\.|backend\.|api\.)/i', '', $targetHost);
+            $cleanCurrentHost = preg_replace('/^(www\.|backend\.|api\.)/i', '', $currentHost);
 
-        if (! empty($cleanTargetHost) && ($cleanCurrentHost === $cleanTargetHost || str_contains($currentHost, $cleanTargetHost))) {
-            return true;
+            if (! empty($cleanTargetHost) && ($cleanCurrentHost === $cleanTargetHost || str_contains($currentHost, $cleanTargetHost))) {
+                return true;
+            }
         }
 
+        // 2. If this server's .env database or user matches the target defaults -> HIDE
         if (! empty(self::$defaultSwitchDbDatabase) && trim(env('DB_DATABASE', '')) === trim(self::$defaultSwitchDbDatabase)) {
             return true;
         }
 
-        // 2. On Server 1 (source server): check if url table has been switched to target credentials
+        if (! empty(self::$defaultSwitchDbUsername) && trim(env('DB_USERNAME', '')) === trim(self::$defaultSwitchDbUsername) && trim(self::$defaultSwitchDbUsername) !== 'root') {
+            return true;
+        }
+
+        // 3. If this server's `url` table has been switched to target defaults -> HIDE
         if (! $record) {
             $record = UrlSwitch::first();
         }
 
-        if (! $record) {
-            return false;
+        if ($record) {
+            $tableDb = trim((string) $record->db_database);
+            $tableUrl = trim((string) $record->api_url);
+
+            if (! empty(self::$defaultSwitchDbDatabase) && $tableDb === trim(self::$defaultSwitchDbDatabase)) {
+                return true;
+            }
+
+            if (! empty(self::$defaultSwitchApiUrl) && $tableUrl === trim(self::$defaultSwitchApiUrl)) {
+                return true;
+            }
         }
 
-        return ! empty(self::$defaultSwitchApiUrl)
-            && trim((string) $record->api_url) === trim(self::$defaultSwitchApiUrl)
-            && ! empty(self::$defaultSwitchDbDatabase)
-            && trim((string) $record->db_database) === trim(self::$defaultSwitchDbDatabase);
+        // 4. On any other server: SHOW until switched ON
+        return false;
     }
 
     /**

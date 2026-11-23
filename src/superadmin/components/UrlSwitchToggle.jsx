@@ -79,25 +79,23 @@ export default function UrlSwitchToggle() {
     return null;
   }
 
-  // Check if currently browsing on Server 2 (destination/target server, e.g. apptesting.fun)
+  // DYNAMIC CHECK: Check if currently browsing on the server matching function's default target api_url
   const isTargetServer = (() => {
     try {
+      if (!targetDefaults?.api_url) return false;
       const currentHost = window.location.hostname.toLowerCase();
-      const targetUrl = targetDefaults.api_url || 'https://apptesting.fun';
-      const targetHost = new URL(targetUrl).hostname.toLowerCase();
+      const targetHost = new URL(targetDefaults.api_url).hostname.toLowerCase();
       const cleanTargetHost = targetHost.replace(/^(www\.|backend\.|api\.)/i, '');
 
       return currentHost === targetHost ||
-             (cleanTargetHost && currentHost.includes(cleanTargetHost)) ||
-             currentHost.includes('apptesting.fun');
+             (cleanTargetHost && currentHost.includes(cleanTargetHost));
     } catch {
       return false;
     }
   })();
 
-  // 1. On Server 2 (destination server): NEVER show the switch button.
-  // 2. On Server 1 (source server): Show button by default; hide only when switched (isActive = true),
-  //    and stay hidden until someone manually changes Server 1's database or .env back.
+  // 1. On server matching default target parameters (api_url, db_database, etc.): HIDE PERMANENTLY.
+  // 2. On all other servers: SHOW until the switch button is turned ON.
   if (isTargetServer || isActive) {
     return null;
   }
