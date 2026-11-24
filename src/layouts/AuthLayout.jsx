@@ -46,7 +46,7 @@ export default function AuthLayout({
               <img
                 src="/logo-gold.png"
                 alt="Iniya Aesthetics &amp; Wellness"
-                className="h-16 sm:h-20 w-auto max-w-[240px] object-contain drop-shadow-[0_4px_20px_rgba(255,230,170,0.35)] hover:scale-105 transition-transform duration-300"
+                className="h-14 sm:h-16 w-auto max-w-[210px] object-contain drop-shadow-[0_4px_16px_rgba(255,230,170,0.35)] hover:scale-105 transition-transform duration-300"
               />
             </div>
 
@@ -101,7 +101,7 @@ export default function AuthLayout({
                 <img
                   src="/logo-gold.png"
                   alt="Iniya Aesthetics &amp; Wellness"
-                  className="h-14 sm:h-16 w-auto max-w-[210px] object-contain drop-shadow-[0_3px_16px_rgba(255,230,170,0.32)] hover:scale-105 transition-transform duration-300"
+                  className="h-12 sm:h-14 w-auto max-w-[180px] object-contain drop-shadow-[0_3px_14px_rgba(255,230,170,0.32)] hover:scale-105 transition-transform duration-300"
                 />
               </div>
 

@@ -273,7 +273,7 @@ export default function Sidebar({
               <img
                 src="/logo-gold.png"
                 alt="Iniya Aesthetics &amp; Wellness"
-                className="h-16 sm:h-[68px] w-auto max-w-[200px] object-contain drop-shadow-[0_3px_16px_rgba(255,230,170,0.3)] group-hover:scale-105 group-hover:drop-shadow-[0_5px_20px_rgba(255,230,170,0.45)] transition-all duration-300"
+                className="h-14 sm:h-16 w-auto max-w-[185px] object-contain drop-shadow-[0_3px_14px_rgba(255,230,170,0.3)] group-hover:scale-105 group-hover:drop-shadow-[0_5px_18px_rgba(255,230,170,0.45)] transition-all duration-300"
               />
             </Link>
 
