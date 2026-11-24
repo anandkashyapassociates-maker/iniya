@@ -2,6 +2,7 @@ import React from 'react';
 import { Shield, Lock, Stethoscope, CheckCircle2, HeartPulse } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ClinicAuthIllustration } from '../components/ClinicArtwork';
+import logoGold from '../assets/branding/logo-gold.png';
 
 export default function AuthLayout({
   children,
@@ -44,7 +45,7 @@ export default function AuthLayout({
             {/* Prominent centered radiant gold logo with transparent background */}
             <div className="w-full flex items-center justify-center mb-5 py-1">
               <img
-                src="/logo-gold.png"
+                src={logoGold}
                 alt="Iniya Aesthetics &amp; Wellness"
                 className="h-14 sm:h-16 w-auto max-w-[210px] object-contain drop-shadow-[0_4px_16px_rgba(255,230,170,0.35)] hover:scale-105 transition-transform duration-300"
               />
@@ -99,7 +100,7 @@ export default function AuthLayout({
               {/* Logo between badge and title with transparent background */}
               <div className="py-2 px-4 mb-3 flex items-center justify-center">
                 <img
-                  src="/logo-gold.png"
+                  src={logoGold}
                   alt="Iniya Aesthetics &amp; Wellness"
                   className="h-12 sm:h-14 w-auto max-w-[180px] object-contain drop-shadow-[0_3px_14px_rgba(255,230,170,0.32)] hover:scale-105 transition-transform duration-300"
                 />

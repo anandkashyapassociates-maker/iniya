@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
+import logoGold from '../assets/branding/logo-gold.png';
 import {
   LayoutDashboard,
   Users,
@@ -271,7 +272,7 @@ export default function Sidebar({
               title="Iniya Aesthetics &amp; Wellness"
             >
               <img
-                src="/logo-gold.png"
+                src={logoGold}
                 alt="Iniya Aesthetics &amp; Wellness"
                 className="h-14 sm:h-16 w-auto max-w-[185px] object-contain drop-shadow-[0_3px_14px_rgba(255,230,170,0.3)] group-hover:scale-105 group-hover:drop-shadow-[0_5px_18px_rgba(255,230,170,0.45)] transition-all duration-300"
               />
