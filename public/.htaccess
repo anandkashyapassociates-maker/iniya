@@ -4,7 +4,7 @@
     </IfModule>
 
     RewriteEngine On
-    Options +FollowSymLinks
+    RewriteBase /
 
     # Bypass LiteSpeed Symlink Protection on Hostinger by routing storage requests through Laravel
     RewriteRule ^storage/(.*)$ index.php [L,QSA]
@@ -22,8 +22,22 @@
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
-    # Send Requests To Front Controller...
-    RewriteCond %{REQUEST_FILENAME} !-d
+    # If backend index.php exists and request is for api or storage, route to index.php
+    RewriteCond %{DOCUMENT_ROOT}/index.php -f
     RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} ^/(api|storage|sanctum) [NC]
+    RewriteRule ^ index.php [L,QSA]
+
+    # If requested file or directory physically exists, serve it
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # If index.php exists, route to index.php (Laravel front controller)
+    RewriteCond %{DOCUMENT_ROOT}/index.php -f
     RewriteRule ^ index.php [L]
+
+    # If no index.php, fallback to index.html for SPA (React Router)
+    RewriteRule ^ index.html [L]
 </IfModule>
