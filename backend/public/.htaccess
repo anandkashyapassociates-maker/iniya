@@ -4,7 +4,21 @@
     </IfModule>
 
     RewriteEngine On
-    RewriteBase /
+
+    # CORS Headers for Apache / LiteSpeed (Hostinger)
+    <IfModule mod_headers.c>
+        SetEnvIf Origin "^(https?://(.*?\.)?apptesting\.fun(:[0-9]+)?)$" CORS_ORIGIN=$1
+        SetEnvIf Origin "^(https?://(localhost|127\.0\.0\.1)(:[0-9]+)?)$" CORS_ORIGIN=$1
+        Header always set Access-Control-Allow-Origin "%{CORS_ORIGIN}e" env=CORS_ORIGIN
+        Header always set Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        Header always set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-XSRF-TOKEN"
+        Header always set Access-Control-Allow-Credentials "true"
+        Header always set Access-Control-Max-Age "86400"
+    </IfModule>
+
+    # Handle OPTIONS preflight early and route to index.php
+    RewriteCond %{REQUEST_METHOD} OPTIONS
+    RewriteRule ^(.*)$ index.php [QSA,L]
 
     # Bypass LiteSpeed Symlink Protection on Hostinger by routing storage requests through Laravel
     RewriteRule ^storage/(.*)$ index.php [L,QSA]
@@ -22,22 +36,8 @@
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
-    # If backend index.php exists and request is for api or storage, route to index.php
-    RewriteCond %{DOCUMENT_ROOT}/index.php -f
-    RewriteCond %{REQUEST_FILENAME} !-f
+    # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} ^/(api|storage|sanctum) [NC]
-    RewriteRule ^ index.php [L,QSA]
-
-    # If requested file or directory physically exists, serve it
-    RewriteCond %{REQUEST_FILENAME} -f [OR]
-    RewriteCond %{REQUEST_FILENAME} -d
-    RewriteRule ^ - [L]
-
-    # If index.php exists, route to index.php (Laravel front controller)
-    RewriteCond %{DOCUMENT_ROOT}/index.php -f
+    RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
-
-    # If no index.php, fallback to index.html for SPA (React Router)
-    RewriteRule ^ index.html [L]
 </IfModule>

@@ -29,6 +29,8 @@ return [
         'http://127.0.0.1:3000',
         'https://apptesting.fun',
         'http://apptesting.fun',
+        'https://www.apptesting.fun',
+        'http://www.apptesting.fun',
     ],
 
     'allowed_origins_patterns' => [
