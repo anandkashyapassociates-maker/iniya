@@ -352,7 +352,7 @@ export default function AppointmentReceiptModal({
                 <img
                   src={logoDark}
                   alt="Iniya Aesthetics &amp; Wellness"
-                  className="h-10 sm:h-12 w-auto max-w-[130px] object-contain shrink-0"
+                  className="h-11 sm:h-13 w-auto max-w-[140px] rounded-lg shadow-sm border border-slate-200 object-cover shrink-0"
                 />
                 <div>
                   <h1 className="text-base sm:text-lg font-black font-display text-slate-900 tracking-tight leading-tight">

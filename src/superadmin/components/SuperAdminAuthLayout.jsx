@@ -29,12 +29,12 @@ export default function SuperAdminAuthLayout({
 
           {/* Top ERP & Clinic Branding */}
           <div className="relative z-10">
-            {/* Prominent centered radiant gold logo with transparent background */}
+            {/* Prominent centered luxury Iniya logo badge */}
             <div className="w-full flex items-center justify-center mb-5 py-1">
               <img
                 src={logoGold}
                 alt="Iniya Aesthetics &amp; Wellness"
-                className="h-14 sm:h-16 w-auto max-w-[210px] object-contain drop-shadow-[0_4px_16px_rgba(255,230,170,0.35)] hover:scale-105 transition-transform duration-300"
+                className="h-16 sm:h-20 w-auto max-w-[220px] rounded-2xl shadow-xl shadow-black/40 border border-amber-900/40 object-cover hover:scale-105 transition-transform duration-300"
               />
             </div>
 
@@ -93,8 +93,8 @@ export default function SuperAdminAuthLayout({
           {/* Card Header */}
           <div className="my-auto py-2">
             <div className="mb-5 text-center flex flex-col items-center">
-              <div className="lg:hidden flex items-center gap-2.5 mb-4 p-2 bg-slate-50 rounded-xl border border-slate-200/80 w-fit">
-                <img src={logoDark} alt="Iniya" className="h-8 w-auto object-contain" />
+              <div className="lg:hidden flex items-center gap-2.5 mb-4 p-1.5 bg-slate-50 rounded-xl border border-slate-200/80 w-fit">
+                <img src={logoDark} alt="Iniya" className="h-10 w-auto max-w-[160px] rounded-lg object-cover" />
               </div>
               <h1 className="text-2xl font-semibold text-slate-900 tracking-tight text-center">
                 {title}

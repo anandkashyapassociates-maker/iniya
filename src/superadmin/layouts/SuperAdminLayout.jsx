@@ -195,7 +195,7 @@ export default function SuperAdminLayout() {
         } h-screen`}
       >
         <div className="flex-1 overflow-y-auto">
-          {/* Logo / Header: Transparent background with balanced, elegant light-colored logo */}
+          {/* Logo / Header: Luxury Iniya Aesthetics & Wellness branding card */}
           <div className="h-24 px-4 border-b border-slate-800/80 flex items-center justify-between sticky top-0 bg-slate-950/95 backdrop-blur-md z-10">
             <Link
               to="/superadmin/dashboard"
@@ -205,7 +205,7 @@ export default function SuperAdminLayout() {
               <img
                 src={logoGold}
                 alt="Iniya Aesthetics &amp; Wellness"
-                className="h-14 sm:h-16 w-auto max-w-[190px] object-contain drop-shadow-[0_3px_14px_rgba(255,230,170,0.3)] group-hover:scale-105 group-hover:drop-shadow-[0_5px_18px_rgba(255,230,170,0.45)] transition-all duration-300"
+                className="h-14 sm:h-16 w-auto max-w-[190px] rounded-xl shadow-lg shadow-black/30 border border-amber-900/30 object-cover group-hover:scale-105 group-hover:shadow-amber-900/20 transition-all duration-300"
               />
             </Link>
 
