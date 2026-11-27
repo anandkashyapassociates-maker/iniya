@@ -101,7 +101,7 @@ export default function SuperAdminProfilePage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-8">
+    <div className="w-full space-y-6 pb-8">
       {/* Breadcrumb Navigation */}
       <nav className="flex items-center gap-2 text-xs text-slate-500 font-medium">
         <Link to="/superadmin/dashboard" className="hover:text-slate-900 transition-colors">

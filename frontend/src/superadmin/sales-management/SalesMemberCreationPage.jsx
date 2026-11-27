@@ -26,7 +26,7 @@ export default function SalesMemberCreationPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="w-full space-y-6">
       {/* Breadcrumb Navigation */}
       <nav className="flex items-center gap-2 text-xs text-slate-500 font-medium">
         <Link to="/superadmin/dashboard" className="hover:text-slate-900 transition-colors">
@@ -63,8 +63,8 @@ export default function SalesMemberCreationPage() {
         </Link>
       </div>
 
-      {/* Form Card */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 shadow-xs">
+      {/* Form Card (col-12 full width) */}
+      <div className="w-full bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 shadow-xs">
         <SalesMemberForm onSubmit={handleSalesMemberSubmit} isLoading={isSubmitting} cancelPath="/superadmin/sales-members" />
       </div>
     </div>

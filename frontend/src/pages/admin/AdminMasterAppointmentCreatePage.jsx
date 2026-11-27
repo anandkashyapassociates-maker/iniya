@@ -520,7 +520,7 @@ export default function AdminMasterAppointmentCreatePage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-5 sm:space-y-8 pb-32 sm:pb-28">
+    <div className="w-full space-y-5 sm:space-y-8 pb-32 sm:pb-28">
       {/* Page Header with 3D Icon (Responsive Stack on Mobile) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pt-1">
         <div className="flex items-center gap-3 sm:gap-4">

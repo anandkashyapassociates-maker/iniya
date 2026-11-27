@@ -46,7 +46,7 @@ export default function AdminChangePasswordPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       <div>
         <h1 className="text-lg sm:text-xl font-bold font-display text-slate-900 tracking-tight">
           Change Account Password
@@ -56,7 +56,7 @@ export default function AdminChangePasswordPage() {
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xs">
+      <div className="w-full bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xs">
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Current Password */}
           <div>

@@ -43,7 +43,7 @@ export default function SuperAdminCreateAdminPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       {/* Header & Back Link */}
       <div>
         <Link
@@ -61,8 +61,8 @@ export default function SuperAdminCreateAdminPage() {
         </p>
       </div>
 
-      {/* Form Card */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xs">
+      {/* Form Card (col-12 full width) */}
+      <div className="w-full bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xs">
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Name */}
           <div>
