@@ -1,5 +1,4 @@
 import React, { useRef } from 'react';
-import logoDark from '../../assets/branding/logo.png';
 import {
   Printer,
   X,
@@ -350,9 +349,9 @@ export default function AppointmentReceiptModal({
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3.5 border-b-2 border-slate-900/10">
               <div className="flex items-center space-x-3.5">
                 <img
-                  src={logoDark}
-                  alt="Iniya Aesthetics &amp; Wellness"
-                  className="h-11 sm:h-13 w-auto max-w-[140px] rounded-lg shadow-sm border border-slate-200 object-cover shrink-0"
+                  src="/logo.png"
+                  alt="Iniya Aesthetics & Wellness"
+                  className="h-12 w-auto object-contain shrink-0"
                 />
                 <div>
                   <h1 className="text-base sm:text-lg font-black font-display text-slate-900 tracking-tight leading-tight">

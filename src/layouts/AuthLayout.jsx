@@ -2,7 +2,6 @@ import React from 'react';
 import { Shield, Lock, Stethoscope, CheckCircle2, HeartPulse } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ClinicAuthIllustration } from '../components/ClinicArtwork';
-import logoGold from '../assets/branding/logo-gold.png';
 
 export default function AuthLayout({
   children,
@@ -42,12 +41,12 @@ export default function AuthLayout({
 
           {/* Top Brand Header */}
           <div className="relative z-10">
-            {/* Prominent centered luxury Iniya logo badge */}
+            {/* Prominent centered radiant gold logo with transparent background */}
             <div className="w-full flex items-center justify-center mb-5 py-1">
               <img
-                src={logoGold}
+                src="/logo-gold.png"
                 alt="Iniya Aesthetics &amp; Wellness"
-                className="h-16 sm:h-20 w-auto max-w-[220px] rounded-2xl shadow-xl shadow-black/40 border border-amber-900/40 object-cover hover:scale-105 transition-transform duration-300"
+                className="h-16 sm:h-20 w-auto max-w-[240px] object-contain drop-shadow-[0_4px_20px_rgba(255,230,170,0.35)] hover:scale-105 transition-transform duration-300"
               />
             </div>
 
@@ -97,12 +96,12 @@ export default function AuthLayout({
                 <span>{isSuperAdmin ? 'Executive Authentication' : 'Clinical Access Verification'}</span>
               </div>
 
-              {/* Logo between badge and title with luxury card styling */}
+              {/* Logo between badge and title with transparent background */}
               <div className="py-2 px-4 mb-3 flex items-center justify-center">
                 <img
-                  src={logoGold}
+                  src="/logo-gold.png"
                   alt="Iniya Aesthetics &amp; Wellness"
-                  className="h-14 sm:h-16 w-auto max-w-[200px] rounded-xl shadow-lg shadow-black/30 border border-amber-900/30 object-cover hover:scale-105 transition-transform duration-300"
+                  className="h-14 sm:h-16 w-auto max-w-[210px] object-contain drop-shadow-[0_3px_16px_rgba(255,230,170,0.32)] hover:scale-105 transition-transform duration-300"
                 />
               </div>
 

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Shield, Layers, ArrowRight, Lock, CheckCircle2 } from 'lucide-react';
 import { useSuperAdminAuth } from '../superadmin/auth/SuperAdminAuthContext';
 import { useAdminAuth } from '../features/auth/AdminAuthContext';
-import logoGold from '../assets/branding/logo-gold.png';
 
 export default function LandingPage() {
   const { isAuthenticated: isSuperAdminAuth, isLoading: isSuperAdminLoading } = useSuperAdminAuth();
@@ -25,9 +24,9 @@ export default function LandingPage() {
         <div className="flex flex-col items-center">
           <div className="mb-5 flex items-center justify-center">
             <img
-              src={logoGold}
+              src="/logo-gold.png"
               alt="Iniya Aesthetics &amp; Wellness"
-              className="h-20 sm:h-24 w-auto max-w-[260px] rounded-2xl shadow-2xl shadow-black/50 border border-amber-900/40 object-cover hover:scale-105 transition-transform duration-300"
+              className="h-16 sm:h-20 w-auto max-w-[260px] object-contain drop-shadow-[0_4px_20px_rgba(255,230,170,0.35)] hover:scale-105 transition-transform duration-300"
             />
           </div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-300 text-xs font-semibold mb-4">
